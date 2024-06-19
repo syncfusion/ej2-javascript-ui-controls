@@ -283,7 +283,7 @@ export class Year extends ViewBase implements IRenderer {
     private renderTemplates(fn: CallbackFunction, args: CellTemplateArgs, tName: string, vName: string, ele: HTMLElement): void {
         const templateId: string = this.parent.element.id + '_' + vName + tName;
         const template: HTMLElement[] =
-            [].slice.call(fn(args, this.parent, tName, templateId, false));
+            [].slice.call(fn(args, this.parent, tName, templateId, false, undefined, undefined, this.parent.root));
         append(template, ele);
     }
 

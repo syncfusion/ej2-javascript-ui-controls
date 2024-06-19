@@ -703,16 +703,28 @@ export class Edit {
         const taskType: string = ganttProp.taskType;
         let isEffectDriven: boolean;
         const isAutoSchedule: boolean = ganttProp.isAutoSchedule;
-        if (!isNullOrUndefined(ganttProp.resourceInfo)) {
-            if (ganttProp.work > 0 || column === 'work') {
+        const resources: Object[] = (this.parent.editModule.dialogModule &&
+            this.parent.editModule.dialogModule['currentResources']) ? this.parent.editModule.dialogModule['currentResources']
+            : currentData.ganttProperties.resourceInfo;
+        if (!isNullOrUndefined(resources)) {
                 switch (taskType) {
                 case 'FixedUnit':
-                    if (ganttProp.resourceInfo.length === 0) {
+                    if (resources.length === 0) {
                         return;
                     }
-                    else if (isAutoSchedule && ganttProp.resourceInfo.length &&
-                            (column === 'work' || (column === 'resource'))) {
-                        this.parent.dataOperation.updateDurationWithWork(currentData);
+                    else if (isAutoSchedule && resources.length) {
+                        if ((column === 'resource')) {
+                            this.parent.dataOperation.updateWorkWithDuration(currentData);
+                        }
+                        else if (column === 'work') {
+                            this.parent.dataOperation.updateDurationWithWork(currentData);
+                        }
+                        else if (column === 'duration') {
+                            this.parent.dataOperation.updateWorkWithDuration(currentData);
+                            if (ganttProp.duration === 0) {
+                                this.parent.setRecordValue('isMilestone', true, ganttProp, true);
+                            }
+                        }
                     } else if (!isAutoSchedule && column === 'work') {
                         this.parent.dataOperation.updateUnitWithWork(currentData);
                     } else {
@@ -720,12 +732,14 @@ export class Edit {
                     }
                     break;
                 case 'FixedWork':
-                    if (ganttProp.resourceInfo.length === 0) {
+                    if (resources.length === 0) {
                         return;
                     } else if (isAutoSchedule) {
                         if (column === 'duration' || column === 'endDate') {
                             this.parent.dataOperation.updateUnitWithWork(currentData);
+                            this.parent.dataOperation.updateDurationWithWork(currentData);
                             if (ganttProp.duration === 0) {
+                                this.parent.setRecordValue('isMilestone', true, ganttProp, true);
                                 this.parent.setRecordValue('work', 0, ganttProp, true);
                                 if (!isNullOrUndefined(this.parent.taskFields.work)) {
                                     this.parent.dataOperation.updateMappingData(currentData, 'work');
@@ -743,17 +757,20 @@ export class Edit {
                     }
                     break;
                 case 'FixedDuration':
-                    if (ganttProp.resourceInfo.length && (column === 'work' || (isAutoSchedule &&
+                    if (resources.length && (column === 'work' || (isAutoSchedule &&
                             isEffectDriven && (column === 'resource')))) {
-                        this.parent.dataOperation.updateUnitWithWork(currentData);
+                        if (column === 'work') {
+                            this.parent.dataOperation.updateUnitWithWork(currentData);
+                        }
+                        else {
+                            this.parent.dataOperation.updateWorkWithDuration(currentData);
+                            this.parent.dataOperation.updateUnitWithWork(currentData);
+                        }
                     } else {
                         this.parent.dataOperation.updateWorkWithDuration(currentData);
                     }
                     break;
                 }
-            } else {
-                this.parent.dataOperation.updateWorkWithDuration(currentData);
-            }
         }
     }
 
@@ -1042,7 +1059,6 @@ export class Edit {
                     this.isFirstCall = true;
                     this.parent.predecessorModule.validatePredecessor(parentData, [], '');
                     this.updateParentItemOnEditing();
-                    this.parent.ganttChartModule.reRenderConnectorLines();
                 }
             }
         }
@@ -1058,6 +1074,13 @@ export class Edit {
         const childRecord: object[] = getValue('parentRecord', this.parent.predecessorModule);
         for (let i: number = 0; i < childRecord.length; i++) {
             this.parent.dataOperation.updateParentItems(childRecord[i as number]);
+        }
+        if (this.parent.editModule['updateParentRecords'] && this.parent.editModule['updateParentRecords'].length > 0) {
+            this.parent.editModule['updateParentRecords'].forEach((record) => {
+                if (record.ganttProperties.predecessor && record.ganttProperties.predecessor.length > 0) {
+                    this.parent.predecessorModule.validatePredecessor(record, [], '')
+                }
+            })
         }
         setValue('parentRecord', [], this.parent.predecessorModule);
         setValue('parentIds', [], this.parent.predecessorModule);
@@ -1332,6 +1355,7 @@ export class Edit {
                 }
             }
         });
+        this.parent.ganttChartModule.reRenderConnectorLines();
     }
     /* eslint-disable-next-line */
     private dmSuccess(e: any, args: ITaskbarEditedEventArgs): void {
@@ -1459,6 +1483,10 @@ export class Edit {
         }
         if (!this.isTreeGridRefresh) {
             if (this.parent.editSettings.allowEditing && this.parent.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0) {
+                if (!this.parent.treeGrid.grid.element.querySelector('form').ej2_instances[0].validate()) {
+                    setValue('isEdit', false, this.parent.treeGrid.grid);
+                    this.parent.editModule.cellEditModule.isCellEdit = false
+                }
                 this.parent.treeGrid.endEdit();
             }
             this.parent.chartRowsModule.refreshRecords(this.parent.editedRecords);
@@ -1852,7 +1880,7 @@ export class Edit {
         this.taskbarMoved = false;
         this.predecessorUpdated = false;
         if (!isNullOrUndefined(this.dialogModule) && (isNullOrUndefined(args) ||
-        (!isNullOrUndefined(args) && args['requestType'] === 'beforeSave' && !args['cancel']))) {
+        (!isNullOrUndefined(args) && args['requestType'] === 'beforeSave' && args['cancel']))) {
             if (this.dialogModule.dialog && !this.dialogModule.dialogObj.isDestroyed) {
                 this.dialogModule.dialogObj.hide();
             }

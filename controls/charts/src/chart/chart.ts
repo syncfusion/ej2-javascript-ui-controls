@@ -2787,11 +2787,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
 
     public addSeries(seriesCollection: SeriesModel[]): void {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         for (let series of seriesCollection) {
             series = new Series(this, 'series', series);
             this.series.push(series);
         }
         this.refresh();
+        window.scrollTo(0, scrollTop);
     }
 
     /**
@@ -2802,6 +2804,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public removeSeries(index: number): void {
         this.redraw = false; //fix for remove svg not working when use animatemethod.
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         if (this.visibleSeries[index as number]) {
             this.visibleSeries[index as number].xAxis.orientation = null;
             this.visibleSeries[index as number].yAxis.orientation = null;
@@ -2813,6 +2816,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
         this.series.splice(index, 1);
         this.refresh();
+        window.scrollTo(0, scrollTop);
     }
 
     /**
@@ -3017,7 +3021,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     private setStyle(element: HTMLElement): void {
         const zooming: ZoomSettingsModel = this.zoomSettings;
         const disableScroll: boolean = zooming.enableSelectionZooming || zooming.enablePinchZooming ||
-            this.selectionMode !== 'None' || this.crosshair.enable || this.highlightMode !== 'None';
+            this.selectionMode !== 'None' || this.highlightMode !== 'None';
         element.style.touchAction = disableScroll ? 'none' : 'element';
         element.style.msTouchAction = disableScroll ? 'none' : 'element';
         element.style.msContentZooming = 'none';
@@ -3067,8 +3071,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (getElement(this.svgId)) {
             const svgRect: ClientRect = getElement(this.svgId).getBoundingClientRect();
             const rect: ClientRect = this.element.getBoundingClientRect();
-            this.mouseY = ((pageY - rect.top) - Math.max(svgRect.top - rect.top, 0));
-            this.mouseX = ((pageX - rect.left) - Math.max(svgRect.left - rect.left, 0));
             if (this.width === '' || this.width === null || this.width === '100%') {
                 if (this.element.clientHeight) {
                     this.scaleY = (rect.height - 4) / this.availableSize.height;
@@ -3077,6 +3079,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 this.scaleX = svgRect.width / this.availableSize.width;
                 this.scaleY = svgRect.height / this.availableSize.height;
             }
+            this.mouseY = ((pageY - rect.top) - Math.max(svgRect.top - rect.top, 0)) / this.scaleY;
+            this.mouseX = ((pageX - rect.left) - Math.max(svgRect.left - rect.left, 0)) / this.scaleX;
             if (this.stockChart) {
                 this.mouseX += this.stockChart.legendSettings.position === 'Left' ? this.stockChart.stockLegendModule.legendBounds.width : 0;
                 this.mouseY += this.stockChart.legendSettings.position === 'Top' ? this.stockChart.stockLegendModule.legendBounds.height : 0;
@@ -3690,6 +3694,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
         if (this.dataEditingModule) {
             this.dataEditingModule.pointMouseMove(e);
+        }
+        if (this.crosshair.enable && this.startMove) {
+            e.preventDefault();
         }
         this.notify(Browser.touchMoveEvent, e);
         this.isTouch = false;

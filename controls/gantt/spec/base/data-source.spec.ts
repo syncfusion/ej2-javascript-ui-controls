@@ -9332,7 +9332,119 @@ export let editingData1 : Object[]  = [
         ]
     }
 ];
-
+export let crValidateIssue: any[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Product Concept',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 2, TaskName: 'Defining the product  and its usage', BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/06/2019'), StartDate: new Date('04/02/2019'), Duration: 3,Progress: 30 },
+            { TaskID: 3, TaskName: 'Defining target audience', StartDate: new Date('04/02/2019'), Duration: 3, 
+            Indicators: [
+                {
+                    'date': '04/10/2019',
+                    'iconClass': 'e-btn-icon e-notes-info e-icons e-icon-left e-gantt e-notes-info::before',
+                    'name': 'Indicator title',
+                    'tooltip': 'tooltip'
+                }
+            ] 
+        },
+            { TaskID: 4, TaskName: 'Prepare product sketch and notes', StartDate: new Date('04/02/2019'), Duration: 3, Predecessor: "2" ,Progress: 30},
+        ]
+    },
+    { TaskID: 5, TaskName: 'Concept Approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: "3,4" },
+    {
+        TaskID: 6,
+        TaskName: 'Market Research',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 7,
+                TaskName: 'Demand Analysis',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 8, TaskName: 'Customer strength', BaselineStartDate: new Date('04/08/2019'), BaselineEndDate: new Date('04/12/2019'), StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5",Progress: 30 },
+                    { TaskID: 9, TaskName: 'Market opportunity analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "5" }
+                ]
+            },
+            { TaskID: 10, TaskName: 'Competitor Analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "7,8" ,Progress: 30},
+            { TaskID: 11, TaskName: 'Product strength analysis', StartDate: new Date('04/04/2019'), Duration: 4, Predecessor: "9" },
+            { TaskID: 12, TaskName: 'Research complete', StartDate: new Date('04/04/2019'), Duration: 0, Predecessor: "10" }
+        ]
+    },
+    {
+        TaskID: 13,
+        TaskName: 'Product Design and Development',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 14, TaskName: 'Functionality design', StartDate: new Date('04/04/2019'), Duration: 7,Progress: 30 },
+            { TaskID: 15, TaskName: 'Quality design', StartDate: new Date('04/04/2019'), Duration: 5 },
+            { TaskID: 16, TaskName: 'Define Reliability', StartDate: new Date('04/04/2019'), Duration: 5,Progress: 30 },
+            { TaskID: 17, TaskName: 'Identifying raw materials ', StartDate: new Date('04/04/2019'), Duration: 4 },
+            {
+                TaskID: 18,
+                TaskName: 'Define cost plan',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 19, TaskName: 'Manufacturing cost', StartDate: new Date('04/04/2019'), Duration: 1,Progress: 30 },
+                    { TaskID: 20, TaskName: 'Selling cost', StartDate: new Date('04/04/2019'), Duration: 1 }
+                ]
+            },
+            {
+                TaskID: 21,
+                TaskName: 'Development of the final design',
+                StartDate: new Date('04/04/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 22, TaskName: 'Defining dimensions and package volume', StartDate: new Date('04/04/2019'), Duration: 2,Progress: 30 },
+                    { TaskID: 23, TaskName: 'Develop design to meet industry standards', StartDate: new Date('04/04/2019'), Duration: 3 },
+                    { TaskID: 24, TaskName: 'Include all the details', StartDate: new Date('04/04/2019'), Duration: 5 }
+                ]
+            },
+            { TaskID: 25, TaskName: 'CAD Computer-aided design', StartDate: new Date('04/04/2019'), Duration: 10,Progress: 30 },
+            { TaskID: 26, TaskName: 'CAM Computer-aided manufacturing', StartDate: new Date('04/04/2019'), Duration: 10 }
+        ]
+    },
+    { TaskID: 27, TaskName: 'Prototype Testing', StartDate: new Date('04/04/2019'), Duration: 12,Progress: 30 },
+    { TaskID: 28, TaskName: 'Include feedback', StartDate: new Date('04/04/2019'), Duration: 5 },
+    { TaskID: 29, TaskName: 'Manufacturing', StartDate: new Date('04/04/2019'), Duration: 9 ,Progress: 30},
+    { TaskID: 30, TaskName: 'Assembling materials to finished goods', StartDate: new Date('04/04/2019'), Duration: 12 },
+    {
+        TaskID: 31,
+        TaskName: 'Feedback and Testing',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 32, TaskName: 'Internal testing and feedback', StartDate: new Date('04/04/2019'), Duration: 5,Progress: 30 },
+            { TaskID: 33, TaskName: 'Customer testing and feedback', StartDate: new Date('04/04/2019'), Duration: 7,Progress: 30 }
+        ]
+    },
+    {
+        TaskID: 34,
+        TaskName: 'Product Development',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 35, TaskName: 'Important improvements', StartDate: new Date('04/04/2019'), Duration: 2,Progress: 30 },
+            { TaskID: 36, TaskName: 'Address any unforeseen issues', StartDate: new Date('04/04/2019'), Duration: 2,Progress: 30 }
+        ]
+    },
+    {
+        TaskID: 37,
+        TaskName: 'Final Product',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            { TaskID: 38, TaskName: 'Branding product', StartDate: new Date('04/04/2019'), Duration: 5 },
+            { TaskID: 39, TaskName: 'Marketing and pre-sales', StartDate: new Date('04/04/2019'), Duration: 10,Progress: 30 }
+        ]
+    }
+];
 export let data5: Object[] =[{
     TaskID: 1,
     TaskName: 'Project initiation',
@@ -12842,4 +12954,198 @@ export let milestoneTemplate: Object[]=  [
         },
         {
             TaskID: 5, TaskName: 'Concept approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: '3,4', resources: [1],EmailId:'MartinTamer@gmail.com',resourcesImage:'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'}]
+
+export let treeData: Object[] = [
+    {
+        taskId: 43,
+        propertyId: 1000,
+        blockId: 1,
+        floorId: 41,
+        siteDrawingTypeId: 1,
+        isTask: null,
+        isMileStone: null,
+        modelActivityId: 3,
+        modelActivityName: 'CIS walls casting',
+        parentId: 35,
+        taskName: 'CIS walls casting',
+        startDate: '2022-05-17T00:00:00',
+        endDate: '2022-06-08T00:00:00',
+        propertyModelActivityId: 44,
+        predecessor: '22fs-10days,34',
+        actualStartDate: '2022-04-30T00:00:00',
+        actualEndDate: '2022-05-18T00:00:00',
+        notes: null,
+        displayPredecessor: '22fs-10days,34',
+        basePlanStartDate: '17/05/2022 (IST)',
+        basePlanEndDate: '08/06/2022 (IST)',
+        revisionNo: null,
+        subTasks: [],
+        actualDuration: '19 days',
+        id: 20,
+    },
+    {
+        taskId: 22,
+        propertyId: 1000,
+        blockId: 1,
+        floorId: 42,
+        siteDrawingTypeId: 1,
+        isTask: null,
+        isMileStone: null,
+        modelActivityId: null,
+        modelActivityName: null,
+        parentId: 3,
+        taskName: 'Level-B06',
+        startDate: null,
+        endDate: null,
+        propertyModelActivityId: 23,
+        predecessor: null,
+        actualStartDate: '2022-02-17T00:00:00',
+        actualEndDate: '2022-05-31T00:00:00',
+        notes: null,
+        displayPredecessor: null,
+        basePlanStartDate: '',
+        basePlanEndDate: '',
+        revisionNo: null,
+        subTasks: [
+            {
+                taskId: 30,
+                propertyId: 1000,
+                blockId: 1,
+                floorId: 42,
+                siteDrawingTypeId: 1,
+                isTask: null,
+                isMileStone: null,
+                modelActivityId: 3,
+                modelActivityName: 'CIS walls casting',
+                parentId: 22,
+                taskName: 'CIS walls casting',
+                startDate: '2022-02-02T00:00:00',
+                endDate: '2022-04-15T00:00:00',
+                propertyModelActivityId: 31,
+                predecessor: null,
+                actualStartDate: '2022-03-09T00:00:00',
+                actualEndDate: '2022-04-18T00:00:00',
+                notes: null,
+                displayPredecessor: null,
+                basePlanStartDate: '02/02/2022 (IST)',
+                basePlanEndDate: '15/04/2022 (IST)',
+                revisionNo: null,
+                subTasks: [],
+                actualDuration: '41 days',
+                id: 11,
+            },
+            {
+                taskId: 31,
+                propertyId: 1000,
+                blockId: 1,
+                floorId: 42,
+                siteDrawingTypeId: 1,
+                isTask: null,
+                isMileStone: null,
+                modelActivityId: 4,
+                modelActivityName: 'CIS Column casting',
+                parentId: 22,
+                taskName: 'CIS Column casting',
+                startDate: '2022-03-16T00:00:00',
+                endDate: '2022-04-15T00:00:00',
+                propertyModelActivityId: 32,
+                predecessor: null,
+                actualStartDate: '2022-02-17T00:00:00',
+                actualEndDate: '2022-04-18T00:00:00',
+                notes: null,
+                displayPredecessor: null,
+                basePlanStartDate: '16/03/2022 (IST)',
+                basePlanEndDate: '15/04/2022 (IST)',
+                revisionNo: null,
+                subTasks: [],
+                actualDuration: '61 days',
+                id: 12,
+            },
+            {
+                taskId: 32,
+                propertyId: 1000,
+                blockId: 1,
+                floorId: 42,
+                siteDrawingTypeId: 1,
+                isTask: null,
+                isMileStone: null,
+                modelActivityId: 5,
+                modelActivityName: 'Precast Beams & HCS/SS Erection',
+                parentId: 22,
+                taskName: 'Precast Beams & HCS/SS Erection',
+                startDate: '2022-03-29T00:00:00',
+                endDate: '2022-05-11T00:00:00',
+                propertyModelActivityId: 33,
+                predecessor: null,
+                actualStartDate: '2022-03-11T00:00:00',
+                actualEndDate: '2022-05-31T00:00:00',
+                notes: null,
+                displayPredecessor: null,
+                basePlanStartDate: '29/03/2022 (IST)',
+                basePlanEndDate: '11/05/2022 (IST)',
+                revisionNo: null,
+                subTasks: [],
+                actualDuration: '82 days',
+                id: 13,
+            },
+            {
+                taskId: 34,
+                propertyId: 1000,
+                blockId: 1,
+                floorId: 42,
+                siteDrawingTypeId: 1,
+                isTask: null,
+                isMileStone: null,
+                modelActivityId: 7,
+                modelActivityName: 'Topping and Slab Casting',
+                parentId: 22,
+                taskName: 'Topping and Slab Casting',
+                startDate: '2022-04-19T00:00:00',
+                endDate: '2022-05-16T00:00:00',
+                propertyModelActivityId: 35,
+                predecessor: null,
+                actualStartDate: '2022-04-12T00:00:00',
+                actualEndDate: '2022-04-28T00:00:00',
+                notes: null,
+                displayPredecessor: null,
+                basePlanStartDate: '19/04/2022 (IST)',
+                basePlanEndDate: '16/05/2022 (IST)',
+                revisionNo: null,
+                subTasks: [],
+                actualDuration: '17 days',
+                id: 14,
+            },
+        ],
+        actualDuration: '104 days',
+        id: 10,
+    }
+]
+
             
+export let resourcesDatas1: object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Project initiation',
+        StartDate: new Date('03/29/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('03/29/2019'), Duration: 3,
+                Progress: 30, work: 10, resources: [{ resourceId: 1, resourceUnit: 50 }]
+            },
+            {
+                TaskID: 3, TaskName: 'Perform soil test', StartDate: new Date('03/29/2019'), Duration: 4,
+                resources: [{ resourceId: 2, resourceUnit: 70 }], Progress: 30, work: 20
+            },
+            {
+                TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('03/29/2019'), Duration: 4,
+                resources: [{ resourceId: 1, resourceUnit: 75 }], Predecessor: 2, Progress: 30, work: 10,
+            },
+        ]
+    }
+];
+                
+export let resourceCollections1: object[] = [
+    { resourceId: 1, resourceName: 'Martin Tamer', resourceGroup: 'Planning Team'}
+];
+

@@ -968,6 +968,8 @@ describe('Agenda View', () => {
 
         it('minDate and maxDate- date navigation testing - 1', (done: DoneFn) => {
             schObj.dataBound = () => {
+                expect(schObj.element.getAttribute('aria-labelledby')).toEqual(schObj.element.querySelector('.e-content-table').getAttribute('id'));
+                expect(schObj.element.querySelector('.e-content-table').getAttribute('aria-label')).toEqual('Agenda Start Sunday, October 29, 2017 Ends At Saturday, November 4, 2017');
                 expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Oct 29 - Nov 04, 2017');
                 expect(schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('true');
                 expect(schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS + ' button').getAttribute('aria-disabled')).toEqual('false');

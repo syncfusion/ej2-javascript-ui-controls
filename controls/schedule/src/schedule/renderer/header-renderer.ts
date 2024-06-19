@@ -189,7 +189,8 @@ export class HeaderRenderer {
             };
             const viewName: string = this.parent.activeViewOptions.dateRangeTemplateName;
             const templateId: string = this.parent.element.id + '_' + viewName + 'dateRangeTemplate';
-            const dateTemplate: Element[] = [].slice.call(this.parent.getDateRangeTemplate()(args, this.parent, 'dateRangeTemplate', templateId, false));
+            const dateTemplate: Element[] = [].slice.call(this.parent.getDateRangeTemplate()
+                (args, this.parent, 'dateRangeTemplate', templateId, false, undefined, undefined, this.parent.root));
             append(dateTemplate, textEle);
         }
         else {

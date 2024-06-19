@@ -19,6 +19,12 @@
     .e-dlg-header-content {
       border-radius: $header-content-border-radius;
       line-height: $dialog-header-line-height;
+
+      .e-dlg-closeicon-btn.e-btn.e-icon-btn {
+        @if $skin-name =='fluent2' {
+          line-height: 2;
+        }
+      }
     }
 
     .e-dlg-header-content + .e-dlg-content {

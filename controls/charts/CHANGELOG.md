@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 26.1.38 (2024-06-19)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I594639` - Now, the range navigator and the chart are rendered with the same width.
+- `#I598543` - Now, the chart area scrolling works properly when enabling the trackball in mobile mode.
+- `#F188458` - Now, the page remains in the same position when adding or removing a series in chart.
+
 ## 26.1.35 (2024-06-11)
 
 ### Accumulation Chart

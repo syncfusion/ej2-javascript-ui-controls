@@ -810,9 +810,9 @@ export class FormFields {
                     } else {
                         delete (this.pdfViewerBase.nonFillableFields[currentData.GroupName]);
                     }
-                    if (currentData.CheckboxIndex && currentData.Selected && currentData.Value) {
+                    if (currentData.CheckboxIndex && currentData.Selected) {
                         fieldDatas = {isSelected: currentData.CheckboxIndex, isReadOnly: currentData.IsReadonly,
-                            fieldValue: currentData.Value};
+                            fieldValue: !isNullOrUndefined(currentData.Value) ? currentData.Value : ""};
                         datas[currentData.GroupName] = fieldDatas;
                     } else if (datas[currentData.GroupName] === undefined || datas[currentData.GroupName] === null) {
                         fieldDatas = {isSelected: currentData.Selected, isReadOnly: currentData.IsReadonly, fieldValue: currentData.Value};
@@ -1489,8 +1489,10 @@ export class FormFields {
                         const filterCheckBoxSameName : any = FormFieldsData.filter((sameNameCheckboxField: any) => (sameNameCheckboxField.GroupName === target.name) && sameNameCheckboxField.Name === 'CheckBox');
                         for (let l: number = 0; l < filterCheckBoxSameName.length; l++) {
                             const currentType: any = filterCheckBoxSameName[parseInt(l.toString(), 10)];
-                            currentType.Selected = false;
-                            currentType.checked = false;
+                            if (currentType.uniqueID !== targetCheckBox) {
+                                currentType.Selected = false;
+                                currentType.checked = false;
+                            }
                             const currentTarget: any = document.getElementById(currentType.uniqueID);
                             if (currentTarget) {
                                 if (targetCheckBox !== currentTarget.id) {
@@ -1500,7 +1502,7 @@ export class FormFields {
                                 }
                             }
                         }
-                        if (target.checked) {
+                        if (target.checked && target.id === currentData.uniqueID) {
                             currentData.Selected = true;
                         } else {
                             currentData.Selected = false;

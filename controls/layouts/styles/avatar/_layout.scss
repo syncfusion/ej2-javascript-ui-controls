@@ -27,6 +27,12 @@
       line-height: $avatar-base-line-height;
     }
 
+    @if $skin-name == 'fluent2' {
+      &:has(:not(img)) {
+        border: 1px solid $avatar-border;
+      }
+    }
+
     img {
       height: $avatar-base-img-height;
       width: auto;

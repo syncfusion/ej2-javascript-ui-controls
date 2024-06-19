@@ -1,6 +1,8 @@
 $header-font-weight: 500 !default;
 $multicolumn-grid-height: 32px !default;
 $multicolumn-margin-top-value: 1px !default;
+$footer-border-width: 0 1px 0 1px !default;
+$grid-border-width: 1px !default;
 
 $multicolumn-grid-small-height: 26px !default;
 $multicolumn-margin-top-small-value: 1px !default;
@@ -11,13 +13,13 @@ $multicolumn-margin-top-bigger-value: 1px !default;
 $multicolumn-grid-bigger-small-height: 36px !default;
 $multicolumn-margin-top-bigger-small-value: 1px !default;
 
-$footer-border-color: $border-light !default;
+$footer-border-color: rgba($border-light) !default;
 $popup-text-color: $content-text-color-alt1 !default;
 $grid-content-color: $content-text-color !default;
 $grid-content-hover-bg-color: $flyout-bg-color-hover !default;
 $grid-content-active-bg-color: $flyout-bg-color-selected !default;
 $grid-content-active-color: $flyout-text-color-selected !default;
-$grid-footer-bg-color: $transparent !default;
+$grid-footer-bg-color: rgba($content-bg-color) !default;
 $grid-footer-color: $content-text-color-alt1 !default;
 $grid-group-content-header-color: $content-text-color-alt1 !default;
 $grid-group-content-header-bg-color: rgba($content-bg-color) !default;

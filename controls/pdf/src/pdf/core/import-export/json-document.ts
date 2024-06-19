@@ -609,7 +609,7 @@ export class _JsonDocument extends _ExportHelper {
             this._writeTable('array', this._convertToJsonArray(list), table, key, array);
         } else if (typeof value === 'string') {
             value = this._getValidString(value);
-            if (this._isColorSpace) {
+            if (this._isColorSpace || this._hasUnicodeCharacters(value)) {
                 const bytes: Uint8Array = _stringToBytes(value) as Uint8Array;
                 this._writeTable('unicodeData', _byteArrayToHexString(bytes), table, key, array);
             } else {
@@ -716,6 +716,10 @@ export class _JsonDocument extends _ExportHelper {
             j++;
         });
         return json + '}';
+    }
+    _hasUnicodeCharacters(value: string): boolean {
+        const unicodeRegex = /[^\x00-\x7F]/;
+        return value.split('').some(char => unicodeRegex.exec(char) !== null);
     }
     _convertToJsonArray(array: Map<string, string>[]): string {
         let json: string = '[';

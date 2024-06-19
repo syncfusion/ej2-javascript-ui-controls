@@ -1,6 +1,8 @@
 $header-font-weight: 600 !default;
 $multicolumn-grid-height: 36px !default;
 $multicolumn-margin-top-value: unset !default;
+$footer-border-width: 0 0 0 0 !default;
+$grid-border-width: 0 !default;
 
 $multicolumn-grid-small-height: 32px !default;
 $multicolumn-margin-top-small-value: unset !default;
@@ -17,7 +19,7 @@ $grid-content-color: $neutral-light-font !default;
 $grid-content-hover-bg-color: $neutral-light !default;
 $grid-content-active-bg-color: $neutral-quintenary !default;
 $grid-content-active-color: $neutral-light-font !default;
-$grid-footer-bg-color: transparent !default;
+$grid-footer-bg-color: $neutral-lighter-alt !default;
 $grid-footer-color: $theme-primary !default;
 $grid-group-content-header-color: $theme-primary !default;
 $grid-group-content-header-bg-color: $neutral-lighter-alt !default;

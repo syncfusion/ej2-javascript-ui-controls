@@ -19,15 +19,15 @@ $spin-overlay-font-color: $white;
 //Theme based other styles start
 $spin-material-stroke-color: $primary;
 $spin-boot4-stroke-color: $primary;
-$spin-boot4-stroke-width: 2;
+$spin-boot4-stroke-width: 4;
 $spin-fabric-stroke-color: $primary-lighter;
-$spin-fabric-stroke-width: 2;
+$spin-fabric-stroke-width: 1.5;
 $spin-tailwind-arc-color: $primary;
 $spin-tailwind-stroke-color: $primary-lighter;
-$spin-tailwind-stroke-width: 2;
+$spin-tailwind-stroke-width: 4.5;
 $spin-fabric-arc-color: $primary;
 $spin-bootstrap-stroke-color: $primary;
-$spin-boot5-stroke-width: 2;
+$spin-boot5-stroke-width: 4;
 $spin-boot5-stroke-color: $primary;
 
 @mixin boot5-spinner-rotate {

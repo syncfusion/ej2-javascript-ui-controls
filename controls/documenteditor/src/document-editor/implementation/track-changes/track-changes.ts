@@ -358,6 +358,17 @@ export class Revision {
         if (!(item instanceof WRowFormat) || !removeChanges) {
             if (!this.skipUnLinkElement) {
                 this.removeRangeRevisionForItem(item);
+                if (removeChanges && item instanceof BookmarkElementBox) {
+                    this.owner.editorModule.removedBookmarkElements.push(item);
+                }
+                if (item instanceof BookmarkElementBox) {
+                    if (this.owner.documentHelper.bookmarks.containsKey(item.name)) {
+                        if (this.owner.enableCollaborativeEditing && !isNullOrUndefined(this.owner.editorHistory.currentBaseHistoryInfo)) {
+                            this.owner.editorHistory.currentBaseHistoryInfo.markerData.push({ bookmarkName: item.name });
+                        }
+                        this.owner.documentHelper.bookmarks.remove(item.name);
+                    }
+                }
             }
         }
         if (revision.range.length === 0) {

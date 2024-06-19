@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 26.1.38 (2024-06-19)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I590548` - Resolved the layout issue when opening the attached document.
+- `#I598215` - Resolved the table auto fit columns issue when opening attached document
+- `#I591154` - Resolved the spellcheck local storage issue.
+- `#I592343` - Resolved the comment icon removal issue.
+- `#I585937` - Resolved the editor shrink issue while closing the comment pane.
+- `#I576560` - Resolved the multi column layout issue in Word 2010 Compatibility mode.
+- `#I588649` - Resolved the table resizing issue.
+
+#### Features
+
+- `#I559439` - Added the support to add a paragraph before the table.
+
 ## 26.1.35 (2024-06-11)
 
 ### DocumentEditor

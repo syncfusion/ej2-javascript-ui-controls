@@ -1235,7 +1235,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 EventHandler.add(checkForTooltipElement, 'mouseleave', this.tooltipElementMouseOut, this);
             } else {
                 this.hideTooltip(this.animation.close, e, this.findTarget());
-                if (this.closeDelay === 0 && this.animation.close.effect === 'None') { this.clear(); }
+                if (this.closeDelay === 0 && (this.animation.close.effect === 'None' || ((this as any).isReact && typeof this.content != 'string'))) {
+                    this.clear();
+                }
             }
         } else {
             this.hideTooltip(this.animation.close, e, this.findTarget());

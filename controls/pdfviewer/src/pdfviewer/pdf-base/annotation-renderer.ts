@@ -720,6 +720,9 @@ export class AnnotationRenderer {
         if (!isNullOrUndefined(inkSignatureAnnotation.note)) {
             inkAnnotation.text = inkSignatureAnnotation.note.toString();
         }
+        else if (!isNullOrUndefined(inkSignatureAnnotation.notes)) {
+            inkAnnotation.text = inkSignatureAnnotation.notes.toString();
+        }
 
         let dateValue: Date;
         if (!isNullOrUndefined(inkSignatureAnnotation.modifiedDate) && !isNaN(Date.parse(inkSignatureAnnotation.modifiedDate))) {
@@ -1788,9 +1791,8 @@ export class AnnotationRenderer {
         const stringFormat: PdfStringFormat = new PdfStringFormat();
         stringFormat.alignment = PdfTextAlignment.left;
         stringFormat.lineAlignment = PdfVerticalAlignment.middle;
-        const stampFont: PdfFont = new PdfStandardFont(PdfFontFamily.helvetica, 20, PdfFontStyle.bold | PdfFontStyle.italic);
-        const detailsFont: PdfFont = new PdfStandardFont(PdfFontFamily.helvetica, (rectangle.height / 6),
-                                                         PdfFontStyle.bold | PdfFontStyle.italic);
+        const stampFont: PdfFont = new PdfStandardFont(PdfFontFamily.helvetica, this.pdfViewer.annotationModule.calculateFontSize(icon.toUpperCase(), rectangle) - 5, PdfFontStyle.bold | PdfFontStyle.italic);
+        const detailsFont: PdfFont = new PdfStandardFont(PdfFontFamily.helvetica, this.pdfViewer.annotationModule.calculateFontSize(text, rectangle) - 5, PdfFontStyle.bold | PdfFontStyle.italic);
         const appearance: PdfTemplate = rubberStampAnnotation.appearance.normal;
         let point1: number[] = [0, 0];
         let point2: number[] = [0, 0];

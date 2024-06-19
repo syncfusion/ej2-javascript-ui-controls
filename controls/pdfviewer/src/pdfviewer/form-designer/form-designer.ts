@@ -81,6 +81,7 @@ export class FormDesigner {
     private isAddFormFieldUi: boolean = false;
     private increasedSize: number = 5;
     private defaultZoomValue: number = 1;
+    private defaultFontSize: number = 10;
     private signatureFieldPropertyChanged: any =
     {
         isReadOnlyChanged: false,
@@ -318,7 +319,7 @@ export class FormDesigner {
             this.isSetFormFieldMode = false;
             const divElement: HTMLElement = document.createElement('div');
             divElement.id = drawingObject.id + '_designer_name';
-            divElement.style.fontSize = drawingObject.fontSize ? (drawingObject.fontSize * zoomValue) + 'px' : (10 * zoomValue) + 'px';
+            divElement.style.fontSize = this.defaultFontSize + 'px';
             divElement.className = 'e-pv-show-designer-name';
             if (this.pdfViewer.designerMode) {
                 divElement.innerHTML = drawingObject.name;
@@ -989,7 +990,13 @@ export class FormDesigner {
             }
             const divElement: HTMLDivElement = document.createElement('div');
             divElement.id = signatureField.id + '_designer_name';
-            divElement.style.fontSize = signatureField.fontSize ? (signatureField.fontSize * zoomValue) + 'px' : (10 * zoomValue) + 'px';
+            if(zoomValue > 0.5){
+            divElement.style.fontSize = this.defaultFontSize + 'px';
+            }
+            else
+            {
+                divElement.style.fontSize =  '6px';
+            }
             divElement.className = 'e-pv-show-designer-name';
             if (this.pdfViewer.designerMode) {
                 divElement.innerHTML = signatureField.name;
@@ -3677,7 +3684,7 @@ export class FormDesigner {
                         element.style.pointerEvents = 'none';
                         designerName.innerHTML = collections[parseInt(i.toString(), 10)].name;
                         const zoomValue: number = this.pdfViewerBase.getZoomFactor();
-                        designerName.style.fontSize = collections[parseInt(i.toString(), 10)].fontSize ? (collections[parseInt(i.toString(), 10)].fontSize * zoomValue) + 'px' : (10 * zoomValue) + 'px';
+                        designerName.style.fontSize = this.defaultFontSize + 'px';
                         designerName.style.position = 'absolute';
                         switch (collections[parseInt(i.toString(), 10)].formFieldAnnotationType) {
                         case 'Textbox':
@@ -3847,7 +3854,7 @@ export class FormDesigner {
     private activateTextboxElement(formFieldType: FormFieldAnnotationType): void {
         (this.pdfViewer.drawingObject as any) = {
             formFieldAnnotationType: formFieldType,
-            name: 'Textbox' + this.setFormFieldIndex(), value: '', fontFamily: 'Helvetica', fontSize: 10 * this.pdfViewerBase.getZoomFactor(), fontStyle: 'None', color: 'black',
+            name: 'Textbox' + this.setFormFieldIndex(), value: '', fontFamily: 'Helvetica', fontSize: this.defaultFontSize, fontStyle: 'None', color: 'black',
             backgroundColor: '#daeaf7ff', thickness: 1, borderColor: '#303030', alignment: 'left', isReadonly: false, visibility: 'visible', isRequired: false, isPrint: true, rotateAngle: 0, tooltip: '', customData: '', font: { isItalic: false, isBold: false, isStrikeout: false, isUnderline: false }
         };
         this.pdfViewer.tool = 'DrawTool';
@@ -3856,7 +3863,7 @@ export class FormDesigner {
     private activatePasswordField(formFieldType: FormFieldAnnotationType): void {
         (this.pdfViewer.drawingObject as any) = {
             formFieldAnnotationType: formFieldType,
-            name: 'Password' + this.setFormFieldIndex(), value: '', fontFamily: 'Helvetica', fontSize: 10 * this.pdfViewerBase.getZoomFactor(), fontStyle: 'None', color: 'black',
+            name: 'Password' + this.setFormFieldIndex(), value: '', fontFamily: 'Helvetica', fontSize: this.defaultFontSize, fontStyle: 'None', color: 'black',
             alignment: 'left', backgroundColor: '#daeaf7ff', thickness: 1, borderColor: '#303030', isReadonly: false, visibility: 'visible', isRequired: false, isPrint: true, rotateAngle: 0, tooltip: '', customData: '', font: { isItalic: false, isBold: false, isStrikeout: false, isUnderline: false }
         };
         this.pdfViewer.tool = 'DrawTool';
@@ -3865,7 +3872,7 @@ export class FormDesigner {
     private activateCheckboxElement(formFieldType: FormFieldAnnotationType): void {
         (this.pdfViewer.drawingObject as any) = {
             formFieldAnnotationType: formFieldType,
-            name: 'Check Box' + this.setFormFieldIndex(), isChecked: false, fontSize: 10 * this.pdfViewerBase.getZoomFactor(), backgroundColor: '#daeaf7ff', color: 'black', thickness: 1, borderColor: '#303030', isReadonly: false, visibility: 'visible', isPrint: true, rotateAngle: 0, tooltip: '', customData: ''
+            name: 'Check Box' + this.setFormFieldIndex(), isChecked: false, fontSize: this.defaultFontSize, backgroundColor: '#daeaf7ff', color: 'black', thickness: 1, borderColor: '#303030', isReadonly: false, visibility: 'visible', isPrint: true, rotateAngle: 0, tooltip: '', customData: ''
         };
         this.pdfViewer.tool = 'DrawTool';
     }
@@ -3873,7 +3880,7 @@ export class FormDesigner {
     private activateRadioButtonElement(formFieldType: FormFieldAnnotationType): void {
         (this.pdfViewer.drawingObject as any) = {
             formFieldAnnotationType: formFieldType,
-            name: 'Radio Button' + this.setFormFieldIndex(), isSelected: false, fontSize: 10 * this.pdfViewerBase.getZoomFactor(), backgroundColor: '#daeaf7ff', color: 'black', thickness: 1, borderColor: '#303030', isReadonly: false, visibility: 'visible', isPrint: true, rotateAngle: 0, tooltip: '', customData: ''
+            name: 'Radio Button' + this.setFormFieldIndex(), isSelected: false, fontSize: this.defaultFontSize, backgroundColor: '#daeaf7ff', color: 'black', thickness: 1, borderColor: '#303030', isReadonly: false, visibility: 'visible', isPrint: true, rotateAngle: 0, tooltip: '', customData: ''
         };
         this.pdfViewer.tool = 'DrawTool';
     }
@@ -3881,7 +3888,7 @@ export class FormDesigner {
     private activateDropDownListElement(formFieldType: FormFieldAnnotationType, dropDownOptions: Item[]): void {
         (this.pdfViewer.drawingObject as any) = {
             formFieldAnnotationType: formFieldType,
-            name: 'Dropdown' + this.setFormFieldIndex(), fontFamily: 'Helvetica', fontSize: 10 * this.pdfViewerBase.getZoomFactor(), fontStyle: 'None', color: 'black', backgroundColor: '#daeaf7ff', thickness: 1, borderColor: '#303030',
+            name: 'Dropdown' + this.setFormFieldIndex(), fontFamily: 'Helvetica', fontSize: this.defaultFontSize, fontStyle: 'None', color: 'black', backgroundColor: '#daeaf7ff', thickness: 1, borderColor: '#303030',
             alignment: 'left', isReadonly: false, visibility: 'visible', isRequired: false, isPrint: true, rotateAngle: 0, tooltip: '',customData: '',
             options: dropDownOptions, isMultiSelect: false, font: { isItalic: false, isBold: false, isStrikeout: false, isUnderline: false }
         };
@@ -3891,7 +3898,7 @@ export class FormDesigner {
     private activateListboxElement(formFieldType: FormFieldAnnotationType, listBoxOptions: Item[]): void {
         (this.pdfViewer.drawingObject as any) = {
             formFieldAnnotationType: formFieldType,
-            name: 'List Box' + this.setFormFieldIndex(), fontFamily: 'Helvetica', fontSize: 10 * this.pdfViewerBase.getZoomFactor(), fontStyle: 'None', color: 'black', backgroundColor: '#daeaf7ff', thickness: 1, borderColor: '#303030',
+            name: 'List Box' + this.setFormFieldIndex(), fontFamily: 'Helvetica', fontSize: this.defaultFontSize, fontStyle: 'None', color: 'black', backgroundColor: '#daeaf7ff', thickness: 1, borderColor: '#303030',
             alignment: 'left', isReadonly: false, visibility: 'visible', isRequired: false, isPrint: true, rotateAngle: 0, tooltip: '', customData: '',
             options: listBoxOptions, isMultiSelect: true, font: { isItalic: false, isBold: false, isStrikeout: false, isUnderline: false }
         };
@@ -3899,7 +3906,7 @@ export class FormDesigner {
     }
 
     private activateSignatureBoxElement(formFieldType: FormFieldAnnotationType): void {
-        let propertyValues: any = { opacity: 1, backgroundColor: 'rgba(255, 228, 133, 0.35)', width: 19, height: 10, fontSize: 10, text: null, color: 'black' };
+        let propertyValues: any = { opacity: 1, backgroundColor: 'rgba(255, 228, 133, 0.35)', width: 19, height: 10, fontSize: this.defaultFontSize, text: null, color: 'black' };
         switch (formFieldType){
         case 'SignatureField':
             if (!isNullOrUndefined(this.pdfViewer.signatureFieldSettings.signatureIndicatorSettings)){
@@ -3916,7 +3923,7 @@ export class FormDesigner {
         }
         (this.pdfViewer.drawingObject as any) = {
             formFieldAnnotationType: formFieldType,
-            name: formFieldType === 'InitialField' || this.pdfViewer.isInitialFieldToolbarSelection ? 'Initial' + this.setFormFieldIndex() : 'Signature' + this.setFormFieldIndex(), fontFamily: 'Helvetica', fontSize: 10 * this.pdfViewerBase.getZoomFactor(), fontStyle: 'None', color: 'black', backgroundColor: '#daeaf7ff', alignment: 'left',
+            name: formFieldType === 'InitialField' || this.pdfViewer.isInitialFieldToolbarSelection ? 'Initial' + this.setFormFieldIndex() : 'Signature' + this.setFormFieldIndex(), fontFamily: 'Helvetica', fontSize: this.defaultFontSize, fontStyle: 'None', color: 'black', backgroundColor: '#daeaf7ff', alignment: 'left',
             isReadonly: false, visibility: 'visible', isRequired: false, isPrint: true, rotateAngle: 0, tooltip: '', customData: '', font: { isItalic: false, isBold: false, isStrikeout: false, isUnderline: false },
             isInitialField: formFieldType === 'InitialField' || this.pdfViewer.isInitialFieldToolbarSelection , signatureIndicatorSettings: { opacity: propertyValues.opacity, backgroundColor: propertyValues.backgroundColor , width: propertyValues.width, height: propertyValues.height, fontSize: propertyValues.fontSize, text: propertyValues.text, color: propertyValues.color }
         };
@@ -5316,8 +5323,8 @@ export class FormDesigner {
                 this.updateFontFamilyPropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
             }
             if ((this.isAddFormFieldProgrammatically ? selectedItem.fontSize : this.formFieldFontSize &&
-                 this.formFieldFontSize.value) || isUndoRedo) {
-                this.updateFontSizePropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
+                this.formFieldFontSize.value) || isUndoRedo) {
+               this.updateFontSizePropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
             }
             this.updateFontStylePropertyChange(selectedItem, inputElement, isUndoRedo, index, formFieldsData);
             if (this.formFieldAlign || isUndoRedo || this.multilineCheckboxCheckedState) {
@@ -5753,7 +5760,7 @@ export class FormDesigner {
             element.style.fontSize = (selectedItem.fontSize * zoomValue) + 'px'.toString();
         } else {
             selectedItem.fontSize = fontSize;
-            element.style.fontSize = this.formFieldFontSize ? (parseInt(this.formFieldFontSize.value.toString(), 10) * zoomValue + 'px') : parseInt(selectedItem.fontSize.toString(), 10) * zoomValue + 'px';
+            element.style.fontSize = this.formFieldFontSize ? (parseInt(this.formFieldFontSize.value.toString(), 10)  + 'px') : parseInt(selectedItem.fontSize.toString(), 10) + 'px';
         }
         if (index > -1) {
             formFieldsData[parseInt(index.toString(), 10)].FormField.fontSize = selectedItem.fontSize;
@@ -5931,7 +5938,7 @@ export class FormDesigner {
         if (this.pdfViewer.enableHtmlSanitizer && this.formFieldName.value){
             this.formFieldName.value = SanitizeHtmlHelper.sanitize(this.formFieldName.value);
         }
-        designerName.style.fontSize = selectedItem.fontSize ? (selectedItem.fontSize * zoomValue) + 'px' : (10 * zoomValue) + 'px';
+        designerName.style.fontSize = this.defaultFontSize + 'px';
         if (isUndoRedo) {
             designerName.innerHTML = selectedItem.name;
         } else {

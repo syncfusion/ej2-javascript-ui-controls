@@ -533,6 +533,10 @@ export abstract class BlockContainer extends Widget {
     * @private
     */
     public columnIndex: number = 0;
+    /**
+     * @private
+     */
+    public isWord2010NextColumn: boolean = false; 
     public get sectionFormat(): WSectionFormat {
         let container: BlockContainer = this;
         if (container instanceof BodyWidget) {
@@ -2456,7 +2460,8 @@ export class TableWidget extends BlockWidget {
             this.isDefaultFormatUpdated = true;
         }
         this.tableHolder.validateColumnWidths();
-        if (isAutoFit) {
+        let isNeedToAutoFit: boolean = HelperMethods.round(this.tableHolder.getTotalWidth(0), 2) !== HelperMethods.round(tableWidth, 2);
+        if (isAutoFit && (isNeedToAutoFit || isAutoWidth)) {
             // Fits the column width automatically based on contents.
             this.tableHolder.autoFitColumn(containerWidth, tableWidth, isAutoWidth, this.isInsideTable, isAutoFit, hasSpannedCells, this.leftIndent + this.rightIndent, pageContainerWidth);
         } else {

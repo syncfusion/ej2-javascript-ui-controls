@@ -58,7 +58,7 @@ export class Count {
 
     private appendCount(): void {
         const htmlText: string = this.parent.editorMode === 'Markdown' ? (this.editPanel as HTMLTextAreaElement).value :
-            (this.parent.getText().replace(/(\r\n|\n|\r|\t)/gm, ''));
+            (isNullOrUndefined(this.parent.getText()) ? '' : (this.parent.getText().replace(/(\r\n|\n|\r|\t)/gm, '')));
         if (this.parent.editorMode !== 'Markdown' && htmlText.indexOf('\u200B') !== -1) {
             this.htmlLength = htmlText.replace(/\u200B/g, '').length;
         } else {

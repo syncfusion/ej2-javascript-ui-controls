@@ -63,6 +63,9 @@ describe('Schedule timeline work week view', () => {
         it('work cells', () => {
             const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
+            expect(schObj.element.getAttribute('aria-labelledby')).toEqual(schObj.element.querySelector('.e-schedule-table.e-content-table').getAttribute('id'));
+            expect(schObj.element.querySelector('.e-schedule-table.e-content-table').getAttribute('aria-label')).
+                toEqual('Timeline Work Week Start Monday, October 2, 2017 Ends At Friday, October 6, 2017');
             expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2017, 9, 2).getTime().toString());
             expect(firstWorkCell.innerHTML).toEqual('');
         });
@@ -3653,7 +3656,7 @@ describe('Schedule timeline work week view', () => {
             const model: ScheduleModel = {
                 currentView: 'TimelineWorkWeek',
                 selectedDate: new Date(2023, 10, 6),
-                views: [{ option: 'TimelineWorkWeek', maxEventsPerRow: 2 }],    
+                views: [{ option: 'TimelineWorkWeek', maxEventsPerRow: 2 }],
                 group: {
                     resources: ['Rooms', 'Owners']
                 },
@@ -3663,9 +3666,9 @@ describe('Schedule timeline work week view', () => {
                     dataSource: [
                         { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
                         { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' }
-                        ],
-                        textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
-                    }, {
+                    ],
+                    textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
+                }, {
                     field: 'OwnerId', title: 'Owner',
                     name: 'Owners', allowMultiple: true,
                     dataSource: [
@@ -3674,7 +3677,7 @@ describe('Schedule timeline work week view', () => {
                         { OwnerText: 'Michael', Id: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
                     ],
                     textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
-                }],
+                }]
             };
             schObj = util.createSchedule(model, moreIndicatorData, done);
         });
@@ -3698,7 +3701,7 @@ describe('Schedule timeline work week view', () => {
                 const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(4);
                 const heightValue: string = (schObj.element.querySelector('.e-content-table tr td') as HTMLElement).style.height;
-                expect(heightValue).toEqual('');               
+                expect(heightValue).toEqual('');
                 done();
             };
             schObj.rowAutoHeight = true;
@@ -3749,7 +3752,7 @@ describe('Schedule timeline work week view', () => {
             const model: ScheduleModel = {
                 currentView: 'TimelineWorkWeek',
                 selectedDate: new Date(2023, 10, 6),
-                views: [{ option: 'TimelineWorkWeek', maxEventsPerRow: 3 }],    
+                views: [{ option: 'TimelineWorkWeek', maxEventsPerRow: 3 }],
                 group: {
                     resources: ['Rooms', 'Owners']
                 },
@@ -3759,9 +3762,9 @@ describe('Schedule timeline work week view', () => {
                     dataSource: [
                         { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
                         { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' }
-                        ],
-                        textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
-                    }, {
+                    ],
+                    textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
+                }, {
                     field: 'OwnerId', title: 'Owner',
                     name: 'Owners', allowMultiple: true,
                     dataSource: [
@@ -3770,7 +3773,7 @@ describe('Schedule timeline work week view', () => {
                         { OwnerText: 'Michael', Id: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
                     ],
                     textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
-                }],
+                }]
             };
             schObj = util.createSchedule(model, moreIndicatorData, done);
         });

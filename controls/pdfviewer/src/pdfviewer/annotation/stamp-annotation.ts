@@ -302,6 +302,8 @@ export class StampAnnotation {
         let annot: PdfAnnotationBaseModel;
         let annotation: any = this.currentStampAnnotation;
         const subject: string = (this.pdfViewer.annotationSettings.subject !== '' && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.stampSettings.subject ? this.pdfViewer.stampSettings.subject : !isNullOrUndefined(annotation) ? annotation.iconName : '';
+        const annotationSelectorSettings: AnnotationSelectorSettingsModel = this.pdfViewer.stampSettings.annotationSelectorSettings;
+        this.pdfViewerBase.updateSelectorSettings(annotationSelectorSettings);
         if (annotation && annotation.shapeAnnotationType === 'Image') {
             annot = {
                 id: 'stamp' + this.pdfViewerBase.customStampCount, bounds: { x: X, y: Y, width: annotation.bounds.width, height: annotation.bounds.height }, pageIndex: pageIndex, data: annotation.data, modifiedDate: annotation.modifiedDate,
@@ -311,7 +313,7 @@ export class StampAnnotation {
             annot = {
                 id: 'stamp' + this.pdfViewerBase.customStampCount, bounds: { x: X, y: Y, width: annotation.width, height: annotation.height }, pageIndex: pageIndex, data: annotation.pathdata,
                 shapeAnnotationType: 'Stamp', strokeColor: annotation.strokeColor, fillColor: annotation.fillColor, opacity: 0.5, stampFillColor: annotation.stampFillColor, stampStrokeColor: annotation.stampStrokeColor, rotateAngle: annotation.RotateAngle, isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: this.dynamicText, subject: subject,
-                annotationSelectorSettings: this.pdfViewer.annotationSelectorSettings, icon: annotation.iconName
+                annotationSelectorSettings: annotationSelectorSettings, icon: annotation.iconName
             };
         }
         if (this.pdfViewerBase.currentSignatureAnnot) {
@@ -763,8 +765,8 @@ export class StampAnnotation {
             annotationSelectorSettings = typeof(annotation.AnnotationSelectorSettings) === 'string' ? JSON.parse(annotation.AnnotationSelectorSettings) : annotation.AnnotationSelectorSettings;
         }
         else {
-            annotationSelectorSettings = this.pdfViewer.stampSettings.annotationSelectorSettings ?
-                this.pdfViewer.stampSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+            annotationSelectorSettings = this.pdfViewer.stampSettings.annotationSelectorSettings;
+            this.pdfViewerBase.updateSelectorSettings(annotationSelectorSettings);
         }
         const annot: PdfAnnotationBaseModel = {
             id: 'stamp' + this.pdfViewerBase.customStampCount, allowedInteractions: allowedInteractions, bounds: { x: position.left, y: position.top, width: position.width, height: position.height }, pageIndex: pageIndex, data: image.src, modifiedDate: modifiedDate,
@@ -1098,6 +1100,13 @@ export class StampAnnotation {
                             pageAnnotationObject.annotations[parseInt(z.toString(), 10)].wrapperBounds =
                              (this.pdfViewer.nameTable as any)[pageAnnotationObject.
                                  annotations[parseInt(z.toString(), 10)].randomId].wrapper.bounds;
+                        }
+                        if (!this.pdfViewerBase.clientSideRendering && pageAnnotationObject.annotations[parseInt(z.toString(), 10)].icon) {
+                            let bounds: any = JSON.parse(pageAnnotationObject.annotations[parseInt(z.toString(), 10)].bounds);
+                            let iconSize: number = this.pdfViewer.annotationModule.calculateFontSize(pageAnnotationObject.annotations[parseInt(z.toString(), 10)].icon.toUpperCase(), bounds);
+                            pageAnnotationObject.annotations[parseInt(z.toString(), 10)].iconFontSize = iconSize;
+                            let textSize: number = this.pdfViewer.annotationModule.calculateFontSize(pageAnnotationObject.annotations[parseInt(z.toString(), 10)].dynamicText, bounds);
+                            pageAnnotationObject.annotations[parseInt(z.toString(), 10)].textFontSize = textSize;
                         }
                     }
                     newArray = pageAnnotationObject.annotations;
@@ -1456,11 +1465,16 @@ export class StampAnnotation {
             for (let i: number = 0; i < pageAnnotations.length; i++) {
                 if (annotationBase.annotName === pageAnnotations[parseInt(i.toString(), 10)].annotName) {
                     if (property === 'bounds') {
-                        pageAnnotations[parseInt(i.toString(), 10)].bounds =
-                         { left: annotationBase.wrapper.bounds.x, top: annotationBase.wrapper.bounds.y,
-                             width: annotationBase.wrapper.bounds.width, height: annotationBase.wrapper.bounds.height };
-                        pageAnnotations[parseInt(i.toString(), 10)].modifiedDate =
-                         this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
+                        this.pdfViewerBase.isBounds = this.pdfViewerBase.boundsCalculation(pageAnnotations[parseInt(i.toString(), 10)].bounds, annotationBase.wrapper.bounds);
+                        if (this.pdfViewerBase.isBounds) {
+                            pageAnnotations[parseInt(i.toString(), 10)].bounds =
+                            {
+                                left: annotationBase.wrapper.bounds.x, top: annotationBase.wrapper.bounds.y,
+                                width: annotationBase.wrapper.bounds.width, height: annotationBase.wrapper.bounds.height
+                            };
+                            pageAnnotations[parseInt(i.toString(), 10)].modifiedDate =
+                                this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
+                        }
                     }
                     this.pdfViewer.annotationModule.storeAnnotationCollections(pageAnnotations[parseInt(i.toString(), 10)], pageNumber);
                 }
@@ -1535,8 +1549,8 @@ export class StampAnnotation {
         const apperarance: any = [];
         let isDynamic: boolean = false;
         let author: string =  annotationObject.author ? annotationObject.author : 'Guest';
-        const annotationSelectorSettings: any = this.pdfViewer.stampSettings.annotationSelectorSettings ?
-            this.pdfViewer.stampSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+        const annotationSelectorSettings: any = this.pdfViewer.stampSettings.annotationSelectorSettings;
+        this.pdfViewerBase.updateSelectorSettings(annotationSelectorSettings);
         const annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.stampSettings);
         author = author ? author : this.pdfViewer.annotationModule.updateAnnotationAuthor('stamp', annotationSettings.annotationSubType);
         const allowedInteractions: any = this.pdfViewer.stampSettings.allowedInteractions ?

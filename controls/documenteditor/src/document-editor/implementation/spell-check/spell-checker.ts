@@ -1251,8 +1251,18 @@ export class SpellChecker {
                 this.checkForUniqueWords(spelledWords[i]);
             }
         }
-        localStorage.setItem(this.uniqueKey, JSON.stringify(this.uniqueSpelledWords));
+        this.addUniqueWordsToLocalStorage(this.uniqueKey, JSON.stringify(this.uniqueSpelledWords));
         this.uniqueSpelledWords = {};
+    }
+    public addUniqueWordsToLocalStorage(uniqueKey: string, value: string): void {
+        try {
+            localStorage.setItem(uniqueKey, value);
+        } catch (e) {
+            if (e.name === 'QuotaExceededError') {
+                this.clearCache();
+                localStorage.setItem(uniqueKey, value);
+            }
+        }
     }
     private checkForUniqueWords(spellData: any): void {
         const identityMatched: boolean = this.uniqueSpelledWords[spellData.Text];

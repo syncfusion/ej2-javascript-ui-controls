@@ -867,7 +867,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected getTransformValues(): string {
         let translateY: number = this.viewPortInfo.startIndex * this.listItemHeight;
         translateY = translateY - (this.skeletonCount * this.listItemHeight);
-        translateY = this.viewPortInfo.startIndex === 0 && this.listData && this.listData.length === 0 ? 0 : translateY;
+        translateY = ((this.viewPortInfo.startIndex === 0 && this.listData && this.listData.length === 0) || this.skeletonCount === 0) ? 0 : translateY;
         const styleText: string = `transform: translate(0px, ${translateY}px);`;
         return styleText;
     }
@@ -1426,8 +1426,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         listElement: HTMLElement,
         list: { [key: string]: Object }[] | number[] | string[] | boolean[],
         bindEvent: boolean): void {
-        const isDropDown : boolean = (this.getModuleName() === 'autocomplete' || this.getModuleName() === 'combobox' || this.getModuleName() === 'dropdownlist' || this.getModuleName() === 'multiselect') ? true : false;
-        if (this.fields.disabled && isDropDown) {
+        if (this.fields.disabled) {
             const liCollections: NodeListOf<Element> = <NodeListOf<Element>>listElement.querySelectorAll('.' + dropDownBaseClasses.li);
             for (let index: number = 0; index < liCollections.length; index++) {
                 if (JSON.parse(JSON.stringify(this.listData[index as number]))[this.fields.disabled]) {
@@ -1436,7 +1435,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
         }
         /* eslint-enable @typescript-eslint/no-unused-vars */
-        const focusItem: Element =  this.fields.disabled && isDropDown ? listElement.querySelector('.' + dropDownBaseClasses.li + ':not(.e-disabled') : listElement.querySelector('.' + dropDownBaseClasses.li);
+        const focusItem: Element =  this.fields.disabled ? listElement.querySelector('.' + dropDownBaseClasses.li + ':not(.e-disabled') : listElement.querySelector('.' + dropDownBaseClasses.li);
         const selectedItem: Element = listElement.querySelector('.' + dropDownBaseClasses.selected);
         if (focusItem && !selectedItem) {
             focusItem.classList.add(dropDownBaseClasses.focus);
@@ -2118,6 +2117,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             this.notify('addItem', { module: 'CheckBoxSelection', item: li });
             liCollections.push(li);
             if (this.getModuleName() === 'listbox') {
+                if ((item as FieldSettingsModel).disabled) {
+                    li.classList.add('e-disabled');
+                }
                 (this.listData as { [key: string]: Object }[]).splice(isListboxEmpty ? this.listData.length : index, 0, item as { [key: string]: Object });
                 if (this.listData.length !== this.sortedData.length) { this.sortedData = this.listData; }
             } else {

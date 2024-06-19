@@ -541,7 +541,11 @@ export class Scroll implements IAction {
         this.setWidth(!isNullOrUndefined(e.properties[`${width}`]));
     }
 
-    private makeStickyHeader(): void {
+    /**
+     * @returns {void}
+     * @hidden
+     */
+    public makeStickyHeader(): void {
         if (this.parent.enableStickyHeader && this.parent.element && this.parent.getContent()) {
             const contentRect: ClientRect = this.parent.getContent().getClientRects()[0];
             if (contentRect) {

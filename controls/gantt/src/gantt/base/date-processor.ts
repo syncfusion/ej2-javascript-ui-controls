@@ -799,7 +799,13 @@ export class DateProcessor {
             const tempDate: Date = new Date(startDate.getTime());
             startDate.setTime(startDate.getTime() + (currentRange.from * 3600000));
             const startHour: Date = new Date(startDate.getTime());
-            tempDate.setTime(tempDate.getTime() + (currentRange.to * 3600000));
+            if (currentRange.to === 24) {
+                const currentRangeTo: number = 23.99;
+                tempDate.setTime(tempDate.getTime() + (currentRangeTo * 3600000));
+            }
+            else {
+                tempDate.setTime(tempDate.getTime() + (currentRange.to * 3600000));
+            }
             const endHour: Date = new Date(tempDate.getTime());
             const timeDiff: number = endHour.getTime() - startHour.getTime();
             const sdSeconds: number = this.getSecondsInDecimal(startHour);

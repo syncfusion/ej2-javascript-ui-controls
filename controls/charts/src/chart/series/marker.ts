@@ -76,7 +76,7 @@ export class Marker extends MarkerExplode {
             findlElement(series.seriesElement.childNodes, 'Series_' + series.index + '_Point_' + point.index)
             : series.symbolElement;
         border.color = borderColor || series.setPointColor(point, series.interior);
-        const symbolId: string = this.elementId + '_Series_' + seriesIndex + '_Point_' + ((this.chart.pointsRemoved && series.removedPointIndex !== null && series.removedPointIndex <= point.index) || this.chart.pointsAdded ?
+        const symbolId: string = this.elementId + '_Series_' + seriesIndex + '_Point_' + ((series.removedPointIndex !== null && series.removedPointIndex <= point.index) || this.chart.pointsAdded ?
             (point.index + 1) : point.index) + '_Symbol' + (index ? index : '');
         const argsData: IPointRenderEventArgs = {
             cancel: false, name: pointRender, series: series, point: point,
@@ -147,7 +147,7 @@ export class Marker extends MarkerExplode {
                     this.chart.enableCanvas, parentElement, markerElement, redraw, true, circlePath + 'x', circlePath + 'y',
                     previousLocation, previousPath, false, false, null, series.chart.duration
                 );
-                if ((this.chart.pointsRemoved && series.removedPointIndex !== null && series.removedPointIndex <= point.index)) {
+                if ((series.removedPointIndex !== null && series.removedPointIndex <= point.index)) {
                     (parentElement.lastChild as HTMLElement).id = this.elementId + '_Series_' + seriesIndex + '_Point_' + point.index + '_Symbol' + (index ? index : '');
                 }
             }

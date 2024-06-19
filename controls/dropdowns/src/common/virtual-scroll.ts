@@ -286,6 +286,7 @@ export class VirtualScroll {
             this.parent.updatevirtualizationList();
         }
         this.parent.getSkeletonCount();
+        this.parent.skeletonCount = this.parent.totalItemCount != 0 && this.parent.totalItemCount < (this.parent.itemCount * 2) ? 0 : this.parent.skeletonCount;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const virtualTrackElement = this.parent.list.getElementsByClassName('e-virtual-ddl')[0] as any;
         if (virtualTrackElement) {

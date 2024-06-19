@@ -2202,6 +2202,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
         this.currentText = this.text;
         this.currentValue = this.value;
+        if (!isNOU(this.value) && this.value.length > 0 && !isNOU(this.currentText)) {
+            this.inputWrapper.setAttribute('aria-label', this.currentText.split(',').join(' '));
+        }
         if (this.isInitialized) {
             this.triggerChangeEvent();
         }
@@ -2731,6 +2734,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 this.setProperties({ text: selectedText }, true);
                 this.currentText = this.text;
                 this.currentValue = this.value;
+                if (!isNOU(this.value) && this.value.length > 0) {
+                    this.inputWrapper.setAttribute('aria-label', args.nodeData.text.toString());
+                }
                 attributes(this.inputWrapper, { 'aria-describedby': this.element.id });
                 attributes(this.inputWrapper, { 'aria-activedescendant': id.toString() });
                 this.updateHiddenValue();
@@ -3091,6 +3097,12 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
         this.currentText = this.text;
         this.currentValue = this.value;
+        if (!isNOU(this.value) && this.value.length > 0 && !isNOU(this.currentText)) {
+            this.inputWrapper.setAttribute('aria-label', this.currentText.split(',').join(' '));
+        }
+        else {
+            this.inputWrapper.setAttribute('aria-label', this.getModuleName());
+        }
     }
     private setChipValues(text: string, value: string): void {
         if (!this.inputWrapper.contains(this.chipWrapper)) {
@@ -3265,6 +3277,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         if (!isDynamicChange) {
             this.oldValue = this.value;
             this.setProperties({ value: [] }, true);
+        }
+        if (isNOU(this.value) || this.value.length === 0) {
+            this.inputWrapper.setAttribute('aria-label', this.getModuleName());
         }
         this.dataValue = null;
         this.setProperties({ text: null }, true);

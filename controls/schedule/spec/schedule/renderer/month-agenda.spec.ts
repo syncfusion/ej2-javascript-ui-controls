@@ -71,6 +71,9 @@ describe('Month-agenda view rendering', () => {
                 const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
                 expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
                 expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2017, 9, 1).getTime().toString());
+                expect(schObj.element.getAttribute('aria-labelledby')).toEqual(schObj.element.querySelector('.e-schedule-table.e-content-table').getAttribute('id'));
+                expect(schObj.element.querySelector('.e-schedule-table.e-content-table').getAttribute('aria-label')).
+                    toEqual('Month Agenda Start Sunday, October 1, 2017 Ends At Saturday, November 4, 2017');
                 expect(firstWorkCell.innerHTML).toEqual('<div class="e-date-header">1</div>');
             });
 

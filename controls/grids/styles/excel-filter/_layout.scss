@@ -171,7 +171,7 @@
       .e-frame {
         margin-bottom: 1px;
         @if $grid-xlfl-skin == 'fluent2' {
-          margin: 0 0 1px 4px;
+          margin-bottom: 8px;
         }
       }
     }
@@ -319,6 +319,7 @@
     @if $grid-xlfl-skin == 'fluent2' {
       .e-ftrchk.e-infinitescroll {
         margin-left: 0;
+        padding-left: 0;
       }
     }
 

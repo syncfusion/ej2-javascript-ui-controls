@@ -70,6 +70,8 @@ describe('Schedule day view', () => {
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2017, 9, 4).getTime().toString());
             expect(firstWorkCell.innerHTML).toEqual('');
+            expect(schObj.element.getAttribute('aria-labelledby')).toEqual(schObj.element.querySelector('.e-schedule-table.e-content-table').getAttribute('id'));
+            expect(schObj.element.querySelector('.e-schedule-table.e-content-table').getAttribute('aria-label')).toEqual('Day of Wednesday, October 4, 2017');
         });
 
         it('navigate next date', () => {
@@ -77,6 +79,7 @@ describe('Schedule day view', () => {
             expect(schObj.element.querySelectorAll('.e-date-header-container .e-header-cells').length).toEqual(1);
             expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML)
                 .toEqual('<div class="e-header-day">Thu</div><div class="e-header-date e-navigate" role="link">5</div>');
+            expect(schObj.element.querySelector('.e-content-table').getAttribute('aria-label')).toEqual('Day of Thursday, October 5, 2017');
         });
 
         it('navigate previous date', () => {

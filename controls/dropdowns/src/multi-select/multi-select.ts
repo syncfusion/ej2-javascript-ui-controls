@@ -2933,7 +2933,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     }
                     this.setProperties({ value: <[number | string]>[].concat([], removeVal) }, true);
                     if(this.enableVirtualization){
-                        let currentText = index == 0 ? this.text.replace(this.text.split(this.delimiterChar)[index as number] + this.delimiterChar ,'') : this.text.replace(this.delimiterChar + this.text.split(this.delimiterChar)[index as number],'');
+                        let currentText = index == 0 && this.text.split(this.delimiterChar) && this.text.split(this.delimiterChar).length == 1 ? this.text.replace(this.text.split(this.delimiterChar)[index as number],'') : index == 0 ? this.text.replace(this.text.split(this.delimiterChar)[index as number] + this.delimiterChar ,'') : this.text.replace(this.delimiterChar + this.text.split(this.delimiterChar)[index as number],'');
                         this.setProperties({ text: currentText.toString() }, true);
                     }
                     if (element !== null) {

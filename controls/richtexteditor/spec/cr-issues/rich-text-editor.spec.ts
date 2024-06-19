@@ -4448,4 +4448,27 @@ describe('RTE CR issues ', () => {
             }, 100);
         });
     });
+    describe('890154: Plain text in pasteCleanupSettings adding unwanted styles in the RichTextEditor', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value:"",
+                pasteCleanupSettings: {
+                    plainText: true,
+                }
+            });
+        });
+        it('copy and paste text', () => {
+            rteObj.focusIn();
+            const clipBoardData: string = `<p><span lang="ZH-TW" style="font-size:12.0pt;font-family:&quot;PMingLiU&quot;,serif;">大帽：</span></p><p><span lang="ZH-TW" style="font-size:12.0pt;font-family:&quot;PMingLiU&quot;,serif;">檔名：</span></p>`;
+            const dataTransfer: DataTransfer = new DataTransfer();
+            dataTransfer.setData('text/html', clipBoardData);
+            const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', { clipboardData: dataTransfer } as ClipboardEventInit);
+            rteObj.contentModule.getEditPanel().dispatchEvent(pasteEvent);
+            expect(rteObj.contentModule.getEditPanel().innerHTML).toEqual("<p><span>大帽：</span></p><p>檔名：</p>");
+          });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+     });
 });

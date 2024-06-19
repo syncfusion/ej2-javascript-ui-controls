@@ -4,18 +4,18 @@ import { WCharacterFormat } from '../format/character-format';
 import { WListFormat } from '../format/list-format';
 import { WListLevel } from '../list/list-level';
 import { Editor, EditorHistory, Selection, Revision, HistoryInfo, CommentView, WList } from '../index';
-import { ModifiedLevel, RowHistoryFormat, TableHistoryInfo, EditRangeInfo } from './history-helper';
+import { ModifiedLevel, RowHistoryFormat, TableHistoryInfo, EditRangeInfo, ContentInfo } from './history-helper';
 import {
     IWidget, BlockWidget,
     ParagraphWidget, LineWidget, BodyWidget, TableCellWidget,
     FieldElementBox, TableWidget, TableRowWidget, BookmarkElementBox, HeaderFooterWidget,
     EditRangeStartElementBox, CommentElementBox, CheckBoxFormField, TextFrame, TextFormField,
     TextElementBox, HeaderFooters, CommentEditInfo, FormField, FootnoteElementBox, ImageElementBox,
-    Widget, ListTextElementBox 
+    Widget, ListTextElementBox, ContentControl 
 } from '../viewer/page';
 import { Dictionary } from '../../base/dictionary';
 import { DocumentEditor } from '../../document-editor';
-import { Action, abstractListsProperty, listIdProperty, listsProperty, nsidProperty } from '../../index';
+import { Action, ContainerContentChangeEventArgs, abstractListsProperty, listIdProperty, listsProperty, nsidProperty } from '../../index';
 import { TextPosition, ImageSizeInfo } from '../index';
 import { LayoutViewer } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -371,6 +371,9 @@ export class BaseHistoryInfo {
     public setBookmarkInfo(bookmark: BookmarkElementBox): void {
         this.removedNodes.push({ 'bookmark': bookmark, 'startIndex': bookmark.indexInOwner, 'endIndex': bookmark.reference.indexInOwner });
     }
+    public setContentControlInfo(contentControl: ContentControl): void {
+        this.removedNodes.push({ 'contentcontrol': contentControl, 'startIndex': contentControl.indexInOwner, 'endIndex': contentControl.reference.indexInOwner});
+    }
     public setFormFieldInfo(field: FieldElementBox, value: string | number | boolean): void {
         this.removedNodes.push({ 'formField': field, 'value': value });
     }
@@ -401,6 +404,27 @@ export class BaseHistoryInfo {
             this.owner.editorModule.toggleCheckBoxFormField(field, true, fieldInfo.value);
         } else {
             this.owner.editorModule.updateFormField(field, fieldInfo.value);
+        }
+    }
+    private revertContentControl(): void {
+        const contentControlInfo: ContentInfo = this.removedNodes[0] as ContentInfo;
+        const contentcontrol: ContentControl = contentControlInfo.contentcontrol;
+        if(this.editorHistory.isUndoing) {
+            const markerData: MarkerInfo = this.owner.editorModule.getMarkerData(contentcontrol);
+            this.documentHelper.contentControlCollection.push(contentcontrol);
+            this.markerData.push(markerData);
+            contentcontrol.line.children.splice(contentControlInfo.startIndex, 0, contentcontrol);
+            //const previousNode: ElementBox = contentControl.previousNode;
+            this.markerData.push(markerData);
+            contentcontrol.reference.line.children.splice(contentControlInfo.endIndex, 0, contentcontrol.reference);
+
+            this.editorHistory.recordChanges(this);
+            this.viewer.updateScrollBars();
+            this.owner.editorModule.fireContentChange();
+
+        } else {
+            this.owner.editorModule.removeContentControlInternal();
+            this.editorHistory.undoStack.push(this);
         }
     }
     private revertBookmark(): void {
@@ -496,6 +520,10 @@ export class BaseHistoryInfo {
         }
         if (this.action === 'DeleteBookmark') {
             this.revertBookmark();
+            return;
+        }
+        if (this.action === 'RemoveContentControl'){
+            this.revertContentControl();
             return;
         }
         if (this.action === 'RemoveEditRange') {
@@ -4375,7 +4403,7 @@ export class BaseHistoryInfo {
             case 'Shading':
                 return 'shading';
             default:
-                return 'cellPreferredWidthType';
+                return 'preferredWidthType';
         }
     }
 }
@@ -4477,6 +4505,10 @@ export interface ImageInfo {
  * > Reserved for internal use only.
  */
 export interface MarkerInfo {
+    /**
+     * Reserved for internal use only.
+     */
+    contentControl?: ContentControl,
     /**
      * Reserved for internal use only.
      */

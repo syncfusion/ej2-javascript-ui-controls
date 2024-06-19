@@ -21,6 +21,8 @@ import { ExcelFilter } from '../actions/excel-filter';
 import { ResponsiveDialogRenderer } from '../renderer/responsive-dialog-renderer';
 import * as literals from '../base/string-literals';
 import { Input } from '@syncfusion/ej2-inputs';
+import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
+import { ExcelFilterBase } from '../common/excel-filter-base';
 
 /**
  *
@@ -56,7 +58,7 @@ export class Filter implements IAction {
         openDialog: Function, closeDialog: Function, destroy: Function
         isresetFocus: boolean, getFilterUIInfo: Function, clearCustomFilter: Function,
         closeResponsiveDialog: Function, applyCustomFilter: Function, renderCheckBoxMenu?: Function,
-        afterRenderFilterUI?: Function
+        afterRenderFilterUI?: Function, checkBoxBase: CheckBoxFilterBase, excelFilterBase: ExcelFilterBase
     };
     /** @hidden */
     public filterOperators: IFilterOperator = {

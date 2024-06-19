@@ -1,6 +1,10 @@
 @mixin schedule-select-cell-focus-styles {
   @if ($theme-name == 'fluent2') {
     &:focus {
+      background: $content-bg-color-focus;
+    }
+
+    &:focus-visible {
       background: $schedule-select-focus-bg-color;
       box-shadow: $schedule-select-focus-box-shadow;
     }

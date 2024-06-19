@@ -577,6 +577,12 @@ export class FocusStrategy {
 
     private skipOn(e: KeyboardEventArgs): boolean {
         const target: HTMLElement = <HTMLElement>e.target; if (!target) { return false; }
+        if (target && target.closest('.e-unboundcell') && this.currentInfo.skipAction && ((e.action === 'shiftTab' &&
+            this.commandColumnFocusElement(target.closest('.e-unboundcell') as HTMLElement, false) === target) ||
+            (e.action === 'tab' &&
+                this.commandColumnFocusElement(target.closest('.e-unboundcell') as HTMLElement, true) === target))) {
+            return this.currentInfo.skipAction = false;
+        }
         if (this.currentInfo.skipAction) { this.clearIndicator(); return true; }
         if (['pageUp', 'pageDown', 'altDownArrow'].indexOf(e.action) > -1) { this.clearIndicator(); return true; }
         if (this.parent.allowGrouping) {
@@ -1073,15 +1079,24 @@ export class FocusStrategy {
     }
 
     public internalCellFocus(e: CellFocusArgs): void {
-        if (!(e.byKey && e.container.isContent && e.keyArgs.action === 'enter'
-            && (e.parent.classList.contains('e-detailcell') ||
-                e.parent.classList.contains('e-unboundcell')))) {
+        if (!(e.byKey && e.container.isContent && ((e.keyArgs.action === 'enter' && e.parent.classList.contains('e-detailcell')) ||
+            ((e.keyArgs.action === 'tab' || e.keyArgs.action === 'shiftTab') && e.parent.classList.contains('e-unboundcell'))))) {
             return;
         }
         this.clearIndicator();
-        const focusEle: HTMLElement = this.getContent().getFocusable(this.getFocusedElement());
+        let focusEle: HTMLElement;
+        if (e.parent && e.parent.closest('.e-unboundcell') && e.keyArgs.action === 'shiftTab') {
+            focusEle = this.commandColumnFocusElement(e.parent, true);
+        } else {
+            focusEle = this.getContent().getFocusable(this.getFocusedElement());
+        }
         this.setFocusedElement(focusEle);
         this.currentInfo.skipAction = true;
+    }
+
+    private commandColumnFocusElement(cell: HTMLElement, isLast: boolean): HTMLElement {
+        let commandButtons = cell.querySelectorAll('button:not(.e-hide)');
+        return isLast ? commandButtons[commandButtons.length - 1] as HTMLElement : commandButtons[0] as HTMLElement;
     }
 }
 
@@ -1428,10 +1443,12 @@ export class ContentFocus implements IFocus {
         this.lastIdxCell = false;
         const enterFrozen: boolean = this.parent.frozenRows !== 0 && action === 'shiftEnter';
         const headerSwap: boolean = (action === 'upArrow' || enterFrozen) && current[0] === 0;
-        if (action === 'tab' && this.matrix.matrix.length &&
-            current[1] === this.matrix.matrix[current[0]].lastIndexOf(1) && this.matrix.matrix.length - 1 !== current[0]) {
-            this.matrix.current[0] = this.nextRowFocusValidate(this.matrix.current[0] + 1);
-            this.matrix.current[1] = -1;
+        if(this.matrix.matrix[current[0]]){
+            if (action === 'tab' && this.matrix.matrix.length &&
+                current[1] === this.matrix.matrix[current[0]].lastIndexOf(1) && this.matrix.matrix.length - 1 !== current[0]) {
+                this.matrix.current[0] = this.nextRowFocusValidate(this.matrix.current[0] + 1);
+                this.matrix.current[1] = -1;
+            }
         }
         if (action === 'shiftTab' &&
             current[0] !== 0 && this.matrix.matrix[current[0]].indexOf(1) === current[1]) {

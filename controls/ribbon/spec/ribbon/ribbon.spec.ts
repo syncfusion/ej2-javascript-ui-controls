@@ -5232,6 +5232,16 @@ describe('Ribbon', () => {
             ribbon.enableTab('tab1');
             expect(ribbon.tabObj.element.querySelector('#e-item-ribbon_tab_0').classList.contains('e-disable')).toBe(false);
             ribbon.enableTab('tab3');
+            // check the tab header is enable / disable
+            ribbon.disableTab('tab1');
+            expect(ribbon.tabObj.element.querySelector('#tab1_header').classList.contains('e-disabled')).toBe(true);
+            ribbon.enableTab('tab1');
+            expect(ribbon.tabObj.element.querySelector('#tab1_header').classList.contains('e-disabled')).toBe(false);
+            // check the tab items is enable / diabled
+            ribbon.disableTab('tab1');
+            expect(ribbon.tabObj.element.querySelector('#tab1_content').classList.contains('e-disabled')).toBe(true);
+            ribbon.enableTab('tab1');
+            expect(ribbon.tabObj.element.querySelector('#tab1_content').classList.contains('e-disabled')).toBe(false);
         });
         it('hide/show group', () => {
             ribbon = new Ribbon({

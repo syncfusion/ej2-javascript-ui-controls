@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 26.1.38 (2024-06-19)
+
+### Grid
+
+#### Bug fixes
+
+- `#I587156` - Resolved the issue where `enableVirtualization` grid becomes blank when sorting after scroll to bottom of grid.
+- `#I589142` - Resolved the issue where first selected record only deleted in `enableVirtualization` grid.
+- `#F188307` - Resolved the issue While adding the new record with `pageSizes` a new page is not created.
+- `#I594931` - Resolved the issue where the script error throws when adding the custom toolbar item dynamically.
+- `#I595192` - Resolved the issue where the script error throws when search is aligned left in toolbar with `AdaptiveUI`.
+- `#I586042` - The issue with support for `on-demand` in Excel and checkbox filtering for Adaptive UI has been resolved.
+- `#I594278` - Resolved the issue with persist selection not working properly when using `RowDragandDrop` with remote data.
+- `#FB57053` - Resolved the issue with `enableQueryString` in `pageSettings`.
+- `#I590873` - Implemented tab key navigation functionality with the command column.
+
 ## 26.1.35 (2024-06-11)
 
 ### Grid

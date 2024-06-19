@@ -65,6 +65,9 @@ describe('Schedule Timeline Month view', () => {
             const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2017, 10, 1).getTime().toString());
+            expect(schObj.element.getAttribute('aria-labelledby')).toEqual(schObj.element.querySelector('.e-schedule-table.e-content-table').getAttribute('id'));
+            expect(schObj.element.querySelector('.e-schedule-table.e-content-table').getAttribute('aria-label')).
+                toEqual('Timeline Month Start Wednesday, November 1, 2017 Ends At Thursday, November 30, 2017');
         });
 
         it('navigate next date', () => {
@@ -4443,7 +4446,7 @@ describe('Schedule Timeline Month view', () => {
             const model: ScheduleModel = {
                 currentView: 'TimelineMonth',
                 selectedDate: new Date(2023, 10, 6),
-                views: [{ option: 'TimelineMonth', maxEventsPerRow: 2 }],    
+                views: [{ option: 'TimelineMonth', maxEventsPerRow: 2 }],
                 group: {
                     resources: ['Rooms', 'Owners']
                 },
@@ -4453,9 +4456,9 @@ describe('Schedule Timeline Month view', () => {
                     dataSource: [
                         { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
                         { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' }
-                        ],
-                        textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
-                    }, {
+                    ],
+                    textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
+                }, {
                     field: 'OwnerId', title: 'Owner',
                     name: 'Owners', allowMultiple: true,
                     dataSource: [
@@ -4464,7 +4467,7 @@ describe('Schedule Timeline Month view', () => {
                         { OwnerText: 'Michael', Id: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
                     ],
                     textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
-                }],
+                }]
             };
             schObj = util.createSchedule(model, moreIndicatorData, done);
         });
@@ -4488,7 +4491,7 @@ describe('Schedule Timeline Month view', () => {
                 const eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(4);
                 const heightValue: string = (schObj.element.querySelector('.e-content-table tr td') as HTMLElement).style.height;
-                expect(heightValue).toEqual('');               
+                expect(heightValue).toEqual('');
                 done();
             };
             schObj.rowAutoHeight = true;
@@ -4539,7 +4542,7 @@ describe('Schedule Timeline Month view', () => {
             const model: ScheduleModel = {
                 currentView: 'TimelineMonth',
                 selectedDate: new Date(2023, 10, 6),
-                views: [{ option: 'TimelineMonth', maxEventsPerRow: 3 }],    
+                views: [{ option: 'TimelineMonth', maxEventsPerRow: 3 }],
                 group: {
                     resources: ['Rooms', 'Owners']
                 },
@@ -4549,9 +4552,9 @@ describe('Schedule Timeline Month view', () => {
                     dataSource: [
                         { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
                         { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' }
-                        ],
-                        textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
-                    }, {
+                    ],
+                    textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
+                }, {
                     field: 'OwnerId', title: 'Owner',
                     name: 'Owners', allowMultiple: true,
                     dataSource: [
@@ -4560,7 +4563,7 @@ describe('Schedule Timeline Month view', () => {
                         { OwnerText: 'Michael', Id: 3, OwnerGroupId: 1, OwnerColor: '#7499e1' }
                     ],
                     textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
-                }],
+                }]
             };
             schObj = util.createSchedule(model, moreIndicatorData, done);
         });

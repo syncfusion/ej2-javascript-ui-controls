@@ -39,7 +39,7 @@
         @if $skin-name == 'fluent2' {
           box-shadow: $shadow-md;
         }
-        background-color: $qrybldr-drag-bg-color;
+        background: $qrybldr-drag-bg-color;
       }
 
       & .e-rule-value-delete {
@@ -74,9 +74,7 @@
       padding: 15px 3px 15px 11px;
       vertical-align: middle;
       font-size: $qrybldr-drag-icon-font-size;
-      @if $skin-name == 'fluent2' {
-        color: $qryblr-drag-icon-color;
-      }
+      color: $qryblr-drag-icon-color;
     }
 
     & .e-group-header .e-drag-qb-rule {

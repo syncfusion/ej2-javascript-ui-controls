@@ -3,7 +3,7 @@
  */
 import { getValue, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import {  Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, ContextMenuClickEventArgs  } from '../../src/index';
-import { dialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData, scheduleModeData1, splitTasksData2, dialogData1, splitTasksData3, CR886052, MT887459} from '../base/data-source.spec';
+import { dialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData, scheduleModeData1, splitTasksData2, dialogData1, splitTasksData3, CR886052, MT887459,resourcesDatas1, resourceCollections1 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent } from '../base/gantt-util.spec';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { DataManager } from '@syncfusion/ej2-data';
@@ -634,7 +634,7 @@ describe('Gantt dialog module', () => {
            ganttObj.actionComplete = (args: any): void => {
                if (args.requestType === 'save') {
                   
-                   expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(24);
+                   expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(12);
                }
            };
            let checkbox: HTMLElement = document.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
@@ -9094,5 +9094,157 @@ describe('Edit date in RTL mode', () => {
                 triggerKeyboardEvent(customField, 'keydown', 'Enter');
                 expect(document.getElementById(ganttObj.element.id + '_dialog')).toBeDefined();
             }
+        });
+    });
+    describe('CR-890587 actionBegin event used for canceling edit actions is not working properly', () => {
+        let ganttObj: Gantt;
+        beforeAll(function (done) {
+            ganttObj = createGantt({
+                dataSource: resourcesDatas1,
+                resources: resourceCollections1,
+                enableContextMenu: true,
+                allowSorting: true,
+                allowReordering: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    resourceInfo: 'resources',
+                    work: 'work',
+                    child: 'subtasks'
+                },
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'resourceUnit',
+                    group: 'resourceGroup'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete'],
+                treeColumnIndex: 1,
+                height: '550px',
+                projectStartDate: new Date('03/28/2019'),
+                projectEndDate: new Date('05/18/2019')
+            }, done);
+        });
+        beforeEach((done) => {
+            setTimeout(done, 500);
+            ganttObj.openEditDialog(2);
+        });
+        it('Schedule validation- duration', () => {
+            ganttObj.actionBegin = function (args: any): void {
+                if (args.requestType === "beforeSave") {
+                    args.cancel = true;
+                }
+            };
+            let durationField: any = document.querySelector('#' + ganttObj.element.id + 'Duration') as HTMLInputElement;
+            if (durationField) {
+                let textObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+                textObj.value = '5 days';
+                let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+                triggerMouseEvent(saveRecord, 'click');
+            }
+            const dialogElement: HTMLElement = ganttObj.editModule.dialogModule.dialog.querySelector('#' +  ganttObj.element.id + 'DependencyTabContainer');
+            expect(dialogElement).toBe(null);
+        });  
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('CR- 886123: disable "Add" and "Delete" button in dependency tab when not necessary', () => {
+        let ganttObj: Gantt;
+        const datas: Object = [
+            {
+                TaskID: 1,
+                TaskName: 'Project initiation',
+                StartDate: new Date('04/02/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    {
+                        TaskID: 2,
+                        TaskName: 'Identify site location',
+                        StartDate: new Date('04/02/2019'),
+                        Duration: 0,
+                        Progress: 30,
+                        resources: [1],
+                        info: 'Measure the total property area alloted for construction',
+                    },
+                    {
+                        TaskID: 3,
+                        TaskName: 'Perform Soil test',
+                        StartDate: new Date('04/02/2019'),
+                        Duration: 4,
+                        Predecessor: '2',
+                        resources: [2, 3, 5],
+                        info:
+                            'Obtain an engineered soil test of lot where construction is planned.' +
+                            'From an engineer or company specializing in soil testing',
+                    },
+                    {
+                        TaskID: 4,
+                        TaskName: 'Soil test approval',
+                        StartDate: new Date('04/02/2019'),
+                        Duration: 0,
+                        Predecessor: '3',
+                        Progress: 30,
+                    },
+                ],
+            },
+        ];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: datas,
+                dateFormat: 'MMM dd, y',
+                treeColumnIndex: 1,
+                allowSelection: true,
+                showColumnMenu: false,
+                highlightWeekends: true,
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('07/28/2019'),
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    notes: 'info',
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                }
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Dependency tab editing', () => {
+            ganttObj.openEditDialog(1);
+            let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+            tab.selectedItem = 1;
+            tab.dataBind();
+            const dialog: any = document.getElementById(ganttObj.element.id + 'DependencyTabContainer')['ej2_instances'][0];
+            expect(dialog.editSettings.allowAdding).toBe(false)
         });
     });

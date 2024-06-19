@@ -704,7 +704,7 @@ export class FormFieldsBase {
 
     private saveRadioButtonField(formFieldAttributes: any): PdfRadioButtonListField {
         const loadedPage: PdfPage = this.formFieldLoadedDocument.getPage(formFieldAttributes.pageNumber - 1) as PdfPage;
-        const fieldName: string = isNullOrUndefined(formFieldAttributes.name) ? 'radiobuttonField' : formFieldAttributes.name;
+        const fieldName: string = isNullOrUndefined(formFieldAttributes.radiobuttonItem[0].name) ? 'radiobuttonField' : formFieldAttributes.radiobuttonItem[0].name;
         const field: PdfRadioButtonListField = new PdfRadioButtonListField(loadedPage, fieldName);
         let selectedIndex: number = 0;
         let isSelectedItem: boolean = false;

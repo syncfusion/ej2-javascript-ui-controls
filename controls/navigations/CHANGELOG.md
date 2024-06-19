@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.1.38 (2024-06-19)
+
+### Breadcrumb
+
+#### Bug Fixes
+
+- Provide support to prevent the breadcrumb item re-rendering action while clicking breadcrumb items through the itemClick event.
+
 ## 26.1.35 (2024-06-11)
 
 ### TreeView

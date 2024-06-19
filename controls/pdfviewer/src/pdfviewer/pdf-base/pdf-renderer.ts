@@ -370,6 +370,9 @@ export class PdfRenderer {
                 }
                 clonedDocument = null;
             }
+            if(!isNullOrUndefined(this.loadedDocument.form)) {
+                this.loadedDocument.form._dictionary.update('NeedAppearances', true);
+            }      
             return 'data:application/pdf;base64,' + _encode(this.loadedDocument.save());
         }
     }

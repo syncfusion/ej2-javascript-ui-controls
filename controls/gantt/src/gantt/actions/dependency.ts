@@ -735,11 +735,13 @@ export class Dependency {
         let resultDate: Date;
         const offsetValue: number = predecessor.offset;
         const durationUnit: string = predecessor.offsetUnit;
-        if (offsetValue < 0) {
+        if (offsetValue < 0 && !isNullOrUndefined(date)) {
             resultDate = this.dateValidateModule.getStartDate(
                 this.dateValidateModule.checkEndDate(date, record), (offsetValue * -1), durationUnit, record, true);
         } else {
-            resultDate = this.dateValidateModule.getEndDate(date, offsetValue, durationUnit, record, false);
+            if (!isNullOrUndefined(date)) {
+                resultDate = this.dateValidateModule.getEndDate(date, offsetValue, durationUnit, record, false);
+            }
             if (!record.isMilestone) {
                 resultDate = this.dateValidateModule.checkStartDate(resultDate, record);
             }
@@ -1071,12 +1073,12 @@ export class Dependency {
      */
     private updateChildItems(ganttRecord: IGanttData): void {
         if (ganttRecord.childRecords.length > 0 && this.validatedChildItems.length > 0) {
-            let isPresent: boolean = true
-            isPresent = !ganttRecord.childRecords.some(record => {
+            let isPresent: boolean = true;
+            isPresent = !ganttRecord.childRecords.some((record: any) => {
                 return this.validatedChildItems['includes'](record as Object);
             });
             if (!isPresent) {
-                return
+                return;
             }
         }
         const previousData: IGanttData = this.parent.previousRecords[ganttRecord.uniqueID];

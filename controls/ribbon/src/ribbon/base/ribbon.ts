@@ -845,6 +845,11 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         const selectedTabId: string = e.selectedItem.getAttribute('data-id');
         let selectedIndex: number = getIndex<RibbonTabModel>(this.tabs, ((tab: RibbonTabModel) => (tab.id === selectedTabId)));
         selectedIndex = selectedIndex === -1 ? this.selectedTab : selectedIndex;
+        const selectedContent: HTMLElement = this.tabObj.items[parseInt(selectedIndex.toString(), 10)].content as HTMLElement;
+        if ((!selectedContent.querySelector('.' + constants.RIBBON_GROUP)) && (this.tabs[parseInt(selectedIndex.toString(), 10)].groups.length !== 0)) {
+            const elements: HTMLElement[] = this.createGroups(this.tabs[parseInt(selectedIndex.toString(), 10)].groups, selectedIndex);
+            append(elements, selectedContent);
+        }
         const isContextual: boolean = this.isContextualTab(selectedTabId);
         this.updateSelectedState(selectedTabId);
         const eventArgs: TabSelectedEventArgs = {previousIndex: this.selectedTab, selectedIndex: selectedIndex, isContextual: isContextual};
@@ -866,7 +871,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.ribbonGalleryModule) {
             this.ribbonGalleryModule.checkAvailableHeight(e.selectedContent.firstChild as HTMLElement);
         }
-        this.checkOverflow(selectedIndex, e.selectedContent.firstChild as HTMLElement);
+        this.checkOverflow(selectedIndex, selectedContent as HTMLElement);
         if (this.activeLayout === 'Simplified' && this.overflowDDB) {
             const overflowTarget: HTMLElement = this.overflowDDB.target as HTMLElement;
             const ofTabContainer: HTMLElement = overflowTarget.querySelector('.' + constants.RIBBON_TAB_ACTIVE);
@@ -2147,7 +2152,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
 
     private ribbonTabSelecting(e: SelectingEventArgs): void {
         this.currentControlIndex = 0;
-        const nextTabId: string = e.selectingItem.getAttribute('data-id');
+        const nextTabId: string = e.selectingItem ? e.selectingItem.getAttribute('data-id') : null;
         const previousTabId: string = e.previousItem.getAttribute('data-id');
         let nextIndex: number = getIndex<RibbonTabModel>(this.tabs, ((tab: RibbonTabModel) => (tab.id === nextTabId)));
         const isContextual: boolean = this.isContextualTab(nextTabId);
@@ -3442,6 +3447,9 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
     private enableDisableTab(tabId: string, value: boolean): void {
         const index: number = getIndex(this.tabs, (e: RibbonTab) => { return e.id === tabId; });
         if (index === -1) { return; }
+        const tbItems: HTMLElement = this.tabObj.items[parseInt(index.toString(), 10)].content as HTMLElement;
+        this.tabObj.element.querySelector<HTMLElement>('#' + tabId + constants.HEADER_ID).classList[value ? 'remove' : 'add']('e-disabled');
+        tbItems.classList[value ? 'remove' : 'add']('e-disabled');
         this.tabObj.enableTab(index, value);
     }
 

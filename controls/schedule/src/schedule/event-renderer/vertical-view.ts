@@ -355,7 +355,8 @@ export class VerticalEvent extends EventBase {
             const templateId: string = elementId + viewName + 'eventTemplate';
             const resIndex: number = this.parent.uiStateValues.isGroupAdaptive ? this.parent.uiStateValues.groupIndex : resource;
             const templateName: string = this.isResourceEventTemplate ? this.parent.getEventTemplateName(resIndex) : 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, templateName, templateId, false);
+            templateElement = this.parent.getAppointmentTemplate()
+                (record, this.parent, templateName, templateId, false, undefined, undefined, this.parent.root);
         } else {
             const appointmentSubject: HTMLElement = createElement('div', { className: cls.SUBJECT_CLASS });
             this.parent.sanitize(recordSubject, appointmentSubject);
@@ -568,7 +569,7 @@ export class VerticalEvent extends EventBase {
         }
         if (eStart <= eEnd && isValidEvent && this.isWorkDayAvailable(resource, eStart)) {
             const appHeight: number = this.getHeight(eStart, eEnd);
-            if (eStart.getTime() > schedule.startHour.getTime()) {
+            if (eStart.getTime() >= schedule.startHour.getTime()) {
                 topValue = this.getTopValue(eStart, dayIndex, resource);
             }
             const appIndex: number = this.getOverlapIndex(record, dayIndex, false, resource);
@@ -823,11 +824,11 @@ export class VerticalEvent extends EventBase {
         let rowHeight: number;
         if (this.parent.uiStateValues.expand) {
             target.setAttribute('title', this.parent.localeObj.getConstant('collapseAllDaySection'));
-            target.setAttribute('aria-label', 'Collapse section');
+            target.setAttribute('aria-label', this.parent.localeObj.getConstant('collapseAllDaySection'));
             rowHeight = ((this.allDayLevel + 1) * this.getEventHeight()) + 4;
         } else {
             target.setAttribute('title', this.parent.localeObj.getConstant('expandAllDaySection'));
-            target.setAttribute('aria-label', 'Expand section');
+            target.setAttribute('aria-label', this.parent.localeObj.getConstant('expandAllDaySection'));
             rowHeight = (3 * this.getEventHeight()) + 4;
             this.parent.element.querySelector('.' + cls.DATE_HEADER_WRAP_CLASS).scrollTop = 0;
         }

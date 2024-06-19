@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.1.38 (2024-06-19)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved an exception encountered while duplicating PDF pages with form fields.
+
 ## 26.1.35 (2024-06-11)
 
 ### PDF Parser

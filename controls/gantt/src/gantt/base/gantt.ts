@@ -2800,6 +2800,9 @@ export class Gantt extends Component<HTMLElement>
                 }, 0);
             }
         }
+        if (this.dayMarkersModule && this.dayMarkersModule["eventMarkerRender"]) {
+            this.dayMarkersModule["eventMarkerRender"].updateContainerHeight();
+        }
     }
     public keyActionHandler(e: KeyboardEventArgs): void {
         if (this.enableContextMenu && this.contextMenuModule && (e.action === 'downArrow' || e.action === 'upArrow') && document.getElementById(this.element.id + '_contextmenu') && this['args']) {
@@ -4497,7 +4500,7 @@ export class Gantt extends Component<HTMLElement>
     /* eslint-disable-next-line */
     public setRecordValue(field: string, value: any, record: IGanttData | ITaskData, isTaskData?: boolean): void {
         value = isUndefined(value) ? null : value;
-        let resultIf = (this.isOnEdit || this.isOnDelete) ? true : false
+        const resultIf: boolean = (this.isOnEdit || this.isOnDelete) ? true : false;
         if (resultIf) {
             this.makeCloneData(field, record, isTaskData);
             const ganttData: ITaskData = isTaskData ? (record as ITaskData) : (record as IGanttData).ganttProperties;
@@ -4507,7 +4510,7 @@ export class Gantt extends Component<HTMLElement>
             isValid = (isNullOrUndefined(value) ||
             (!isNullOrUndefined(value) && !isNullOrUndefined(record[`${field}`]) &&
             (value instanceof Date ? value.getTime() !== record[`${field}`].getTime() :
-            record[`${field}`] !== value))) ? true : isValid;
+                record[`${field}`] !== value))) ? true : isValid;
             if (task && ((this.editedRecords.indexOf(task) === -1 && isValid) || this.editedRecords.length === 0)) {
                 if (this.editModule['draggedRecord'] && this.editModule['draggedRecord'].ganttProperties.taskId === ganttData.taskId) {
                     this.editedRecords.splice(0, 0, task);

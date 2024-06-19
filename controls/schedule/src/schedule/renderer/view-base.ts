@@ -126,6 +126,9 @@ export class ViewBase {
 
     public setAriaAttributes(table: Element): void {
         table.setAttribute('role', 'grid');
+        if (this.parent.currentView !== 'Year') {
+            table.setAttribute('id', this.parent.element.id + '_table');
+        }
         table.setAttribute('aria-label', this.getLabelText(this.parent.currentView));
     }
 
@@ -383,11 +386,29 @@ export class ViewBase {
         return util.addDays(this.parent.selectedDate, weekLength * this.parent.activeViewOptions.interval);
     }
 
+    public formatViewLabel(view: string, startDate: Date, endDate: Date): string {
+        const formatOptions: { type: string; skeleton: string; calendar: string } = { type: 'date', skeleton: 'full', calendar: this.parent.getCalendarMode() };
+        return this.parent.localeObj.getConstant(view) + ' ' + this.parent.localeObj.getConstant('start') + ' ' + this.parent.globalize.formatDate(startDate, formatOptions) + ' '
+            + this.parent.localeObj.getConstant('endAt') + ' ' + this.parent.globalize.formatDate(endDate, formatOptions);
+    }
+
     public getLabelText(view: string): string {
         const viewStr: string = view.charAt(0).toLowerCase() + view.substring(1);
-        return this.parent.localeObj.getConstant(viewStr) + ' of ' + util.capitalizeFirstWord(
-            this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'long', calendar: this.parent.getCalendarMode() }),
-            'single');
+        if (view === 'Year' || view === 'TimelineYear') {
+            return this.formatViewLabel(viewStr, this.parent.activeView.getStartDate(), this.parent.activeView.getEndDate());
+        } else {
+            if (this.renderDates.length > 0) {
+                if (this.parent.currentView === 'Day' || this.parent.currentView === 'TimelineDay') {
+                    return this.parent.localeObj.getConstant(viewStr) + ' of ' + util.capitalizeFirstWord(
+                        this.parent.globalize.formatDate(this.parent.selectedDate, { type: 'date', skeleton: 'full', calendar: this.parent.getCalendarMode() }),
+                        'single');
+                } else {
+                    return this.formatViewLabel(viewStr, this.renderDates[0], this.renderDates[this.renderDates.length - 1]);
+                }
+            } else {
+                return '';
+            }
+        }
     }
 
     public getDateRangeText(): string {
@@ -478,8 +499,8 @@ export class ViewBase {
             const scheduleId: string = this.parent.element.id + '_';
             const viewName: string = this.parent.activeViewOptions.resourceHeaderTemplateName;
             const templateId: string = scheduleId + viewName + 'resourceHeaderTemplate';
-            const quickTemplate: HTMLElement[] =
-                [].slice.call(this.parent.getResourceHeaderTemplate()(data, this.parent, 'resourceHeaderTemplate', templateId, false));
+            const quickTemplate: HTMLElement[] = [].slice.call(this.parent.getResourceHeaderTemplate()
+                (data, this.parent, 'resourceHeaderTemplate', templateId, false, undefined, undefined, this.parent.root));
             append(quickTemplate, tdElement);
         } else {
             const resourceText: HTMLElement = createElement('div', { className: className });

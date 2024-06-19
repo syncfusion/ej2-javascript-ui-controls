@@ -1253,7 +1253,7 @@ export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSel
 |'BottomBorder'
 |'HorizontalBorder'
 |'VerticalBorder'|'ColumnBreak'
-| 'DragAndDropContent' | 'LinkToPrevious' | 'GroupAction' | 'DeleteHeaderFooter' | 'EditComment' | 'TableTitle' | 'TableDescription' | 'TabStop' | 'Grouping' | 'ModifyStyle'|'InsertContentControl';
+| 'DragAndDropContent' | 'LinkToPrevious' | 'GroupAction' | 'DeleteHeaderFooter' | 'EditComment' | 'TableTitle' | 'TableDescription' | 'TabStop' | 'Grouping' | 'ModifyStyle'|'InsertContentControl'|'RemoveContentControl';
 /**
  * Enum for direction
  */

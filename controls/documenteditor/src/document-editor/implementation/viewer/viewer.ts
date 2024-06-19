@@ -2521,6 +2521,9 @@ export class DocumentHelper {
             if (this.isRowOrCellResizing) {
                 this.owner.editorModule.tableResize.updateResizingHistory(touchPoint);
             }
+            if(!isNullOrUndefined(this.owner.editor) && this.selection.checkContentControlLocked()){
+                this.owner.editorModule.insertContentControlPlaceholder();
+            }
             if (this.isMouseDown && !this.isSelectionChangedOnMouseMoved
                 && !isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selectionModule.start)
                 && (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizing)) {
@@ -3794,8 +3797,16 @@ export class DocumentHelper {
                     break;
             }
         }
+        if(event.keyCode !== 8 && event.keyCode !== 46 && !isNullOrUndefined(this.owner.editor) && this.selection.checkContentControlLocked()){
+            this.owner.editorModule.insertContentControlPlaceholder();
+        }
         if (!isHandled && !isNullOrUndefined(this.selection)) {
             this.selection.onKeyDownInternal(event, ctrl, shift, alt);
+        }
+        if (!isNullOrUndefined(this.owner.documentHelper) && this.owner.documentHelper.contentControlCollection.length > 0) {
+            //Need to work on these
+            this.clearContent();
+            this.owner.documentHelper.viewer.updateScrollBars();
         }
         if (isHandled) {
             event.preventDefault();

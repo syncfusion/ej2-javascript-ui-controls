@@ -99,6 +99,11 @@ export class Resize extends ActionBase {
             }
             const viewElement: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
             this.scrollArgs = { element: viewElement, width: viewElement.scrollWidth, height: viewElement.scrollHeight };
+            // 883565 - To fix the resizing not working issue at the last column of the timeline view
+            if (['Month', 'TimelineYear'].indexOf(this.parent.currentView) < 0) {
+                const scrollWidth: number = Math.round(this.scrollArgs.width / this.actionObj.cellWidth) * this.actionObj.cellWidth;
+                this.scrollArgs.width = this.scrollArgs.width < scrollWidth ? scrollWidth : this.scrollArgs.width;
+            }
             EventHandler.add(document, Browser.touchMoveEvent, this.resizing, this);
             EventHandler.add(document, Browser.touchEndEvent, this.resizeStop, this);
         });

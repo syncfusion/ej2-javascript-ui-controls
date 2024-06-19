@@ -61,6 +61,13 @@ export interface IGrid extends Component<HTMLElement> {
     currentViewData?: Object[];
     currentAction?: ActionArgs;
     /**
+     * @hidden
+     * Specifies whether the inline edit form widgets are destroyed or not.
+     * @default false
+     */
+    isWidgetsDestroyed: boolean; 
+    
+    /**
      * Specifies the columns for Grid.
      *
      * @default []

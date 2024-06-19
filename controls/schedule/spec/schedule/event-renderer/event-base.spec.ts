@@ -1164,6 +1164,36 @@ describe('Event Base Module', () => {
         });
     });
 
+    describe('ES-887496 - Checking property endhour not working by setting specific timeScale properties ', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Explosion of Betelgeuse Star',
+            Location: 'Space Centre USA',
+            StartTime: new Date(2024, 1, 15, 5, 0),
+            EndTime: new Date(2024, 1, 15, 18, 0),
+            CategoryColor: '#1aaa55'
+        }];
+        beforeAll((done: DoneFn) => {
+            const options: ScheduleModel = {
+                height: '550px', width: '500px', selectedDate: new Date(2024, 1, 15),
+                timeScale: { enable: true, interval: 1440, slotCount: 1 },
+                views: ['TimelineDay'],
+                startHour: '05:00',
+                endHour: '18:00'
+            };
+            schObj = util.createSchedule(options, eventData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Check the StartHour and EndHour properties using and verify the full width of the events', () => {
+            const cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
+            const eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
+            expect(eventElement.offsetWidth).toEqual(cellElement.offsetWidth);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

@@ -73,6 +73,9 @@ describe('Schedule Timeline Week view', () => {
         it('work cells', () => {
             const firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
+            expect(schObj.element.getAttribute('aria-labelledby')).toEqual(schObj.element.querySelector('.e-schedule-table.e-content-table').getAttribute('id'));
+            expect(schObj.element.querySelector('.e-schedule-table.e-content-table').getAttribute('aria-label')).
+                toEqual('Timeline Week Start Sunday, October 1, 2017 Ends At Saturday, October 7, 2017');
             expect(firstWorkCell.getAttribute('aria-label')).toEqual('Sunday, October 1, 2017 at 12:00:00 AM GMT Ends At Sunday, October 1, 2017 at 12:30:00 AM GMT');
             expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2017, 9, 1).getTime().toString());
             expect(firstWorkCell.innerHTML).toEqual('');

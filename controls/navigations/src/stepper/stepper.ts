@@ -769,7 +769,7 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
                 }
                 if (iconEle) {
                     if (iconEle.innerHTML !== '') { iconEle.innerHTML = ''; }
-                    else if (itemIcon.length > 1) {
+                    else if (itemIcon.length > 0) {
                         for (let i: number = 0; i < itemIcon.length; i++) {
                             iconEle.classList.remove(itemIcon[parseInt(i.toString(), 10)]);
                         }

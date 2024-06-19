@@ -669,7 +669,7 @@ describe('Gantt Edit support', () => {
                 }, done);
         });
         it('Add data with same start and end date', () => {
-            let data: object[] = [ { TaskID: 1, TaskName: 'Child Task 1',BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/02/2019'), StartDate: new Date('04/02/2019'), Duration: 1}];
+            let data: object[] = [ { TaskID: 1, TaskName: 'Child Task 1',BaselineStartDate: new Date('04/02/2019 08:00:00 AM'), BaselineEndDate: new Date('04/02/2019 08:00:00 AM'), StartDate: new Date('04/02/2019'), Duration: 1}];
             ganttObj_tree.addRecord(data[0]);
             expect(ganttObj_tree.currentViewData[0].ganttProperties['baselineWidth']).toBe(0);
         });

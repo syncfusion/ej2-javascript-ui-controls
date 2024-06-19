@@ -3100,8 +3100,8 @@ export class TextMarkupAnnotation {
         if (annotationType === 'Highlight')
         {
             //Creating annotation settings
-            annotSelectorSettings = this.pdfViewer.highlightSettings.annotationSelectorSettings ?
-                this.pdfViewer.highlightSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+            annotSelectorSettings = this.pdfViewer.highlightSettings.annotationSelectorSettings;
+            this.pdfViewerBase.updateSelectorSettings(annotSelectorSettings);
             annotSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.highlightSettings);
             annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('textMarkup', annotationType);
             annotallowedInteractions = this.pdfViewer.highlightSettings.allowedInteractions ?
@@ -3112,8 +3112,8 @@ export class TextMarkupAnnotation {
         else if (annotationType === 'Underline')
         {
             //Creating annotation settings
-            annotSelectorSettings = this.pdfViewer.underlineSettings.annotationSelectorSettings ?
-                this.pdfViewer.underlineSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+            annotSelectorSettings = this.pdfViewer.underlineSettings.annotationSelectorSettings;
+            this.pdfViewerBase.updateSelectorSettings(annotSelectorSettings);
             annotSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.underlineSettings);
             annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('textMarkup', annotationType);
             annotallowedInteractions = this.pdfViewer.underlineSettings.allowedInteractions ?
@@ -3124,8 +3124,8 @@ export class TextMarkupAnnotation {
         else if (annotationType === 'Strikethrough')
         {
             //Creating annotation settings
-            annotSelectorSettings = this.pdfViewer.strikethroughSettings.annotationSelectorSettings ?
-                this.pdfViewer.strikethroughSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+            annotSelectorSettings = this.pdfViewer.strikethroughSettings.annotationSelectorSettings;
+            this.pdfViewerBase.updateSelectorSettings(annotSelectorSettings);
             annotSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.strikethroughSettings);
             annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('textMarkup', annotationType);
             annotallowedInteractions = this.pdfViewer.strikethroughSettings.allowedInteractions ?

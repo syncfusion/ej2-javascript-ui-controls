@@ -217,8 +217,14 @@
 
         &:focus {
           border: $acrdn-item-header-focus-border;
-          box-shadow: $acrdn-item-header-focus-box-shadow;
           background: $acrdn-item-header-focus-bg;
+
+          @if ($skin-name == 'fluent2') {
+            box-shadow: none;
+          }
+          @else {
+            box-shadow: $acrdn-item-header-focus-box-shadow;
+          }
 
           &:active {
 
@@ -227,6 +233,12 @@
             .e-toggle-icon {
               color: $acrdn-item-header-focus-active-color;
             }
+          }
+        }
+
+        @if ($skin-name == 'fluent2') {
+          &:focus-visible {
+            box-shadow: $acrdn-item-header-focus-box-shadow;
           }
         }
       }
@@ -335,9 +347,21 @@
           }
 
           &:focus {
-            box-shadow: $acrdn-item-header-focus-box-shadow;
             position: relative;
             z-index: 2;
+
+            @if ($skin-name == 'fluent2') {
+              box-shadow: none;
+            }
+            @else {
+              box-shadow: $acrdn-item-header-focus-box-shadow;
+            }
+          }
+
+          @if ($skin-name == 'fluent2') {
+            &:focus-visible {
+              box-shadow: $acrdn-item-header-focus-box-shadow;
+            }
           }
         }
 

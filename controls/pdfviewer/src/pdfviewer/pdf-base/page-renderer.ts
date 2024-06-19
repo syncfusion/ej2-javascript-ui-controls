@@ -316,7 +316,7 @@ export class PageRenderer{
                         if (stampAnnotation._dictionary.has('T') && this.checkName(stampAnnotation)) {
                             this.signatureAnnotationList.push(annotRenderer.loadSignatureImage(stampAnnotation, pageNumber));
                         }
-                        else if (stampAnnotation._dictionary.has('M')) {
+                        else if (stampAnnotation._dictionary.has('M') || (stampAnnotation._dictionary.has("NM") || stampAnnotation._dictionary.has("Name") && !stampAnnotation._dictionary.has("F") || (!stampAnnotation._dictionary.has("NM") && !stampAnnotation._dictionary.has("T")))) {
                             const rubberStampAnnotation: StampAnnotationBase = new StampAnnotationBase();
                             rubberStampAnnotation.Author = stampAnnotation.author;
                             rubberStampAnnotation.Subject = stampAnnotation.subject;
@@ -385,6 +385,12 @@ export class PageRenderer{
                                 rubberStampAnnotation.IconName = stampAnnotation.subject;
                             } else {
                                 rubberStampAnnotation.IconName = '';
+                            }
+                            if (!isNullOrUndefined(stampAnnotation.text)) {
+                                rubberStampAnnotation.Note = stampAnnotation.text;
+                            }
+                            else {
+                                rubberStampAnnotation.Note = '';
                             }
                             if (stampAnnotation.flags === PdfAnnotationFlag.readOnly) {
                                 rubberStampAnnotation.IsCommentLock = true;

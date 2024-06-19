@@ -367,12 +367,19 @@ export class CheckBoxFilterBase {
         const content: HTMLElement = this.dialogObj.element.querySelector('.e-dlg-content');
         content.appendChild(this.sBox);
         this.wireEvents();
-        if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer'
-        && !this.infiniteRenderMod) {
-            this.parent.showMaskRow(undefined, this.dialogObj.element);
-        } else if (this.infiniteRenderMod && this.parent.filterSettings && this.parent.filterSettings.loadingIndicator === 'Shimmer') {
-            this.showMask();
-        }  else {
+        if (!(this.parent as IGrid).enableAdaptiveUI) {
+            if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer'
+                && !this.infiniteRenderMod) {
+                this.parent.showMaskRow(undefined, this.dialogObj.element);
+            } 
+            if (this.infiniteRenderMod && this.parent.filterSettings && this.parent.filterSettings.loadingIndicator === 'Shimmer') {
+                this.showMask();
+            }
+        } else {
+            if ((this.parent as IGrid).enableAdaptiveUI && this.parent.filterSettings && this.parent.filterSettings.loadingIndicator === 'Shimmer') {
+                this.getAllData();
+                return;
+            }
             if (this.infiniteRenderMod) {
                 this.cBox.style.marginTop = this.getListHeight(this.cBox) + 'px';
             }
@@ -994,7 +1001,11 @@ export class CheckBoxFilterBase {
         return '<span class="e-mask e-skeleton e-skeleton-text e-shimmer-wave"></span>';
     }
 
-    private showMask(): void {
+    /**
+     * @returns {void}
+     * @hidden
+     */
+     public showMask(): void {
         let maskRowCount: number = 5;
         let maskItemHeight: string;
         const maskList: HTMLElement = this.parent.createElement('div', { id: this.id + this.options.type + '_CheckBoxMaskList',
@@ -1003,15 +1014,19 @@ export class CheckBoxFilterBase {
         this.removeMask();
         if (wrapperElem) {
             const computedStyle: CSSStyleDeclaration = getComputedStyle(wrapperElem);
+            const liHeight: number = this.getListHeight(wrapperElem);
             const height: number = wrapperElem.children.length ? parseInt(computedStyle.height, 10) :
                 Math.floor(parseInt(computedStyle.height.split('px')[0], 10)) - 5;
+            if ((this.parent as IGrid).enableAdaptiveUI && this.infiniteRenderMod) {
+                maskList.style.height = (height - liHeight) + 'px';
+                (this.dlg.querySelector('.e-dlg-content') as HTMLElement).style.overflow = 'hidden';
+            }
             const backgroundColor: string = this.isExcel && !wrapperElem.children.length && !this.dlg.classList.contains('e-excelfilter') ?
                 '' : getComputedStyle(this.dlg.querySelector('.e-dlg-content')).backgroundColor;
             maskList.style.cssText = 'width: ' + computedStyle.width + '; min-height: ' + computedStyle.minHeight + '; height: ' +
             height + 'px; margin: ' + computedStyle.margin + '; border-style: ' + computedStyle.borderStyle + '; border-width: '
             + computedStyle.borderWidth + '; border-color: ' + computedStyle.borderColor + '; position: absolute; background-color: ' +
             backgroundColor + ';';
-            const liHeight: number = this.getListHeight(wrapperElem);
             maskRowCount = Math.floor(height / liHeight);
             maskRowCount = wrapperElem.children.length > maskRowCount ? wrapperElem.children.length : maskRowCount;
             maskItemHeight = liHeight + 'px';
@@ -1607,6 +1622,9 @@ export class CheckBoxFilterBase {
                 selectAll.querySelector('.e-frame').classList.add('e-selectall');
                 if (this.infiniteRenderMod) {
                     selectAll.classList.add('e-infinitescroll');
+                    if ((this.parent as IGrid).enableAdaptiveUI) {
+                        this.spinner.style.height  = (this.spinner.offsetHeight - this.getListHeight(this.cBox)) + 'px';
+                    }
                     this.sBox.insertBefore(selectAll, this.spinner);
                 }
                 else {
@@ -1712,7 +1730,7 @@ export class CheckBoxFilterBase {
                 if (btn) { btn.disabled = false; }
                 disabled = false;
             } else {
-                if (btn.disabled) {
+                if (btn && btn.disabled) {
                     disabled = true;
                 } else {
                     disabled = false;

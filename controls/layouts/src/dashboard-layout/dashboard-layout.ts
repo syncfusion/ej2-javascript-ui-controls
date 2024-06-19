@@ -2903,7 +2903,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.checkForChanges(false, null, [removedPanel]);
     }
 
-    constructor(options?: DashboardLayoutModel, element?: string | HTMLInputElement) {
+    constructor(options?: DashboardLayoutModel, element?: string | HTMLElement) {
         super(options, element);
         setValue('mergePersistData', this.mergePersistPanelData, this);
     }

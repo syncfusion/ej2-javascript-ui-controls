@@ -636,6 +636,9 @@ export class Mention extends DropDownBase {
     }
 
     private updateUpDownAction(e: KeyboardEventArgs): void {
+        if (this.fields.disabled && this.list && this.list.querySelectorAll('.e-list-item:not(.e-disabled)').length === 0) {
+            return;
+        }
         const focusEle: Element = this.list.querySelector('.' + dropDownBaseClasses.focus);
         if (this.isSelectFocusItem(focusEle)) {
             this.setSelection(focusEle, e);
@@ -654,6 +657,17 @@ export class Mention extends DropDownBase {
             if (!isNullOrUndefined(nextItem)) {
                 this.setSelection(nextItem, e);
             }
+        }
+        let itemIndex: number;
+        for (let index: number = 0; index < this.liCollections.length; index++) {
+            if (this.liCollections[index as number].classList.contains(dropDownBaseClasses.focus)
+            || this.liCollections[index as number].classList.contains(dropDownBaseClasses.selected)) {
+                itemIndex = index;
+                break;
+            }
+        }
+        if (itemIndex != null && this.isDisabledElement(this.liCollections[itemIndex as number] as HTMLElement)) {
+            this.updateUpDownAction(e);
         }
         if (this.isPopupOpen) {
             e.preventDefault();
@@ -827,7 +841,7 @@ export class Mention extends DropDownBase {
             if (!isNullOrUndefined(ulElement)) {
                 attributes(ulElement, { 'id': this.inputElement.id + '_options', 'role': 'listbox', 'aria-hidden': 'false' });
             }
-            let focusItem: HTMLLIElement = ulElement.querySelector('.' + dropDownBaseClasses.li);
+            let focusItem: HTMLLIElement = this.fields.disabled ? ulElement.querySelector('.' + dropDownBaseClasses.li + ':not(.e-disabled)') : ulElement.querySelector('.' + dropDownBaseClasses.li);
             if (focusItem) {
                 focusItem.classList.add(dropDownBaseClasses.selected);
                 this.selectedLI = focusItem;
@@ -1054,10 +1068,10 @@ export class Mention extends DropDownBase {
                     }
                 }
                 append([this.list], popupEle);
-		if (this.inputElement.parentElement && this.inputElement.parentElement.parentElement &&
-                    this.inputElement.parentElement.parentElement.classList.contains('e-richtexteditor')) {
-                    if (popupEle.firstElementChild && popupEle.firstElementChild.childElementCount > 0) {
-                        popupEle.firstElementChild.setAttribute('aria-owns', this.inputElement.parentElement.parentElement.id);
+		        if (this.inputElement.parentElement) {
+                    const rteRootElement: HTMLElement = this.inputElement.parentElement.closest('.e-richtexteditor') as HTMLElement;
+                    if (rteRootElement && popupEle.firstElementChild && popupEle.firstElementChild.childElementCount > 0) {
+                        popupEle.firstElementChild.setAttribute('aria-owns', rteRootElement.id);
                         addClass([popupEle], 'e-rte-elements');
                     }
                 }
@@ -1363,7 +1377,7 @@ export class Mention extends DropDownBase {
     private onMouseClick(e: MouseEvent): void {
         const target: Element = <Element>e.target;
         const li: HTMLElement = <HTMLElement>closest(target, '.' + dropDownBaseClasses.li);
-        if (!this.isValidLI(li)) {
+        if (!this.isValidLI(li) || this.isDisabledElement(li)) {
             return;
         }
         this.isSelected = true;

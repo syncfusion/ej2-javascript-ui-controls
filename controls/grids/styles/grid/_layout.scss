@@ -278,7 +278,8 @@
 
     @if $grid-skin == 'fluent2' {
       &.e-device .e-gridheader .e-headercell .e-headercelldiv.e-headerchkcelldiv {
-        margin-left: -4px;
+        margin-left: -5px;
+        margin-top: 4px;
       }
       &.e-rtl.e-device .e-gridheader .e-headercell .e-headercelldiv.e-headerchkcelldiv {
         margin-right: -2px;
@@ -289,7 +290,7 @@
       .e-headercell .e-headercelldiv.e-headerchkcelldiv {
         @if $grid-skin == 'fluent2' {
           margin-bottom: 2px;
-          margin-left: 6px;
+          margin-left: 7px;
         }
       }
 
@@ -416,8 +417,9 @@
     }
 
     @if $grid-skin == 'fluent2' {
-      .e-ftrchk.e-infinitescroll {
+      .e-checkboxfilter .e-ftrchk.e-infinitescroll {
         margin-left: 0;
+        padding-left: 0;
       }
     }
 
@@ -2821,7 +2823,7 @@
     }
 
     @if $grid-skin == 'fluent2' {
-      .e-ftrchk.e-infinitescroll {
+      .e-checkboxfilter .e-ftrchk.e-infinitescroll {
         padding-left: 0;
         margin-left: 0;
       }
@@ -4833,7 +4835,7 @@
   }
 
   .e-gridcontent .e-groupcaption {
-    @include grid-line-height-padding-styles(normal, .7em);
+    @include grid-line-height-padding-styles(normal, 0 .7em);
   }
 
   .e-summarycell {
@@ -5425,9 +5427,6 @@
           background: none;
           border: 0;
           color: $grid-responsive-custom-header-btn-color;
-          @if $grid-skin == 'fluent2' {
-            padding-top: 6px;
-          }
         }
       }
     }
@@ -5513,6 +5512,22 @@
 
       & .e-dlg-content {
         padding: 16px;
+      }
+
+      @if $grid-xlfl-skin == 'fluent2' {
+        .e-checkbox-wrapper .e-frame {
+          @if $grid-xlfl-skin == 'fluent2' {
+            margin: 0 0 1px 4px;
+          }
+        }
+  
+        .e-radio + label {
+          margin: 0;
+        }
+
+        .e-radio-wrapper .e-xlfl-radio-or {
+          margin-left: 18px;
+        }
       }
     }
 
@@ -5608,11 +5623,42 @@
               min-height: 160px;
               overflow-y: auto;
 
+              &.e-checkbox-infinitescroll {
+                border-top-style: solid;
+                border-top-color: $grid-columnchooser-footer-border-color;
+                border-top-width: 1px;
+                margin-top: 0;
+                overflow-x: hidden;
+              }
+
               & .e-ftrchk {
                 @include grid-top-bottom-padding($grid-bigger-checkbox-padding-topbottom, $grid-bigger-checkbox-padding-topbottom);
                 @if $grid-skin == 'fluent2' {
                   padding-left: 3px;
                 }
+              }
+            }
+          }
+
+          & .e-ftrchk {
+            & .e-chk-hidden {
+              -moz-appearance: none; /* stylelint-disable-line property-no-vendor-prefix */
+              height: 1px;
+              opacity: 0;
+              width: 1px;
+            }
+
+            & .e-mask {
+              display: inline-block;
+              height: 10px;
+              width: 80%;
+
+              &.e-mask-checkbox-filter-intent {
+                width: 13px;
+              }
+
+              &.e-mask-checkbox-filter-span-intent {
+                margin-left: 8px;
               }
             }
           }
@@ -5630,10 +5676,9 @@
           & .e-searchbox {
             padding-left: 0;
           }
-          & .e-spinner {
-            & .e-checkboxlist {
-              margin-left: -7px;
-            }
+          & .e-ftrchk.e-infinitescroll,
+          & .e-spinner .e-checkboxlist {
+            margin-left: -7px;
           }
         }
       }
@@ -5680,6 +5725,9 @@
     }
     @if $grid-skin == 'fluent' {
       padding-top: 3px;
+    }
+    @if $grid-skin == 'fluent' {
+      padding-top: 1px;
     }
     @if $grid-skin == 'bootstrap4' or $grid-skin == 'material' {
       padding-top: 2px;

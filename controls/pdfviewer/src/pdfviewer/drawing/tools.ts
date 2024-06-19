@@ -1782,7 +1782,9 @@ export class NodeDrawingTool extends ToolBase {
     public mouseUp(args: MouseEventArgs): void {
         if (this.drawingObject && this.dragging) {
             this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
-            this.commandHandler.select([this.drawingObject.id], this.commandHandler.annotationSelectorSettings);
+            if (!isNullOrUndefined(args.source) && !isNullOrUndefined((args.source as PdfAnnotationBaseModel).annotationSelectorSettings)) {
+                this.commandHandler.select([this.drawingObject.id], (args.source as PdfAnnotationBaseModel).annotationSelectorSettings);
+            }
             const drawnAnnotation: any = this.commandHandler.selectedItems.annotations[0];
             if (!isNullOrUndefined(drawnAnnotation) && !isNullOrUndefined(drawnAnnotation.wrapper)) {
                 this.commandHandler.nodePropertyChange(drawnAnnotation,
@@ -1967,6 +1969,10 @@ export class PolygonDrawingTool extends ToolBase {
         let currentSelector: any;
         if ((args.source as PdfAnnotationBaseModel) && (args as PdfAnnotationBaseModel).annotationSelectorSettings !== null) {
             currentSelector = (args.source as PdfAnnotationBaseModel).annotationSelectorSettings;
+        }
+        else
+        {
+            currentSelector = "";
         }
         if (this.drawingObject && this.drawingObject.vertexPoints.length === 2 && isDoubleClineck && isMouseLeave) {
             this.commandHandler.remove(this.drawingObject);

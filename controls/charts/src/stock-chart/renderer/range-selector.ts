@@ -22,6 +22,7 @@ export class RangeSelector {
 
     public initializeRangeNavigator(): void {
         const stockChart: StockChart = this.stockChart;
+        const padding: number = stockChart.chart.axisCollections[1].labelPadding + stockChart.chart.axisCollections[1].lineStyle.width * 0.5;
         if (!stockChart.selectorObject) {
             stockChart.selectorObject = stockChart.renderer.createGroup({
                 id: stockChart.element.id + '_stockChart_rangeSelector',
@@ -56,6 +57,7 @@ export class RangeSelector {
             tooltip: { enable: stockChart.tooltip.enable, displayMode: 'OnDemand' },
             labelPlacement: 'OnTicks',
             labelPosition: 'Inside',
+            width: (stockChart.availableSize.width - ((stockChart.chart.axisCollections[1].labelPosition === 'Outside' ? stockChart.chart.axisCollections[1].maxLabelSize.width + padding : 0))).toString(),
             dataSource: stockChart.dataSource,
             intervalType : stockChart.primaryXAxis.intervalType,
             enableRtl: stockChart.enableRtl,

@@ -481,7 +481,7 @@ export class Selection {
     * @returns {string}
     */
     public get sfdt(): string {
-        if (this.owner.editorModule && (this.start.offset !== this.end.offset)) {
+        if (this.owner.editorModule && !this.isEmpty) {
             return JSON.stringify(this.writeSfdt());
         } else {
             return undefined;

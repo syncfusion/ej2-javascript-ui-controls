@@ -93,6 +93,7 @@ export class DialogEdit {
     private inputs: Object;
     private idCollection: IDependencyEditData[];
     private disableUndo: boolean;
+    private currentResources: Object[];
     /**
      * @private
      */
@@ -1047,7 +1048,7 @@ export class DialogEdit {
             this.resourceSelection(id);
         } else if (id === ganttObj.element.id + 'NotesTabContainer') {
             ((<EJ2Instance>document.getElementById(id)).ej2_instances[0] as RichTextEditor).refresh();
-            const notesTabElement: HTMLElement = document.querySelector('#' + this.parent.element.id + 'NotesTabContainer') as HTMLInputElement;
+            // const notesTabElement: HTMLElement = document.querySelector('#' + this.parent.element.id + 'NotesTabContainer') as HTMLInputElement;
         } else if (id === ganttObj.element.id + 'SegmentsTabContainer') {
             if (isNullOrUndefined((this.beforeOpenArgs.rowData as IGanttData).ganttProperties.startDate)) {
                 ((<EJ2Instance>document.getElementById(id)).ej2_instances[0] as Grid)
@@ -1277,7 +1278,7 @@ export class DialogEdit {
             if (!isNullOrUndefined(tasks.duration) && tasks.duration !== colName || ganttProp.duration >= 0) {
                 this.updateScheduleFields(dialog, ganttProp, 'duration');
             }
-            if (!isNullOrUndefined(tasks.work) && tasks.work !== colName) {
+            if (!isNullOrUndefined(tasks.work) && (tasks.work !== colName || ganttProp.taskType !== 'FixedWork')) {
                 this.updateScheduleFields(dialog, ganttProp, 'work');
             }
             this.dialogEditValidationFlag = false;
@@ -2257,6 +2258,14 @@ export class DialogEdit {
             preData = this.predecessorEditCollection(ganttData);
             this.updatePredecessorDropDownData(ganttData);
         }
+        let predecessorLength: number;
+        if (ganttData[this.parent.taskFields.dependency]) {
+            predecessorLength = ganttData[this.parent.taskFields.dependency].split(',').length;
+        }
+        if (this.preTableCollection.length === 0 || this.preTableCollection.length === predecessorLength) {
+            gridModel.editSettings.allowAdding = false;
+        }
+        gridModel.actionComplete = this.gridActionComplete.bind(this);
         gridModel.dataSource = preData;
         gridModel.enableAdaptiveUI = this.parent.enableAdaptiveUI;
         gridModel.actionBegin = this.gridActionBegin.bind(this);
@@ -2416,7 +2425,19 @@ export class DialogEdit {
             }
         }
     }
-
+    private gridActionComplete(args: GridActionEventArgs): void {
+        if (args.requestType === 'save') {
+            const dialogElement: HTMLElement = this.parent.editModule.dialogModule.dialog.querySelector('#' + this.parent.element.id + 'DependencyTabContainer');
+            if (!isNullOrUndefined(dialogElement)) {
+                if (!isNullOrUndefined(args['rows']) && args['rows'].length === this.preTableCollection.length) {
+                    const gridObj: any = dialogElement['ej2_instances'][0];
+                    if (gridObj) {
+                        gridObj.editSettings.allowAdding = false;
+                    }
+                }
+            }
+        }
+    }
     private updateResourceCollection(args: RowSelectEventArgs, resourceTreeGridId: string): void {
         if (!isNullOrUndefined(args.data) && Object.keys(args.data).length) {
             const treeGridId: HTMLElement = document.querySelector('#' + resourceTreeGridId);
@@ -2490,11 +2511,23 @@ export class DialogEdit {
                 this.ganttResources.push(resourceInfo[i as number]);
             }
         }
+        inputModel.actionBegin = (args: any): void => {
+            if (args.columnName === this.parent.resourceFields.unit && this.editedRecord.ganttProperties.resourceInfo) {
+                for (let i:number = 0; i < this.editedRecord.ganttProperties.resourceInfo.length; i++) {
+                    if (this.editedRecord.ganttProperties.resourceInfo[i as number][this.parent.resourceFields.id] ===
+                        args.rowData[this.parent.resourceFields.id]) {
+                        this.editedRecord.ganttProperties.resourceInfo[i as number][this.parent.resourceFields.unit] = args.value;
+                    }
+                }
+            }
+        };
         inputModel.rowSelected = (args: RowSelectEventArgs): void => {
             this.updateResourceCollection(args, resourceTreeGridId);
+            this.currentResources = this.ganttResources;
         };
         inputModel.rowDeselected = (args: RowSelectEventArgs): void => {
             this.updateResourceCollection(args, resourceTreeGridId);
+            this.currentResources = this.ganttResources;
         };
 
         const divElement: HTMLElement = this.createDivElement('e-resource-div', resourceTreeGridId);
@@ -2943,6 +2976,9 @@ export class DialogEdit {
             this.parent.initiateEditAction(true);
         } else {
             this.addedRecord = {};
+        }
+        if (this.currentResources) {
+            this.currentResources = null;
         }
         if (this.parent.undoRedoModule && this.parent['isUndoRedoItemPresent']('Edit')) {
             if (this.parent.undoRedoModule['redoEnabled']) {

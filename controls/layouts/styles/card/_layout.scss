@@ -68,6 +68,9 @@
         .e-card-header-title {
           font-size: $card-header-txt-bigger-title-font;
           line-height: $card-header-txt-title-bigger-lheight;
+          @if $skin-name == 'fluent2' {
+            font-weight: 600;
+          }
         }
 
         .e-card-sub-title {
@@ -98,6 +101,9 @@
         line-height: $card-image-title-bigger-lheight;
         min-height: $card-image-title-bigger-mheight;
         padding: $card-img-title-bigger-padding;
+        @if $skin-name == 'fluent2' {
+          font-weight: 600;
+        }
       }
     }
 
@@ -138,6 +144,9 @@
 
     .e-card-content {
       padding: $card-bigger-content-padding;
+      @if $skin-name == 'fluent2' {
+        font-size: 16px;
+      }
 
       + :not(.e-card-content),
       + .e-card-actions.e-card-vertical {
@@ -338,7 +347,7 @@
         .e-card-header-title {
           font-size: $card-header-txt-nrml-title-font;
           font-weight: normal;
-          @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+          @if $skin-name == 'fabric' or $skin-name == 'highcontrast' or $skin-name == 'fluent2' {
             font-weight: 600;
           }
           line-height: $card-header-txt-title-lheight;
@@ -387,6 +396,9 @@
         position: absolute;
         text-overflow: ellipsis;
         width: inherit;
+        @if $skin-name == 'fluent2' {
+          font-weight: 600;
+        }
 
         &.e-card-top-left,
         &.e-card-top-right {

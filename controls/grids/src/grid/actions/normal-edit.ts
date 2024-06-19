@@ -704,10 +704,6 @@ export class NormalEdit {
             (<{ data?: Object[] }>args).data[0] =
             this.parent.getRowObjectFromUID(this.parent.getRowByIndex(this.parent.commandDelIndex).getAttribute('data-uid')).data;
         }
-        if ((this.parent.enableVirtualization || this.parent.enableColumnVirtualization) && (<{ data?: Object[] }>args).data.length > 1) {
-            const uid: string = this.parent.getSelectedRows()[0].getAttribute('data-uid');
-            (<{ data?: Object[] }>args).data = [this.parent.getRowObjectFromUID(uid).data];
-        }
         this.parent.notify(events.modelChanged, args);
     }
 

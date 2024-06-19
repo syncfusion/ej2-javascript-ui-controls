@@ -40,6 +40,7 @@ describe('Schedule year view', () => {
         });
         it('view class on container', () => {
             expect(schObj.element.querySelector('.e-year-view')).toBeTruthy();
+            expect(schObj.element.getAttribute('aria-label')).toEqual('Year Start Friday, January 1, 2021 Ends At Friday, December 31, 2021');
         });
 
         it('check active view class on toolbar views', () => {
@@ -76,11 +77,13 @@ describe('Schedule year view', () => {
             expect(morePopup.firstElementChild.classList.contains('e-more-event-popup')).toBeTruthy();
             expect(schObj.element.querySelector('.e-more-event-popup').firstElementChild.classList.contains('e-more-event-header')).toBeTruthy();
             const moreEventHeader: HTMLElement = schObj.element.querySelector('.e-more-event-header');
+            expect(moreEventHeader.firstElementChild.getAttribute('role')).toEqual('button');
             expect(moreEventHeader.firstElementChild.classList.contains('e-more-event-close')).toBeTruthy();
             expect(moreEventHeader.firstElementChild.innerHTML).toEqual('<span class="e-btn-icon e-icons e-close-icon"></span>');
             expect(moreEventHeader.lastElementChild.classList.contains('e-more-event-date-header')).toBeTruthy();
             const moreDateHeader: HTMLElement = schObj.element.querySelector('.e-more-event-date-header');
             expect(moreDateHeader.firstElementChild.classList.contains('e-header-day')).toBeTruthy();
+            expect(moreDateHeader.firstElementChild.getAttribute('id')).toEqual(morePopup.getAttribute('aria-labelledby'));
             expect(moreDateHeader.firstElementChild.innerHTML).toEqual('Fri');
             expect(moreDateHeader.lastElementChild.classList.contains('e-header-date')).toBeTruthy();
             expect(moreDateHeader.lastElementChild.innerHTML).toEqual('1');
@@ -130,6 +133,7 @@ describe('Schedule year view', () => {
             expect(schObj.element.querySelector('.e-tbar-btn-text').innerHTML).toBe('May 2018 - Apr 2019');
             expect(schObj.element.querySelectorAll('.e-month-header')[0].innerHTML).toBe('<div class="date-text">4</div>');
             expect(schObj.element.querySelectorAll('.e-month-header')[11].innerHTML).toBe('<div class="date-text">3</div>');
+            expect(schObj.element.querySelector('.e-content-table').getAttribute('id')).toEqual(schObj.element.getAttribute('aria-labelledby'));
             const verticalViewBtn: HTMLElement = (schObj.element.querySelectorAll('.e-toolbar-item.e-views.e-timeline-year')[1] as HTMLElement);
             verticalViewBtn.click();
         });

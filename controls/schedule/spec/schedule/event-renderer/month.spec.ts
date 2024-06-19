@@ -381,10 +381,13 @@ describe('Month Event Render Module', () => {
             const moreIndicators: NodeListOf<Element> = schObj.element.querySelectorAll('.e-more-indicator');
             expect(moreIndicators.length).toEqual(6);
             expect(moreIndicators[0].textContent).toEqual('+2 more');
+            expect(moreIndicators[0].getAttribute('role')).toEqual('button');
+            expect(moreIndicators[0].getAttribute('aria-label')).toEqual('2 More Events');
             expect(moreIndicators[1].textContent).toEqual('+3 more');
             expect(moreIndicators[2].textContent).toEqual('+3 more');
             expect(moreIndicators[3].textContent).toEqual('+3 more');
             expect(moreIndicators[4].textContent).toEqual('+3 more');
+            expect(moreIndicators[4].getAttribute('aria-label')).toEqual('3 More Events');
             expect(moreIndicators[5].textContent).toEqual('+2 more');
         });
         it('Adding resources', (done: Function) => {

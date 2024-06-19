@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.1.38 (2024-06-19)
+
+### DashboardLayout
+
+#### Bug Fixes
+
+- `#I599650` - The issue with the type of the element parameter in the Dashboard Layout constructor has been resolved.
+
 ## 26.1.35 (2024-06-11)
 
 ### DashboardLayout

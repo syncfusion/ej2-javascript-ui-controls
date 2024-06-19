@@ -600,7 +600,8 @@ export class RowDD {
         const selectedIndexes: number[] = this.parent.getSelectedRowIndexes();
         const selectedRecords: object[] = [];
         const draggedRecords: object[] = [];
-        const currentViewData: Object[] = this.parent.renderModule.data.dataManager.dataSource.json;
+        let currentViewData: Object[] = this.parent.getDataModule().isRemote() ? this.parent.getCurrentViewRecords() :
+            this.parent.renderModule.data.dataManager.dataSource.json;
         const skip: number = this.parent.allowPaging ?
             (this.parent.pageSettings.currentPage * this.parent.pageSettings.pageSize) - this.parent.pageSettings.pageSize : 0;
         let dropIdx: number = toIndex + skip;
@@ -614,7 +615,7 @@ export class RowDD {
         for (let i: number = 0, len: number = draggedRecords.length; i < len; i++) {
             if (i !== 0) {
                 for (let j: number = 0, len1: number = currentViewData.length; j < len1; j++) {
-                    if (JSON.stringify(this.parent.renderModule.data.dataManager.dataSource.json[parseInt(j.toString(), 10)]) ===
+                    if (JSON.stringify(currentViewData[parseInt(j.toString(), 10)]) ===
                         JSON.stringify(draggedRecords[parseInt(i.toString(), 10)])) {
                         actualIdx = j;
                         break;
@@ -622,7 +623,7 @@ export class RowDD {
                 }
                 for (let j: number = 0, len1: number = currentViewData.length; j < len1; j++) {
                     if (JSON.stringify(
-                        this.parent.renderModule.data.dataManager.dataSource.json[parseInt(j.toString(), 10)]) === JSON
+                        currentViewData[parseInt(j.toString(), 10)]) === JSON
                         .stringify(draggedRecords[i - 1])) {
                         if (actualIdx > j) {
                             dropIdx = j + 1;
@@ -641,7 +642,7 @@ export class RowDD {
         for (let i: number = 0, len: number = selectedRecords.length; i < len; i++) {
             for (let j: number = 0, len1: number = currentViewData.length; j < len1; j++) {
                 if (JSON.stringify(
-                    this.parent.renderModule.data.dataManager.dataSource.json[parseInt(j.toString(), 10)]) === JSON
+                    currentViewData[parseInt(j.toString(), 10)]) === JSON
                     .stringify(selectedRecords[parseInt(i.toString(), 10)])) {
                     selectedIndexes[parseInt(i.toString(), 10)] = j - skip;
                     break;

@@ -1517,8 +1517,12 @@ export class Renderer {
             let l10n: L10n = new L10n('documenteditor', this.documentHelper.owner.defaultLocale);
             l10n.setLocale(this.documentHelper.owner.locale);
             this.pageContext.fillStyle = HelperMethods.getColor(currentCharFormat.fontColor);
+            let pageIndex: number = 0;
+            if (lineWidget.paragraph.bodyWidget && !(lineWidget.paragraph.bodyWidget instanceof HeaderFooterWidget)) {
+                pageIndex = this.documentHelper.pages.indexOf(lineWidget.paragraph.bodyWidget.page);
+            }
             if ((children.length == 0 && !lineWidget.isEndsWithLineBreak && !isNullOrUndefined(lineWidget.paragraph)) || (lineWidget.paragraph.childWidgets.length === 1)) {
-                y = lineWidget.paragraph.y + (this.documentHelper.textHelper.getHeight(currentCharFormat)).BaselineOffset + this.documentHelper.layout.getBeforeSpacing(lineWidget.paragraph);
+                y = lineWidget.paragraph.y + (this.documentHelper.textHelper.getHeight(currentCharFormat)).BaselineOffset + this.documentHelper.layout.getBeforeSpacing(lineWidget.paragraph, pageIndex);
                 //Paragraph with empty linewidgets with mutiple line breaks
                 if (!lineWidget.isEndsWithLineBreak && lineWidget.indexInOwner > 0 && children.length == 0) {
                     y = top + lineWidget.previousLine.maxBaseLine;

@@ -410,7 +410,8 @@ export class MonthEvent extends EventBase {
             const viewName: string = this.parent.activeViewOptions.eventTemplateName;
             const templateId: string = scheduleId + viewName + 'eventTemplate';
             const eventTemplate: string = this.isResourceEventTemplate ? this.parent.getEventTemplateName(resIndex) : 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()(eventObj, this.parent, eventTemplate, templateId, false);
+            templateElement = this.parent.getAppointmentTemplate()
+                (eventObj, this.parent, eventTemplate, templateId, false, undefined, undefined, this.parent.root);
         } else {
             const eventLocation: string = (record[this.fields.location] || this.parent.eventSettings.fields.location.default || '') as string;
             const appointmentSubject: HTMLElement = createElement('div', { className: cls.SUBJECT_CLASS });
@@ -535,6 +536,7 @@ export class MonthEvent extends EventBase {
                         if (indicator) {
                             const count: number = parseInt(indicator.getAttribute('data-count'), 10) + 1;
                             indicator.setAttribute('data-count', count.toString());
+                            indicator.setAttribute('aria-label', count + ' ' + this.parent.localeObj.getConstant('moreEvents'));
                             indicator.innerHTML = this.getMoreIndicatorText(count);
                         } else {
                             const startDate: Date = new Date(this.dateRender[day + i].getTime());

@@ -3331,7 +3331,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
         this.removeSelectionClassStates(valueElementWrapper);
-        return valueElementWrapper.innerHTML;
+        return (this.editorMode === 'Markdown') ? valueElementWrapper.innerHTML.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&') : valueElementWrapper.innerHTML;
     }
 
     private updateStatus(e: StatusArgs): void {

@@ -1008,10 +1008,9 @@ export class WordExport {
         //     SerializeFootnoteProperties(section);
         // if (IsNeedToSerializeSectionEndNoteProperties(section))
         //     SerializeEndnoteProperties(section);
-        if (section[sectionFormatProperty[this.keywordIndex]][breakCodeProperty[this.keywordIndex]] === 'NoBreak') {
-            this.serializeSectionType(writer, 'continuous');
-        } else {
-            this.serializeSectionType(writer, 'nextPage');
+        if (!isNullOrUndefined(section[sectionFormatProperty[this.keywordIndex]][breakCodeProperty[this.keywordIndex]])) {
+            let breakCode: string = this.getSectionBreakCode(section[sectionFormatProperty[this.keywordIndex]][breakCodeProperty[this.keywordIndex]]);
+            this.serializeSectionType(writer, breakCode);
         }
         this.serializePageSetup(writer, section[sectionFormatProperty[this.keywordIndex]]);
         this.serializeColumns(writer, section[sectionFormatProperty[this.keywordIndex]]);
@@ -1060,6 +1059,21 @@ export class WordExport {
         //printerSettings
         writer.writeEndElement(); //end of sectPr tag
 
+    }
+
+    private getSectionBreakCode(breakCode: string): string {
+        switch (breakCode) {
+            case 'NoBreak':
+                return 'continuous';
+            case 'NewColumn':
+                return 'nextColumn';
+            case 'EvenPage':
+                return 'evenPage';
+            case 'Oddpage':
+                return 'oddPage';
+            default:
+                return 'nextPage';
+        }
     }
     private serializeFootNotesPr(writer: XmlWriter, section: any): void {
         if (section[footNoteNumberFormatProperty[this.keywordIndex]] || section[restartIndexForFootnotesProperty[this.keywordIndex]]) {

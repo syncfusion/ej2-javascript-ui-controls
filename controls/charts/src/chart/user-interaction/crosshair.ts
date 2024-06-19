@@ -70,8 +70,6 @@ export class Crosshair {
 
     public mouseMoveHandler(event: PointerEvent | TouchEvent): void {
         const chart: Chart = this.chart;
-        chart.mouseX = chart.mouseX / chart.scaleX;
-        chart.mouseY = chart.mouseY / chart.scaleY;
         if (chart.stockChart && chart.stockChart.onPanning) {
             if (chart.mouseY < chart.chartAxisLayoutPanel.seriesClipRect.y) {
                 chart.mouseY = chart.chartAxisLayoutPanel.seriesClipRect.y;

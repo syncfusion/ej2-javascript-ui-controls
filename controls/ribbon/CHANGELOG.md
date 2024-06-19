@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.1.38 (2024-06-19)
+
+### Ribbon
+
+#### Bug Fixes
+
+- `#I593640` - Now the script issue raised while disabling the last tab of the ribbon has been resolved.
+
 ## 25.1.35 (2024-03-15)
 
 ### Ribbon

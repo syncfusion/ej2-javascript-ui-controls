@@ -8,6 +8,7 @@ import * as events from '../base/constant';
 import { Button } from '@syncfusion/ej2-buttons';
 import { SortDirection, ResponsiveDialogAction } from '../base/enum';
 import { SortDescriptorModel } from '../base/grid-model';
+import { CheckBoxFilterBase } from '../common/checkbox-filter-base';
 
 /**
  *
@@ -385,6 +386,12 @@ export class ResponsiveDialogRenderer implements IAction {
             this.customResponsiveDlg.show(true);
             this.customResponsiveDlg.element.style.maxHeight = '100%';
             this.setTopToChildDialog(this.customResponsiveDlg.element);
+            if (this.parent.enableAdaptiveUI && this.parent.filterSettings && (this.parent.filterSettings.type === 'CheckBox'
+            || this.parent.filterSettings.type === 'Excel') && this.parent.filterSettings.enableInfiniteScrolling
+            && this.parent.filterSettings.loadingIndicator === 'Shimmer') {
+                const filterBase: CheckBoxFilterBase = this.parent.filterSettings.type === 'CheckBox' ? this.parent.filterModule.filterModule.checkBoxBase : this.parent.filterModule.filterModule.excelFilterBase;
+                filterBase.showMask();
+            }
         }
     }
 

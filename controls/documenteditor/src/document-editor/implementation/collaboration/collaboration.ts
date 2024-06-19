@@ -1500,8 +1500,6 @@ export class CollaborativeEditingHandler {
                 } else {
                     this.documentEditor.editorModule.applyStyle(characterFormat.styleName);
                 }
-            } else if (keys.indexOf('allCaps') !== -1) {
-                this.documentEditor.editorModule.changeCase('allCaps');
             } else if (keys.indexOf('Uppercase') !== -1 || keys.indexOf('Lowercase') !== -1 || keys.indexOf('SentenceCase') !== -1 || keys.indexOf('ToggleCase') !== -1 || keys.indexOf('CapitalizeEachWord') !== -1) {
                 this.documentEditor.editorModule.changeCase(keys[0]);
             } else {

@@ -5624,53 +5624,53 @@ describe('EJ2-65110 - Enter and shiftEnter key functionality with template colum
     });
 });
 
-// describe('EJ2-828323 - ResetOnRowClick resets the checked row only in the current page while using remote data binding', () => {
-//     let gridObj: Grid;
-//     const hostUrl = 'https://services.syncfusion.com/js/production/';
-//     beforeAll((done: Function) => {
-//         gridObj = createGrid(
-//             {
-//                 dataSource: new DataManager({
-//                     url: hostUrl + 'api/Orders',
-//                     adaptor: new WebApiAdaptor(),
-//                     crossDomain: true,
-//                 }),
-//                 allowPaging: true,
-//                 allowSelection: true,
-//                 selectionSettings: { persistSelection: true, type: 'Multiple', checkboxMode: 'ResetOnRowClick' },
-//                 editSettings: { allowDeleting: true },
-//                 toolbar: ['Delete'],
-//                 enableHover: false,
-//                 columns: [
-//                     { type: 'checkbox', width: 50 },
-//                     { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 120, textAlign: 'Right' },
-//                     { field: 'CustomerName', headerText: 'CustomerName', width: 130 },
-//                     { field: 'Freight', format: 'C2', textAlign: 'Right', editType: 'numericedit', width: 120 },
-//                     { field: 'ShipCountry', visible: false, headerText: 'Ship Country', width: 150 },
-//                     { field: 'ShipCity', headerText: 'Ship City', width: 150 }
-//                 ],
-//             }, done);
-//     });
-//     it('clicking the selectAll checkbox and moving to next page', () => {
-//         gridObj.dataBind();
-//         (<HTMLElement>gridObj.element.querySelector('.e-checkselectall')).click();
-//         gridObj.goToPage(2);
-//     });
-//     it('Selecting a record in second page and moving to first page', () => {
-//         let rowSelecting = (e: any) => {
-//         };
-//         gridObj.rowSelecting = rowSelecting;
-//         (gridObj.element.querySelectorAll('.e-rowcell')[16] as any).click();
-//         gridObj.goToPage(1);
-//     });
-//     it('Ensuring the number of selected records', () => {
-//          expect(gridObj.selectionModule.getSelectedRecords().length).toBe(1);
-//     });
-//     afterAll(() => {
-//         destroy(gridObj);
-//         gridObj = null;
-//     });
-// });
+describe('EJ2-828323 - ResetOnRowClick resets the checked row only in the current page while using remote data binding', () => {
+    let gridObj: Grid;
+    const hostUrl = 'https://services.syncfusion.com/js/production/';
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: new DataManager({
+                    url: hostUrl + 'api/Orders',
+                    adaptor: new WebApiAdaptor(),
+                    crossDomain: true,
+                }),
+                allowPaging: true,
+                allowSelection: true,
+                selectionSettings: { persistSelection: true, type: 'Multiple', checkboxMode: 'ResetOnRowClick' },
+                editSettings: { allowDeleting: true },
+                toolbar: ['Delete'],
+                enableHover: false,
+                columns: [
+                    { type: 'checkbox', width: 50 },
+                    { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 120, textAlign: 'Right' },
+                    { field: 'CustomerName', headerText: 'CustomerName', width: 130 },
+                    { field: 'Freight', format: 'C2', textAlign: 'Right', editType: 'numericedit', width: 120 },
+                    { field: 'ShipCountry', visible: false, headerText: 'Ship Country', width: 150 },
+                    { field: 'ShipCity', headerText: 'Ship City', width: 150 }
+                ],
+            }, done);
+    });
+    it('clicking the selectAll checkbox and moving to next page', () => {
+        gridObj.dataBind();
+        (<HTMLElement>gridObj.element.querySelector('.e-checkselectall')).click();
+        gridObj.goToPage(2);
+    });
+    it('Selecting a record in second page and moving to first page', () => {
+        let rowSelecting = (e: any) => {
+        };
+        gridObj.rowSelecting = rowSelecting;
+        (gridObj.element.querySelectorAll('.e-rowcell')[16] as any).click();
+        gridObj.goToPage(1);
+    });
+    it('Ensuring the number of selected records', () => {
+         expect(gridObj.selectionModule.getSelectedRecords().length).toBe(1);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
 
 describe('BUG 836872 - The selectedRowIndex property is experiencing some issues and is not functioning correctly', () => {
     let gridObj: Grid;

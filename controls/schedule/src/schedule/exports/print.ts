@@ -88,6 +88,7 @@ export class Print {
         Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, Year, TimelineYear);
         this.printInstance = new Schedule(this.getPrintScheduleModel(printOptions));
         this.printInstance.isPrinting = true;
+        this.printInstance.root = this.parent.root ? this.parent.root : this.parent;
         this.printInstance.appendTo(element);
         this.printInstance.on(events.print, this.contentReady, this);
         this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
@@ -121,7 +122,7 @@ export class Print {
                 eventSettings.dataSource = this.parent.eventsData;
                 const eventTemplate: string | Function = !isNullOrUndefined(printOptions.eventSettings) &&
                     !isNullOrUndefined(printOptions.eventSettings.template) ? printOptions.eventSettings.template : eventSettings.template;
-                eventSettings.template = typeof (eventTemplate) === 'function' ? null : eventTemplate;
+                eventSettings.template = !this.parent.isAngular && typeof (eventTemplate) === 'function' ? null : eventTemplate;
                 printModel.eventSettings = eventSettings;
                 break;
             }
@@ -132,17 +133,19 @@ export class Print {
                 break;
             case 'timeScale':
                 timeScale = isNullOrUndefined(printOptions.timeScale) ? this.parent.timeScale : printOptions.timeScale;
-                timeScale.majorSlotTemplate = typeof(timeScale.majorSlotTemplate) === 'function' ? null : timeScale.majorSlotTemplate;
-                timeScale.minorSlotTemplate = typeof(timeScale.minorSlotTemplate) === 'function' ? null : timeScale.minorSlotTemplate;
-                printOptions.timeScale = timeScale;
+                if (!this.parent.isAngular) {
+                    timeScale.majorSlotTemplate = typeof (timeScale.majorSlotTemplate) === 'function' ? null : timeScale.majorSlotTemplate;
+                    timeScale.minorSlotTemplate = typeof (timeScale.minorSlotTemplate) === 'function' ? null : timeScale.minorSlotTemplate;
+                }
+                printModel.timeScale = timeScale;
                 break;
             case 'views':
                 views = isNullOrUndefined(printOptions.views) ? this.parent.views : printOptions.views;
-                if (views && views.length > 0 && typeof(views[0]) === 'object') {
+                if (!this.parent.isAngular && views && views.length > 0 && typeof (views[0]) === 'object') {
                     for (const view of views) {
                         scheduleTemplates.forEach((x: string) => {
                             if (!isNullOrUndefined((view as Record<string, any>)[`${x}`])) {
-                                (view as Record<string, any>)[`${x}`] = typeof((view as Record<string, any>)[`${x}`]) === 'function' ? null : (view as Record<string, any>)[`${x}`];
+                                (view as Record<string, any>)[`${x}`] = typeof ((view as Record<string, any>)[`${x}`]) === 'function' ? null : (view as Record<string, any>)[`${x}`];
                             }
                         });
                     }
@@ -152,8 +155,8 @@ export class Print {
             default:
                 if (scheduleTemplates.indexOf(key) > -1) {
                     (printModel as Record<string, any>)[`${key}`] = isNullOrUndefined((printOptions as Record<string, any>)[`${key}`]) ?
-                        (typeof((this.parent as Record<string, any>)[`${key}`]) === 'function' ? null : (this.parent as Record<string, any>)[`${key}`]) :
-                        (typeof((printOptions as Record<string, any>)[`${key}`]) === 'function' ? null :  (printOptions as Record<string, any>)[`${key}`]);
+                        (!this.parent.isAngular && typeof((this.parent as Record<string, any>)[`${key}`]) === 'function' ? null : (this.parent as Record<string, any>)[`${key}`]) :
+                        (!this.parent.isAngular && typeof((printOptions as Record<string, any>)[`${key}`]) === 'function' ? null : (printOptions as Record<string, any>)[`${key}`]);
                     break;
                 }
                 if (scheduleEvents.indexOf(key) > -1) {

@@ -842,4 +842,40 @@ describe('Command Column ', () => {
             gridObj = actionBegin = null;
         });
     });
+
+    // code coverage
+    describe('command column code coverage => ', () => {
+        let gridObj: Grid;
+        let preventDefault: Function = new Function();
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0,2),
+                    columns: [
+                        { field: 'OrderID' },
+                        { field: 'CustomerID' },
+                        { field: 'commandcolumn',
+                          commands: [{ type: 'Edit', buttonOption: { content: 'edit' } },
+                              { type: 'Delete', buttonOption: { content: 'delete' } },
+                          ], headerText: 'Command Column' }
+                    ],
+                }, done);
+        });
+
+        it('commandColumnFocusElement', () => {
+            let command = gridObj.element.querySelector('.e-unboundcell');
+            let cells = (gridObj.element.querySelectorAll('.e-rowcell'));
+            (cells[0] as HTMLElement).click();
+            gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: cells[0] });
+            gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: cells[1] });
+            let button: HTMLElement = (gridObj.focusModule as any).commandColumnFocusElement(command, true);
+            button = (gridObj.focusModule as any).commandColumnFocusElement(command, false);
+            command = button = null;
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

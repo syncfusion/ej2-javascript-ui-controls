@@ -8,7 +8,6 @@ $avatar-base-line-height: 22px !default;
 $avatar-base-text-color: $content-text-color-alt2 !default;
 $avatar-base-font-weight: $font-weight-normal !default;
 $avatar-base-img-height: 100% !default;
-$avatar-border-color: $black;
 
 // Circle Avatar
 $avatar-circle-border-radius: 50% !default;
@@ -26,4 +25,4 @@ $avatar-base-large-line-height: 28px !default;
 $avatar-base-xlarge-line-height: 28px !default;
 
 //border
-$avatar-border: $avatar-border-color !default;
+$avatar-border: $dialog-border !default;

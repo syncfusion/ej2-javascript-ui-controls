@@ -5151,8 +5151,12 @@ export class Annotation {
     }
 
     private modifyAnnotationProperties(newAnnotation: any, annotation: any, annotationType: string): any {
+        let isModifyStatus: Boolean = false;
         if (annotation && annotation.isCommentLock === true) {
             newAnnotation.isCommentLock = annotation.isCommentLock;
+        }
+        if (!isNullOrUndefined(annotation) && !isNullOrUndefined(annotation.annotationSettings) && annotation.annotationSettings.isLock === true && annotation.isCommentLock === true) {
+            isModifyStatus = true;
         }
         if (annotation.comments) {
             for (let j: number = 0; j < annotation.comments.length; j++) {
@@ -5277,7 +5281,12 @@ export class Annotation {
         newAnnotation.author = annotation.author;
         newAnnotation.customData = annotation.customData;
         newAnnotation.subject = annotation.subject;
-        newAnnotation.modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
+        if (isModifyStatus) {
+            newAnnotation.modifiedDate = annotation.modifiedDate;
+        }
+        else {
+            newAnnotation.modifiedDate = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
+        }
         newAnnotation.isPrint = annotation.isPrint;
         if (annotation.annotationSettings && !isNullOrUndefined(annotation.annotationSettings.isLock)) {
             newAnnotation.isLocked = annotation.annotationSettings.isLock;
@@ -6796,6 +6805,28 @@ export class Annotation {
         canvas.style.zIndex = '1';
         this.pdfViewerBase.applyElementStyles(canvas, pageNumber);
     }
+
+    /**
+     * @param {string} text - text
+     * @param {number} rectangle - rectangle
+     * @param {number} width - width
+     * @param {number} width - width
+     * @private
+     * @returns {number} - fontSize
+     */
+    public calculateFontSize(text: string, rectangle: { width: number, height: number }): number {
+        let canvasElement: HTMLElement = document.createElement('canvas');
+        const context: CanvasRenderingContext2D = (canvasElement as HTMLCanvasElement).getContext('2d');
+        let fontSize: number = 10;
+        let contextWidth: number = 0;
+        while (rectangle.width > contextWidth) {
+            context.font = fontSize + "px" + ' ' + 'Helvetica';
+            contextWidth = context.measureText(text).width;
+            fontSize++;
+        }
+        return fontSize;
+    }
+
 }
 
 /**

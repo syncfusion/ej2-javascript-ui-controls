@@ -308,6 +308,17 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         if (!this.hasParent) {
             this.element.setAttribute('tabindex', '0');
         }
+        if (this.enableQueryString) {
+            const pageValue: string = new URL(window.location.href).searchParams.get('page');
+            if (!isNullOrUndefined(pageValue) && window.location.href.indexOf('?page=') > 0) {
+                const currentPageValue: number = parseInt(pageValue, 10)
+                if (this.hasParent) {
+                    (this.parent as { setProperties(prop: Object, muteOnChange: boolean): void })
+                        .setProperties({ pageSettings: { currentPage: currentPageValue } }, true);
+                }
+                this.currentPage = currentPageValue;
+            }
+        }
         if (this.template) {
             if (this.isReactTemplate()) {
                 this.on(this.pageRefresh, this.pagerTemplate, this);

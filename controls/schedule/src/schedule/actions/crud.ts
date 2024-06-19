@@ -67,7 +67,9 @@ export class Crud {
             this.parent.trigger(events.dataBound, null, () => {
                 this.parent.hideSpinner();
                 if (this.parent.isPrinting) {
-                    this.parent.notify(events.print, {});
+                    setTimeout(() => {
+                        this.parent.notify(events.print, {});
+                    }, 100);
                 }
             });
         });

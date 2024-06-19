@@ -3,7 +3,7 @@
  */
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Gantt, Edit, Toolbar, Selection, Filter, ZoomTimelineSettings, CriticalPath } from '../../src/index';
-import { projectData1, projectData } from '../base/data-source.spec';
+import { projectData1, projectData, projectNewData1} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, getKeyUpObj } from '../base/gantt-util.spec';
 import { getValue } from '@syncfusion/ej2-base';
 describe('Gantt toolbar support', () => {
@@ -1639,5 +1639,50 @@ describe('Gantt with crtical path', () => {
     it('gantt with critical path', () => {
         let toolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_critical-path') as HTMLElement;
         triggerMouseEvent(toolbar, 'click');
+    });
+});
+describe('CR:890397-When adding a record via dialog, if the startDate is set to a Friday, the endDate and duration become empty', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: projectNewData1,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    endDate: 'EndDate',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                editSettings: {
+                    allowAdding: true
+                },
+                   toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                    'PrevTimeSpan', 'NextTimeSpan'],
+                height: '550px',
+                dayWorkingTime : [{ from: 0, to: 24 }],
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019')
+            }, done);
+    });
+    it('Adding startDate near to weekend through dialog field', () => {
+        let add: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_add') as HTMLElement;
+        triggerMouseEvent(add, 'click');
+        let startDate: HTMLInputElement = (<HTMLInputElement>document.querySelector('#' + ganttObj.element.id + 'StartDate'));
+        if (startDate) {
+            let StartDateInput: any = (document.getElementById(ganttObj.element.id + 'StartDate') as any).ej2_instances[0];
+            StartDateInput.value = new Date('04/05/2019');
+        }
+        let save: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog').getElementsByClassName('e-primary')[0] as HTMLElement;
+        triggerMouseEvent(save, 'click');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.startDate, 'MM/dd/yyyy')).toBe('04/05/2019');
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.endDate, 'MM/dd/yyyy')).toBe('04/05/2019');
+        expect(ganttObj.currentViewData[0].ganttProperties.duration).toBe(1);
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
     });
 });

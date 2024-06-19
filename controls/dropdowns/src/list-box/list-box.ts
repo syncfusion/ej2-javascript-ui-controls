@@ -487,6 +487,7 @@ export class ListBox extends DropDownBase {
         this.list.setAttribute('role', 'listbox');
         attributes(this.list, { 'role': 'listbox', 'aria-label': 'listbox', 'aria-multiselectable': this.selectionSettings.mode === 'Multiple' ? 'true' : 'false' });
         this.updateSelectionSettings();
+        this.resizeHandler();
     }
 
     private updateSelectionSettings(): void {
@@ -1430,6 +1431,7 @@ export class ListBox extends DropDownBase {
         if (form) {
             EventHandler.add(form, 'reset', this.formResetHandler, this);
         }
+        window.addEventListener('resize', this.resizeHandler.bind(this));
     }
 
     private wireToolbarEvent(): void {
@@ -1453,9 +1455,14 @@ export class ListBox extends DropDownBase {
         if (form) {
             EventHandler.remove(form, 'reset', this.formResetHandler);
         }
+        window.removeEventListener('resize', this.resizeHandler.bind(this));
     }
 
     private clickHandler(e: MouseEvent): void {
+        const li: Element = closest(e.target as Element, '.' + 'e-list-item');
+        if (isNullOrUndefined(li)) {
+            return;
+        }
         this.selectHandler(e);
     }
 
@@ -2287,6 +2294,14 @@ export class ListBox extends DropDownBase {
         }
     }
 
+    private resizeHandler(): void {
+        if (this.list.scrollWidth > (this.list as HTMLElement).offsetWidth) {
+            (this.list.querySelector('.e-list-parent') as HTMLElement).style.display = 'inline-block';
+        } else {
+            (this.list.querySelector('.e-list-parent') as HTMLElement).style.display = 'block';
+        }
+    }
+
     private getValidIndex(cli: Element, index: number, keyCode: number): number {
         const cul: Element = this.ulElement;
         if (cli.classList.contains('e-disabled') || cli.classList.contains(cssClass.group)) {
@@ -2370,17 +2385,17 @@ export class ListBox extends DropDownBase {
                     li = this.list.querySelector('[data-value="' + text + '"]');
                 }
                 if (li) {
-                    if (this.selectionSettings.showCheckbox) {
+                    if (this.selectionSettings.showCheckbox && !li.classList.contains('e-disabled')) {
                         liselect = li.getElementsByClassName('e-frame')[0].classList.contains('e-check');
                     } else {
                         liselect = li.classList.contains('e-selected');
                     }
                     if (!isSelect && liselect || isSelect && !liselect && li) {
-                        if (this.selectionSettings.showCheckbox) {
+                        if (this.selectionSettings.showCheckbox && !li.classList.contains('e-disabled')) {
                             this.notify('updatelist', { li: li, module: 'listbox' });
                             if (canFocus) { (li as HTMLElement).focus(); }
                         } else {
-                            if (isSelect) {
+                            if (isSelect && !li.classList.contains('e-disabled')) {
                                 li.classList.add(cssClass.selected);
                                 li.setAttribute('aria-selected', 'true');
                                 if (canFocus) { (li as HTMLElement).focus(); }

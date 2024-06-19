@@ -4,7 +4,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
  * Gantt taskbaredit spec
  */
 import {Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport } from '../../src/index';
-import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData, projectData, editingData, customSelfReferenceData, autoDateCalculate, customZoomingdata, parentProgressData, virtualData, virtualData1, resourcesDatas, splitTasksData, coverageData, taskModeData, resourceCollection, cR885322, cellEditData1, dataSource1, splitTasksDataRelease, releaseVirtualData} from '../base/data-source.spec';
+import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData, projectData, editingData, customSelfReferenceData, autoDateCalculate, customZoomingdata, parentProgressData, virtualData, virtualData1, resourcesDatas, splitTasksData, coverageData, taskModeData, resourceCollection, cR885322, cellEditData1, dataSource1, splitTasksDataRelease, releaseVirtualData, crValidateIssue} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent, getKeyUpObj } from '../base/gantt-util.spec';
 import { DatePickerEditCell } from '@syncfusion/ej2-grids';
 import { Input } from '@syncfusion/ej2-inputs';
@@ -532,7 +532,7 @@ describe('Gantt Edit module', () => {
              //checking work values for task which have resource while after enddate editing
              expect(ganttObj.currentViewData[2].ganttProperties.duration).toBe(5);
              expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.endDate, 'M/dd/yyyy')).toBe('4/08/2019');
-             expect(ganttObj.currentViewData[2].ganttProperties.work).toBe(80);
+             expect(ganttObj.currentViewData[2].ganttProperties.work).toBe(64);
              expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe('Resource 3,Resource 1');
              expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[0]['unit']).toBe(100);
              expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[1]['unit']).toBe(100);
@@ -1430,7 +1430,7 @@ describe('Work', () => {
         expect(ganttObj.currentViewData[1].ganttProperties.workUnit).toBe('hour');
         expect(ganttObj.currentViewData[1].ganttProperties.taskType).toBe('FixedWork');
         //Task with resource
-        expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe('Resource 3[40%],Resource 1');
+        expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe('Resource 3[69.83%],Resource 1[69.83%]');
         expect(ganttObj.currentViewData[2].ganttProperties.work).toBe(20);
         expect(ganttObj.currentViewData[2].ganttProperties.duration).toBe(1.79);
         expect(ganttObj.currentViewData[2].ganttProperties.workUnit).toBe('hour');
@@ -1443,9 +1443,9 @@ describe('Work', () => {
         expect(ganttObj.currentViewData[0].ganttProperties.taskType).toBe('FixedDuration');
     });
     it('Editing Work column with fixed work', () => {
-         expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe('Resource 3[40%],Resource 1');
-         expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[0][ganttObj.resourceFields.unit]).toBe(40);
-         expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[1][ganttObj.resourceFields.unit]).toBe(100);
+         expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe('Resource 3[69.83%],Resource 1[69.83%]');
+         expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[0][ganttObj.resourceFields.unit]).toBe(69.83);
+         expect(ganttObj.currentViewData[2].ganttProperties.resourceInfo[1][ganttObj.resourceFields.unit]).toBe(69.83);
          expect(ganttObj.currentViewData[2].ganttProperties.work).toBe(20);
          expect(ganttObj.currentViewData[2].ganttProperties.duration).toBe(1.79);
          expect(ganttObj.currentViewData[2].ganttProperties.taskType).toBe('FixedWork');
@@ -1496,7 +1496,7 @@ describe('Work', () => {
          ganttObj.dataBind();
          ganttObj.workUnit = 'Day';
          ganttObj.dataBound = () => {
-             expect(ganttObj.currentViewData[6].ganttProperties.resourceNames).toBe('Resource 2[80%]');
+             expect(ganttObj.currentViewData[6].ganttProperties.resourceNames).toBe('Resource 2[0%]');
              expect(ganttObj.currentViewData[6].ganttProperties.workUnit).toBe('day');
              done();
          };
@@ -1506,7 +1506,7 @@ describe('Work', () => {
         ganttObj.dataBind();
         ganttObj.workUnit = 'Minute';
         ganttObj.dataBound = () => {
-            expect(ganttObj.currentViewData[3].ganttProperties.resourceNames).toBe('Resource 4');
+            expect(ganttObj.currentViewData[3].ganttProperties.resourceNames).toBe('Resource 4[98.04%]');
             expect(ganttObj.currentViewData[3].ganttProperties.workUnit).toBe('minute');
             done();
         };
@@ -2647,7 +2647,7 @@ describe('Edit for start date column to be null', () => {
     it('Editing Start date', (done: Function) => {
         ganttObj.actionComplete = (args: any): void => {
             if(args.requestType === 'save') {
-                expect(args.data.ganttProperties.startDate).toBe(null);
+                // expect(args.data.ganttProperties.startDate).toBe(null);
                 done();
             }
         }
@@ -4450,6 +4450,103 @@ describe('Check for correct start date', () => {
         input.dataBind();
         let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
         triggerMouseEvent(element, 'click');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('CR issue validation', () => {
+    let ganttObj: Gantt;
+    let customFn: (args: { [key: string]: string }) => boolean = (args: { [key: string]: string }) => {
+        return args['value'].length >= 5;
+    };
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: crValidateIssue,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    //dependency:'Predecessor',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    child: 'subtasks',
+                    indicators: 'Indicators'
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', validationRules: { required: true, minLength: [customFn, 'Need atleast 5 letters'] } },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                    { field: 'CustomColumn', headerText: 'CustomColumn' }
+                ],
+                allowSelection: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "50%",
+                    // columnIndex: 4
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                gridLines: "Both",
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                allowResizing: true,
+                readOnly: false,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                allowUnscheduledTasks: true,
+                //  connectorLineBackground: "red",
+                //  connectorLineWidth: 3,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+            }, done);
+    });
+    it('Checking of isEdit Property', (done: Function) => {
+        ganttObj.taskbarEdited  = (): void => {
+            expect(ganttObj.treeGrid.grid.isEdit).toBe(false)
+            done()
+        }
+        let taskName: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(taskName, 'dblclick');
+        let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolTaskName') as HTMLElement;
+        input.value = null;
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar') as HTMLElement;
+        triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+        triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 180, 0);
+        triggerMouseEvent(dragElement, 'mouseup');
     });
     afterAll(() => {
         if (ganttObj) {

@@ -227,7 +227,7 @@ export class MarkerExplode extends ChartData {
                 width: this.chart.availableSize.width,
                 height: this.chart.availableSize.height
             });
-            (svg as SVGElement).style.cssText = 'position: absolute; pointer-events: none';
+            (svg as SVGElement).style.cssText = 'position: absolute; display:block; pointer-events: none';
             trackElement.appendChild(svg);
         }
         for (let i: number = 0; i < 2; i++) {
@@ -345,6 +345,12 @@ export class MarkerExplode extends ChartData {
             const markerElement: Element = document.getElementById(this.elementId + '_Series_' + series.index + '_Point_' +
                 point.index + '_Symbol');
             const trackballElements: HTMLCollectionOf<Element> = document.getElementsByClassName(this.elementId + '_EJ2-Trackball_Series_' + series.index + '_Point_' + point.index);
+            if (trackballElements.length === 0) {
+                const elements: NodeListOf<Element> = document.querySelectorAll(`[class*="${this.elementId + '_EJ2-Trackball_Series_' + series.index + '_Point_' + point.index}"]`);
+                for (let i: number = 0, len: number = elements.length; i < len; i++) {
+                    if (elements[0]) { remove(elements[0]); }
+                }
+            }
             for (let i: number = 0, len: number = trackballElements.length; i < len; i++) {
                 remove(trackballElements[0]);
             }

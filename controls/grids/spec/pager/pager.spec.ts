@@ -234,7 +234,7 @@ describe('Pager base module', () => {
                 {
                     totalRecordsCount: 100, currentPage: 8, pageCount: 5, pageSize: 5,
                     enablePagerMessage: true, enableExternalMessage: true, externalMessage: 'externalMessage',
-                    enableRtl: true, enableQueryString: true, customText: 'sheet',
+                    enableRtl: true, customText: 'sheet',
                     created: created
                 });
             pagerObj.appendTo('#Pager');
@@ -322,7 +322,6 @@ describe('Pager base module', () => {
         });
 
         it('querystring testing', () => {
-            pagerObj.enableQueryString = false;
             pagerObj.dataBind();
             pagerObj.goToPage(14);
             expect(window.location.href.indexOf('?page=14')).not.toBeGreaterThan(-1);
@@ -330,6 +329,7 @@ describe('Pager base module', () => {
             pagerObj.dataBind();
             pagerObj.goToPage(15);
             expect(window.location.href.indexOf('?page=15')).toBeGreaterThan(-1);
+            pagerObj.enableQueryString = false;
         });
 
         it('locale testing', () => {
@@ -501,7 +501,7 @@ describe('Pager base module', () => {
                 {
                     totalRecordsCount: 100, currentPage: 8, pageCount: 5, pageSize: 100,
                     enablePagerMessage: true, enableExternalMessage: true, externalMessage: 'externalMessage',
-                    enableRtl: true, enableQueryString: true, customText: 'sheet',
+                    enableRtl: true, customText: 'sheet',
                     created: created
                 });
             pagerObj.appendTo('#Pager');

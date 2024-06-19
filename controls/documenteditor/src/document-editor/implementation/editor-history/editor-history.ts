@@ -594,6 +594,8 @@ export class EditorHistory {
         this.isUndoing = true;
         historyInfo.revert();
         this.isUndoing = false;
+        this.owner.selection.contentControleditRegionHighlighters.clear();
+        this.owner.selection.onHighlightContentControl();
         this.owner.selectionModule.checkForCursorVisibility();
         this.owner.editorModule.isBordersAndShadingDialog = false;
     }
@@ -616,6 +618,8 @@ export class EditorHistory {
         this.isRedoing = true;
         historyInfo.revert();
         this.isRedoing = false;
+        this.owner.selection.contentControleditRegionHighlighters.clear();
+        this.owner.selection.onHighlightContentControl();
         this.owner.selectionModule.checkForCursorVisibility();
         this.owner.editorModule.isBordersAndShadingDialog = false;
     }

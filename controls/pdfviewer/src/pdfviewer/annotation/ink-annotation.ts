@@ -575,8 +575,9 @@ export class InkAnnotation {
 
     public getSelector(type: string, subject: string): AnnotationSelectorSettingsModel {
         let selector: AnnotationSelectorSettingsModel = this.pdfViewer.annotationSelectorSettings;
-        if (type === 'Ink' && this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings) {
+        if ((type === 'Ink' || subject === "Ink") && this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings) {
             selector = this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings;
+            this.pdfViewerBase.updateSelectorSettings(selector);
         }
         return selector;
     }
@@ -619,9 +620,14 @@ export class InkAnnotation {
             for (let i: number = 0; i < pageAnnotations.length; i++) {
                 if (annotationBase.id === pageAnnotations[parseInt(i.toString(), 10)].id) {
                     if (property === 'bounds') {
-                        pageAnnotations[parseInt(i.toString(), 10)].bounds = { x: annotationBase.wrapper.bounds.left,
-                            y: annotationBase.wrapper.bounds.top, width: annotationBase.bounds.width,
-                            height: annotationBase.bounds.height };
+                        this.pdfViewerBase.isBounds = this.pdfViewerBase.boundsCalculation(pageAnnotations[parseInt(i.toString(), 10)].bounds, annotationBase.wrapper.bounds);
+                        if (this.pdfViewerBase.isBounds) {
+                            pageAnnotations[parseInt(i.toString(), 10)].bounds = {
+                                x: annotationBase.wrapper.bounds.left,
+                                y: annotationBase.wrapper.bounds.top, width: annotationBase.bounds.width,
+                                height: annotationBase.bounds.height
+                            };
+                        }
                     } else if (property === 'stroke') {
                         pageAnnotations[parseInt(i.toString(), 10)].strokeColor = annotationBase.wrapper.children[0].style.strokeColor;
                     } else if (property === 'opacity') {
@@ -634,8 +640,10 @@ export class InkAnnotation {
                         currentAnnotObject = pageAnnotations.splice(i, 1)[0];
                         break;
                     }
-                    pageAnnotations[parseInt(i.toString(), 10)].modifiedDate =
-                     this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
+                    if (this.pdfViewerBase.isBounds) {
+                        pageAnnotations[parseInt(i.toString(), 10)].modifiedDate =
+                            this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
+                    }
                     this.pdfViewer.annotationModule.storeAnnotationCollections(pageAnnotations[parseInt(i.toString(), 10)], pageNumber);
                 }
             }
@@ -725,8 +733,8 @@ export class InkAnnotation {
         const currentDateString: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
         const annotationName: string = this.pdfViewer.annotation.createGUID();
         //Creating annotation settings
-        const annotationSelectorSettings: any = this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings ?
-            this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+        const annotationSelectorSettings: any = this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings;
+        this.pdfViewerBase.updateSelectorSettings(annotationSelectorSettings);
         const annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.inkAnnotationSettings);
         annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('ink', annotationSettings.AnnotationType);
         const allowedInteractions: any = this.pdfViewer.inkAnnotationSettings.allowedInteractions ?

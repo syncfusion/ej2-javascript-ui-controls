@@ -500,11 +500,12 @@ export class MsWordPaste {
                 this.filterStyles(elm, wordPasteStyleConfig);
                 let resultElem: HTMLCollectionOf<Element> | NodeListOf<Element>;
                 let fromClass: boolean = false;
+                const regex: RegExp = /^(p|div|li)\.(1|10|11)$/;
                 for (let i: number = 0; i < keys.length; i++) {
                     if (keys[i as number].split('.')[0] === '') {
                         resultElem = elm.getElementsByClassName(keys[i as number].split('.')[1]);
                         fromClass = true;
-                    } else if (keys[i as number].split('.').length === 1 && keys[i as number].split('.')[0].indexOf('@') >= 0) {
+                    } else if ((keys[i as number].split('.').length === 1 && keys[i as number].split('.')[0].indexOf('@') >= 0) || (regex.test(keys[i as number]))) {
                         continue;
                     } else if (keys[i as number].split('.').length === 1 && keys[i as number].split('.')[0].indexOf('@') < 0) {
                         resultElem = elm.getElementsByTagName(keys[i as number]);

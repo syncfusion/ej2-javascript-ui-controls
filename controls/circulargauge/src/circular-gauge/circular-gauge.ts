@@ -534,6 +534,10 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      */
     constructor(options?: CircularGaugeModel, element?: string | HTMLElement) {
         super(options, element);
+        CircularGauge.Inject(Gradient);
+        if (element) {
+            this.appendTo(element);
+        }
     }
 
     /**
@@ -1621,27 +1625,6 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         this.renderer = null;
     }
 
-    private isGradientVisible(): boolean {
-        let isVisible: boolean = false;
-        for (const axis of this.axes) {
-            for (const pointer of axis.pointers) {
-                if (!isNullOrUndefined(pointer.linearGradient) || !isNullOrUndefined(pointer.radialGradient) ||
-                    (!isNullOrUndefined(pointer.cap) && (!isNullOrUndefined(pointer.cap.linearGradient) || !isNullOrUndefined(pointer.cap.linearGradient))) ||
-                    (!isNullOrUndefined(pointer.needleTail) && (!isNullOrUndefined(pointer.needleTail.linearGradient) || !isNullOrUndefined(pointer.needleTail.radialGradient)))) {
-                    isVisible = true;
-                    break;
-                }
-            }
-            for (const range of axis.ranges) {
-                if (!isNullOrUndefined(range.linearGradient) || !isNullOrUndefined(range.radialGradient)) {
-                    isVisible = true;
-                    break;
-                }
-            }
-        }
-        return isVisible;
-    }
-
     /**
      * To provide the array of modules needed for control rendering
      *
@@ -1702,13 +1685,11 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
             });
         }
 
-        if (this.isGradientVisible()) {
-            modules.push({
-                member: 'Gradient',
-                args: [this, Gradient],
-                name: 'Gradient'
-            });
-        }
+        modules.push({
+            member: 'Gradient',
+            args: [this, Gradient],
+            name: 'Gradient'
+        });
         return modules;
     }
 

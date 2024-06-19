@@ -409,7 +409,7 @@ export class TaskbarEdit extends DateProcessor {
                 }
                 this.initPublicProp();
             } else {
-               this.showHideTaskBarEditingElements(element, this.editElement);
+                this.showHideTaskBarEditingElements(element, this.editElement);
             }
         }
     }
@@ -2127,9 +2127,9 @@ export class TaskbarEdit extends DateProcessor {
             if (traceConnectorPointRight && this.taskBarEditAction === 'LeftResizing') {
                 traceConnectorPointRight.style.left = (width - 2) + 'px';
             }
-            if ( childProgressResizer && traceChildProgressBar &&(this.taskBarEditAction === 'LeftResizing' || this.taskBarEditAction === 'RightResizing' || this.taskBarEditAction === 'ChildDrag' || this.taskBarEditAction === 'ParentDrag')) {
-                childProgressResizer.style.display = "none"
-                traceChildProgressBar.style.display = "none"
+            if (childProgressResizer && traceChildProgressBar && (this.taskBarEditAction === 'LeftResizing' || this.taskBarEditAction === 'RightResizing' || this.taskBarEditAction === 'ChildDrag' || this.taskBarEditAction === 'ParentDrag')) {
+                childProgressResizer.style.display = 'none';
+                traceChildProgressBar.style.display = 'none';
             }
             if (this.taskBarEditAction === 'MilestoneDrag' || item.isMilestone) {
                 taskBarMainContainer.style.setProperty(position, (this.parent.allowTaskbarDragAndDrop ? this.leftValue : (item.left - (width / 2))) + 'px');

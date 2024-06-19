@@ -1827,6 +1827,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             subject: 'Subject',
             addTitle: 'Add title',
             moreDetails: 'More Details',
+            moreEvents: 'More Events',
             save: 'Save',
             editContent: 'How would you like to change the appointment in the series?',
             deleteContent: 'Are you sure you want to delete this event?',
@@ -1861,6 +1862,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             ok: 'Ok',
             yes: 'Yes',
             no: 'No',
+            of: 'of',
             occurrence: 'Occurrence',
             series: 'Series',
             previous: 'Previous',
@@ -2466,8 +2468,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             const scheduleId: string = this.element.id + '_';
             const viewName: string = this.activeViewOptions.headerIndentTemplateName;
             const templateId: string = scheduleId + viewName + 'headerIndentTemplate';
-            const indentTemplate: HTMLElement[] =
-                [].slice.call(this.getHeaderIndentTemplate()(data, this, 'headerIndentTemplate', templateId, false));
+            const indentTemplate: HTMLElement[] = [].slice.call(this.getHeaderIndentTemplate()
+                (data, this, 'headerIndentTemplate', templateId, false, undefined, undefined, this.root));
             append(indentTemplate, td);
         }
     }
@@ -2983,8 +2985,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
         const msMajorInterval: number = this.activeViewOptions.timeScale.interval * util.MS_PER_MINUTE;
         const msInterval: number = msMajorInterval / this.activeViewOptions.timeScale.slotCount;
-        let startIndex: number = Math.round((startHour.getTime() - viewStartHour.getTime()) / msInterval);
-        let endIndex: number = Math.ceil((endHour.getTime() - viewStartHour.getTime()) / msInterval);
+        const offsetDiff: number = ((viewStartHour.getTimezoneOffset() - startHour.getTimezoneOffset()) * util.MS_PER_MINUTE);
+        let startIndex: number = Math.round((startHour.getTime() - viewStartHour.getTime() + offsetDiff) / msInterval);
+        let endIndex: number = Math.ceil((endHour.getTime() - viewStartHour.getTime() + offsetDiff) / msInterval);
         const tempStartIndex: number = startIndex;
         const tempEndIndex: number = endIndex;
         const cells: HTMLTableCellElement[] = [];

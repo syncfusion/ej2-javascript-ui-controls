@@ -65,7 +65,7 @@
   --color-sf-border-focus: var(--color-sf-border);
   --color-sf-border-selected: #6b6b6b;
   --color-sf-border-dragged: var(--color-sf-primary);
-  --color-sf-border-disabled: #08233b;
+  --color-sf-border-disabled: #424242;
   --color-sf-border-warning: #bc4b09;
   --color-sf-border-error: #dc626d;
   --color-sf-border-success: #9fd89f;
@@ -242,7 +242,7 @@
   --color-sf-diagram-palette-hover-background: #bdbdbd;
   --color-sf-diagram-palette-selected-background: var(--color-sf-diagram-palette-hover-background);
 
-  --color-sf-rating-selected-color: var(--color-sf-content-text-color);
+  --color-sf-rating-selected-color: #fff;
   --color-sf-rating-unrated-color: var(--color-sf-content-text-color);
   --color-sf-rating-selected-disabled-color: #575757;
   --color-sf-rating-unrated-disabled-color: #4d4d4d;
@@ -255,9 +255,9 @@
   --color-sf-msg-border-color: var(--color-sf-border);
   --color-sf-msg-color-alt1: var(--color-sf-content-text-color);
   --color-sf-msg-bg-color-alt1: transparent;
-  --color-sf-msg-border-color-alt1: var(--color-sf-msg-bg-color);
+  --color-sf-msg-border-color-alt1: #666666;
   --color-sf-msg-color-alt2: #242424;
-  --color-sf-msg-bg-color-alt2: #adadad;
+  --color-sf-msg-bg-color-alt2: #c2c2c2;
   --color-sf-msg-border-color-alt2: var(--color-sf-msg-bg-color-alt2);
   --color-sf-msg-icon-color: var(--color-sf-msg-bg-color-alt2);
   --color-sf-msg-icon-color-alt1: var(--color-sf-msg-icon-color);
@@ -269,9 +269,9 @@
   --color-sf-msg-success-color: var(--color-sf-content-text-color);
   --color-sf-msg-success-bg-color: #052505;
   --color-sf-msg-success-border-color: #107c10;
-  --color-sf-msg-success-color-alt1: var(--color-sf-success);
+  --color-sf-msg-success-color-alt1: #54b054;
   --color-sf-msg-success-bg-color-alt1: transparent;
-  --color-sf-msg-success-border-color-alt1: var(--color-sf-msg-success-color);
+  --color-sf-msg-success-border-color-alt1: #218c21;
   --color-sf-msg-success-color-alt2: #fff;
   --color-sf-msg-success-bg-color-alt2: #107c10;
   --color-sf-msg-success-border-color-alt2: var(--color-sf-msg-success-bg-color-alt2);
@@ -285,9 +285,9 @@
   --color-sf-msg-danger-color: var(--color-sf-content-text-color);
   --color-sf-msg-danger-bg-color: #3b0509;
   --color-sf-msg-danger-border-color: #c50f1f;
-  --color-sf-msg-danger-color-alt1: var(--color-sf-danger);
+  --color-sf-msg-danger-color-alt1: #dc626d;
   --color-sf-msg-danger-bg-color-alt1: transparent;
-  --color-sf-msg-danger-border-color-alt1: var(--color-sf-msg-danger-border-color);
+  --color-sf-msg-danger-border-color-alt1: #d33f4c;
   --color-sf-msg-danger-color-alt2: #fff;
   --color-sf-msg-danger-bg-color-alt2: #c50f1f;
   --color-sf-msg-danger-border-color-alt2: var(--color-sf-msg-danger-bg-color-alt2);
@@ -301,9 +301,9 @@
   --color-sf-msg-info-color: var(--color-sf-content-text-color);
   --color-sf-msg-info-bg-color: #002e38;
   --color-sf-msg-info-border-color: #0099bc;
-  --color-sf-msg-info-color-alt1: var(--color-sf-info);
+  --color-sf-msg-info-color-alt1: #56bfd7;
   --color-sf-msg-info-bg-color-alt1: transparent;
-  --color-sf-msg-info-border-color-alt1: var(--color-sf-msg-info-border-color);
+  --color-sf-msg-info-border-color-alt1: #31afdd;
   --color-sf-msg-info-color-alt2: #fff;
   --color-sf-msg-info-bg-color-alt2: #0099bc;
   --color-sf-msg-info-border-color-alt2: var(--color-sf-msg-info-bg-color-alt2);
@@ -317,9 +317,9 @@
   --color-sf-msg-warning-color: var(--color-sf-content-text-color);
   --color-sf-msg-warning-bg-color: #411200;
   --color-sf-msg-warning-border-color: #da3b01;
-  --color-sf-msg-warning-color-alt1: var(--color-sf-warning);
+  --color-sf-msg-warning-color-alt1: #e9835e;
   --color-sf-msg-warning-bg-color-alt1: transparent;
-  --color-sf-msg-warning-border-color-alt1: var(--color-sf-msg-warning-border-color);
+  --color-sf-msg-warning-border-color-alt1: #e36537;
   --color-sf-msg-warning-color-alt2: #fff;
   --color-sf-msg-warning-bg-color-alt2: #da3b01;
   --color-sf-msg-warning-border-color-alt2: var(--color-sf-msg-warning-bg-color-alt2);
@@ -331,6 +331,7 @@
   --color-sf-msg-warning-close-icon-color-alt2: #fff;
   --color-sf-shadow-color: #{#fff};
   --color-sf-shadow-color1: #{#000};
+
   --color-sf-link-button: var(--color-sf-primary);
   --color-sf-link-button-hover: #{#0f6cbd};
   --color-sf-link-button-pressed: #{#115ea3};
@@ -338,7 +339,7 @@
   --color-sf-link-button-border-focus: #{#fff};
 
   --color-sf-chip-bg-color: #{#141414};
-  --color-sf-chip-border-color: #{#00000000};
+  --color-sf-chip-border-color: #{#141414};
   --color-sf-chip-bg-disabled: #{#141414};
   --color-sf-chip-border-disabled: #{#00000000};
 
@@ -442,11 +443,6 @@ $border-success: mapcolorvariable('border-success') !default;
 $border-info: mapcolorvariable('border-info') !default;
 $spreadsheet-gridline: mapcolorvariable('spreadsheet-gridline') !default;
 $flyout-border: mapcolorvariable('flyout-border') !default;
-
-$toggle-switch-border-disabled: mapcolorvariable('toggle-switch-border-disabled') !default;
-$link-button: mapcolorvariable('link-button') !default;
-$secondary-outline-button-text-color-hover: mapcolorvariable('secondary-outline-button-text-color-hover') !default;
-$toolbar-icon-color: mapcolorvariable('toolbar-icon-color') !default;
 
 $primary: mapcolorvariable('primary') !default;
 $primary-text-color: mapcolorvariable('primary-text-color') !default;
@@ -598,7 +594,7 @@ $info-outline: mapcolorvariable('info-outline') !default;
 
 $tooltip-bg-color: mapcolorvariable('tooltip-bg-color') !default;
 $tooltip-border: mapcolorvariable('tooltip-border') !default;
-$toooltip-text-color: mapcolorvariable('toooltip-text-color') !default;
+$toooltip-text-color: mapcolorvariable('tooltip-text-color') !default;
 
 $toast-text-color: mapcolorvariable('toast-text-color') !default;
 $toast-alt-text-color:mapcolorvariable('toase-alt-text-color') !default;
@@ -617,7 +613,7 @@ $diagram-palette-background: mapcolorvariable('diagram-palette-background') !def
 $diagram-palette-hover-background: mapcolorvariable('diagram-palette-hover-background') !default;
 $diagram-palette-selected-background: mapcolorvariable('diagram-palette-selected-background') !default;
 
-$rating-selected-color:mapcolorvariable('diagram-palette-background') !default;
+$rating-selected-color:mapcolorvariable('rating-selected-color') !default;
 $rating-unrated-color: mapcolorvariable('rating-unrated-color') !default;
 $rating-selected-disabled-color: mapcolorvariable('rating-selected-disabled-color') !default;
 $rating-unrated-disabled-color: mapcolorvariable('rating-unrated-disabled-color') !default;
@@ -725,6 +721,52 @@ $brand-primary-d10: mapcolorvariable('brand-primary-d10');
 $fg-white: mapcolorvariable('fg-white');
 $fg-senary: mapcolorvariable('fg-senary');
 $shadow-color: mapcolorvariable('shadow-color') !default;
+$shadow-color1: mapcolorvariable('shadow-color1') !default;
+
+$link-button: mapcolorvariable('link-button') !default;
+$link-button-hover: mapcolorvariable('link-button-hover') !default;
+$link-button-pressed: mapcolorvariable('link-button-pressed') !default;
+$link-button-focus: mapcolorvariable('link-button-focus') !default;
+$link-button-border-focus: mapcolorvariable('link-button-border-focus') !default;
+
+$chip-bg-color: mapcolorvariable('chip-bg-color') !default;
+$chip-border-color: mapcolorvariable('chip-border-color') !default;
+$chip-bg-disabled: mapcolorvariable('chip-bg-disabled') !default;
+$chip-border-disabled: mapcolorvariable('chip-border-disabled') !default;
+
+$secondary-outline-button-text-color-hover: mapcolorvariable('secondary-outline-button-text-color-hover') !default;
+$secondary-outline-button-text-color-pressed: mapcolorvariable('secondary-outline-button-text-color-pressed') !default;
+$secondary-outline-button-text-color-selected: mapcolorvariable('secondary-outline-button-text-color-selected') !default;
+$secondary-outline-button-text-color-focus: mapcolorvariable('secondary-outline-button-text-color-focus') !default;
+
+$slider-shadow1: mapcolorvariable('slider-shadow1') !default;
+$slider-shadow2: mapcolorvariable('slider-shadow2') !default;
+$slider-disabled: mapcolorvariable('slider-disabled') !default;
+$slider-border-color: mapcolorvariable('slider-border-color') !default;
+$slider-bg-disabled: mapcolorvariable('slider-bg-disabled') !default;
+
+$toggle-switch-border-disabled: mapcolorvariable('toggle-switch-border-disabled') !default;
+
+$calendar-icon-color: mapcolorvariable('calendar-icon-color') !default;
+$calendar-header-text-color-pressed: mapcolorvariable('calendar-header-text-color-pressed') !default;
+$calendar-today-bg-color: mapcolorvariable('calendar-today-bg-color') !default;
+
+$dialog-border: mapcolorvariable('dialog-border') !default;
+
+$badge-light-bg-color: mapcolorvariable('badge-light-bg-color') !default;
+$secondary-badge-border-color: mapcolorvariable('secondary-badge-border-color') !default;
+$secondary-badge-bg-color: mapcolorvariable('secondary-badge-bg-color') !default;
+$secondary-badge-bg-color-focus: mapcolorvariable('secondary-badge-bg-color-focus') !default;
+
+$skeleton-bg-color: mapcolorvariable('skeleton-bg-color') !default;
+
+$tab-selected-bg-color-disabled: mapcolorvariable('tab-selected-bg-color-disabled') !default;
+$tab-selected-text-color-disabled: mapcolorvariable('tab-selected-text-color-disabled') !default;
+$ribbon-border-color: mapcolorvariable('ribbon-border-color') !default;
+$toolbar-icon-color: mapcolorvariable('toolbar-icon-color') !default;
+$contextual-text: mapcolorvariable('contextual-text') !default;
+$cell-selection-bg-color: mapcolorvariable('cell-selection-bg-color') !default;
+$document-editor-border-color: mapcolorvariable('document-editor-border-color') !default;
 
 $black:#000 !default;
 $white:#fff !default;
@@ -963,7 +1005,7 @@ $content-text-color-pressed: $content-text-color-pressed !default;
 $content-text-color-focus: $content-text-color-focus !default;
 $content-text-color-selected: $content-text-color-selected !default;
 $content-text-color-dragged: $content-text-color-dragged !default;
-$content-text-color-disabled: $content-bg-color-disabled !default;
+$content-text-color-disabled: $content-text-color-disabled !default;
 $placeholder-text-color: $placeholder-text-color !default;
 $flyout-text-color: $flyout-text-color !default;
 $flyout-text-color-hover: $flyout-text-color-hover !default;
@@ -983,7 +1025,7 @@ $icon-color-disabled: $icon-color-disabled !default;
 $border-light: $border-light !default;
 $border: $border !default;
 $border-alt: $border-alt !default;
-$border-dark: $border--dark !default;
+$border-dark: $border-dark !default;
 $border-hover: $border-hover !default;
 $border-pressed: $border-pressed !default;
 $border-focus: $border-focus !default;
@@ -997,11 +1039,6 @@ $border-info: $border-info !default;
 $spreadsheet-gridline: $spreadsheet-gridline !default;
 $flyout-border: $flyout-border !default;
 
-$toggle-switch-border-disabled: $toggle-switch-border-disabled !default;
-$link-button: $link-button !default;
-$secondary-outline-button-text-color-hover: $secondary-outline-button-text-color-hover !default;
-$toolbar-icon-color: $toolbar-icon-color !default;
-
 $tooltip-bg-color: $white !default;
 $tooltip-border: $white;
 $toooltip-text-color: $grey-14 !default;
@@ -1011,9 +1048,9 @@ $shadow-08: 0 4px 8px 0 rgba($black, .14), 0 0 2px 0 rgba($black, .12) !default;
 $shadow-16: 0 8px 16px 0 rgba($black, .14), 0 0 2px 0 rgba($black, .12) !default;
 $shadow-28: 0 14px 28.8px 0 rgba($black, .24), 0 0 8px 0 rgba($black, .2) !default;
 $shadow-64: 0 32px 64px 0 rgba($black, .24), 0 0 8px 0 rgba($black, .2) !default;
-$keyboard-focus: inset 0 0 0 1px $shadow-color, inset 0 0 0 2px $white !default;
-$slider-shadow: 0 0 0 1px rgba($shadow-color), inset 0 0 0 4px $white !default;
-$shadow-stepper-small: 0 0 0 rgba($content-bg-color) !default;
+$keyboard-focus: inset 0 0 0 1px $shadow-color, inset 0 0 0 2px $shadow-color1 !default;
+$slider-shadow: 0 0 0 1px $slider-shadow2, inset 0 0 0 4px $slider-shadow1 !default;
+$shadow-stepper-small: 0 0 0 8px $content-bg-color !default;
 $shadow-stepper: 0 0 0 rgba($content-bg-color) 0 0 0 rgba($primary) 0 0 0 rgba($content-bg-color) !default;
 $frozen-shadow: 0 4px 8px 0 rgba($black, .12) !default;
 $shadow-stepper-disabled: 0 0 0 rgba($content-bg-color) 0 0 0 rgba($primary-bg-color-disabled) 0 0 0 $content-bg-color !default;
@@ -1029,14 +1066,14 @@ $shadow-xl:$shadow-28 !default;
 $shadow-2xl: $shadow-64 !default;
 $shadow-inner: inset 0 1px 2px rgba($black, .075) !default;
 $shadow-none: 0 0 rgba($black, 0) !default;
-$shadow-focus-ring1: inset 0 0 0 1px $shadow-color, inset 0 0 0 2px $black !default;
+$shadow-focus-ring1: $keyboard-focus !default;
 $shadow-focus-ring2: 0 0 0 1px rgba($black, .95) !default;
-$primary-shadow-focus: inset 0 0 0 1px $shadow-color, inset 0 0 0 2px $black !default;
-$secondary-shadow-focus: inset 0 0 0 1px $shadow-color, inset 0 0 0 2px $black !default;
-$success-shadow-focus: inset 0 0 0 1px $shadow-color, inset 0 0 0 2px $black !default;
-$danger-shadow-focus: inset 0 0 0 1px $shadow-color, inset 0 0 0 2px $black !default;
-$info-shadow-focus: inset 0 0 0 1px $shadow-color, inset 0 0 0 2px $black !default;
-$warning-shadow-focus: inset 0 0 0 1px $shadow-color, inset 0 0 0 2px $black !default;
+$primary-shadow-focus: inset 0 0 0 1px $shadow-color, inset 0 0 0 2px $shadow-color1 !default;
+$secondary-shadow-focus: inset 0 0 0 1px $shadow-color, inset 0 0 0 2px $shadow-color1 !default;
+$success-shadow-focus: inset 0 0 0 1px $shadow-color, inset 0 0 0 2px $shadow-color1 !default;
+$danger-shadow-focus: inset 0 0 0 1px $shadow-color, inset 0 0 0 2px $shadow-color1 !default;
+$info-shadow-focus: inset 0 0 0 1px $shadow-color, inset 0 0 0 2px $shadow-color1 !default;
+$warning-shadow-focus: inset 0 0 0 1px $shadow-color, inset 0 0 0 2px $shadow-color1 !default;
 
 $font-family: 'Segoe UI', -apple-system, blinkMacSystemfont, 'Roboto', 'Helvetica Neue', sans-serif !default;
 
@@ -1342,6 +1379,51 @@ $rating-selected-hover-color: $rating-selected-hover-color !default;
 $rating-unrated-hover-color: $rating-unrated-hover-color !default;
 $rating-pressed-color: $rating-pressed-color !default;
 
+$link-button: $link-button !default;
+$link-button-hover: $link-button-hover !default;
+$link-button-pressed: $link-button-pressed !default;
+$link-button-focus: $link-button-focus !default;
+$link-button-border-focus: $link-button-border-focus !default;
+
+$chip-bg-color: $chip-bg-color !default;
+$chip-border-color: $chip-border-color !default;
+$chip-bg-disabled: $chip-bg-disabled !default;
+$chip-border-disabled: $chip-border-disabled !default;
+
+$secondary-outline-button-text-color-hover: $secondary-outline-button-text-color-hover !default;
+$secondary-outline-button-text-color-pressed: $secondary-outline-button-text-color-pressed !default;
+$secondary-outline-button-text-color-selected: $secondary-outline-button-text-color-selected !default;
+$secondary-outline-button-text-color-focus: $secondary-outline-button-text-color-focus !default;
+
+$slider-shadow1: $slider-shadow1 !default;
+$slider-shadow2: $slider-shadow2 !default;
+$slider-disabled: $slider-disabled !default;
+$slider-border-color: $slider-border-color !default;
+$slider-bg-disabled: $slider-bg-disabled !default;
+
+$toggle-switch-border-disabled: $toggle-switch-border-disabled !default;
+
+$calendar-icon-color: $calendar-icon-color !default;
+$calendar-header-text-color-pressed: $calendar-header-text-color-pressed !default;
+$calendar-today-bg-color: $calendar-today-bg-color !default;
+
+$dialog-border: $dialog-border !default;
+
+$badge-light-bg-color: $badge-light-bg-color !default;
+$secondary-badge-border-color: $secondary-badge-border-color !default;
+$secondary-badge-bg-color: $secondary-badge-bg-color !default;
+$secondary-badge-bg-color-focus: $secondary-badge-bg-color-focus !default;
+
+$skeleton-bg-color: $skeleton-bg-color !default;
+
+$tab-selected-bg-color-disabled: $tab-selected-bg-color-disabled !default;
+$tab-selected-text-color-disabled: $tab-selected-text-color-disabled !default;
+$ribbon-border-color: $ribbon-border-color !default;
+$toolbar-icon-color: $toolbar-icon-color !default;
+$contextual-text: $contextual-text !default;
+$cell-selection-bg-color: $cell-selection-bg-color !default;
+$document-editor-border-color: $document-editor-border-color !default;
+
 $font-icon-8: 8px !default;
 $font-icon-9: 9px !default;
 $font-icon-10: 10px !default;
@@ -1421,5 +1503,4 @@ $gantt-active-parent-task-color: $brand-primary-d10 !default;
 $btn-border-radius:4px !default;
 $btn-border-radius:4px !default;
 
-$switch-box-shadow: 0 0 0 2px #000, 0 0 0 4px #fff !default;
-$button-border-disabled: #424242 !default;
+$switch-box-shadow: 0 0 0 2px #000, 0 0 0 3px #fff !default;

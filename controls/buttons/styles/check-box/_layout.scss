@@ -87,7 +87,12 @@
         width: 1px;
 
         +.e-label {
-          margin-right: $cbox-margin;
+          @if $skin-name == 'fluent2' {
+            margin: 6px 4px 6px 8px;
+          }
+          @else {
+            margin-right: $cbox-margin;
+          }
         }
       }
 
@@ -173,18 +178,30 @@
         }
 
         & .e-label {
-          margin-left: 0;
-          margin-right: $cbox-margin;
+          @if $skin-name == 'fluent2' {
+            margin: 6px 4px 6px 8px;
+          }
+          @else {
+            margin-left: 0;
+            margin-right: $cbox-margin;
+          }
 
           +.e-frame {
-            margin: 0;
+            @if $skin-name != 'fluent2' {
+              margin: 0;
+            }
           }
         }
 
         & .e-checkbox {
           +.e-label {
-            margin-left: $cbox-margin;
-            margin-right: 0;
+            @if $skin-name == 'fluent2' {
+              margin: 6px 4px 6px 8px;
+            }
+            @else {
+              margin-left: $cbox-margin;
+              margin-right: 0;
+            }
           }
         }
       }
@@ -325,6 +342,13 @@
   .e-bigger.e-checkbox-wrapper,
   .e-bigger .e-css.e-checkbox-wrapper,
   .e-bigger.e-css.e-checkbox-wrapper {
+    & .e-checkbox {
+      +.label {
+        @if $skin-name == 'fluent2' {
+          margin: 9px 6px 9px 8px;
+        }
+      }
+    }
     & .e-frame {
       height: $cbox-bigger-height;
       line-height: $cbox-bigger-lineheight;
@@ -406,8 +430,13 @@
         }
 
         +.e-label {
-          margin-left: 0;
-          margin-right: $cbox-bigger-margin;
+          @if $skin-name == 'fluent2' {
+            margin: 9px 6px 9px 8px;
+          }
+          @else {
+            margin-left: 0;
+            margin-right: $cbox-bigger-margin;
+          }
         }
 
         +.e-ripple-container {

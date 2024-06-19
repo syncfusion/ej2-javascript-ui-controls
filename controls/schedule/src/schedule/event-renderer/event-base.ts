@@ -1102,7 +1102,8 @@ export class EventBase {
             const templateId: string = scheduleId + viewName + 'eventTemplate';
             const templateName: string = isResourceEventTemplate && this.parent.currentView.indexOf('Year') === -1 ?
                 this.parent.getEventTemplateName(resIndex) : 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, templateName, templateId, false);
+            templateElement = this.parent.getAppointmentTemplate()
+                (record, this.parent, templateName, templateId, false, undefined, undefined, this.parent.root);
         } else {
             const appointmentSubject: HTMLElement = createElement('div', { className: cls.SUBJECT_CLASS });
             this.parent.sanitize(eventSubject, appointmentSubject);

@@ -2294,11 +2294,6 @@ export class Signature {
                 this.storeSignatureData(annot.pageIndex, annot);
                 this.pdfViewerBase.currentSignatureAnnot = null;
                 this.pdfViewerBase.signatureCount++;
-                if (this.pdfViewerBase.navigationPane && this.pdfViewerBase.navigationPane.annotationMenuObj &&
-                     this.pdfViewer.isSignatureEditable) {
-                    this.pdfViewerBase.navigationPane.annotationMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Export Annotations')], true);
-                    this.pdfViewerBase.navigationPane.annotationMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Export XFDF')], true);
-                }
             }
         }
     }

@@ -532,6 +532,7 @@ export class FreeTextAnnotation {
             selector = typeof(annotation.AnnotationSelectorSettings) === 'string' ? JSON.parse(annotation.AnnotationSelectorSettings) : annotation.AnnotationSelectorSettings;
         } else if (this.pdfViewer.freeTextSettings.annotationSelectorSettings) {
             selector = this.pdfViewer.freeTextSettings.annotationSelectorSettings;
+            this.pdfViewerBase.updateSelectorSettings(selector);
         }
         return selector;
     }
@@ -587,9 +588,14 @@ export class FreeTextAnnotation {
             for (let i: number = 0; i < pageAnnotations.length; i++) {
                 if (annotationBase.id === pageAnnotations[parseInt(i.toString(), 10)].id) {
                     if (property === 'bounds') {
-                        pageAnnotations[parseInt(i.toString(), 10)].bounds = { left: annotationBase.bounds.x, top: annotationBase.bounds.y,
-                            width: annotationBase.bounds.width, height: annotationBase.bounds.height, right: annotationBase.bounds.right,
-                            bottom: annotationBase.bounds.bottom };
+                        this.pdfViewerBase.isBounds = this.pdfViewerBase.boundsCalculation(pageAnnotations[parseInt(i.toString(), 10)].bounds, annotationBase.wrapper.bounds);
+                        if (this.pdfViewerBase.isBounds) {
+                            pageAnnotations[parseInt(i.toString(), 10)].bounds = {
+                                left: annotationBase.bounds.x, top: annotationBase.bounds.y,
+                                width: annotationBase.bounds.width, height: annotationBase.bounds.height, right: annotationBase.bounds.right,
+                                bottom: annotationBase.bounds.bottom
+                            };
+                        }
                     } else if (property === 'fill') {
                         pageAnnotations[parseInt(i.toString(), 10)].fillColor = annotationBase.wrapper.children[0].style.fill;
                     } else if (property === 'stroke') {
@@ -623,8 +629,10 @@ export class FreeTextAnnotation {
                     } else if (property === 'textAlign') {
                         pageAnnotations[parseInt(i.toString(), 10)].textAlign = annotationBase.textAlign;
                     }
-                    pageAnnotations[parseInt(i.toString(), 10)].modifiedDate =
-                     this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
+                    if (this.pdfViewerBase.isBounds) {
+                        pageAnnotations[parseInt(i.toString(), 10)].modifiedDate =
+                            this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
+                    }
                     this.pdfViewer.annotationModule.storeAnnotationCollections(pageAnnotations[parseInt(i.toString(), 10)], pageNumber);
                 }
             }
@@ -847,9 +855,8 @@ export class FreeTextAnnotation {
                 if (commentsDivid) {
                     document.getElementById(commentsDivid).id = annotationName;
                 }
-                const annotationSelectorSettings: AnnotationSelectorSettingsModel =
-                this.pdfViewer.freeTextSettings.annotationSelectorSettings ?
-                    this.pdfViewer.freeTextSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+                const annotationSelectorSettings: AnnotationSelectorSettingsModel = this.pdfViewer.freeTextSettings.annotationSelectorSettings;
+                this.pdfViewerBase.updateSelectorSettings(annotationSelectorSettings);
                 const annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
                 this.author = this.author ? this.author : this.pdfViewer.freeTextSettings.author ? this.pdfViewer.freeTextSettings.author : 'Guest';
                 this.subject = this.subject ? this.subject : this.pdfViewer.freeTextSettings.subject ? this.pdfViewer.freeTextSettings.subject : 'Text Box';
@@ -1464,8 +1471,8 @@ export class FreeTextAnnotation {
         const annotationName: string = this.pdfViewer.annotation.createGUID();
         const fontStyle: FontStyle = annotationObject.fontStyle ? annotationObject.fontStyle : FontStyle.None;
         //Creating annotation settings
-        const annotationSelectorSettings: any = this.pdfViewer.freeTextSettings.annotationSelectorSettings ?
-            this.pdfViewer.freeTextSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+        const annotationSelectorSettings: any = this.pdfViewer.freeTextSettings.annotationSelectorSettings;
+        this.pdfViewerBase.updateSelectorSettings(annotationSelectorSettings);
         const annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.freeTextSettings);
         const allowedInteractions: any = this.pdfViewer.freeTextSettings.allowedInteractions ?
             this.pdfViewer.freeTextSettings.allowedInteractions : this.pdfViewer.annotationSettings.allowedInteractions;

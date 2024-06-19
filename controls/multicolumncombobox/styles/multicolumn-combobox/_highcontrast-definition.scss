@@ -1,6 +1,8 @@
 $header-font-weight: 600 !default;
 $multicolumn-grid-height: 36px !default;
 $multicolumn-margin-top-value: unset !default;
+$footer-border-width: 1px !default;
+$grid-border-width: 1px !default;
 
 $multicolumn-grid-small-height: 32px !default;
 $multicolumn-margin-top-small-value: unset !default;
@@ -17,7 +19,7 @@ $grid-content-color: $content-font !default;
 $grid-content-hover-bg-color: $hover-bg !default;
 $grid-content-active-bg-color: $selection-bg !default;
 $grid-content-active-color: $selection-font !default;
-$grid-footer-bg-color: transparent !default;
+$grid-footer-bg-color: $bg-base-0 !default;
 $grid-footer-color: $selection-border !default;
 $grid-group-content-header-color: $selection-border !default;
 $grid-group-content-header-bg-color: $bg-base-0 !default;

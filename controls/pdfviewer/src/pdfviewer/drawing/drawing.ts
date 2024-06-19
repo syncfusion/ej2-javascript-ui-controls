@@ -1368,97 +1368,85 @@ export class Drawing {
         }
         options.dashArray = lineDash.toString();
         if (type === 'Rectangle' && this.pdfViewer.rectangleSettings.annotationSelectorSettings) {
-            const borderColor: string = isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectionBorderColor === '' ? 'black' : this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectionBorderColor;
+            const borderColor: string = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.annotationSelectorSettings.selectionBorderColor === '' ?  'black' : this.pdfViewer.annotationSelectorSettings.selectionBorderColor ? this.pdfViewer.annotationSelectorSettings.selectionBorderColor : this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectionBorderColor;
             options.stroke = borderColor;
-            const thickness: number = isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.
-                selectionBorderThickness) ? 1 : this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectionBorderThickness;
+            // eslint-disable-next-line max-len
+            const thickness: number = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.annotationSelectorSettings.selectionBorderThickness ? this.pdfViewer.annotationSelectorSettings.selectionBorderThickness : this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectionBorderThickness;
             options.strokeWidth = thickness;
-            let lineDash: number[] = isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.
-                selectorLineDashArray) || this.pdfViewer.rectangleSettings.annotationSelectorSettings.
-                selectorLineDashArray.length === 0 ? [4] : this.pdfViewer.rectangleSettings.annotationSelectorSettings.
-                    selectorLineDashArray;
+            // eslint-disable-next-line max-len
+            let lineDash: number[] = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectorLineDashArray) || this.pdfViewer.annotationSelectorSettings.selectorLineDashArray.length === 0 ? [4] : this.pdfViewer.annotationSelectorSettings.selectorLineDashArray  ? this.pdfViewer.annotationSelectorSettings.selectorLineDashArray :  this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectorLineDashArray;
             if (lineDash.length > 2) {
                 lineDash = [lineDash[0], lineDash[1]];
             }
             options.dashArray = lineDash.toString();
         } else if ((type === 'Textbox' || type === 'Checkbox' || type === 'RadioButton' || type === 'SignatureField' || type === 'InitialField' || type === 'DropdownList' || type === 'ListBox' || type === 'PasswordField') && this.pdfViewer.rectangleSettings.annotationSelectorSettings) {
-            const borderColor: string = isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectionBorderColor === '' ? 'black' : this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectionBorderColor;
+            const borderColor: string = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.annotationSelectorSettings.selectionBorderColor === '' ? 'black' : this.pdfViewer.annotationSelectorSettings.selectionBorderColor ? this.pdfViewer.annotationSelectorSettings.selectionBorderColor : this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectionBorderColor;
             options.stroke = borderColor;
-            const thickness: number = isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.
-                selectionBorderThickness) ? 1 : this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectionBorderThickness;
+            // eslint-disable-next-line max-len
+            const thickness: number = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.annotationSelectorSettings.selectionBorderThickness ? this.pdfViewer.annotationSelectorSettings.selectionBorderThickness : this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectionBorderThickness;
             options.strokeWidth = thickness;
-            let lineDash: number[] = isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.
-                selectorLineDashArray) || this.pdfViewer.rectangleSettings.annotationSelectorSettings.
-                selectorLineDashArray.length === 0 ? [4] : this.pdfViewer.rectangleSettings.annotationSelectorSettings.
-                    selectorLineDashArray;
+            // eslint-disable-next-line max-len
+            let lineDash: number[] = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectorLineDashArray) || this.pdfViewer.annotationSelectorSettings.selectorLineDashArray.length === 0 ? [4] : this.pdfViewer.annotationSelectorSettings.selectorLineDashArray ? this.pdfViewer.annotationSelectorSettings.selectorLineDashArray : this.pdfViewer.rectangleSettings.annotationSelectorSettings.selectorLineDashArray;
             if (lineDash.length > 2) {
                 lineDash = [lineDash[0], lineDash[1]];
             }
             options.dashArray = lineDash.toString();
         } else if (type === 'Ellipse' && this.pdfViewer.circleSettings.annotationSelectorSettings) {
-            const borderColor: string = isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.circleSettings.annotationSelectorSettings.selectionBorderColor === '' ? 'black' : this.pdfViewer.circleSettings.annotationSelectorSettings.selectionBorderColor;
+            const borderColor: string = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.annotationSelectorSettings.selectionBorderColor === '' ? 'black' : this.pdfViewer.annotationSelectorSettings.selectionBorderColor ? this.pdfViewer.annotationSelectorSettings.selectionBorderColor : this.pdfViewer.circleSettings.annotationSelectorSettings.selectionBorderColor;
             options.stroke = borderColor;
-            const thickness: number = isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.
-                selectionBorderThickness) ? 1 : this.pdfViewer.circleSettings.annotationSelectorSettings.selectionBorderThickness;
+            // eslint-disable-next-line max-len
+            const thickness: number = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.annotationSelectorSettings.selectionBorderThickness ? this.pdfViewer.annotationSelectorSettings.selectionBorderThickness : this.pdfViewer.circleSettings.annotationSelectorSettings.selectionBorderThickness;
             options.strokeWidth = thickness;
-            let lineDash: number[] = isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.
-                selectorLineDashArray) || this.pdfViewer.circleSettings.annotationSelectorSettings.
-                selectorLineDashArray.length === 0 ? [4] : this.pdfViewer.circleSettings.annotationSelectorSettings.
-                    selectorLineDashArray;
+            // eslint-disable-next-line max-len
+            let lineDash: number[] = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectorLineDashArray) || this.pdfViewer.annotationSelectorSettings.selectorLineDashArray.length === 0 ? [4] : this.pdfViewer.annotationSelectorSettings.selectorLineDashArray ? this.pdfViewer.annotationSelectorSettings.selectorLineDashArray : this.pdfViewer.circleSettings.annotationSelectorSettings.selectorLineDashArray;
             if (lineDash.length > 2) {
                 lineDash = [lineDash[0], lineDash[1]];
             }
             options.dashArray = lineDash.toString();
         } else if (type === 'Radius' && this.pdfViewer.radiusSettings.annotationSelectorSettings) {
-            const borderColor: string = isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.radiusSettings.annotationSelectorSettings.selectionBorderColor === '' ? 'black' : this.pdfViewer.radiusSettings.annotationSelectorSettings.selectionBorderColor;
+            const borderColor: string = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.annotationSelectorSettings.selectionBorderColor === '' ?  'black' : this.pdfViewer.annotationSelectorSettings.selectionBorderColor  ? this.pdfViewer.annotationSelectorSettings.selectionBorderColor  : this.pdfViewer.radiusSettings.annotationSelectorSettings.selectionBorderColor;
             options.stroke = borderColor;
-            const thickness: number = isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings.
-                selectionBorderThickness) ? 1 : this.pdfViewer.radiusSettings.annotationSelectorSettings.selectionBorderThickness;
+            // eslint-disable-next-line max-len
+            const thickness: number = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.annotationSelectorSettings.selectionBorderThickness  ? this.pdfViewer.annotationSelectorSettings.selectionBorderThickness : this.pdfViewer.radiusSettings.annotationSelectorSettings.selectionBorderThickness;
             options.strokeWidth = thickness;
-            let lineDash: number[] = isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings.
-                selectorLineDashArray) || this.pdfViewer.radiusSettings.annotationSelectorSettings.
-                selectorLineDashArray.length === 0 ? [4] : this.pdfViewer.radiusSettings.annotationSelectorSettings.
-                    selectorLineDashArray;
+            // eslint-disable-next-line max-len
+            let lineDash: number[] = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectorLineDashArray) || this.pdfViewer.annotationSelectorSettings.selectorLineDashArray.length === 0 ? [4] : this.pdfViewer.annotationSelectorSettings.selectorLineDashArray ? this.pdfViewer.annotationSelectorSettings.selectorLineDashArray : this.pdfViewer.radiusSettings.annotationSelectorSettings.selectorLineDashArray;
             if (lineDash.length > 2) {
                 lineDash = [lineDash[0], lineDash[1]];
             }
             options.dashArray = lineDash.toString();
         } else if (type === 'FreeText' && this.pdfViewer.freeTextSettings.annotationSelectorSettings) {
-            const borderColor: string = isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.freeTextSettings.annotationSelectorSettings.selectionBorderColor === '' ? 'black' : this.pdfViewer.freeTextSettings.annotationSelectorSettings.selectionBorderColor;
+            const borderColor: string = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.annotationSelectorSettings.selectionBorderColor === '' ? 'black' : this.pdfViewer.annotationSelectorSettings.selectionBorderColor ? this.pdfViewer.annotationSelectorSettings.selectionBorderColor : this.pdfViewer.freeTextSettings.annotationSelectorSettings.selectionBorderColor;
             options.stroke = borderColor;
-            const thickness: number = isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.
-                selectionBorderThickness) ? 1 : this.pdfViewer.freeTextSettings.annotationSelectorSettings.selectionBorderThickness;
+            // eslint-disable-next-line max-len
+            const thickness: number = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.annotationSelectorSettings.selectionBorderThickness ? this.pdfViewer.annotationSelectorSettings.selectionBorderThickness: this.pdfViewer.freeTextSettings.annotationSelectorSettings.selectionBorderThickness;
             options.strokeWidth = thickness;
-            let lineDash: number[] = isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.
-                selectorLineDashArray) || this.pdfViewer.freeTextSettings.annotationSelectorSettings.
-                selectorLineDashArray.length === 0 ? [4] : this.pdfViewer.freeTextSettings.annotationSelectorSettings.selectorLineDashArray;
+            // eslint-disable-next-line max-len
+            let lineDash: number[] = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectorLineDashArray) || this.pdfViewer.annotationSelectorSettings.selectorLineDashArray.length === 0 ? [4] : this.pdfViewer.annotationSelectorSettings.selectorLineDashArray ? this.pdfViewer.annotationSelectorSettings.selectorLineDashArray : this.pdfViewer.freeTextSettings.annotationSelectorSettings.selectorLineDashArray;
             if (lineDash.length > 2) {
                 lineDash = [lineDash[0], lineDash[1]];
             }
             options.dashArray = lineDash.toString();
         } else if (type === 'StickyNotes' && this.pdfViewer.stickyNotesSettings.annotationSelectorSettings) {
-            const borderColor: string = isNullOrUndefined(this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.selectionBorderColor === '' ? 'black' : this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.selectionBorderColor;
+            const borderColor: string = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.annotationSelectorSettings.selectionBorderColor === '' ? 'black' : this.pdfViewer.annotationSelectorSettings.selectionBorderColor ? this.pdfViewer.annotationSelectorSettings.selectionBorderColor : this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.selectionBorderColor;
             options.stroke = borderColor;
-            const thickness: number = isNullOrUndefined(this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.
-                selectionBorderThickness) ? 1 : this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.selectionBorderThickness;
+            // eslint-disable-next-line max-len
+            const thickness: number = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.annotationSelectorSettings.selectionBorderThickness ? this.pdfViewer.annotationSelectorSettings.selectionBorderThickness : this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.selectionBorderThickness;
             options.strokeWidth = thickness;
-            let lineDash: number[] = isNullOrUndefined(this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.
-                selectorLineDashArray) || this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.
-                selectorLineDashArray.length === 0 ? [6, 3] : this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.
-                    selectorLineDashArray;
+            // eslint-disable-next-line max-len
+            let lineDash: number[] = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectorLineDashArray) || this.pdfViewer.annotationSelectorSettings.selectorLineDashArray.length === 0 ? [6, 3] : this.pdfViewer.annotationSelectorSettings.selectorLineDashArray ? this.pdfViewer.annotationSelectorSettings.selectorLineDashArray : this.pdfViewer.stickyNotesSettings.annotationSelectorSettings.selectorLineDashArray;
             if (lineDash.length > 2) {
                 lineDash = [lineDash[0], lineDash[1]];
             }
             options.dashArray = lineDash.toString();
-        } else if (type === 'Stamp' && this.pdfViewer.stampSettings.annotationSelectorSettings) {
-            const borderColor: string = isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.stampSettings.annotationSelectorSettings.selectionBorderColor === '' ? '#0000ff' : this.pdfViewer.stampSettings.annotationSelectorSettings.selectionBorderColor;
+        } else if ((type === 'Stamp' || type === 'Image') && this.pdfViewer.stampSettings.annotationSelectorSettings) {
+            const borderColor: string = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.annotationSelectorSettings.selectionBorderColor === '' ? '#0000ff' : this.pdfViewer.annotationSelectorSettings.selectionBorderColor ? this.pdfViewer.annotationSelectorSettings.selectionBorderColor : this.pdfViewer.stampSettings.annotationSelectorSettings.selectionBorderColor;
             options.stroke = borderColor;
-            const thickness: number = isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.
-                selectionBorderThickness) ? 1 : this.pdfViewer.stampSettings.annotationSelectorSettings.selectionBorderThickness;
+            // eslint-disable-next-line max-len
+            const thickness: number = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.annotationSelectorSettings.selectionBorderThickness ? this.pdfViewer.annotationSelectorSettings.selectionBorderThickness : this.pdfViewer.stampSettings.annotationSelectorSettings.selectionBorderThickness;
             options.strokeWidth = thickness;
-            let lineDash: number[] = isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.
-                selectorLineDashArray) || this.pdfViewer.stampSettings.annotationSelectorSettings.
-                selectorLineDashArray.length === 0 ? [4] : this.pdfViewer.stampSettings.annotationSelectorSettings.selectorLineDashArray;
+            // eslint-disable-next-line max-len
+            let lineDash: number[] = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectorLineDashArray) || this.pdfViewer.annotationSelectorSettings.selectorLineDashArray.length === 0 ? [4] : this.pdfViewer.annotationSelectorSettings.selectorLineDashArray ? this.pdfViewer.annotationSelectorSettings.selectorLineDashArray : this.pdfViewer.stampSettings.annotationSelectorSettings.selectorLineDashArray;
             if (lineDash.length > 2) {
                 lineDash = [lineDash[0], lineDash[1]];
             }
@@ -1570,146 +1558,104 @@ export class Drawing {
              8 ? 8 : annotationSelector.resizerSize) * t.scale;
             options.height = (isNullOrUndefined(annotationSelector.resizerSize) || annotationSelector.resizerSize ===
              8 ? 8 : annotationSelector.resizerSize) * t.scale;
-            if (type === 'Line' && this.pdfViewer.lineSettings.annotationSelectorSettings) {
-                options.radius = (isNullOrUndefined(this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize) / 2;
-                options.width = (isNullOrUndefined(this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                options.height = (isNullOrUndefined(this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize) ||
-                this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize === 8 ? 8 :
-                    this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize) * t.scale;
+             if (type === 'Line' && this.pdfViewer.lineSettings.annotationSelectorSettings) {
+                // eslint-disable-next-line max-len
+                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize) / 2;
+                // eslint-disable-next-line max-len
+                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.lineSettings.annotationSelectorSettings.resizerSize) * t.scale;
             } else if (type === 'LineWidthArrowHead' && this.pdfViewer.arrowSettings.annotationSelectorSettings) {
-                options.radius = (isNullOrUndefined(this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize) / 2;
-                options.width = (isNullOrUndefined(this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                options.height = (isNullOrUndefined(this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize) / 2;
+                // eslint-disable-next-line max-len
+                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerSize) * t.scale;
             } else if (type === 'Rectangle' && this.pdfViewer.rectangleSettings.annotationSelectorSettings) {
-                options.radius = (isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize) / 2;
-                options.width = (isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                options.height = (isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize) / 2;
+                // eslint-disable-next-line max-len
+                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerSize) * t.scale;
             } else if (type === 'Ellipse' && this.pdfViewer.circleSettings.annotationSelectorSettings) {
-                options.radius = (isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize) / 2;
-                options.width = (isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                options.height = (isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize) / 2;
+                // eslint-disable-next-line max-len
+                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.circleSettings.annotationSelectorSettings.resizerSize) * t.scale;
             } else if (type === 'Distance' && this.pdfViewer.distanceSettings.annotationSelectorSettings) {
-                options.radius = (isNullOrUndefined(this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize) / 2;
-                options.width = (isNullOrUndefined(this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                options.height = (isNullOrUndefined(this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize) / 2;
+                // eslint-disable-next-line max-len
+                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerSize) * t.scale;
             } else if (type === 'Polygon' && this.pdfViewer.polygonSettings.annotationSelectorSettings) {
-                options.radius = (isNullOrUndefined(this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize) / 2;
-                options.width = (isNullOrUndefined(this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                options.height = (isNullOrUndefined(this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize) / 2;
+                // eslint-disable-next-line max-len
+                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerSize) * t.scale;
             } else if (type === 'Radius' && this.pdfViewer.radiusSettings.annotationSelectorSettings) {
-                options.radius = (isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize) / 2;
-                options.width = (isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                options.height = (isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize) * t.scale;
-            } else if (type === 'Stamp' && this.pdfViewer.stampSettings.annotationSelectorSettings) {
-                options.radius = (isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize) / 2;
-                options.width = (isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                options.height = (isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize) / 2;
+                // eslint-disable-next-line max-len
+                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerSize) * t.scale;
+            } else if ((type === 'Stamp' || type === 'Image') && this.pdfViewer.stampSettings.annotationSelectorSettings) {
+                // eslint-disable-next-line max-len
+                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize) / 2;
+                // eslint-disable-next-line max-len
+                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.stampSettings.annotationSelectorSettings.resizerSize) * t.scale;            
             } else if (type === 'FreeText' && this.pdfViewer.freeTextSettings.annotationSelectorSettings) {
-                options.radius = (isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize) / 2;
-                options.width = (isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                options.height = (isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize) / 2;
+                // eslint-disable-next-line max-len
+                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerSize) * t.scale;
             } else if ((type === 'HandWrittenSignature' || type === 'SignatureText' || type === 'SignatureImage') && this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings) {
-                options.radius = (isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize) / 2;
-                options.width = (isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                options.height = (isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize) / 2;
+                // eslint-disable-next-line max-len
+                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize) * t.scale;
             } else if (type === 'Perimeter' && this.pdfViewer.perimeterSettings.annotationSelectorSettings) {
-                options.radius = (isNullOrUndefined(this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize) / 2;
-                options.width = (isNullOrUndefined(this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                options.height = (isNullOrUndefined(this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize) / 2;
+                // eslint-disable-next-line max-len
+                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize) * t.scale;
             } else if (type === 'Area' && this.pdfViewer.areaSettings.annotationSelectorSettings) {
-                options.radius = (isNullOrUndefined(this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize) / 2;
-                options.width = (isNullOrUndefined(this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                options.height = (isNullOrUndefined(this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize) / 2;
+                // eslint-disable-next-line max-len
+                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize) * t.scale;
             } else if (type === 'Volume' && this.pdfViewer.volumeSettings.annotationSelectorSettings) {
-                options.radius = (isNullOrUndefined(this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize) / 2;
-                options.width = (isNullOrUndefined(this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                options.height = (isNullOrUndefined(this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                 options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize) / 2;
+                // eslint-disable-next-line max-len
+                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize) * t.scale;
             } else if (type === 'Ink' && this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings) {
-                options.radius = (isNullOrUndefined(this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize) / 2;
-                options.width = (isNullOrUndefined(this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                options.height = (isNullOrUndefined(this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize) ||
-                 this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize ===
-                  8 ? 8 : this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                options.radius = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize) / 2;
+                // eslint-disable-next-line max-len
+                options.width = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize) * t.scale;
+                // eslint-disable-next-line max-len
+                options.height = (isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerSize) || this.pdfViewer.annotationSelectorSettings.resizerSize !== 8 ? this.pdfViewer.annotationSelectorSettings.resizerSize : this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerSize) * t.scale;
             }
         }
     }
@@ -1732,33 +1678,33 @@ export class Drawing {
                 const annotationSelector: AnnotationSelectorSettingsModel = this.pdfViewer.annotationSelectorSettings;
                 shapeType = isNullOrUndefined(annotationSelector.resizerShape) || annotationSelector.resizerShape === 'Square' ? 'Square' : annotationSelector.resizerShape;
                 if (type === 'Line' && this.pdfViewer.lineSettings.annotationSelectorSettings) {
-                    shapeType = isNullOrUndefined(this.pdfViewer.lineSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.lineSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.lineSettings.annotationSelectorSettings.resizerShape;
+                    shapeType = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerShape) || this.pdfViewer.annotationSelectorSettings.resizerShape !== 'Square' ? this.pdfViewer.annotationSelectorSettings.resizerShape : this.pdfViewer.lineSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'LineWidthArrowHead' && this.pdfViewer.arrowSettings.annotationSelectorSettings) {
-                    shapeType = isNullOrUndefined(this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerShape;
+                    shapeType = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerShape) || this.pdfViewer.annotationSelectorSettings.resizerShape !== 'Square' ? this.pdfViewer.annotationSelectorSettings.resizerShape : this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'Rectangle' && this.pdfViewer.rectangleSettings.annotationSelectorSettings) {
-                    shapeType = isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerShape;
+                    shapeType = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerShape) || this.pdfViewer.annotationSelectorSettings.resizerShape !== 'Square' ? this.pdfViewer.annotationSelectorSettings.resizerShape : this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'Ellipse' && this.pdfViewer.circleSettings.annotationSelectorSettings) {
-                    shapeType = isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.circleSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.circleSettings.annotationSelectorSettings.resizerShape;
+                    shapeType = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerShape) || this.pdfViewer.annotationSelectorSettings.resizerShape !== 'Square' ? this.pdfViewer.annotationSelectorSettings.resizerShape : this.pdfViewer.circleSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'Polygon' && this.pdfViewer.polygonSettings.annotationSelectorSettings) {
-                    shapeType = isNullOrUndefined(this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerShape;
+                    shapeType = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerShape) || this.pdfViewer.annotationSelectorSettings.resizerShape !== 'Square' ? this.pdfViewer.annotationSelectorSettings.resizerShape : this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'Distance' && this.pdfViewer.distanceSettings.annotationSelectorSettings) {
-                    shapeType = isNullOrUndefined(this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerShape;
+                    shapeType = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerShape) || this.pdfViewer.annotationSelectorSettings.resizerShape !== 'Square' ? this.pdfViewer.annotationSelectorSettings.resizerShape : this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'Radius' && this.pdfViewer.radiusSettings.annotationSelectorSettings) {
-                    shapeType = isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerShape;
-                } else if (type === 'Stamp' && this.pdfViewer.stampSettings.annotationSelectorSettings) {
-                    shapeType = isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.stampSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.stampSettings.annotationSelectorSettings.resizerShape;
+                    shapeType = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerShape) || this.pdfViewer.annotationSelectorSettings.resizerShape !== 'Square' ? this.pdfViewer.annotationSelectorSettings.resizerShape : this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerShape;
+                } else if ((type === 'Stamp' || type === 'Image') && this.pdfViewer.stampSettings.annotationSelectorSettings) {
+                    shapeType = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerShape) || this.pdfViewer.annotationSelectorSettings.resizerShape !== 'Square' ? this.pdfViewer.annotationSelectorSettings.resizerShape : this.pdfViewer.stampSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'FreeText' && this.pdfViewer.freeTextSettings.annotationSelectorSettings) {
-                    shapeType = isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerShape;
+                    shapeType = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerShape) || this.pdfViewer.annotationSelectorSettings.resizerShape !== 'Square' ? this.pdfViewer.annotationSelectorSettings.resizerShape : this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerShape;
                 } else if ((type === 'HandWrittenSignature' || type === 'SignatureText' || type === 'SignatureImage') && this.pdfViewer.handWrittenSignatureSettings && this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings) {
-                    shapeType = isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerShape;
+                    shapeType = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerShape) || this.pdfViewer.annotationSelectorSettings.resizerShape !== 'Square' ? this.pdfViewer.annotationSelectorSettings.resizerShape : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'Perimeter' && this.pdfViewer.perimeterSettings.annotationSelectorSettings) {
-                    shapeType = isNullOrUndefined(this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerShape;
+                    shapeType = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerShape) || this.pdfViewer.annotationSelectorSettings.resizerShape !== 'Square' ? this.pdfViewer.annotationSelectorSettings.resizerShape : this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'Area' && this.pdfViewer.areaSettings.annotationSelectorSettings) {
-                    shapeType = isNullOrUndefined(this.pdfViewer.areaSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.areaSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.areaSettings.annotationSelectorSettings.resizerShape;
+                    shapeType = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerShape) || this.pdfViewer.annotationSelectorSettings.resizerShape !== 'Square' ? this.pdfViewer.annotationSelectorSettings.resizerShape : this.pdfViewer.areaSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'Volume' && this.pdfViewer.volumeSettings.annotationSelectorSettings) {
-                    shapeType = isNullOrUndefined(this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerShape;
+                    shapeType = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerShape) || this.pdfViewer.annotationSelectorSettings.resizerShape !== 'Square' ? this.pdfViewer.annotationSelectorSettings.resizerShape : this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'Ink' && this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings) {
-                    shapeType = isNullOrUndefined(this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerShape;
+                    shapeType = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerShape) || this.pdfViewer.annotationSelectorSettings.resizerShape !== 'Square' ? this.pdfViewer.annotationSelectorSettings.resizerShape : this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerShape;
                 }
             }
             return shapeType;
@@ -1786,47 +1732,47 @@ export class Drawing {
             options.stroke = isNullOrUndefined(annotationSelector.resizerBorderColor) || annotationSelector.resizerBorderColor === 'black' ? 'black' : annotationSelector.resizerBorderColor;
             options.fill = isNullOrUndefined(annotationSelector.resizerFillColor) || annotationSelector.resizerFillColor === '#FF4081' ? '#FF4081' : annotationSelector.resizerFillColor;
             if (type === 'Line' && this.pdfViewer.lineSettings.annotationSelectorSettings) {
-                options.stroke = isNullOrUndefined(this.pdfViewer.lineSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.lineSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.lineSettings.annotationSelectorSettings.resizerBorderColor;
-                options.fill = isNullOrUndefined(this.pdfViewer.lineSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.lineSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.lineSettings.annotationSelectorSettings.resizerFillColor;
+                options.stroke = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.annotationSelectorSettings.resizerBorderColor !== 'black' ? this.pdfViewer.annotationSelectorSettings.resizerBorderColor : this.pdfViewer.lineSettings.annotationSelectorSettings.resizerBorderColor;
+                options.fill = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.annotationSelectorSettings.resizerFillColor !== '#FF4081' ? this.pdfViewer.annotationSelectorSettings.resizerFillColor : this.pdfViewer.lineSettings.annotationSelectorSettings.resizerFillColor;
             } else if (type === 'LineWidthArrowHead' && this.pdfViewer.arrowSettings.annotationSelectorSettings) {
-                options.stroke = isNullOrUndefined(this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerBorderColor;
-                options.fill = isNullOrUndefined(this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerFillColor;
+                options.stroke = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.annotationSelectorSettings.resizerBorderColor !== 'black' ? this.pdfViewer.annotationSelectorSettings.resizerBorderColor : this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerBorderColor;
+                options.fill = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.annotationSelectorSettings.resizerFillColor !== '#FF4081' ? this.pdfViewer.annotationSelectorSettings.resizerFillColor : this.pdfViewer.arrowSettings.annotationSelectorSettings.resizerFillColor;
             } else if (type === 'Rectangle' && this.pdfViewer.rectangleSettings.annotationSelectorSettings) {
-                options.stroke = isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerBorderColor;
-                options.fill = isNullOrUndefined(this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerFillColor;
+                options.stroke = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.annotationSelectorSettings.resizerBorderColor !== 'black' ? this.pdfViewer.annotationSelectorSettings.resizerBorderColor : this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerBorderColor;
+                options.fill = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.annotationSelectorSettings.resizerFillColor !== '#FF4081' ? this.pdfViewer.annotationSelectorSettings.resizerFillColor : this.pdfViewer.rectangleSettings.annotationSelectorSettings.resizerFillColor;
             } else if (type === 'Ellipse' && this.pdfViewer.circleSettings.annotationSelectorSettings) {
-                options.stroke = isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.circleSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.circleSettings.annotationSelectorSettings.resizerBorderColor;
-                options.fill = isNullOrUndefined(this.pdfViewer.circleSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.circleSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.circleSettings.annotationSelectorSettings.resizerFillColor;
+                options.stroke = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.annotationSelectorSettings.resizerBorderColor !== 'black' ?  this.pdfViewer.annotationSelectorSettings.resizerBorderColor : this.pdfViewer.circleSettings.annotationSelectorSettings.resizerBorderColor;
+                options.fill = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.annotationSelectorSettings.resizerFillColor !== '#FF4081' ? this.pdfViewer.annotationSelectorSettings.resizerFillColor : this.pdfViewer.circleSettings.annotationSelectorSettings.resizerFillColor;
             } else if (type === 'Distance' && this.pdfViewer.distanceSettings.annotationSelectorSettings) {
-                options.stroke = isNullOrUndefined(this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerBorderColor;
-                options.fill = isNullOrUndefined(this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerFillColor;
-            } else if (type === 'Polygon' && this.pdfViewer.polygonSettings.annotationSelectorSettings) {
-                options.stroke = isNullOrUndefined(this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerBorderColor;
-                options.fill = isNullOrUndefined(this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerFillColor;
-            } else if (type === 'Radius' && this.pdfViewer.radiusSettings.annotationSelectorSettings) {
-                options.stroke = isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerBorderColor;
-                options.fill = isNullOrUndefined(this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerFillColor;
-            } else if (type === 'Stamp' && this.pdfViewer.stampSettings.annotationSelectorSettings) {
-                options.stroke = isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.stampSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.stampSettings.annotationSelectorSettings.resizerBorderColor;
-                options.fill = isNullOrUndefined(this.pdfViewer.stampSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.stampSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.stampSettings.annotationSelectorSettings.resizerFillColor;
-            } else if (type === 'FreeText' && this.pdfViewer.freeTextSettings.annotationSelectorSettings) {
-                options.stroke = isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerBorderColor;
-                options.fill = isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerFillColor;
+                options.stroke = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.annotationSelectorSettings.resizerBorderColor !== 'black' ? this.pdfViewer.annotationSelectorSettings.resizerBorderColor : this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerBorderColor;
+                options.fill = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.annotationSelectorSettings.resizerFillColor !== '#FF4081' ?  this.pdfViewer.annotationSelectorSettings.resizerFillColor: this.pdfViewer.distanceSettings.annotationSelectorSettings.resizerFillColor;
+            } else if (type === 'Polygon' && this.pdfViewer.annotationSelectorSettings) {
+                options.stroke = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.annotationSelectorSettings.resizerBorderColor !== 'black' ? this.pdfViewer.annotationSelectorSettings.resizerBorderColor : this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerBorderColor;
+                options.fill = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.annotationSelectorSettings.resizerFillColor !== '#FF4081' ? this.pdfViewer.annotationSelectorSettings.resizerFillColor : this.pdfViewer.polygonSettings.annotationSelectorSettings.resizerFillColor;
+            } else if (type === 'Radius' && this.pdfViewer.annotationSelectorSettings) {
+                options.stroke = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.annotationSelectorSettings.resizerBorderColor !== 'black' ?this.pdfViewer.annotationSelectorSettings.resizerBorderColor  : this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerBorderColor;
+                options.fill = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.annotationSelectorSettings.resizerFillColor !== '#FF4081' ? this.pdfViewer.annotationSelectorSettings.resizerFillColor : this.pdfViewer.radiusSettings.annotationSelectorSettings.resizerFillColor;
+            } else if ((type === 'Stamp' || type === 'Image') && this.pdfViewer.annotationSelectorSettings) {
+                options.stroke = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.annotationSelectorSettings.resizerBorderColor !== 'black' ? this.pdfViewer.annotationSelectorSettings.resizerBorderColor : this.pdfViewer.stampSettings.annotationSelectorSettings.resizerBorderColor;
+                options.fill = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.annotationSelectorSettings.resizerFillColor !== '#FF4081' ? this.pdfViewer.annotationSelectorSettings.resizerFillColor : this.pdfViewer.stampSettings.annotationSelectorSettings.resizerFillColor;
+            } else if (type === 'FreeText' && this.pdfViewer.annotationSelectorSettings) {
+                options.stroke = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.annotationSelectorSettings.resizerBorderColor !== 'black' ?this.pdfViewer.annotationSelectorSettings.resizerBorderColor  : this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerBorderColor;
+                options.fill = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.annotationSelectorSettings.resizerFillColor !== '#FF4081' ? this.pdfViewer.annotationSelectorSettings.resizerFillColor : this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerFillColor;
             } else if ((type === 'HandWrittenSignature' || type === 'SignatureText' || type === 'SignatureImage') && this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings) {
-                options.stroke = isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerBorderColor;
-                options.fill = isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerFillColor;
-            } else if (type === 'Perimeter' && this.pdfViewer.perimeterSettings.annotationSelectorSettings) {
-                options.stroke = isNullOrUndefined(this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerBorderColor;
-                options.fill = isNullOrUndefined(this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerFillColor;
-            } else if (type === 'Area' && this.pdfViewer.areaSettings.annotationSelectorSettings) {
-                options.stroke = isNullOrUndefined(this.pdfViewer.areaSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.areaSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.areaSettings.annotationSelectorSettings.resizerBorderColor;
-                options.fill = isNullOrUndefined(this.pdfViewer.areaSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.areaSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.areaSettings.annotationSelectorSettings.resizerFillColor;
-            } else if (type === 'Volume' && this.pdfViewer.volumeSettings.annotationSelectorSettings) {
-                options.stroke = isNullOrUndefined(this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerBorderColor;
-                options.fill = isNullOrUndefined(this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerFillColor;
+                options.stroke = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.annotationSelectorSettings.resizerBorderColor !== 'black' ? this.pdfViewer.annotationSelectorSettings.resizerBorderColor : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerBorderColor;
+                options.fill = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.annotationSelectorSettings.resizerFillColor !== '#FF4081' ? this.pdfViewer.annotationSelectorSettings.resizerFillColor : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerFillColor;
+            } else if (type === 'Perimeter' && this.pdfViewer.annotationSelectorSettings) {
+                options.stroke = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.annotationSelectorSettings.resizerBorderColor !== 'black' ? this.pdfViewer.annotationSelectorSettings.resizerBorderColor : this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerBorderColor;
+                options.fill = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.annotationSelectorSettings.resizerFillColor !== '#FF4081' ? this.pdfViewer.annotationSelectorSettings.resizerFillColor : this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerFillColor;
+            } else if (type === 'Area' && this.pdfViewer.annotationSelectorSettings) {
+                options.stroke = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.annotationSelectorSettings.resizerBorderColor !== 'black' ? this.pdfViewer.annotationSelectorSettings.resizerBorderColor : this.pdfViewer.areaSettings.annotationSelectorSettings.resizerBorderColor;
+                options.fill = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.annotationSelectorSettings.resizerFillColor !== '#FF4081' ? this.pdfViewer.annotationSelectorSettings.resizerFillColor : this.pdfViewer.areaSettings.annotationSelectorSettings.resizerFillColor;
+            } else if (type === 'Volume' && this.pdfViewer.annotationSelectorSettings) {
+                options.stroke = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.annotationSelectorSettings.resizerBorderColor !== 'black' ? this.pdfViewer.annotationSelectorSettings.resizerBorderColor : this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerBorderColor;
+                options.fill = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.annotationSelectorSettings.resizerFillColor !== '#FF4081' ? this.pdfViewer.annotationSelectorSettings.resizerFillColor : this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerFillColor;
             } else if (type === 'Ink' && this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings) {
-                options.stroke = isNullOrUndefined(this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerBorderColor === 'black' ? 'black' : this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerBorderColor;
-                options.fill = isNullOrUndefined(this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerFillColor === '#FF4081' ? '#FF4081' : this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerFillColor;
+                options.stroke = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerBorderColor) || this.pdfViewer.annotationSelectorSettings.resizerBorderColor !== 'black' ? this.pdfViewer.annotationSelectorSettings.resizerBorderColor : this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerBorderColor;
+                options.fill = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.resizerFillColor) || this.pdfViewer.annotationSelectorSettings.resizerFillColor !== '#FF4081' ? this.pdfViewer.annotationSelectorSettings.resizerFillColor : this.pdfViewer.inkAnnotationSettings.annotationSelectorSettings.resizerFillColor;
             }
         }
     }

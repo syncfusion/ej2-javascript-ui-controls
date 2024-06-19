@@ -368,7 +368,13 @@ export class MeasureAnnotation {
                             if (vertexPoints == null) {
                                 vPoints = [];
                             }
-                            annotation.AnnotationSelectorSettings = annotation.AnnotationSelectorSettings ?  typeof(annotation.AnnotationSelectorSettings) === 'string' ? JSON.parse(annotation.AnnotationSelectorSettings) : annotation.AnnotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+                            const annotationSelectorSettings : any = typeof(annotation.AnnotationSelectorSettings) === 'string' ? JSON.parse(annotation.AnnotationSelectorSettings) : annotation.AnnotationSelectorSettings;
+                            if (isNullOrUndefined(annotation.AnnotationSelectorSettings)) {
+                                this.pdfViewerBase.annotationSelectorSettingLoad(annotation);
+                            }
+                            else {
+                                annotation.AnnotationSelectorSettings = annotationSelectorSettings;
+                            }
                             annotation.allowedInteractions = annotation.AllowedInteractions ?
                                 annotation.AllowedInteractions : this.pdfViewer.annotationModule.
                                     updateAnnotationAllowedInteractions(annotation);
@@ -1084,24 +1090,33 @@ export class MeasureAnnotation {
             for (let i: number = 0; i < pageAnnotations.length; i++) {
                 if (annotationBase.id === pageAnnotations[parseInt(i.toString(), 10)].id) {
                     if (property === 'bounds') {
-                        this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateAnnotationModifiedDate(annotationBase, true);
-                        if (pageAnnotations[parseInt(i.toString(), 10)].shapeAnnotationType === 'Line' || pageAnnotations[parseInt(i.toString(), 10)].shapeAnnotationType === 'Polyline') {
-                            pageAnnotations[parseInt(i.toString(), 10)].vertexPoints = annotationBase.vertexPoints;
-                            pageAnnotations[parseInt(i.toString(), 10)].bounds =
-                             { left: annotationBase.bounds.x, top: annotationBase.bounds.y,
-                                 width: annotationBase.bounds.width, height: annotationBase.bounds.height,
-                                 right: annotationBase.bounds.right, bottom: annotationBase.bounds.bottom };
-                        } else if (pageAnnotations[parseInt(i.toString(), 10)].shapeAnnotationType === 'Polygon') {
-                            pageAnnotations[parseInt(i.toString(), 10)].vertexPoints = annotationBase.vertexPoints;
-                            pageAnnotations[parseInt(i.toString(), 10)].bounds =
-                             { left: annotationBase.bounds.x, top: annotationBase.bounds.y, width: annotationBase.bounds.width,
-                                 height: annotationBase.bounds.height, right: annotationBase.bounds.right,
-                                 bottom: annotationBase.bounds.bottom };
-                        } else {
-                            pageAnnotations[parseInt(i.toString(), 10)].bounds =
-                             { left: annotationBase.bounds.x, top: annotationBase.bounds.y, width: annotationBase.bounds.width,
-                                 height: annotationBase.bounds.height, right: annotationBase.bounds.right,
-                                 bottom: annotationBase.bounds.bottom };
+                        this.pdfViewerBase.isBounds = this.pdfViewerBase.boundsCalculation(pageAnnotations[parseInt(i.toString(), 10)].bounds, annotationBase.wrapper.bounds);
+                        if (this.pdfViewerBase.isBounds) {
+                            this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateAnnotationModifiedDate(annotationBase, true);
+                            if (pageAnnotations[parseInt(i.toString(), 10)].shapeAnnotationType === 'Line' || pageAnnotations[parseInt(i.toString(), 10)].shapeAnnotationType === 'Polyline') {
+                                pageAnnotations[parseInt(i.toString(), 10)].vertexPoints = annotationBase.vertexPoints;
+                                pageAnnotations[parseInt(i.toString(), 10)].bounds =
+                                {
+                                    left: annotationBase.bounds.x, top: annotationBase.bounds.y,
+                                    width: annotationBase.bounds.width, height: annotationBase.bounds.height,
+                                    right: annotationBase.bounds.right, bottom: annotationBase.bounds.bottom
+                                };
+                            } else if (pageAnnotations[parseInt(i.toString(), 10)].shapeAnnotationType === 'Polygon') {
+                                pageAnnotations[parseInt(i.toString(), 10)].vertexPoints = annotationBase.vertexPoints;
+                                pageAnnotations[parseInt(i.toString(), 10)].bounds =
+                                {
+                                    left: annotationBase.bounds.x, top: annotationBase.bounds.y, width: annotationBase.bounds.width,
+                                    height: annotationBase.bounds.height, right: annotationBase.bounds.right,
+                                    bottom: annotationBase.bounds.bottom
+                                };
+                            } else {
+                                pageAnnotations[parseInt(i.toString(), 10)].bounds =
+                                {
+                                    left: annotationBase.bounds.x, top: annotationBase.bounds.y, width: annotationBase.bounds.width,
+                                    height: annotationBase.bounds.height, right: annotationBase.bounds.right,
+                                    bottom: annotationBase.bounds.bottom
+                                };
+                            }
                         }
                         if (pageAnnotations[parseInt(i.toString(), 10)].enableShapeLabel === true && annotationBase.wrapper) {
                             pageAnnotations[parseInt(i.toString(), 10)].labelBounds =
@@ -1148,8 +1163,10 @@ export class MeasureAnnotation {
                     } else if (property === 'fontSize') {
                         pageAnnotations[parseInt(i.toString(), 10)].fontSize = annotationBase.fontSize;
                     }
-                    pageAnnotations[parseInt(i.toString(), 10)].modifiedDate =
-                     this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
+                    if (this.pdfViewerBase.isBounds) {
+                        pageAnnotations[parseInt(i.toString(), 10)].modifiedDate =
+                            this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
+                    }
                     this.pdfViewer.annotationModule.storeAnnotationCollections(pageAnnotations[parseInt(i.toString(), 10)], pageNumber);
                 }
             }
@@ -1616,8 +1633,7 @@ export class MeasureAnnotation {
         }
         annotation.allowedInteractions = annotation.AllowedInteractions ?
             annotation.AllowedInteractions : this.pdfViewer.annotationModule.updateAnnotationAllowedInteractions(annotation);
-        annotation.AnnotationSelectorSettings = annotation.AnnotationSelectorSettings ?
-            annotation.AnnotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+        annotation.AnnotationSelectorSettings = annotation.AnnotationSelectorSettings ? annotation.AnnotationSelectorSettings : this.pdfViewerBase.annotationSelectorSettingLoad(annotation);
         annotation.AnnotationSettings = annotation.AnnotationSettings ?
             annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(annotation);
         if (annotation.IsLocked) {
@@ -1685,8 +1701,8 @@ export class MeasureAnnotation {
         if (annotationType === 'Distance')
         {
             //Creating annotation settings
-            annotationSelectorSettings = this.pdfViewer.lineSettings.annotationSelectorSettings ?
-                this.pdfViewer.lineSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+            annotationSelectorSettings = this.pdfViewer.lineSettings.annotationSelectorSettings;
+            this.pdfViewerBase.updateSelectorSettings(annotationSelectorSettings);
             annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.lineSettings);
             annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotationType);
             allowedInteractions = this.pdfViewer.lineSettings.allowedInteractions ?
@@ -1705,8 +1721,8 @@ export class MeasureAnnotation {
         else if (annotationType === 'Perimeter')
         {
             //Creating annotation settings
-            annotationSelectorSettings = this.pdfViewer.arrowSettings.annotationSelectorSettings ?
-                this.pdfViewer.arrowSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+            annotationSelectorSettings = this.pdfViewer.arrowSettings.annotationSelectorSettings;
+            this.pdfViewerBase.updateSelectorSettings(annotationSelectorSettings);
             annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.arrowSettings);
             annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotationType);
             allowedInteractions = this.pdfViewer.arrowSettings.allowedInteractions ?
@@ -1727,8 +1743,8 @@ export class MeasureAnnotation {
         else if (annotationType === 'Area')
         {
             //Creating annotation settings
-            annotationSelectorSettings = this.pdfViewer.rectangleSettings.annotationSelectorSettings ?
-                this.pdfViewer.rectangleSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+            annotationSelectorSettings = this.pdfViewer.rectangleSettings.annotationSelectorSettings;
+            this.pdfViewerBase.updateSelectorSettings(annotationSelectorSettings);
             annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.rectangleSettings);
             annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotationType);
             allowedInteractions = this.pdfViewer.rectangleSettings.allowedInteractions ?
@@ -1749,8 +1765,8 @@ export class MeasureAnnotation {
         else if (annotationType === 'Radius')
         {
             //Creating annotation settings
-            annotationSelectorSettings = this.pdfViewer.circleSettings.annotationSelectorSettings ?
-                this.pdfViewer.circleSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+            annotationSelectorSettings = this.pdfViewer.circleSettings.annotationSelectorSettings;
+            this.pdfViewerBase.updateSelectorSettings(annotationSelectorSettings);
             annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.circleSettings);
             annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotationType);
             allowedInteractions = this.pdfViewer.circleSettings.allowedInteractions ?
@@ -1765,8 +1781,8 @@ export class MeasureAnnotation {
         else if (annotationType === 'Volume')
         {
             //Creating annotation settings
-            annotationSelectorSettings = this.pdfViewer.polygonSettings.annotationSelectorSettings ?
-                this.pdfViewer.polygonSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+            annotationSelectorSettings = this.pdfViewer.polygonSettings.annotationSelectorSettings;
+            this.pdfViewerBase.updateSelectorSettings(annotationSelectorSettings); 
             annotationSettings = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.polygonSettings);
             annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotationType);
             allowedInteractions = this.pdfViewer.polygonSettings.allowedInteractions ?

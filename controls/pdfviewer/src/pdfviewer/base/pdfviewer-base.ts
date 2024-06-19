@@ -221,6 +221,10 @@ export class PdfViewerBase {
      * @private
      */
     public isPasswordAvailable: boolean = false;
+    /**
+     * @private
+     */
+    public isBounds: boolean = false;
     private document: string;
     /**
      * @private
@@ -1461,7 +1465,7 @@ export class PdfViewerBase {
             this.enableFormFieldButton(isEnable);
             break;
         case 'EditAnnotations':
-            this.pdfViewer.enableAnnotation = isEnable;
+            this.pdfViewer.annotationSettings.isLock = true;
             break;
         }
     }
@@ -10728,6 +10732,7 @@ export class PdfViewerBase {
                                 }
                                 break;
                             case 'signature':
+                            case 'Signature':
                                 if (annotation[parseInt(i.toString(), 10)].signatureAnnotation.length !== 0 ||
                                 annotationData.length !== 0) {
                                     for (let j: number = 0; j < annotationData.length; j++) {
@@ -12413,6 +12418,118 @@ export class PdfViewerBase {
      */
     public getModuleWarningMessage(moduleName: string): void {
         console.warn(`[WARNING] :: Module '${moduleName}' is not available in PDF Viewer component! You either misspelled the module name or forgot to load it.`);
+    }
+
+    /**
+     * @private
+     * @returns {void}
+     */    
+    public updateSelectorSettings(annotationSelectorSettings: any): void {
+        if (this.pdfViewer.annotationSelectorSettings && this.pdfViewer.annotationSelectorSettings.resizerFillColor !== "#FF4081") {
+            annotationSelectorSettings.resizerFillColor = this.pdfViewer.annotationSelectorSettings.resizerFillColor;
+        }
+        if (this.pdfViewer.annotationSelectorSettings && this.pdfViewer.annotationSelectorSettings.resizerBorderColor !== "black") {
+            annotationSelectorSettings.resizerBorderColor = this.pdfViewer.annotationSelectorSettings.resizerBorderColor
+        }
+        if (this.pdfViewer.annotationSelectorSettings && this.pdfViewer.annotationSelectorSettings.selectionBorderColor !== "") {
+            annotationSelectorSettings.selectionBorderColor = this.pdfViewer.annotationSelectorSettings.selectionBorderColor;
+        }
+        if (this.pdfViewer.annotationSelectorSettings && this.pdfViewer.annotationSelectorSettings.resizerSize !== 8) {
+            annotationSelectorSettings.resizerSize = this.pdfViewer.annotationSelectorSettings.resizerSize;
+        }
+        if (this.pdfViewer.annotationSelectorSettings && this.pdfViewer.annotationSelectorSettings.resizerShape !== 'Square') {
+            annotationSelectorSettings.resizerShape = this.pdfViewer.annotationSelectorSettings.resizerShape;
+        }
+        if (this.pdfViewer.annotationSelectorSettings && this.pdfViewer.annotationSelectorSettings.resizerCursorType !== null) {
+            annotationSelectorSettings.resizerCursorType = this.pdfViewer.annotationSelectorSettings.resizerCursorType;
+        }
+        if (this.pdfViewer.annotationSelectorSettings && this.pdfViewer.annotationSelectorSettings.selectionBorderThickness !== 1) {
+            annotationSelectorSettings.selectionBorderThickness = this.pdfViewer.annotationSelectorSettings.selectionBorderThickness;
+        }
+        if (this.pdfViewer.annotationSelectorSettings && this.pdfViewer.annotationSelectorSettings.selectorLineDashArray.length !== 0) {
+            annotationSelectorSettings.selectorLineDashArray = this.pdfViewer.annotationSelectorSettings.selectorLineDashArray;
+        }
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public annotationSelectorSettingLoad(annotation : any): void
+    {
+        if(annotation.AnnotationType === "shape")
+        {
+            if(annotation.ShapeAnnotationType === "Line")
+            {
+                annotation.AnnotationSelectorSettings = this.pdfViewer.lineSettings.annotationSelectorSettings ? this.pdfViewer.lineSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+                this.updateSelectorSettings(annotation.AnnotationSelectorSettings);
+            }
+            else if(annotation.ShapeAnnotationType === "Arrow")
+            {
+                annotation.AnnotationSelectorSettings = this.pdfViewer.arrowSettings.annotationSelectorSettings ? this.pdfViewer.arrowSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+                this.updateSelectorSettings(annotation.AnnotationSelectorSettings);
+            }
+            else if(annotation.ShapeAnnotationType === "Rectangle" || annotation.ShapeAnnotationType ===  "Square")
+            {
+                annotation.AnnotationSelectorSettings = this.pdfViewer.rectangleSettings.annotationSelectorSettings ? this.pdfViewer.rectangleSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+                this.updateSelectorSettings(annotation.AnnotationSelectorSettings);
+            }
+            else if(annotation.ShapeAnnotationType === "Circle" || annotation.ShapeAnnotationType === "Ellipse")
+            {
+                annotation.AnnotationSelectorSettings = this.pdfViewer.circleSettings.annotationSelectorSettings ? this.pdfViewer.circleSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+                this.updateSelectorSettings(annotation.AnnotationSelectorSettings);
+            }
+            else if(annotation.ShapeAnnotationType === "Polygon")
+            {
+                annotation.AnnotationSelectorSettings = this.pdfViewer.polygonSettings.annotationSelectorSettings ? this.pdfViewer.polygonSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+                this.updateSelectorSettings(annotation.AnnotationSelectorSettings);
+            }
+
+        }
+        if(annotation.AnnotType === "shape_measure"){
+            if(annotation.ShapeAnnotationType === "Circle")
+            {
+                annotation.AnnotationSelectorSettings = this.pdfViewer.radiusSettings.annotationSelectorSettings ? this.pdfViewer.radiusSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+                this.updateSelectorSettings(annotation.AnnotationSelectorSettings);
+            }
+            else if(annotation.ShapeAnnotationType === "Line")
+            {
+                annotation.AnnotationSelectorSettings = this.pdfViewer.distanceSettings.annotationSelectorSettings ? this.pdfViewer.distanceSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+                this.updateSelectorSettings(annotation.AnnotationSelectorSettings);
+                
+            }
+            else if(annotation.ShapeAnnotationType === "Polyline")
+            {
+                annotation.AnnotationSelectorSettings = this.pdfViewer.perimeterSettings.annotationSelectorSettings ? this.pdfViewer.perimeterSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+                this.updateSelectorSettings(annotation.AnnotationSelectorSettings);
+            }
+            else if(annotation.ShapeAnnotationType === "Polygon" && annotation.Indent === "PolygonVolume")
+            {
+                annotation.AnnotationSelectorSettings = this.pdfViewer.volumeSettings.annotationSelectorSettings ? this.pdfViewer.volumeSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+                this.updateSelectorSettings(annotation.AnnotationSelectorSettings);
+            }
+            else if (annotation.ShapeAnnotationType === "Polygon") {
+                annotation.AnnotationSelectorSettings = this.pdfViewer.areaSettings.annotationSelectorSettings ? this.pdfViewer.areaSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+                this.updateSelectorSettings(annotation.AnnotationSelectorSettings);
+            }
+        }
+    }
+    /**
+     * @private
+     * @returns {boolean}
+     */
+    public boundsCalculation(pageAnotationBounds: any, baseAnnotationBounds: any): boolean {
+        if(isNullOrUndefined(pageAnotationBounds) && isNullOrUndefined(baseAnnotationBounds.x) && isNullOrUndefined(baseAnnotationBounds.y) && isNullOrUndefined(baseAnnotationBounds.width) && isNullOrUndefined(baseAnnotationBounds.height) && isNullOrUndefined(baseAnnotationBounds) && isNullOrUndefined(baseAnnotationBounds.x) && isNullOrUndefined(baseAnnotationBounds.y) && isNullOrUndefined(baseAnnotationBounds.height) && isNullOrUndefined(baseAnnotationBounds.width)){
+            return false;
+        }
+        let left: number = parseFloat(baseAnnotationBounds.x.toFixed(10));
+        let top: number = parseFloat(baseAnnotationBounds.y.toFixed(10));
+        let width: number = parseFloat(baseAnnotationBounds.width.toFixed(10));
+        let height: number = parseFloat(baseAnnotationBounds.height.toFixed(10));
+        let pageLeft: number = pageAnotationBounds.x ? parseFloat(pageAnotationBounds.x.toFixed(10)) : parseFloat(pageAnotationBounds.left.toFixed(10));
+        let pageTop: number = pageAnotationBounds.y ? parseFloat(pageAnotationBounds.y.toFixed(10)) : parseFloat(pageAnotationBounds.top.toFixed(10));
+        let pageWidth: number = parseFloat(pageAnotationBounds.width.toFixed(10));
+        let pageHeight: number = parseFloat(pageAnotationBounds.height.toFixed(10));
+        return (left !== pageLeft && top !== pageTop && width !== pageWidth && height !== pageHeight);
     }
 }
 

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.1.38 (2024-06-19)
+
+### NumericTextBox
+
+#### Bug Fixes
+
+- `#I586498` - Fixed an issue where the numerictextbox component in different culture was causing incorrect appending of pasted values.
+
 ## 26.1.35 (2024-06-11)
 
 ### Signature

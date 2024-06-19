@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 26.1.38 (2024-06-19)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I589042` - Now, the textbox field font size is does not increase automatically when zoom percentage increases.
+- `#F188158` - Now, script error does not occurred when searching the non-matched word in the provided document.
+- `#I587591` - Now, the stamp is updated correctly after reloading the resized stamp.
+- `#I593317` - Now, the signature and initial background color is preserved upon reloading the downloaded document.
+- `#I591009` - Now, the radio button name does not changes upon reloading the downloaded document.
+- `#I591558` - Now, the ink annotation comment was not missing when importing the annotation sequentially in Stand-alone mode.
+- `#I586497` - Now, the stamp annotation rendered properly when the PDF document is loaded with `EditContent` restrictions.
+- `#I590035` - Now, the handwritten signature is exported properly when the `isSignatureEditable` API is set to true.
+- `#I587843` - Now, the checkbox state is properly preserved when saving the provided document, even though the form designer module was not injected.
+- `#I591558` - Now, the selector style applied for programmatically added annotation.
+- `#I588798` - Now, the date time in the comment panel is not updated automatically upon export and import after locking annotations.
+
 ## 26.1.35 (2024-06-11)
 
 ### PDF Viewer

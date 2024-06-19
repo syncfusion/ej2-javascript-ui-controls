@@ -369,7 +369,9 @@ export class CanvasRenderer {
                 let canvas1: HTMLCanvasElement = createHtmlElement(
                     'canvas', { 'width': width.toString(), 'height': height.toString() }) as HTMLCanvasElement;
                 let ctx1: CanvasRenderingContext2D = canvas1.getContext('2d');
+                ctx.clearRect(x, y, dWidth, dHeight);
                 ctx1.drawImage(image, x1, y1, sWidth, sHeight, 0, 0, dWidth, dHeight);
+                ctx.clearRect(x, y, width, height);
                 ctx.drawImage(canvas1, x, y, width, height);
             } else if (alignOptions.scale === 'Meet') {
                 let srcRatio: number = (srcHeight / srcWidth);
@@ -378,18 +380,22 @@ export class CanvasRenderer {
                 resultHeight = destRatio > srcRatio ? destinationW * srcRatio : destinationH;
                 x += this.getMeetOffset(xalign, resultWidth, destinationW);
                 y += this.getMeetOffset(yalign, resultHeight, destinationH);
+                ctx.clearRect(x, y, resultWidth, resultHeight);
                 ctx.drawImage(image, 0, 0, srcWidth, srcHeight, x, y, resultWidth, resultHeight);
             } else {
+                ctx.clearRect(x, y, width, height);
                 ctx.drawImage(image, x, y, width, height);
             }
         } else {
             if (image.complete) {
+                ctx.clearRect(x, y, width, height);
                 ctx.drawImage(image, x, y, width, height);
             } else {
                 let transform: DOMMatrix = ctx.getTransform();
                 image.onload = null;
                 image.onload = () => {
                     ctx.setTransform(transform.a, transform.b, transform.c, transform.d, transform.e, transform.f);
+                    ctx.clearRect(x, y, width, height);
                     ctx.drawImage(image, x, y, width, height);
                 };
             }

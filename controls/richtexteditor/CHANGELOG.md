@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.1.38 (2024-06-19)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- Now, fixed the issue with font color and the background color popup not opening in rare cases.
+
 ## 26.1.35 (2024-06-11)
 
 ### RichTextEditor

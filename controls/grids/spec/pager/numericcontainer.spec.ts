@@ -60,7 +60,7 @@ describe('Numericcontainer module testing', () => {
                 {
                     totalRecordsCount: 100, currentPage: 6, pageCount: 5, pageSize: 5,
                     enablePagerMessage: true, enableExternalMessage: true, externalMessage: 'externalMessage',
-                    enableRtl: true, enableQueryString: true, customText: 'sheet',
+                    enableRtl: true,customText: 'sheet',
                     created: created
                 });
             pagerObj.appendTo('#Pager');

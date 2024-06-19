@@ -4268,4 +4268,81 @@ describe('QueryBuilder', () => {
             done();
         });
     });
+
+    describe('Get Sql From Rules and Set sql from rules', () => {
+        beforeEach((): void => {
+            document.body.appendChild(createElement('div', { id: 'querybuilder' }));
+        });
+        afterEach(() => {
+            remove(queryBuilder.element.nextElementSibling);
+            remove(queryBuilder.element);
+            // queryBuilder = null;
+            queryBuilder.destroy();
+        });
+
+        let rules: RuleModel = {
+            'condition': 'and',
+            'rules': [{
+                'label': 'Employee ID',
+                'field': 'EmployeeID',
+                'type': 'number',
+                'operator': 'equal',
+                'value': 1001
+            },
+            {
+                'condition': 'or',
+                'rules': [{
+                    'label': 'Title',
+                    'field': 'Title',
+                    'type': 'string',
+                    'operator': 'contains',
+                    'value':'Sales Manager'
+                },
+                {
+                    'field': 'TitleOfCourtesy',
+                    'label': 'Title Of Courtesy',
+                    'type': 'boolean',
+                    'operator': 'equal',
+                    'value': 'Mr.'
+                }]
+            },{
+                'condition': 'and',
+                    'rules': [{
+                        'label': 'City',
+                        'field': 'City',
+                        'type': 'string',
+                        'operator': 'equal',
+                        'value': 'Kirkland'
+                    },
+                    {
+                        'label': 'Hire Date',
+                        'field': 'HireDate',
+                        'type': 'date',
+                        'operator': 'equal',
+                        'value': '12/12/2019'
+                    }]
+                }
+            ],
+        };
+        it('QueryBuilder get and set sql methods', () => {
+            queryBuilder = new QueryBuilder({
+                dataSource: employeeData, 
+                rule: rules,
+                displayMode: "Horizontal", 
+                allowValidation: true
+            }, '#querybuilder');
+            let actualSql: string = "EmployeeID = 1 AND Title = 'Sales Manager' AND (FirstName LIKE ('ewfew%') OR TitleOfCourtesy = 'Mr.' OR (FirstName LIKE ('ewfew%') AND HireDate = '12/06/2024') OR (FirstName LIKE ('reer%') OR Title LIKE ('erer%'))) AND Title LIKE ('ewfew%')";
+            queryBuilder.setRulesFromSql(actualSql);
+            let expectedSql: string = queryBuilder.getSqlFromRules();
+            expect(expectedSql).toEqual(actualSql);
+            actualSql = "EmployeeID = 1001 AND (Title LIKE ('%Sales Manager%') OR (City = 'Kirkland' AND (FirstName LIKE ('fewfew%') OR FirstName LIKE ('efew%'))) OR LastName LIKE ('erer%')) AND (FirstName LIKE ('ewfew%') AND Title LIKE ('efweew%'))";
+            queryBuilder.setRulesFromSql(actualSql);
+            expectedSql = queryBuilder.getSqlFromRules();
+            expect(expectedSql).toEqual(actualSql);
+            actualSql = "(EmployeeID = 1 AND LastName LIKE ('rgerger%') AND (FirstName LIKE ('erger%') OR Title LIKE ('asawd%')) AND (Title LIKE ('reger%') AND FirstName LIKE ('aefwaw%')) AND (Title LIKE ('ewrew%') OR LastName LIKE ('ewfew%')))";
+            queryBuilder.setRulesFromSql(actualSql);
+            expectedSql = queryBuilder.getSqlFromRules();
+            expect(expectedSql).toEqual(actualSql);
+        });
+    });
 });

@@ -14,7 +14,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { InterSectionObserver, ScrollDirection } from '../services/intersection-observer';
 import { RendererFactory } from '../services/renderer-factory';
 import { VirtualRowModelGenerator } from '../services/virtual-row-model-generator';
-import { isGroupAdaptive, ensureLastRow, ensureFirstRow, getEditedDataIndex, getTransformValues } from '../base/util';
+import { isGroupAdaptive, ensureLastRow, ensureFirstRow, getEditedDataIndex, getTransformValues, checkVirtualSort, getVisiblePage } from '../base/util';
 import { setStyleAttribute } from '@syncfusion/ej2-base';
 import { ColumnWidthService } from '../services/width-controller';
 import { Grid } from '../base/grid';
@@ -794,11 +794,22 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     }
 
     private setVirtualPageQuery(args: { query: Query, skipPage: boolean }): void {
+        let visiblePage: number[] = [];
+        if (this.prevInfo && this.prevInfo.blockIndexes) {
+            visiblePage = getVisiblePage(this.prevInfo.blockIndexes);
+        }
+        if (this.requestType === 'sorting' && visiblePage.length && checkVirtualSort(this.parent)) {
+            args.query.skip(this.parent.pageSettings.pageSize * (visiblePage[0] - 1));
+            args.query.take(this.parent.pageSettings.pageSize * visiblePage.length);
+            args.skipPage = true;
+            return;
+        }
         const row: Element = this.parent.getContent().querySelector('.e-row');
         if (this.requestType === 'virtualscroll' && this.vgenerator.currentInfo.blockIndexes) {
             this.vgenerator.currentInfo = {};
         }
-        if (row && this.parent.isManualRefresh && this.currentInfo.blockIndexes && this.currentInfo.blockIndexes.length === 3) {
+        if (row && this.parent.isManualRefresh && this.currentInfo.blockIndexes
+            && (this.currentInfo.blockIndexes.length === 3 || visiblePage.length > 1)) {
             this.vgenerator.startIndex = parseInt(row.getAttribute('data-rowindex'), 10);
             this.vgenerator.currentInfo = extend({}, this.currentInfo);
             this.vgenerator.currentInfo.blockIndexes = this.currentInfo.blockIndexes.slice();

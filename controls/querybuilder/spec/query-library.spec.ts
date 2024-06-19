@@ -155,9 +155,27 @@ describe('Parameter SQL Query', () => {
             dataSource: employeeData,
             rule: importRules
         }, '#querybuilder');
-        const params: any = [1001, '%Sales Manager%', '%Sales%', 'Kirkland', '12/12/2019'];
-        const sqlString: ParameterizedSql = {sql: '(EmployeeID = ? AND (Title LIKE (?) OR Title LIKE (?) OR (City = ? AND HireDate = ?)))', params: params};
-        const mongoQuery: ParameterizedSql = queryBuilder.getParameterizedSql(queryBuilder.getValidRules());
+        let params: any = [1001, '%Sales Manager%', '%Sales%', 'Kirkland', '12/12/2019'];
+        let sqlString: ParameterizedSql = {sql: '(EmployeeID = ? AND (Title LIKE (?) OR Title LIKE (?) OR (City = ? AND HireDate = ?)))', params: params};
+        let mongoQuery: ParameterizedSql = queryBuilder.getParameterizedSql(queryBuilder.getValidRules());
+        expect(mongoQuery).toEqual(sqlString);
+        params = [1, 'Sales Manager', 'ewfew%', 'Mr.', 'ewfew%', '12/06/2024', 'reer%', 'erer%', 'ewfew%'];
+        sqlString = {sql: '(EmployeeID = ? AND Title = ? AND (FirstName LIKE (?) OR TitleOfCourtesy = ? OR (FirstName LIKE (?) AND HireDate = ?) OR (FirstName LIKE (?) OR Title LIKE (?))) AND Title LIKE (?))', params: params};
+        let actualSql: string = "EmployeeID = 1 AND Title = 'Sales Manager' AND (FirstName LIKE ('ewfew%') OR TitleOfCourtesy = 'Mr.' OR (FirstName LIKE ('ewfew%') AND HireDate = '12/06/2024') OR (FirstName LIKE ('reer%') OR Title LIKE ('erer%'))) AND Title LIKE ('ewfew%')";
+        queryBuilder.setRulesFromSql(actualSql);
+        mongoQuery = queryBuilder.getParameterizedSql(queryBuilder.getValidRules());
+        expect(mongoQuery).toEqual(sqlString);
+        params = [1001, '%Sales Manager%', 'Kirkland', 'fewfew%', 'efew%', 'erer%', 'ewfew%', 'efweew%'];
+        sqlString = {sql: '(EmployeeID = ? AND (Title LIKE (?) OR (City = ? AND (FirstName LIKE (?) OR FirstName LIKE (?))) OR LastName LIKE (?)) AND (FirstName LIKE (?) AND Title LIKE (?)))', params: params};
+        actualSql = "EmployeeID = 1001 AND (Title LIKE ('%Sales Manager%') OR (City = 'Kirkland' AND (FirstName LIKE ('fewfew%') OR FirstName LIKE ('efew%'))) OR LastName LIKE ('erer%')) AND (FirstName LIKE ('ewfew%') AND Title LIKE ('efweew%'))";
+        queryBuilder.setRulesFromSql(actualSql);
+        mongoQuery = queryBuilder.getParameterizedSql(queryBuilder.getValidRules());
+        expect(mongoQuery).toEqual(sqlString);
+        params = [1, 'rgerger%', 'erger%', 'asawd%', 'reger%', 'aefwaw%', 'ewrew%', 'ewfew%'];
+        sqlString = {sql: '((EmployeeID = ? AND LastName LIKE (?) AND (FirstName LIKE (?) OR Title LIKE (?)) AND (Title LIKE (?) AND FirstName LIKE (?)) AND (Title LIKE (?) OR LastName LIKE (?))))', params: params};
+        actualSql = "(EmployeeID = 1 AND LastName LIKE ('rgerger%') AND (FirstName LIKE ('erger%') OR Title LIKE ('asawd%')) AND (Title LIKE ('reger%') AND FirstName LIKE ('aefwaw%')) AND (Title LIKE ('ewrew%') OR LastName LIKE ('ewfew%')))";
+        queryBuilder.setRulesFromSql(actualSql);
+        mongoQuery = queryBuilder.getParameterizedSql(queryBuilder.getValidRules());
         expect(mongoQuery).toEqual(sqlString);
     });
 
@@ -297,7 +315,22 @@ describe('Parameter SQL Query', () => {
             rule: importRules
         }, '#querybuilder');
         let sqlString: string = '{"$and":[{"EmployeeID":1001},{ "$or":[{"Title":{"$regex":"Sales Manager"}},{"Title":{"$regex":"Sales"}},{ "$and":[{"City":"Kirkland"},{"HireDate":"12/12/2019"}]}]}]}';
-        const mongoQuery: string = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
+        let mongoQuery: string = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
+        expect(mongoQuery).toEqual(sqlString);
+        sqlString = '{"$and":[{"EmployeeID":1},{"Title":"Sales Manager"},{ "$or":[{"FirstName":{"$regex":"^ewfew"}},{"TitleOfCourtesy":"Mr."},{ "$and":[{"FirstName":{"$regex":"^ewfew"}},{"HireDate":"12/06/2024"}]},{ "$or":[{"FirstName":{"$regex":"^reer"}},{"Title":{"$regex":"^erer"}}]}]},{"Title":{"$regex":"^ewfew"}}]}';
+        let actualSql: string = "EmployeeID = 1 AND Title = 'Sales Manager' AND (FirstName LIKE ('ewfew%') OR TitleOfCourtesy = 'Mr.' OR (FirstName LIKE ('ewfew%') AND HireDate = '12/06/2024') OR (FirstName LIKE ('reer%') OR Title LIKE ('erer%'))) AND Title LIKE ('ewfew%')";
+        queryBuilder.setRulesFromSql(actualSql);
+        mongoQuery = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
+        expect(mongoQuery).toEqual(sqlString);
+        sqlString = '{"$and":[{"EmployeeID":1001},{ "$or":[{"Title":{"$regex":"Sales Manager"}},{ "$and":[{"City":"Kirkland"},{ "$or":[{"FirstName":{"$regex":"^fewfew"}},{"FirstName":{"$regex":"^efew"}}]}]},{"LastName":{"$regex":"^erer"}}]},{ "$and":[{"FirstName":{"$regex":"^ewfew"}},{"Title":{"$regex":"^efweew"}}]}]}';
+        actualSql = "EmployeeID = 1001 AND (Title LIKE ('%Sales Manager%') OR (City = 'Kirkland' AND (FirstName LIKE ('fewfew%') OR FirstName LIKE ('efew%'))) OR LastName LIKE ('erer%')) AND (FirstName LIKE ('ewfew%') AND Title LIKE ('efweew%'))";
+        queryBuilder.setRulesFromSql(actualSql);
+        mongoQuery = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
+        expect(mongoQuery).toEqual(sqlString);
+        sqlString = '{"$and":[{ "$and":[{"EmployeeID":1},{"LastName":{"$regex":"^rgerger"}},{ "$or":[{"FirstName":{"$regex":"^erger"}},{"Title":{"$regex":"^asawd"}}]},{ "$and":[{"Title":{"$regex":"^reger"}},{"FirstName":{"$regex":"^aefwaw"}}]},{ "$or":[{"Title":{"$regex":"^ewrew"}},{"LastName":{"$regex":"^ewfew"}}]}]}]}';
+        actualSql = "(EmployeeID = 1 AND LastName LIKE ('rgerger%') AND (FirstName LIKE ('erger%') OR Title LIKE ('asawd%')) AND (Title LIKE ('reger%') AND FirstName LIKE ('aefwaw%')) AND (Title LIKE ('ewrew%') OR LastName LIKE ('ewfew%')))";
+        queryBuilder.setRulesFromSql(actualSql);
+        mongoQuery = queryBuilder.getMongoQuery(queryBuilder.getValidRules());
         expect(mongoQuery).toEqual(sqlString);
     });
 

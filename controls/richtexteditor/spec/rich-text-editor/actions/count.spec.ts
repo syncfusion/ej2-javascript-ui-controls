@@ -329,4 +329,23 @@ describe('Count module', () => {
             expect(rteObj.element.querySelectorAll('.e-rte-character-count').length === 0).toBe(true);
         });
     });
+
+    describe('890162 - Testing showCharCount as true without value', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Undo', 'Redo']
+                },
+                value: null,
+                showCharCount: true
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it(' ensuring getText() works fine with value as null', () => {
+            expect((rteObj.contentModule.getEditPanel() as HTMLElement).textContent.length).toBe(0);
+        });
+    });
 });

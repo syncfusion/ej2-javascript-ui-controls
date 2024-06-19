@@ -21,10 +21,15 @@
   }
   .e-multicolumn-list .e-popup-footer {
     vertical-align: middle;
-    border-top: 1px solid;
+    border-style: solid;
+    border-width: $footer-border-width;
     font-size: 14px;
-    height: 38px;
-    padding: 8px 0;
+    height: $multicolumn-grid-height;
+    display: flex;
+    align-items: center;
+  }
+  .e-multicolumn-grid.e-grid {
+    border-width: $grid-border-width;
   }
   .e-input-group.e-multicolumn-list {
     input[readonly].e-input {
@@ -93,6 +98,7 @@
     &.e-multicolumn-list .e-popup-footer {
       font-size: 12px;
     }
+    &.e-multicolumn-list .e-popup-footer,
     .e-multicolumn-grid .e-row,
     .e-multicolumn-grid .e-emptyrow {
       height: $multicolumn-grid-small-height;
@@ -105,6 +111,7 @@
     &.e-multicolumn-list .e-popup-footer {
       font-size: 16px;
     }
+    &.e-multicolumn-list .e-popup-footer,
     .e-multicolumn-grid .e-row,
     .e-multicolumn-grid .e-emptyrow {
       height: $multicolumn-grid-bigger-height;
@@ -121,6 +128,7 @@
     &.e-multicolumn-list .e-popup-footer {
       font-size: 14px;
     }
+    &.e-multicolumn-list .e-popup-footer,
     .e-multicolumn-grid .e-row,
     .e-multicolumn-grid .e-emptyrow {
       height: $multicolumn-grid-bigger-small-height;

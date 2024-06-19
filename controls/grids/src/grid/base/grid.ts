@@ -1063,6 +1063,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public asyncTimeOut: number = 50;
     /** @hidden */
     public isExportGrid: boolean = false;
+    /** @hidden */
+    public isWidgetsDestroyed: boolean = false;
 
     //Module Declarations
     /**
@@ -3078,6 +3080,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.searchModule = new Search(this);
         this.scrollModule = new Scroll(this);
         this.notify(events.initialLoad, {});
+        if (this.pageSettings.enableQueryString) {
+            const pageValue: string = new URL(window.location.href).searchParams.get('page');
+            if (!isNullOrUndefined(pageValue) && window.location.href.indexOf('?page=') > 0) {
+                const currentPageValue: number = parseInt(pageValue, 10);
+                this.setProperties({ pageSettings: { currentPage: currentPageValue } }, true);
+                this.pageSettings.currentPage = currentPageValue;
+            }
+        }
         if ((this.getDataModule().dataManager.dataSource.offline === true || this.getDataModule().dataManager.dataSource.url === undefined)
             && !(!isNullOrUndefined(this.dataSource) && (<DataResult>this.dataSource).result)) {
             this.isVirtualAdaptive = true;
@@ -3321,7 +3331,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     maskTBody.appendChild((i + altNumber) % 2 === 0 ? altRow.cloneNode(true) : row.cloneNode(true));
                 }
             } else {
-                const rowsQuery: string = 'tr:not([style*="display:none"]):not([style*="display: none"])';
+                const rowsQuery: string = 'tr:not(.e-hide):not([style*="display:none"]):not([style*="display: none"])';
                 const rows: Element[] = [].slice.call(tbody.querySelectorAll(rowsQuery));
                 const addEditRow: Element = tbody.querySelector('.e-addedrow, .e-editedrow');
                 let addEditRowIndex: number;
@@ -6552,6 +6562,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.frozenRows && this.scrollModule) {
             this.scrollModule.resizeFrozenRowBorder();
         }
+        if (this.enableStickyHeader){
+            this.scrollModule.makeStickyHeader();
+        }
     }
 
     /**
@@ -7355,7 +7368,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 this.editModule.saveCell();
                 this.notify(events.editNextValCell, {});
             }
-            if (this.editSettings.mode === 'Normal') {
+            if (this.editSettings.mode === 'Normal' && !this.isWidgetsDestroyed) {
                 this.editModule.editFormValidate();
             }
         }

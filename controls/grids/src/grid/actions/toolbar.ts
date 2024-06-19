@@ -283,7 +283,9 @@ export class Toolbar {
             this.refreshResponsiveToolbarItems(ResponsiveToolbarAction.isSearch);
             this.searchElement = (<HTMLInputElement>select('#' + this.gridID + '_searchbar', this.element));
             const right: HTMLElement = parentsUntil(this.searchElement, 'e-toolbar-right') as HTMLElement;
-            right.classList.add('e-responsive-right');
+            if(right){
+                right.classList.add('e-responsive-right');
+            }
             if (this.parent.searchSettings) {
                 this.updateSearchBox();
             }
@@ -301,7 +303,7 @@ export class Toolbar {
             const selectedRecords: number[] = this.parent.getSelectedRowIndexes();
             const excludingItems: string[] = [id + '_responsiveback', id + '_update', id + '_cancel'];
             for (const item of this.toolbar.items) {
-                const toolbarEle: Element = (item.template as string).length ? this.toolbar.element.querySelector(item.template as string) : this.toolbar.element.querySelector('#' + item.id);
+                const toolbarEle: Element = (item.template as string) && (item.template as string).length ? this.toolbar.element.querySelector(item.template as string) : this.toolbar.element.querySelector('#' + item.id);
                 if (toolbarEle) {
                     if (items.indexOf(item.id) > -1) {
                         if (selectedRecords.length) {
@@ -320,7 +322,9 @@ export class Toolbar {
             }
             if (this.searchElement) {
                 const right: HTMLElement = parentsUntil(this.searchElement, 'e-toolbar-right') as HTMLElement;
-                right.classList.remove('e-responsive-right');
+                if(right){
+                    right.classList.remove('e-responsive-right');
+                }
                 this.toolbarCreated(false);
                 this.unWireEvent();
                 this.searchElement = undefined;

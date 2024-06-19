@@ -1390,8 +1390,13 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private updateDropdowntreeDS(columns: { [key: string]: Object }[]): void {
         for (let i: number = 0; i < columns.length; i++) {
             if (columns[parseInt(i.toString(), 10)].type === 'object') {
+                if (this.isAngular && columns[parseInt(i.toString(), 10)].template) {
+                    delete columns[parseInt(i.toString(), 10)].template;
+                }
                 columns[parseInt(i.toString(), 10)].selectable = false;
                 this.updateDropdowntreeDS(columns[parseInt(i.toString(), 10)].columns as { [key: string]: Object }[]);
+            } else if (this.isAngular && columns[parseInt(i.toString(), 10)].template) {
+                delete columns[parseInt(i.toString(), 10)].template;
             }
         }
     }
@@ -5859,7 +5864,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             for (let j: number = 0, jLen: number = rules.rules.length; j < jLen; j++) {
                 if (rules.rules[j as number].rules) {
                     queryStr = this.getSqlString(rules.rules[j as number], enableEscape, queryStr, sqlLocale);
-                    condition = rules.rules[j as number].condition;
+                    if (this.enableSeparateConnector) {condition = rules.rules[j as number].condition; }
                 } else {
                     const rule: RuleModel = rules.rules[j as number]; let valueStr: string = '';
                     const ruleOpertor: string = sqlLocale ? this.sqlOperators[rule.operator] : this.operators[rule.operator];

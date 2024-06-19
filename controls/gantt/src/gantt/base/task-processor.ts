@@ -768,13 +768,15 @@ export class TaskProcessor extends DateProcessor {
      * @returns {void} .
      */
     public updateWorkWithDuration(ganttData: IGanttData): void {
-        const resources: Object[] = ganttData.ganttProperties.resourceInfo;
+        const resources: Object[] = (this.parent.editModule && this.parent.editModule.dialogModule &&
+            this.parent.editModule.dialogModule['currentResources']) ? this.parent.editModule.dialogModule['currentResources']
+            : ganttData.ganttProperties.resourceInfo;
         let work: number = 0;
+        let resourceOneDayWork: number;
         if (!isNullOrUndefined(resources) && !ganttData.hasChildRecords) {
             const resourcesLength: number = resources.length;
             let index: number;
             let resourceUnit: number;
-            let resourceOneDayWork: number;
             let totSeconds: number;
             if (this.parent.weekWorkingTime.length > 0) {
                 totSeconds = this.parent['getSecondsPerDay'](ganttData.ganttProperties.startDate ? ganttData.ganttProperties.startDate : ganttData.ganttProperties.endDate);
@@ -786,7 +788,7 @@ export class TaskProcessor extends DateProcessor {
             const durationInDay: number = this.getDurationInDay(ganttData.ganttProperties.duration, ganttData.ganttProperties.durationUnit);
             for (index = 0; index < resourcesLength; index++) {
                 resourceUnit = resources[index as number][this.parent.resourceFields.unit]; //in percentage
-                resourceOneDayWork = resourceUnit > 0 ? (actualOneDayWork * resourceUnit) / 100 : actualOneDayWork; //in hours
+                resourceOneDayWork = (resourceUnit > 0 ? (actualOneDayWork * resourceUnit) / 100 : (ganttData.ganttProperties.taskType !== 'FixedUnit' ? actualOneDayWork : 0));
                 work += (resourceOneDayWork * durationInDay);
             }
             //Update work as per defined unit.
@@ -808,6 +810,13 @@ export class TaskProcessor extends DateProcessor {
                     childCompletedWorks += ganttData.childRecords[i as number].ganttProperties.work;
                 }
                 work += childCompletedWorks;
+            }
+        }
+        if (ganttData.ganttProperties.taskType === 'FixedUnit' && resourceOneDayWork === 0) {
+            work = 0;
+            this.parent.setRecordValue('duration', 0, ganttData.ganttProperties, true);
+            if (!isNullOrUndefined(this.parent.taskFields.duration)) {
+                this.parent.setRecordValue(this.parent.taskFields.duration, 0, ganttData, true);
             }
         }
         this.parent.setRecordValue('work', work, ganttData.ganttProperties, true);
@@ -1018,6 +1027,7 @@ export class TaskProcessor extends DateProcessor {
                     break;
                 case 'FixedWork':
                     this.updateDurationWithWork(ganttData);
+                    this.updateUnitWithWork(ganttData);
                     break;
                 case 'FixedUnit':
                     this.updateWorkWithDuration(ganttData);
@@ -1047,7 +1057,9 @@ export class TaskProcessor extends DateProcessor {
      */
     public updateDurationWithWork(ganttData: IGanttData): void {
         const ganttProperties: ITaskData = ganttData.ganttProperties;
-        const resources: Object[] = ganttProperties.resourceInfo;
+        const resources: Object[] = (this.parent.editModule && this.parent.editModule.dialogModule &&
+            this.parent.editModule.dialogModule['currentResources']) ? this.parent.editModule.dialogModule['currentResources']
+            : ganttProperties.resourceInfo;
         if (!isNullOrUndefined(resources)) {
             const resourcesLength: number = !isNullOrUndefined(resources) ? resources.length : 0;
             let totalResourceOneDayWork: number = 0;
@@ -1072,6 +1084,7 @@ export class TaskProcessor extends DateProcessor {
             }
             if (ganttProperties.taskType === 'FixedUnit' && totalResourceOneDayWork === 0) {
                 this.parent.setRecordValue('work', 0, ganttProperties, true);
+                this.parent.setRecordValue(this.parent.taskFields.work, 0, ganttData, true);
             }
             //Update duration as per defined unit.
             if (ganttProperties.durationUnit === 'minute') {
@@ -1114,7 +1127,7 @@ export class TaskProcessor extends DateProcessor {
         const durationInDay: number = this.getDurationInDay(ganttData.ganttProperties.duration, ganttData.ganttProperties.durationUnit);
         const totalHours: number = this.getWorkInHour(ganttProperties.work, ganttProperties.workUnit);
         const totalUnitInPercentage: number = durationInDay > 0 ? (totalHours / (durationInDay * actualOneDayWork)) * 100 : 0;
-        let individualUnit: number = totalUnitInPercentage > 0 ? totalUnitInPercentage / resourcesLength : 100;
+        let individualUnit: number = totalUnitInPercentage === 0 ? 0 : totalUnitInPercentage > 0 ? totalUnitInPercentage / resourcesLength : 100;
         //To check the decimal places.
         if (individualUnit % 1 !== 0) {
             individualUnit = parseFloat(individualUnit.toFixed(2));
@@ -2774,13 +2787,13 @@ export class TaskProcessor extends DateProcessor {
                         continue;
                     }
                     const [isUnscheduled, propertyWithValue] : [boolean, string] = this.isUnscheduledTask(childData.ganttProperties);
-                    let startDate: Date = ((isUnscheduled && (propertyWithValue !='startDate' && propertyWithValue !='endDate')) && !isParentUnschecule) ?
+                    let startDate: Date = ((isUnscheduled && (propertyWithValue !== 'startDate' && propertyWithValue !== 'endDate')) && !isParentUnschecule) ?
                         ganttProp.startDate : this.getValidStartDate(childData.ganttProperties);
                     if (parentData.hasChildRecords && !ganttProp.isAutoSchedule
                         && !isNullOrUndefined(childData.ganttProperties.autoStartDate)) {
                         startDate = childData.ganttProperties.autoStartDate;
                     }
-                    let endDate: Date = ((isUnscheduled && (propertyWithValue !='startDate' && propertyWithValue !='endDate')) && !isParentUnschecule) ?
+                    let endDate: Date = ((isUnscheduled && (propertyWithValue !== 'startDate' && propertyWithValue !== 'endDate')) && !isParentUnschecule) ?
                         ganttProp.endDate : this.getValidEndDate(childData.ganttProperties);
                     if (parentData.hasChildRecords && !ganttProp.isAutoSchedule
                         && !isNullOrUndefined(childData.ganttProperties.autoEndDate)) {

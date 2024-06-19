@@ -1295,3 +1295,71 @@ describe('DropdownTree Null or undefined value testing ', () => {
         ddtreeObj.destroy();
     });
 });
+
+describe('DropdownTree', () => {
+
+    let ddtreeObj: DropDownTree;
+
+    beforeEach((): void => {
+        ddtreeObj = undefined;
+        let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddtree' });
+        document.body.appendChild(ele);
+    });
+    afterEach((): void => {
+        if (ddtreeObj)
+            ddtreeObj.destroy();
+        document.body.innerHTML = '';
+    });
+
+    it('aria-label attribute value changes dynamically', () => {
+        ddtreeObj = new DropDownTree({
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+            placeholder: "Select items",
+        }, '#ddtree');
+        let ele = ddtreeObj.element;
+        ele.focus();
+        ddtreeObj.showPopup();
+        expect(((ddtreeObj).element.parentElement as any).ariaLabel).toBe('dropdowntree');
+        expect((ddtreeObj).element.nextElementSibling.classList.contains('e-icon-hide')).toBe(true);
+        ddtreeObj.value = ['3'];
+        ddtreeObj.dataBind();
+        expect((ddtreeObj as any).element.value).toBe("Victoria");
+        expect(((ddtreeObj).element.parentElement as any).ariaLabel).toBe('Victoria');
+        (ddtreeObj as any).onFocusOut();
+    });
+
+    it('aria-label attribute value changes dynamically when enabling allowMultiselection', () => {
+        ddtreeObj = new DropDownTree({
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+            allowMultiSelection:true,
+            value: ['1','2']
+        }, '#ddtree');
+        let ele = ddtreeObj.element;
+        ele.focus();
+        ddtreeObj.showPopup();
+        expect(((ddtreeObj).element.parentElement as any).ariaLabel).toBe('Australia New South Wales');
+        ddtreeObj.value = ['7'];
+        ddtreeObj.dataBind();
+        expect((ddtreeObj as any).element.value).toBe("Brazil");
+        expect(((ddtreeObj).element.parentElement as any).ariaLabel).toBe('Brazil');
+        (ddtreeObj as any).onFocusOut();
+    });
+
+    it('aria-label attribute value changes dynamically when enabling showCheckBox', () => {
+        ddtreeObj = new DropDownTree({
+            fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' },
+            value: ['3','6','9'],
+            showCheckBox: true
+        }, '#ddtree');
+        let ele = ddtreeObj.element;
+        ele.focus();
+        ddtreeObj.showPopup();
+        expect(((ddtreeObj).element.parentElement as any).ariaLabel).toBe('Victoria Western Australia Ceará');
+        ddtreeObj.value = ['1'];
+        ddtreeObj.dataBind();
+        expect((ddtreeObj as any).element.value).toBe("Australia");
+        expect(((ddtreeObj).element.parentElement as any).ariaLabel).toBe('Australia');
+        (ddtreeObj as any).onFocusOut();
+    });
+
+});

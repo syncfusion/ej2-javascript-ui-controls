@@ -1781,4 +1781,112 @@ describe('Mention', () => {
             expect(mentionObj.popupObj.element.classList.contains('sample')).toEqual(true);
         });
     });
+
+    describe('keyboard interaction with disabled items', () => {
+        let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down', code: 'ArrowDown', keyCode: 40, key: 'ArrowDown' };
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'mention' });
+        let listObj: any;
+        const empList: { [key: string]: Object }[] = [ 
+            { id: 'level1', country: 'American Football', State: true }, 
+            { id: 'level2', country: 'Badminton', State: false },
+            { id: 'level3', country: 'Basketball', State: true },
+            { id: 'level4', country: 'Cricket', State: true },
+            { id: 'level5', country: 'Football', State: false },
+            { id: 'level6', country: 'Golf', State: true }       
+        ]; 
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new Mention({
+                mentionChar: '@',
+                dataSource: empList,
+                fields: { text: 'country', disabled: 'State' },
+            });
+            listObj.appendTo(element);
+        });
+        afterAll((done) => {
+            listObj.hidePopup();
+            setTimeout(() => {
+                listObj.destroy();
+                element.remove();
+                done();
+            }, 450)
+        });
+        /**
+       * Mouse click
+       */
+        it('up and down action', (done) => {
+            element.value = '@';
+            listObj.showPopup();
+            setTimeout(() => {
+                expect(listObj.list.querySelector('.e-active').getAttribute('data-value') === "Badminton").toBe(true);
+                listObj.onKeyUp(keyEventArgs);
+                listObj.keyActionHandler(keyEventArgs);
+                expect(listObj.list.querySelector('.e-active').getAttribute('data-value') === "Football").toBe(true);
+                listObj.onKeyUp(keyEventArgs);
+                listObj.keyActionHandler(keyEventArgs);
+                expect(listObj.list.querySelector('.e-active').getAttribute('data-value') === "Badminton").toBe(true);
+                listObj.onKeyUp(keyEventArgs);
+                listObj.keyActionHandler(keyEventArgs);
+                expect(listObj.list.querySelector('.e-active').getAttribute('data-value') === "Football").toBe(true);
+                listObj.onKeyUp(keyEventArgs);
+                listObj.keyActionHandler(keyEventArgs);
+                expect(listObj.list.querySelector('.e-active').getAttribute('data-value') === "Badminton").toBe(true);
+                done();
+            }, 450);
+        });
+    });
+
+    describe('keyboard interaction in disabled items', () => {
+        let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'up', code: 'ArrowUp' };
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'mention' });
+        let listObj: any;
+        let emplist: { [key: string]: Object }[] = [ 
+            { id: 'level1', country: 'American Football', State: true }, 
+            { id: 'level2', country: 'Badminton', State: false },
+            { id: 'level3', country: 'Basketball', State: true },
+            { id: 'level4', country: 'Cricket', State: true },
+            { id: 'level5', country: 'Football', State: false },
+            { id: 'level6', country: 'Golf', State: true }       
+        ]; 
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new Mention({
+                mentionChar: '@',
+                dataSource: empList,
+                fields: { text: 'country', disabled: 'State' },
+            });
+            listObj.appendTo(element);
+        });
+        afterAll((done) => {
+            listObj.hidePopup();
+            setTimeout(() => {
+                listObj.destroy();
+                element.remove();
+                done();
+            }, 450)
+        });
+        /**
+       * Mouse click
+       */
+        it('with all disabled items', (done) => {
+            element.value = '@';
+            listObj.showPopup();
+            setTimeout(() => {
+                expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
+                keyEventArgs.action = 'down';
+                listObj.keyActionHandler(keyEventArgs);
+                expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
+                keyEventArgs.action = 'up';
+                listObj.keyActionHandler(keyEventArgs);
+                expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
+                keyEventArgs.action = 'down';
+                listObj.keyActionHandler(keyEventArgs);
+                expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
+                keyEventArgs.action = 'up';
+                listObj.keyActionHandler(keyEventArgs);
+                expect(listObj.list.querySelectorAll('.e-item-focus').length === 0).toBe(true);
+                done();
+            }, 450);
+        });
+    });
 });

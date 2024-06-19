@@ -648,7 +648,8 @@ export class CriticalPath {
                 }
                 if (durationDiff >= 0 && this.validatedids.indexOf(parseInt(fromRecord.ganttProperties.taskId, 10)) === -1 &&
                 fromRecord.ganttProperties.taskId !== record.ganttProperties.taskId) {
-                    fromRecord.ganttProperties.slack = durationDiff <= 0 ? record.ganttProperties.slack : durationDiff + record.ganttProperties.durationUnit;
+                    fromRecord.ganttProperties.slack = durationDiff <= 0 ? record.ganttProperties.slack :
+                        durationDiff + record.ganttProperties.durationUnit;
                     fromRecord.slack = durationDiff <= 0 ? record.slack : durationDiff + record.ganttProperties.durationUnit;
                     fromRecord.isCritical = durationDiff <= 0 ? record.ganttProperties.isCritical : false;
                     fromRecord.ganttProperties.isCritical = durationDiff <= 0 ? record.ganttProperties.isCritical : false;

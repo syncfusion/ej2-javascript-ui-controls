@@ -1060,6 +1060,12 @@
   }
 }
 
+.e-multiselect .e-multi-select-wrapper.e-down-icon {
+  @if $ddl-multiselect-skin-name =='fluent2' {
+    padding: 1px 0;
+  }
+}
+
 .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-input-filter,
 .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-input-group.e-input-focus .e-input-filter {
   @if $ddl-multiselect-skin-name != 'bootstrap5' and $ddl-multiselect-skin-name != 'tailwind' and $ddl-multiselect-skin-name != 'fluent2' {

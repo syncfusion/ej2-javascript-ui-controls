@@ -775,6 +775,7 @@ export class Edit implements IAction {
      */
     public destroyWidgets(cols?: Column[]): void {
         const gObj: IGrid = this.parent;
+        gObj.isWidgetsDestroyed = true;
         if (gObj.editSettings.template) {
             this.parent.destroyTemplate(['editSettingsTemplate']);
             if (this.parent.isReact) {
@@ -912,6 +913,7 @@ export class Edit implements IAction {
 
     private curretRowFocus(e: KeyboardEventArgs): void {
         if (this.parent.isEdit && this.parent.editSettings.mode !== 'Batch') {
+            this.parent.isWidgetsDestroyed = false;
             const editedRow: Element = parentsUntil(e.target as Element, 'e-editedrow') || parentsUntil(e.target as Element, 'e-addedrow');
             if (editedRow) {
                 let focusableEditCells: HTMLElement[] = [].slice.call(editedRow.querySelectorAll('.e-input:not(.e-disabled)'));

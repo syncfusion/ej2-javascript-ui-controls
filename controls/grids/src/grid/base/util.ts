@@ -2348,3 +2348,29 @@ export function findCellIndex(checkActiveMatrix: number[][], checkCellIndex: num
 export function capitalizeFirstLetter(string: string): string {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
+
+/**
+ *
+ * @param { IGrid } grid - Defines parent instance
+ * @returns { boolean } - Returns is virtual sorting
+ */
+export function checkVirtualSort(grid: IGrid): boolean {
+    return !(isGroupAdaptive(grid) || grid.groupSettings.enableLazyLoading
+    || (!grid.enableVirtualization && grid.enableColumnVirtualization));
+}
+
+/**
+ *
+ * @param { number[] } blockes - Defines block indexes
+ * @returns { number[] } - Returns is visible page
+ */
+export function getVisiblePage(blockes: number[]): number[] {
+    const visiblePage: number[] = [];
+    for (let i: number = 0; i < blockes.length; i++) {
+        const page: number = Math.ceil(blockes[parseInt(i.toString(), 10)] / 2);
+        if (visiblePage.indexOf(page) === -1) {
+            visiblePage.push(page);
+        }
+    }
+    return visiblePage;
+}

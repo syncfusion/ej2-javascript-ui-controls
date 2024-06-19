@@ -4186,4 +4186,40 @@ describe('EJ2- 871212 - grid’s edit type datepicker with enable mask for date 
         gridObj = null;
         actionComplete = null;
     });
+
+    describe('EJ2-890600: Issue When numeric editType is set before the primaryKey upon tab navigation  =>', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                editSettings: {
+                allowEditing: true,
+                allowAdding: true,
+                allowDeleting: true,
+                mode: 'Normal',
+                },
+                toolbar: ['Add','Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                {  field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit', width: 120, format: 'C2'},
+                {  field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                {  field: 'ShipCity', headerText: 'ShipCity', width: 170 },
+                ],
+            }, done);
+        });
+
+        it('In Edit method isWidgetsDestroyed false testing  while calling the currertRowFocus', () => {
+            const editModule = gridObj.editModule;
+            const curretRowFocusSpy = spyOn(editModule, 'curretRowFocus' as keyof typeof editModule).and.callFake(() => {
+                expect((gridObj as any).isWidgetsDestroyed).toBeFalsy(); 
+            });
+            (gridObj as any).editModule.curretRowFocus();
+            expect(curretRowFocusSpy).toHaveBeenCalled();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

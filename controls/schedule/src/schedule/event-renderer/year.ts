@@ -449,7 +449,8 @@ export class YearEvent extends TimelineEvent {
         const eventObj: Record<string, any> = extend({}, record, null, true) as Record<string, any>;
         if (this.parent.activeViewOptions.eventTemplate) {
             const templateId: string = this.parent.element.id + '_' + this.parent.activeViewOptions.eventTemplateName + 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()(eventObj, this.parent, 'eventTemplate', templateId, false);
+            templateElement = this.parent.getAppointmentTemplate()
+                (eventObj, this.parent, 'eventTemplate', templateId, false, undefined, undefined, this.parent.root);
         } else {
             const locationEle: string = (record[this.fields.location] || this.parent.eventSettings.fields.location.default || '') as string;
             const subjectEle: HTMLElement = createElement('div', {

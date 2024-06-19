@@ -353,8 +353,8 @@ export class Month extends ViewBase implements IRenderer {
                 const elementId: string = this.parent.element.id + '_';
                 const viewName: string = this.parent.activeViewOptions.dateHeaderTemplateName;
                 const templateId: string = elementId + viewName + 'dateHeaderTemplate';
-                const dateTemplate: HTMLElement[] =
-                    [].slice.call(this.parent.getDateHeaderTemplate()(cellArgs, this.parent, 'dateHeaderTemplate', templateId, false));
+                const dateTemplate: HTMLElement[] = [].slice.call(this.parent.getDateHeaderTemplate()
+                    (cellArgs, this.parent, 'dateHeaderTemplate', templateId, false, undefined, undefined, this.parent.root));
                 if (dateTemplate && dateTemplate.length) {
                     append(dateTemplate, tdEle);
                 }
@@ -526,8 +526,8 @@ export class Month extends ViewBase implements IRenderer {
             const scheduleId: string = this.parent.element.id + '_';
             const viewName: string = this.parent.activeViewOptions.cellTemplateName;
             const templateId: string = scheduleId + viewName + 'cellTemplate';
-            const cellTemplate: HTMLElement[] =
-                [].slice.call(this.parent.getCellTemplate()(args, this.parent, 'cellTemplate', templateId, false));
+            const cellTemplate: HTMLElement[] = [].slice.call(this.parent.getCellTemplate()
+                (args, this.parent, 'cellTemplate', templateId, false, undefined, undefined, this.parent.root));
             append(cellTemplate, ntd);
         }
         const args: RenderCellEventArgs = { elementType: type, element: ntd, date: data.date, groupIndex: data.groupIndex };
@@ -545,8 +545,8 @@ export class Month extends ViewBase implements IRenderer {
             const scheduleId: string = this.parent.element.id + '_';
             const viewName: string = this.parent.activeViewOptions.cellHeaderTemplateName;
             const templateId: string = scheduleId + viewName + 'cellHeaderTemplate';
-            const cellHeaderTemplate: HTMLElement[] =
-                [].slice.call(this.parent.getCellHeaderTemplate()(args, this.parent, 'cellHeaderTemplate', templateId, false));
+            const cellHeaderTemplate: HTMLElement[] = [].slice.call(this.parent.getCellHeaderTemplate()
+                (args, this.parent, 'cellHeaderTemplate', templateId, false, undefined, undefined, this.parent.root));
             append(cellHeaderTemplate, dateHeader);
         } else {
             const innerText: string =
@@ -691,9 +691,8 @@ export class Month extends ViewBase implements IRenderer {
     }
 
     public getLabelText(view: string): string {
-        return this.parent.localeObj.getConstant(view) + ' of ' + util.capitalizeFirstWord(
-            this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() }),
-            'single');
+        const viewStr: string = view.charAt(0).toLowerCase() + view.substring(1);
+        return this.formatViewLabel(viewStr, this.getStartDate(), this.getEndDate());
     }
 
     private createWeekNumberElement(text?: string): HTMLElement {

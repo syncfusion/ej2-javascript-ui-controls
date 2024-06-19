@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 26.1.38 (2024-06-19)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I582328` - Issue with "Listbox component becomes unresponsive when resizing the window" has been resolved.
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I596302` - The issues with the screen reader handling of selected items and the hidden input element in the Dropdown Tree component have been resolved.
+
 ## 26.1.35 (2024-06-11)
 
 ### DropDownTree

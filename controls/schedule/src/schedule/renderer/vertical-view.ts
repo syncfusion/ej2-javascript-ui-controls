@@ -378,8 +378,8 @@ export class VerticalView extends ViewBase implements IRenderer {
                 templateName = 'dateHeaderTemplate';
                 const args: CellTemplateArgs = { date: date, type: type };
                 const viewName: string = this.parent.activeViewOptions.dateHeaderTemplateName;
-                cntEle = [].slice.call(
-                    this.parent.getDateHeaderTemplate()(args, this.parent, templateName, templateId + viewName + templateName, false));
+                cntEle = [].slice.call(this.parent.getDateHeaderTemplate()
+                    (args, this.parent, templateName, templateId + viewName + templateName, false, undefined, undefined, this.parent.root));
             } else {
                 wrapper.innerHTML = this.parent.activeView.isTimelineView() ?
                     `<span class="e-header-date e-navigate">${this.getTimelineDate(date)}</span>` :
@@ -392,8 +392,8 @@ export class VerticalView extends ViewBase implements IRenderer {
             if (this.parent.activeViewOptions.timeScale.majorSlotTemplate) {
                 templateName = 'majorSlotTemplate';
                 const args: CellTemplateArgs = { date: date, type: type };
-                cntEle = [].slice.call(
-                    this.parent.getMajorSlotTemplate()(args, this.parent, templateName, templateId + templateName, false));
+                cntEle = [].slice.call(this.parent.getMajorSlotTemplate()
+                    (args, this.parent, templateName, templateId + templateName, false, undefined, undefined, this.parent.root));
             } else {
                 wrapper.innerHTML = `<span>${this.getTime(date)}</span>`;
                 cntEle = [].slice.call(wrapper.childNodes);
@@ -403,8 +403,8 @@ export class VerticalView extends ViewBase implements IRenderer {
             if (this.parent.activeViewOptions.timeScale.minorSlotTemplate) {
                 templateName = 'minorSlotTemplate';
                 const args: CellTemplateArgs = { date: date, type: type };
-                cntEle = [].slice.call(
-                    this.parent.getMinorSlotTemplate()(args, this.parent, templateName, templateId + templateName, false));
+                cntEle = [].slice.call(this.parent.getMinorSlotTemplate()
+                    (args, this.parent, templateName, templateId + templateName, false, undefined, undefined, this.parent.root));
             } else {
                 cntEle = [].slice.call(wrapper.childNodes);
             }
@@ -414,8 +414,8 @@ export class VerticalView extends ViewBase implements IRenderer {
                 const viewName: string = this.parent.activeViewOptions.cellTemplateName;
                 templateName = 'cellTemplate';
                 const args: CellTemplateArgs = { date: date, type: type, groupIndex: groupIndex };
-                cntEle = [].slice.call(
-                    this.parent.getCellTemplate()(args, this.parent, templateName, templateId + viewName + templateName, false));
+                cntEle = [].slice.call(this.parent.getCellTemplate()
+                    (args, this.parent, templateName, templateId + viewName + templateName, false, undefined, undefined, this.parent.root));
             }
             break;
         }
@@ -538,7 +538,8 @@ export class VerticalView extends ViewBase implements IRenderer {
         const appointmentExpandCollapse: Element = createElement('div', {
             attrs: {
                 'tabindex': '0', 'role': 'list',
-                title: this.parent.localeObj.getConstant('expandAllDaySection'), 'aria-disabled': 'false', 'aria-label': 'Expand section'
+                title: this.parent.localeObj.getConstant('expandAllDaySection'), 'aria-disabled': 'false',
+                'aria-label': this.parent.localeObj.getConstant('expandAllDaySection')
             },
             className: cls.ALLDAY_APPOINTMENT_SECTION_CLASS + ' ' + cls.APPOINTMENT_ROW_EXPAND_CLASS + ' ' +
                 cls.ICON + ' ' + cls.DISABLE_CLASS
@@ -695,11 +696,11 @@ export class VerticalView extends ViewBase implements IRenderer {
         const ntd: Element = td.cloneNode() as Element;
         if (tdData.colSpan) { ntd.setAttribute('colspan', tdData.colSpan.toString()); }
         const clsName: string[] = this.getContentTdClass(r);
-        const cellDate: Date = util.resetTime(tdData.date);
+        let cellDate: Date = util.resetTime(tdData.date);
         if (!this.parent.isMinMaxDate(cellDate)) {
             clsName.push(cls.DISABLE_DATES);
         }
-        util.setTime(cellDate, util.getDateInMs(r.date));
+        cellDate = new Date(cellDate.setHours(r.date.getHours(), r.date.getMinutes(), r.date.getSeconds(), r.date.getMilliseconds()));
         let type: string = 'workCells';
         if (tdData.className.indexOf(cls.RESOURCE_PARENT_CLASS) !== -1) {
             clsName.push(cls.RESOURCE_GROUP_CELLS_CLASS);
@@ -716,8 +717,8 @@ export class VerticalView extends ViewBase implements IRenderer {
             const scheduleId: string = this.parent.element.id + '_';
             const viewName: string = this.parent.activeViewOptions.cellTemplateName;
             const templateId: string = scheduleId + viewName + 'cellTemplate';
-            const tooltipTemplate: HTMLElement[] =
-                [].slice.call(this.parent.getCellTemplate()(args, this.parent, 'cellTemplate', templateId, false));
+            const tooltipTemplate: HTMLElement[] = [].slice.call(this.parent.getCellTemplate()
+                (args, this.parent, 'cellTemplate', templateId, false, undefined, undefined, this.parent.root));
             append(tooltipTemplate, ntd);
         }
         ntd.setAttribute('data-date', cellDate.getTime().toString());
@@ -778,10 +779,22 @@ export class VerticalView extends ViewBase implements IRenderer {
         return end;
     }
 
+    private getStartEndHours(startEndTime: string): Date {
+        if (!isNullOrUndefined(startEndTime) && startEndTime !== '') {
+            const startEndDate: Date = new Date(2000, 0, 0, 0);
+            const timeString: string[] = startEndTime.split(':');
+            if (timeString.length === 2) {
+                startEndDate.setHours(parseInt(timeString[0], 10), parseInt(timeString[1], 10), 0);
+            }
+            return startEndDate;
+        }
+        return new Date(2000, 0, 0, 0);
+    }
+
     public getTimeSlotRows(handler?: CallbackFunction): TimeSlotData[] {
         const rows: TimeSlotData[] = [];
-        const startHour: Date = this.getStartHour();
-        const endHour: Date = this.getEndHour();
+        const startHour: Date = this.getStartEndHours(this.parent.activeViewOptions.startHour);
+        const endHour: Date = this.getStartEndHours(this.parent.activeViewOptions.endHour);
         const msMajorInterval: number = this.parent.activeViewOptions.timeScale.interval * util.MS_PER_MINUTE;
         const msInterval: number = msMajorInterval / this.parent.activeViewOptions.timeScale.slotCount;
         let length: number = Math.round(util.MS_PER_DAY / msInterval);

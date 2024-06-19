@@ -283,7 +283,9 @@ export class Filter {
         let marginTop: number | string;
         const isValid: boolean = true;
         let marginLeft: number | string;
+        let isNonBodyTag: boolean = false;
         if (!isNullOrUndefined(this.parent.element.parentNode) && this.parent.element.parentNode['tagName'] !== 'BODY') {
+            isNonBodyTag = true;
             parentNode = this.parent.element.parentNode;
             parentNodeTop = parentNode.getBoundingClientRect().top;
             marginTop = parentNode.style.marginTop;
@@ -323,7 +325,7 @@ export class Filter {
         /* eslint-disable-next-line */
         const liPos: any = li.getBoundingClientRect();
         let left: number = liPos.right + window.scrollX;
-        let top: number = liPos.top + window.scrollY;
+        let top: number = isNonBodyTag ? liPos.top - gridPosTop : liPos.top + window.scrollY;
         if (gridPos.right < (left + ul.offsetWidth)) {
             if ((liPos.left - ul.offsetWidth) > gridPos.left) {
                 left = (liPos.left - ul.offsetWidth);
@@ -331,12 +333,12 @@ export class Filter {
                 left -= (left + ul.offsetWidth) - gridPos.right;
             }
         } else {
-            if (!isNullOrUndefined(paddingTop) && !isNullOrUndefined(paddingLeft)) {
+            if ((!isNullOrUndefined(paddingTop) || !isNullOrUndefined(paddingLeft)) && isNonBodyTag) {
                 left = Math.abs(liPos.right - gridPos.left);
                 top = Math.abs(liPos.top - gridPos.top);
             }
         }
-        if (!isNullOrUndefined(paddingTop) && !isNullOrUndefined(paddingLeft)) {
+        if (!isNullOrUndefined(paddingTop) && !isNullOrUndefined(paddingLeft) && (marginTop !== '' || marginLeft !== '') && isNonBodyTag) {
             ul.style.top = typeof(parseInt(marginTop as string, 10)) === 'string' ? (top + paddingTop + parseInt(marginTop as string, 10)) + 'px' : (top + paddingTop) + 'px';
             ul.style.left = typeof(parseInt(marginLeft as string, 10)) === 'string' ? (left + paddingLeft + parseInt(marginLeft as string, 10) + 8) + 'px' : (left + paddingLeft) + 'px';
         } else {

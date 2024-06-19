@@ -678,7 +678,9 @@ export class StickyNotesAnnotation {
         pageIndex = pageIndex + 1;
         if (data) {
             if (data.length !== 0) {
-                this.createPageAccordion(pageIndex);
+                if(!(data.length === 1 && (data[0].AnnotationType === 'Signature' || data[0].AnnotationType === 'signature'))) {
+                    this.createPageAccordion(pageIndex);
+                }
                 for (let i: number = 0; i < data.length; i++) {
                     if (data[parseInt(i.toString(), 10)].AnnotName && (data[parseInt(i.toString(), 10)].AnnotName.split('freeText').length === 1)) {
                         this.createCommentControlPanel(data[parseInt(i.toString(), 10)], pageIndex);
@@ -3412,8 +3414,8 @@ export class StickyNotesAnnotation {
         const currentDateString: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.getDateAndTime();
         const annotationName: string = this.pdfViewer.annotation.createGUID();
         //Creating annotation settings
-        const annotationSelectorSettings: any = this.pdfViewer.stickyNotesSettings.annotationSelectorSettings ?
-            this.pdfViewer.stickyNotesSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
+        const annotationSelectorSettings: any = this.pdfViewer.stickyNotesSettings.annotationSelectorSettings;
+        this.pdfViewerBase.updateSelectorSettings(annotationSelectorSettings);
         const annotationSettings: any = this.pdfViewer.annotationModule.updateSettings(this.pdfViewer.stickyNotesSettings);
         annotationObject.author = annotationObject.author ? annotationObject.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('sticky', annotationSettings.annotationSubType);
         const allowedInteractions: any = this.pdfViewer.stickyNotesSettings.allowedInteractions ?

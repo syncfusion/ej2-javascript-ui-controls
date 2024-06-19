@@ -21,7 +21,7 @@ import { ISeriesRenderEventArgs } from '../../chart/model/chart-interface';
 import { seriesRender } from '../../common/model/constants';
 import { Alignment, EmptyPointMode, LabelPosition, LegendShape, SeriesCategories, ShapeType } from '../../common/utils/enum';
 import { BoxPlotMode, Segment } from '../utils/enum';
-import { getVisiblePoints, setRange } from '../../common/utils/helper';
+import { getVisiblePoints, setRange, findClipRect } from '../../common/utils/helper';
 import { Browser } from '@syncfusion/ej2-base';
 import { StockSeries } from '../../stock-chart/index';
 import { CartesianAxisLayoutPanel } from '../axis/cartesian-panel';
@@ -2196,11 +2196,17 @@ export class Series extends SeriesBase {
         }
         this.xAxis.labels = [];
         this.xAxis.indexLabels = {};
+        const option: DateFormatOptions = {
+            skeleton: 'full',
+            type: 'dateTime'
+        };
+        const dateParser: Function = this.chart.intl.getDateParser(option);
+        const dateFormatter: Function = this.chart.intl.getDateFormat(option);
         for (const item of this.xAxis.series) {
             if (item.visible && item.category !== 'TrendLine') {
                 item.xMin = Infinity; item.xMax = -Infinity;
                 for (const point of item.points) {
-                    item.pushCategoryData(point, point.index, <string>point.x);
+                    item.pushCategoryData(point, point.index, this.xAxis.valueType === "DateTimeCategory" ? Date.parse(dateParser(dateFormatter(point.x))).toString() : <string>point.x);
                     item.xMin = Math.min(item.xMin, point.xValue);
                     item.xMax = Math.max(item.xMax, point.xValue);
                 }
@@ -2989,16 +2995,22 @@ export class Series extends SeriesBase {
         }
         for (const series of seriesCollection) {
             if (series.visible) {
+                findClipRect(series, this.chart.enableCanvas);
+                const transform: string = 'translate(' + this.clipRect.x + ',' + (this.clipRect.y) + ')';
+                series.seriesElement.setAttribute('transform', transform);
                 series.chart[firstToLowerCase(series.type.replace('100', '')) + 'SeriesModule'].render(series, series.xAxis, series.yAxis, series.chart.requireInvertedAxis, series.chart.enableAnimation);
                 if (series.marker.visible && (series.chart.chartAreaType === 'Cartesian') && series.type !== 'Scatter' && series.type !== 'Bubble'
                     && series.type !== 'Candle' && series.type !== 'Hilo' && series.type !== 'HiloOpenClose' && series.symbolElement) {
+                    series.symbolElement.setAttribute('transform', transform);
                     appendChildElement(series.chart.enableCanvas, series.chart.seriesElements, series.symbolElement, true);
                 }
                 if (series.marker.dataLabel.visible && series.chart.dataLabelModule) {
                     series.chart.dataLabelCollections = [];
                     series.chart.dataLabelModule.render(series, series.chart, series.marker.dataLabel);
                     if (series.textElement) {
+                        if (series.shapeElement) { series.shapeElement.setAttribute('transform', transform); }
                         appendChildElement(series.chart.enableCanvas, series.chart.dataLabelElements, series.shapeElement, true);
+                        series.textElement.setAttribute('transform', transform);
                         appendChildElement(series.chart.enableCanvas, series.chart.dataLabelElements, series.textElement, true);
                     }
                 }

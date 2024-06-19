@@ -259,7 +259,7 @@
       @if $skin-name == 'bootstrap4' {
         font-size: $treeview-big-image-font-size;
       }
-      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3') {
+      @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3' or $skin-name == 'fluent2') {
         & + .e-list-text {
           padding: $treeview-big-image-text-padding;
         }

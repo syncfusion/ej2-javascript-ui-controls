@@ -110,6 +110,10 @@ export interface BreadcrumbClickEventArgs extends BaseEventArgs {
      * Specifies the item click event.
      */
     event: Event;
+    /**
+     * Cancels the Breadcrumb item after click action.
+     */
+    cancel: boolean;
 }
 
 /**
@@ -735,7 +739,10 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
                 }
                 this.endIndex = idx;
             }
-            this.trigger('itemClick', { element: li, item: this.items[idx as number], event: e });
+            const itemClickArgs: BreadcrumbClickEventArgs = { element: li as HTMLElement, 
+                item: this.items[idx as number], event: e, cancel: false };
+            this.trigger('itemClick', itemClickArgs);
+            if (itemClickArgs.cancel) { return; }
             if (this.items[idx as number]) {
                 this.activeItem = this.items[idx as number].url || this.items[idx as number].text;
             }

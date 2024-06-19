@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 26.1.38 (2024-06-19)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Issue with condition not proper while getting sql from rules has been fixed.
+- `#I594200` - Issue with "Template is not rendered properly when we use fieldMode as dropdowntree in the complex data binding query builder" has been fixed.
+
 ## 26.1.35 (2024-06-11)
 
 ### QueryBuilder

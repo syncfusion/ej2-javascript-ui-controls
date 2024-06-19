@@ -453,8 +453,14 @@ export class TimelineEvent extends MonthEvent {
     }
 
     private getSameDayEventsWidth(startDate: Date, endDate: Date): number {
+        let intervalMins: number = this.interval;
+        if (this.slotsPerDay === 1) {
+            const hoursRange: { [key: string]: Date } =
+                util.getStartEndHours(util.resetTime(new Date(startDate.getTime())), this.startHour, this.endHour);
+            intervalMins = (hoursRange.endHour.getTime() - hoursRange.startHour.getTime()) / util.MS_PER_MINUTE;
+        }
         return ((util.getUniversalTime(endDate) - util.getUniversalTime(startDate)) /
-            util.MS_PER_MINUTE * (this.cellWidth * this.slotCount) / this.interval);
+            util.MS_PER_MINUTE * (this.cellWidth * this.slotCount) / intervalMins);
     }
 
     private getSpannedEventsWidth(startDate: Date, endDate: Date, diffInDays: number): number {

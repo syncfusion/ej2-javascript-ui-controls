@@ -3,7 +3,7 @@ import { Group } from '@syncfusion/ej2-data';
 import { IModelGenerator, IGrid, VirtualInfo, NotifyArgs } from '../base/interface';
 import { Row } from '../models/row';
 import { Cell } from '../models/cell';
-import { getRowIndexFromElement, isGroupAdaptive } from '../base/util';
+import { getRowIndexFromElement, isGroupAdaptive, checkVirtualSort, getVisiblePage } from '../base/util';
 import { Column } from '../models/column';
 import { PageSettingsModel } from '../models/page-settings-model';
 import { RowModelGenerator } from '../services/row-model-generator';
@@ -26,6 +26,7 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
     public data: { [x: number]: Object[] } = {};
     public groups: { [x: number]: Object } = {};
     public currentInfo: VirtualInfo = {};
+    private prevInfo: VirtualInfo = {};
     public includePrevPage: boolean;
     public startIndex: number;
 
@@ -63,7 +64,9 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
             return this.columnInfiniteRows(data, e);
         }
         let isManualRefresh: boolean = false;
-        const info: VirtualInfo = e.virtualInfo = e.virtualInfo || this.getData();
+        const info: VirtualInfo = e.virtualInfo = e.virtualInfo
+            || (e.requestType === 'sorting' && checkVirtualSort(this.parent) && this.prevInfo) || this.getData();
+        this.prevInfo = info;
         const xAxis: boolean = info.sentinelInfo && info.sentinelInfo.axis === 'X';
         const page: number = !xAxis && info.loadNext && !info.loadSelf ? info.nextInfo.page : info.page;
         let result: Row<Column>[] = [];
@@ -108,6 +111,29 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                 } else {
                     if (isManualRefresh) {
                         this.setBlockForManualRefresh(this.cache, indexes, rows);
+                    } else if (e.requestType === 'sorting' && checkVirtualSort(this.parent)) {
+                        const visiblePage: number[] = getVisiblePage(info.blockIndexes);
+                        let prevEndIndex: number = 0;
+                        for (let i: number = 0; i < visiblePage.length; i++) {
+                            const indexes: number[] = this.getBlockIndexes(visiblePage[parseInt(i.toString(), 10)]);
+                            let startIndex: number = this.model.pageSize * i;
+                            let endIndex: number = startIndex + this.model.pageSize;
+                            if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
+                                const dataRowObject: Row<Column>[] = rows.filter((row: Row<Column>) => row.isDataRow)
+                                    .slice(startIndex, endIndex);
+                                startIndex = prevEndIndex;
+                                endIndex = rows.indexOf(dataRowObject[dataRowObject.length - 1]) + 1;
+                            }
+                            const pageRecord: Row<Column>[] = rows.slice(startIndex, endIndex);
+                            const median: number = ~~Math.max(pageRecord.length, this.model.pageSize) / 2;
+                            if (!this.isBlockAvailable(indexes[0])) {
+                                this.cache[indexes[0]] = pageRecord.slice(0, median);
+                            }
+                            if (!this.isBlockAvailable(indexes[1])) {
+                                this.cache[indexes[1]] = pageRecord.slice(median);
+                            }
+                            prevEndIndex = endIndex;
+                        }
                     } else {
                         median = ~~Math.max(rows.length, this.model.pageSize) / 2;
                         if (!this.isBlockAvailable(indexes[0])) {
@@ -141,6 +167,10 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
             if (this.isBlockAvailable(values[parseInt(i.toString(), 10)])) {
                 loadedBlocks.push(values[parseInt(i.toString(), 10)]);
             }
+        }
+        if (isGroupAdaptive(this.parent) && this.parent.vcRows.length && e.requestType === 'sorting'
+            && (<{top?: number}>e.scrollTop).top !== 0) {
+            return result = this.parent.vcRows;
         }
         info.blockIndexes = loadedBlocks;
         const grouping: string = 'records';

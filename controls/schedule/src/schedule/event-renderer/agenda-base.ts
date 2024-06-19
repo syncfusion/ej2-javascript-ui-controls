@@ -65,7 +65,8 @@ export class AgendaBase extends ViewBase {
                     const scheduleId: string = this.parent.element.id + '_';
                     const viewName: string = this.parent.activeViewOptions.eventTemplateName;
                     const templateId: string = scheduleId + viewName + 'eventTemplate';
-                    templateEle = this.parent.getAppointmentTemplate()(listData[parseInt(li.toString(), 10)], this.parent, 'eventTemplate', templateId, false);
+                    templateEle = this.parent.getAppointmentTemplate()(listData[parseInt(li.toString(), 10)], this.parent,
+                        'eventTemplate', templateId, false, undefined, undefined, this.parent.root);
                     if (!isNullOrUndefined(listData[parseInt(li.toString(), 10)][fieldMapping.recurrenceRule])) {
                         const iconClass: string =
                             (listData[parseInt(li.toString(), 10)][fieldMapping.id] ===
@@ -357,8 +358,8 @@ export class AgendaBase extends ViewBase {
             const scheduleId: string = this.parent.element.id + '_';
             const viewName: string = this.parent.activeViewOptions.dateHeaderTemplateName;
             const templateId: string = scheduleId + viewName + 'dateHeaderTemplate';
-            const dateTemplate: HTMLElement[] =
-                [].slice.call(this.parent.getDateHeaderTemplate()(args, this.parent, 'dateHeaderTemplate', templateId, false));
+            const dateTemplate: HTMLElement[] = [].slice.call(this.parent.getDateHeaderTemplate()
+                (args, this.parent, 'dateHeaderTemplate', templateId, false, undefined, undefined, this.parent.root));
             append(dateTemplate, dateHeader);
         } else {
             dateHeader = this.getMobileDateElement(date, cls.AGENDA_HEADER_CLASS);

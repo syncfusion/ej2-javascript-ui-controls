@@ -152,9 +152,14 @@ export class Render {
     }
 
     public updateLabelText(view: string): void {
-        const content: string = this.parent.activeView.getLabelText(view);
         this.parent.element.setAttribute('role', 'application');
-        this.parent.element.setAttribute('aria-label', content);
+        this.parent.element.removeAttribute('aria-labelledby');
+        this.parent.element.removeAttribute('aria-label');
+        if (view === 'Year') {
+            this.parent.element.setAttribute('aria-label', this.parent.activeView.getLabelText(view));
+        } else {
+            this.parent.element.setAttribute('aria-labelledby', this.parent.element.id + '_table');
+        }
     }
 
 }
