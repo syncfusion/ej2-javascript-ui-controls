@@ -951,6 +951,7 @@ export interface IFilterUI {
     create?: Element | Function | string;
     read?: Object | Function | string;
     write?: void | Function | string;
+    destroy?: Function | string;
 }
 /**
  * @hidden
@@ -3080,4 +3081,13 @@ export interface ExportHelperArgs extends PdfQueryCellInfoEventArgs {
  */
 export interface ForeignKeyFormat {
     [key: string]: Object[]
+}
+
+/**
+ * @hidden
+ */
+export interface VirtualSelectionInfo {
+    isPending?: boolean;
+    direction?: string;
+    event?: KeyboardEventArgs;
 }

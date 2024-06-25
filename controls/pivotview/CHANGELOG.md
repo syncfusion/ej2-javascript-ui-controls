@@ -2,14 +2,28 @@
 
 ## [Unreleased]
 
-## 26.1.38 (2024-06-19)
+## 26.1.39 (2024-06-25)
 
 ### PivotTable
 
 #### Bug fixes
 
-- `#I581252` - Pivot Table will now be rendered properly within the parent container in Angular.
 - `#I591197` - Column header text will now be visible when using value sorting with autofit in the pivot table.
+- `#I596628` - The pivot table will now be properly rendered when the data source contains a special character.
+- `#I595763` - The pivot table will now be properly exported as an Excel document, with the calculated field using the "Standard" format string.
+- `#I592737` - When exporting a pivot table to an Excel document, it will now be properly formatted.
+- `#I597092` - When you double-click on the row headers, the pivot table will now be rendered properly.
+- `#I598656` - When exporting a pivot table as an excel document, the localization text is now properly applied to the column grand total.
+- `#I593440` - When using number grouping in the pivot table, grouped headers will now be properly sorted.
+- `#I594323` - In the pivot field list UI, date group fields are now properly displayed under their parent field name.
+
+## 26.1.35 (2024-06-11)
+
+### PivotTable
+
+#### Bug fixes
+
+- `#I581048` - We can now customize the headers before sending service requests when using a server-side pivot table.
 
 ## 25.1.35 (2024-03-15)
 

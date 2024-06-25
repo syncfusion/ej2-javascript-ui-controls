@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+## 26.1.39 (2024-06-25)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I599609` - Issue with "Scroller was not added properly to listbox while setting height to the parent element as percentage value" has been resolved.
+
+- `#I600939` - Provide the native mouse event arguments support to the listbox drag event.
+
+### Mention
+
+#### Bug Fixes
+
+- `#I549354` - Fixed issue where the search API was triggered without typing `mentionChar` when using Data Manager as the source.
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I600175` - Resolved the issue where a console error occurred during the filtering action with empty `text` in the data source of the Dropdown Tree.
+
+- `#F150455` - The issue with the showSelectAll property, which occurred after performing the filtering action in the Dropdown Tree component, has been resolved.
+
 ## 26.1.38 (2024-06-19)
 
 ### ListBox

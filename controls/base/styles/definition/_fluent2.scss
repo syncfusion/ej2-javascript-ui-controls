@@ -225,7 +225,7 @@
 
   --color-sf-tooltip-bg-color: var(--color-sf-content-bg-color-alt1);
   --color-sf-tooltip-border: var(--color-sf-content-bg-color-alt1);
-  --color-sf-toooltip-text-color: var(--color-sf-content-text-color);
+  --color-sf-tooltip-text-color: var(--color-sf-content-text-color);
 
   --color-sf-toast-text-color: var(--color-sf-content-text-color);
   --color-sf-toast-alt-text-color: var(--color-sf-content-text-color-alt1);
@@ -604,7 +604,7 @@ $info-outline: mapcolorvariable('info-outline') !default;
 
 $tooltip-bg-color: mapcolorvariable('tooltip-bg-color') !default;
 $tooltip-border: mapcolorvariable('tooltip-border') !default;
-$toooltip-text-color: mapcolorvariable('tooltip-text-color') !default;
+$tooltip-text-color: mapcolorvariable('tooltip-text-color') !default;
 
 $toast-text-color: mapcolorvariable('toast-text-color') !default;
 $toast-alt-text-color:mapcolorvariable('toase-alt-text-color') !default;
@@ -1049,9 +1049,9 @@ $border-info: $border-info !default;
 $spreadsheet-gridline: $spreadsheet-gridline !default;
 $flyout-border: $flyout-border !default;
 
-$tooltip-bg-color: $white !default;
-$tooltip-border: $white;
-$toooltip-text-color: $grey-14 !default;
+$tooltip-bg-color: $tooltip-bg-color !default;
+$tooltip-border: $tooltip-border;
+$tooltip-text-color: $tooltip-text-color !default;
 $shadow-02: 0 1px 2px 0 rgba($black, .14), 0 0 2px 0 rgba($black, .12) !default;
 $shadow-04: 0 2px 4px 0 rgba($black, .14), 0 0 2px 0 rgba($black, .12) !default;
 $shadow-08: 0 4px 8px 0 rgba($black, .14), 0 0 2px 0 rgba($black, .12) !default;
@@ -1652,7 +1652,7 @@ $switch-box-shadow: 0 0 0 2px #fff, 0 0 0 3px #000 !default;
   --color-sf-success-bg-color: #218c21;
   --color-sf-success-border-color: var(--color-sf-success-bg-color);
   --color-sf-success-text: var(--color-sf-primary-text-color);
-  --color-sf-success-bg-color-hover: var(--color-sf-success-bg-color);
+  --color-sf-success-bg-color-hover: #0e700e;
   --color-sf-success-border-color-hover: var(--color-sf-success-bg-color-hover);
   --color-sf-success-text-hover: var(--color-sf-primary-text-color);
   --color-sf-success-bg-color-pressed: #052505;
@@ -1671,7 +1671,7 @@ $switch-box-shadow: 0 0 0 2px #fff, 0 0 0 3px #000 !default;
   --color-sf-warning-bg-color: #f87528;
   --color-sf-warning-border-color: var(--color-sf-warning-bg-color);
   --color-sf-warning-text: #242424;
-  --color-sf-warning-bg-color-hover: var(--color-sf-warning-bg-color);
+  --color-sf-warning-bg-color-hover: #de590b;
   --color-sf-warning-border-color-hover: var(--color-sf-warning-bg-color-hover);
   --color-sf-warning-text-hover: var(--color-sf-primary-text-color);
   --color-sf-warning-bg-color-pressed: #4a1e04;
@@ -1734,7 +1734,7 @@ $switch-box-shadow: 0 0 0 2px #fff, 0 0 0 3px #000 !default;
 
   --color-sf-tooltip-bg-color: var(--color-sf-content-bg-color-alt1);
   --color-sf-tooltip-border: var(--color-sf-tooltip-bg-color);
-  --color-sf-toooltip-text-color: var(--color-sf-content-text-color);
+  --color-sf-tooltip-text-color: var(--color-sf-content-text-color);
 
   --color-sf-toast-text-color: var(--color-sf-content-text-color);
   --color-sf-toast-alt-text-color: var(--color-sf-content-text-color-alt1);
@@ -2108,7 +2108,7 @@ $switch-box-shadow: 0 0 0 2px #fff, 0 0 0 3px #000 !default;
 
   --color-sf-tooltip-bg-color: var(--color-sf-content-bg-color-alt1);
   --color-sf-tooltip-border: var(--color-sf-border-light);
-  --color-sf-toooltip-text-color: var(--color-sf-content-text-color);
+  --color-sf-tooltip-text-color: var(--color-sf-content-text-color);
 
   --color-sf-toast-text-color: var(--color-sf-content-text-color);
   --color-sf-toast-alt-text-color: var(--color-sf-content-text-color);

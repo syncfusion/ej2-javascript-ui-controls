@@ -1204,7 +1204,7 @@ export class DocumentHelper {
      * @returns {number} - Returns key for specific image.
      */
     public async addBase64StringInCollection(image: ImageElementBox): Promise<void> {
-        let key: number = this.images.length;
+        let key: number = this.images.length > 0 ? Math.max(...this.images.keys) + 1 : 0;
         let addToCollection: boolean = true;
         let base64ImageString: string[] = [];
         for (let i: number = 0; i < this.images.length; i++) {
@@ -1227,7 +1227,7 @@ export class DocumentHelper {
             } else {
                 base64ImageString.push(image.imageString);
             }
-            this.images.add(this.images.length, base64ImageString);
+            this.images.add(key, base64ImageString);
         }
         if (image.isMetaFile) {
             image.metaFileImageString = key.toString();
@@ -3326,8 +3326,12 @@ export class DocumentHelper {
             this.visibleBoundsIn = new Rect(0, 0, width, height);
             this.containerCanvas.width = width;
             this.containerCanvas.height = height;
+            this.containerCanvas.style.width = width + 'px';
+            this.containerCanvas.style.height = height + 'px';
             this.selectionCanvas.width = width;
             this.selectionCanvas.height = height;
+            this.selectionCanvas.style.width = width + 'px';
+            this.selectionCanvas.style.height = height + 'px';
             this.measureScrollbarWidth(element);
         }
     }

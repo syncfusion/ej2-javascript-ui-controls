@@ -5119,3 +5119,55 @@ describe('Code Coverage - renderer, react batch edit, number-filter-ui and numer
         gObj = null;
     });
 });
+
+describe('EJ2-890614: Column’s Default Value property only allows String value =>', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+            dataSource: data,
+            columns : [
+                { field: 'ShipCountry', headerText:"Ship Country", type: 'string', defaultValue: 'France' },
+                { field: 'Freight', headerText: 'Freight', type: 'number', defaultValue: 9999 },
+                { field: 'OrderDate', headerText: 'Order Date',format: 'yMd', editType: 'datepickeredit', type: 'date', defaultValue: new Date('6/6/2024') },
+                { field: 'Verified', headerText: 'Verified', type: 'boolean', defaultValue: true },
+                ],
+                editSettings : {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    mode: 'Batch'
+                },
+                toolbar : ['Add', 'Edit', 'Delete', 'Update', 'Cancel']
+        }, done);
+    });
+
+    it('Add a row contains innerHTML testing', function (done) {
+        let batchAdd = (args?: any): void => {
+            let insertedRows = gridObj.element.querySelectorAll('.e-insertedrow');
+            expect(insertedRows.length).toBeGreaterThan(0);
+            let row = insertedRows[0];
+            expect(row.classList.contains('e-editedrow')).toBe(true);
+            let cells = row.querySelectorAll('td');
+            expect(cells.length).toBeGreaterThan(0);
+            expect(cells[1].innerHTML).toBe('9999');
+            expect(cells[2].innerHTML).toBe('6/6/2024');
+            expect(cells[3].innerHTML).toBe('true');
+            gridObj.batchAdd = null;
+            done();
+        }; 
+        
+        gridObj.addRecord();
+        gridObj.batchAdd = batchAdd;
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+    });
+    
+    it('Batch cancel', function () {
+        gridObj.editModule.batchCancel();
+    });
+    
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });  
+});

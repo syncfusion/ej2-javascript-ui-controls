@@ -66,6 +66,10 @@ export class Image {
         this.rendererFactory = serviceLocator.getService<RendererFactory>('rendererFactory');
         this.dialogRenderObj = serviceLocator.getService<DialogRenderer>('dialogRenderObject');
         this.addEventListener();
+        this.dragDrop = this.dragDrop.bind(this);
+        this.dragOver = this.dragOver.bind(this);
+        this.dragEnter = this.dragEnter.bind(this);
+        this.dragStart = this.dragStart.bind(this);
     }
 
     protected addEventListener(): void {
@@ -126,10 +130,10 @@ export class Image {
         this.parent.off(events.moduleDestroy, this.moduleDestroy);
         const dropElement: HTMLElement | Document = this.parent.iframeSettings.enable ? this.parent.inputElement.ownerDocument
             : this.parent.inputElement;
-        dropElement.removeEventListener('drop', this.dragDrop.bind(this), true);
-        dropElement.removeEventListener('dragstart', this.dragStart.bind(this), true);
-        dropElement.removeEventListener('dragenter', this.dragEnter.bind(this), true);
-        dropElement.removeEventListener('dragover', this.dragOver.bind(this), true);
+        dropElement.removeEventListener('drop', this.dragDrop, true);
+        dropElement.removeEventListener('dragstart', this.dragStart, true);
+        dropElement.removeEventListener('dragenter', this.dragEnter, true);
+        dropElement.removeEventListener('dragover', this.dragOver, true);
         if (!isNOU(this.contentModule)) {
             EventHandler.remove(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.imageClick);
             this.parent.formatter.editorManager.observer.off(events.checkUndo, this.undoStack);
@@ -183,10 +187,10 @@ export class Image {
         }
         const dropElement: HTMLElement | Document = this.parent.iframeSettings.enable ? this.parent.inputElement.ownerDocument :
             this.parent.inputElement;
-        dropElement.addEventListener('drop', this.dragDrop.bind(this), true);
-        dropElement.addEventListener('dragstart', this.dragStart.bind(this), true);
-        dropElement.addEventListener('dragenter', this.dragOver.bind(this), true);
-        dropElement.addEventListener('dragover', this.dragOver.bind(this), true);
+        dropElement.addEventListener('drop', this.dragDrop, true);
+        dropElement.addEventListener('dragstart', this.dragStart, true);
+        dropElement.addEventListener('dragenter', this.dragEnter, true);
+        dropElement.addEventListener('dragover', this.dragOver, true);
     }
 
     private undoStack(args?: { [key: string]: string }): void {

@@ -858,7 +858,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             enableOptimizedRendering: this.pivotGridModule && (this.pivotGridModule.enableVirtualization &&
                 this.pivotGridModule.virtualScrollSettings && this.pivotGridModule.virtualScrollSettings.allowSinglePage),
             requestType: 'string',
-            headers: {}
+            headers: { 'Content-type': 'application/json' }
         };
         if (this.request.readyState === XMLHttpRequest.UNSENT || this.request.readyState === XMLHttpRequest.OPENED) {
             this.request.withCredentials = false;
@@ -897,26 +897,16 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         });
         this.request.open('POST', this.dataSourceSettings.url, true);
         this.request.onreadystatechange = this.onSuccess.bind(this);
-        let contentTypeExists: boolean = false;
         const keys: string[] = Object.keys((params.internalProperties as { [key: string]: Object }).headers);
         for (let i: number = 0; i < keys.length; i++) {
             const headerKey: string = keys[i as number] as string;
             const headerValue: string =
             String(((params.internalProperties as { [key: string]: Object }).headers as { [key: string]: Object })[headerKey as string]);
             this.request.setRequestHeader(headerKey, headerValue);
-            if (headerKey === 'Content-type') {
-                contentTypeExists = true;
-            }
         }
         if ((params.internalProperties as { [key: string]: Object }).requestType === 'string') {
-            if (!contentTypeExists) {
-                this.request.setRequestHeader('Content-type', 'application/json');
-            }
             this.request.send(JSON.stringify(params));
         } else if ((params.internalProperties as { [key: string]: Object }).requestType === 'base64') {
-            if (!contentTypeExists) {
-                this.request.setRequestHeader('Content-type', 'application/octet-stream');
-            }
             this.request.send(btoa(JSON.stringify(params)));
         }
     }

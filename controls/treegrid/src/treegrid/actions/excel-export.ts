@@ -1,8 +1,8 @@
 import { TreeGrid } from '../base/treegrid';
 import { ITreeData, TreeGridExcelExportProperties } from '../base/interface';
-import { getObject, Grid, ExcelExport as GridExcel, ExcelExportProperties, BeforeDataBoundArgs } from '@syncfusion/ej2-grids';
+import { getObject, Grid, ExcelExport as GridExcel, ExcelExportProperties, BeforeDataBoundArgs, ExportHelper } from '@syncfusion/ej2-grids';
 import { ExcelStyle, ExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
-import { ExcelRow, Row, Column } from '@syncfusion/ej2-grids';
+import { ExcelRow, Row, Column, Data } from '@syncfusion/ej2-grids';
 import { isRemoteData, isOffline, getParentData, getExpandStatus } from '../utils';
 import { isNullOrUndefined, setValue, Fetch, extend } from '@syncfusion/ej2-base';
 import { DataManager, Query, ReturnOption } from '@syncfusion/ej2-data';
@@ -74,14 +74,20 @@ export class ExcelExport {
         /* eslint-disable-next-line */
         isMultipleExport?: boolean, workbook?: any, isBlob?: boolean, isCsv?: boolean) : Promise<Object> {
         const dataSource: Object = this.parent.dataSource;
+        const data: Data = new Data(this.parent.grid);
         const property: Object = Object();
         setValue('isCsv', isCsv, property);
         setValue('cancel', false, property);
         if (!isNullOrUndefined(excelExportProperties)) {
             this.isCollapsedStatePersist = (excelExportProperties as TreeGridExcelExportProperties).isCollapsedStatePersist;
         }
-        if (!isNullOrUndefined(excelExportProperties) && !isNullOrUndefined(excelExportProperties.dataSource)) {
-            if (!excelExportProperties.dataSource['dataSource']) {
+        if (!isNullOrUndefined(excelExportProperties)) {
+            if (!isNullOrUndefined(excelExportProperties.dataSource) && !excelExportProperties.dataSource['dataSource']) {
+                return this.parent.grid.excelExportModule.Map(
+                    this.parent.grid, excelExportProperties, isMultipleExport, workbook, isCsv, isBlob);
+            }
+            if (excelExportProperties.exportType === 'CurrentPage') {
+                excelExportProperties.dataSource = this.parent.getCurrentViewRecords();
                 return this.parent.grid.excelExportModule.Map(
                     this.parent.grid, excelExportProperties, isMultipleExport, workbook, isCsv, isBlob);
             }
@@ -93,6 +99,11 @@ export class ExcelExport {
             if (!this.isLocal()) {
                 query = this.generateQuery(query);
                 query.queries = this.parent.grid.getDataModule().generateQuery().queries;
+                query = ExportHelper.getQuery(this.parent.grid, data);
+                if (isNullOrUndefined(this.parent.filterModule)) {
+                    query.queries = query.queries.slice(1, 2);
+                    query.params = query.params.slice(0, 0);
+                }
                 setValue('query', query, property);
             }
             this.parent.trigger(event.beforeExcelExport, extend(property, excelExportProperties));

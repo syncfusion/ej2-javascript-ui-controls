@@ -1823,7 +1823,115 @@ describe('Stepper', () => {
             expect(stepperElement.querySelectorAll('.e-step-inprogress').length).toBe(0);
             expect(stepperElement.querySelectorAll('.e-step-notstarted').length).toBe(4);
         });
+        
+        it('stepper with Linear mode when activeStep is bounded', () => {
+            stepper = new Stepper({
+                steps: [{}, {}, {}, {}],
+                activeStep: 2,
+                linear: true
+            });
+            stepper.appendTo('#stepper');
+            expect(stepperElement.classList.contains('e-linear')).toEqual(true);
+            const liElementArray: any = stepperElement.querySelectorAll('.e-step-container');
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-previous')).toEqual(false);
+            expect((liElementArray[1] as HTMLElement).classList.contains('e-previous')).toEqual(true);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-step-inprogress')).toEqual(true);
+            expect((liElementArray[3] as HTMLElement).classList.contains('e-next')).toEqual(true);
+            expect((liElementArray[3] as HTMLElement).classList.contains('e-step-notstarted')).toEqual(true);
+            EventHandler.trigger(liElementArray[0], 'click');
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-previous')).toEqual(false);
+            expect((liElementArray[1] as HTMLElement).classList.contains('e-previous')).toEqual(true);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-step-inprogress')).toEqual(true);
+            expect((liElementArray[3] as HTMLElement).classList.contains('e-next')).toEqual(true);
+            expect((liElementArray[3] as HTMLElement).classList.contains('e-step-notstarted')).toEqual(true);
+            stepper.linear = false;
+            stepper.dataBind();
+            expect(stepperElement.classList.contains('e-linear')).toEqual(false);
+            EventHandler.trigger(liElementArray[0], 'click');
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-step-inprogress')).toEqual(true);
+            expect((liElementArray[1] as HTMLElement).classList.contains('e-next')).toEqual(true);
+            expect((liElementArray[1] as HTMLElement).classList.contains('e-step-notstarted')).toEqual(true);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-next')).toEqual(false);
+            expect((liElementArray[3] as HTMLElement).classList.contains('e-next')).toEqual(false);
+            stepper.linear = true;
+            stepper.dataBind();
+            expect(stepperElement.classList.contains('e-linear')).toEqual(true);
+            EventHandler.trigger(liElementArray[2], 'click');
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-step-inprogress')).toEqual(true);
+            expect((liElementArray[1] as HTMLElement).classList.contains('e-next')).toEqual(true);
+            expect((liElementArray[1] as HTMLElement).classList.contains('e-step-notstarted')).toEqual(true);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-next')).toEqual(false);
+            expect((liElementArray[3] as HTMLElement).classList.contains('e-next')).toEqual(false);
+        });
 
+        it('stepper with Linear mode with step disabled', () => {
+            stepper = new Stepper({
+                steps: [{}, {}, { disabled: true }, {}],
+                linear: true,
+                activeStep: 1
+            });
+            stepper.appendTo('#stepper');
+            expect(stepperElement.classList.contains('e-linear')).toEqual(true);
+            const liElementArray: any = stepperElement.querySelectorAll('.e-step-container');
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-previous')).toEqual(true);
+            expect((liElementArray[1] as HTMLElement).classList.contains('e-step-inprogress')).toEqual(true);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-next')).toEqual(true);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-step-disabled')).toEqual(true);
+            expect((liElementArray[3] as HTMLElement).classList.contains('e-next')).toEqual(false);
+            EventHandler.trigger(liElementArray[2], 'click');
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-previous')).toEqual(true);
+            expect((liElementArray[1] as HTMLElement).classList.contains('e-step-inprogress')).toEqual(true);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-next')).toEqual(true);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-step-disabled')).toEqual(true);
+            expect((liElementArray[3] as HTMLElement).classList.contains('e-next')).toEqual(false);
+            EventHandler.trigger(liElementArray[3], 'click');
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-previous')).toEqual(true);
+            expect((liElementArray[1] as HTMLElement).classList.contains('e-step-inprogress')).toEqual(true);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-next')).toEqual(true);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-step-disabled')).toEqual(true);
+            expect((liElementArray[3] as HTMLElement).classList.contains('e-next')).toEqual(false);
+            stepper.linear = false;
+            stepper.dataBind();
+            expect(stepperElement.classList.contains('e-linear')).toEqual(false);
+            EventHandler.trigger(liElementArray[3], 'click');
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-previous')).toEqual(false);
+            expect((liElementArray[1] as HTMLElement).classList.contains('e-previous')).toEqual(false);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-previous')).toEqual(true);
+            expect((liElementArray[3] as HTMLElement).classList.contains('e-step-inprogress')).toEqual(true);
+        });
+
+        it('stepper with Linear mode without active step', () => {
+            stepper = new Stepper({
+                steps: [{}, {}, {}, {}],
+                linear: true
+            });
+            stepper.appendTo('#stepper');
+            expect(stepperElement.classList.contains('e-linear')).toEqual(true);
+            const liElementArray: any = stepperElement.querySelectorAll('.e-step-container');
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-step-inprogress')).toEqual(true);
+            expect((liElementArray[1] as HTMLElement).classList.contains('e-next')).toEqual(true);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-next')).toEqual(false);
+            expect((liElementArray[3] as HTMLElement).classList.contains('e-next')).toEqual(false);
+            EventHandler.trigger(liElementArray[2], 'click');
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-step-inprogress')).toEqual(true);
+            expect((liElementArray[1] as HTMLElement).classList.contains('e-next')).toEqual(true);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-next')).toEqual(false);
+            expect((liElementArray[3] as HTMLElement).classList.contains('e-next')).toEqual(false);
+            EventHandler.trigger(liElementArray[3], 'click');
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-step-inprogress')).toEqual(true);
+            expect((liElementArray[1] as HTMLElement).classList.contains('e-next')).toEqual(true);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-next')).toEqual(false);
+            expect((liElementArray[3] as HTMLElement).classList.contains('e-next')).toEqual(false);
+            stepper.linear = false;
+            stepper.dataBind();
+            expect(stepperElement.classList.contains('e-linear')).toEqual(false);
+            EventHandler.trigger(liElementArray[3], 'click');
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-previous')).toEqual(false);
+            expect((liElementArray[1] as HTMLElement).classList.contains('e-previous')).toEqual(false);
+            expect((liElementArray[2] as HTMLElement).classList.contains('e-previous')).toEqual(true);
+            expect((liElementArray[3] as HTMLElement).classList.contains('e-step-inprogress')).toEqual(true);
+        });
+        
         describe('Methods and Events', () => {
 
             it('stepper with nextStep method', () => {

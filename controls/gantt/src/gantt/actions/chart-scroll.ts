@@ -39,6 +39,7 @@ export class ChartScroll {
         EventHandler.add(this.element, 'scroll' , this.onScroll, this);
         this.parent.treeGrid.grid.on('showGanttShimmer', this.updateShimmer, this);
         this.parent.treeGrid.grid.on('removeGanttShimmer', this.removeShimmer, this);
+        this.parent.treeGrid.grid.on('virtualTransform', this.transformChange, this);
     }
     /**
      * Unbind events
@@ -50,6 +51,7 @@ export class ChartScroll {
         this.parent.off('grid-scroll', this.gridScrollHandler);
         this.parent.treeGrid.grid.off('showGanttShimmer', this.updateShimmer);
         this.parent.treeGrid.grid.off('removeGanttShimmer', this.removeShimmer);
+        this.parent.treeGrid.grid.off('virtualTransform', this.transformChange);
     }
     /**
      *
@@ -194,6 +196,10 @@ export class ChartScroll {
                 parent.element.getElementsByClassName('e-chart-rows-container')[0]['style'].height = parent.contentHeight + 'px';
             }
         }, 0);
+    }
+    private transformChange(): void {
+        this.parent.ganttChartModule.virtualRender.adjustTable();
+        this.parent.ganttChartModule.scrollObject.updateTopPosition();
     }
     private updateShimmer(): void {
         const parent: Gantt = this.parent;

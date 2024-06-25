@@ -53,8 +53,8 @@
   --color-sf-table-text-color-selected: var(--color-sf-content-text-color-hover);
 
   --color-sf-icon-color: #fff;
-  --color-sf-icon-color-hover: var(--color-sf-content-text-color-hover);
-  --color-sf-icon-color-pressed: var(--color-sf-content-text-color-hover);
+  --color-sf-icon-color-hover: var(--color-sf-content-text-color);
+  --color-sf-icon-color-pressed: var(--color-sf-content-text-color);
   --color-sf-icon-color-disabled: var(--color-sf-content-text-color-disabled);
 
   --color-sf-border-light: #fff;
@@ -224,7 +224,7 @@
 
   --color-sf-tooltip-bg-color: var(--color-sf-content-bg-color-alt1);
   --color-sf-tooltip-border: var(--color-sf-border-light);
-  --color-sf-toooltip-text-color: var(--color-sf-content-text-color);
+  --color-sf-tooltip-text-color: var(--color-sf-content-text-color);
 
   --color-sf-toast-text-color: var(--color-sf-content-text-color);
   --color-sf-toast-alt-text-color: var(--color-sf-content-text-color);
@@ -595,7 +595,7 @@ $info-outline: mapcolorvariable('info-outline') !default;
 
 $tooltip-bg-color: mapcolorvariable('tooltip-bg-color') !default;
 $tooltip-border: mapcolorvariable('tooltip-border') !default;
-$toooltip-text-color: mapcolorvariable('tooltip-text-color') !default;
+$tooltip-text-color: mapcolorvariable('tooltip-text-color') !default;
 
 $toast-text-color: mapcolorvariable('toast-text-color') !default;
 $toast-alt-text-color:mapcolorvariable('toase-alt-text-color') !default;
@@ -1039,9 +1039,9 @@ $border-info: $border-info !default;
 $spreadsheet-gridline: $spreadsheet-gridline !default;
 $flyout-border: $flyout-border !default;
 
-$tooltip-bg-color: $white !default;
-$tooltip-border: $white;
-$toooltip-text-color: $grey-14 !default;
+$tooltip-bg-color: $tooltip-bg-color !default;
+$tooltip-border: $tooltip-border;
+$tooltip-text-color: $tooltip-text-color !default;
 $shadow-02: 0 1px 2px 0 rgba($black, .14), 0 0 2px 0 rgba($black, .12) !default;
 $shadow-04: 0 2px 4px 0 rgba($black, .14), 0 0 2px 0 rgba($black, .12) !default;
 $shadow-08: 0 4px 8px 0 rgba($black, .14), 0 0 2px 0 rgba($black, .12) !default;
@@ -1503,4 +1503,4 @@ $gantt-active-parent-task-color: $brand-primary-d10 !default;
 $btn-border-radius:4px !default;
 $btn-border-radius:4px !default;
 
-$switch-box-shadow: 0 0 0 1px #000,0 0 0 2px #1aebff,0 0 0 4px #fff !default;
+$switch-box-shadow: 0 0 0 2px #fff, 0 0 0 3px #000 !default;

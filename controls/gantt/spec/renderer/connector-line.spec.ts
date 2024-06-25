@@ -303,7 +303,7 @@ describe('Gantt connector line support', () => {
                 }
             }
             ganttObj_tree.updatePredecessor(Number(ganttObj_tree.flatData[2].ganttProperties.taskId), '2SS');
-            // expect(ganttObj_tree.flatData[2]['Predecessor']).toBe(null);
+            expect(ganttObj_tree.flatData[2]['Predecessor']).toBe(null);
         });
         afterAll(() => {
             destroyGantt(ganttObj_tree);

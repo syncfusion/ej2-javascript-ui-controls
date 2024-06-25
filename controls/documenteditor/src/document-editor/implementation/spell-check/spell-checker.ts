@@ -391,8 +391,12 @@ export class SpellChecker {
 
             const endPattern: RegExp = new RegExp('[#\\@\\!\\$\\%\\^\\&\\*\\(\\)\\-\\_\\+\\=\\{\\}\\[\\]\\:\\;\\"\\”\'\\,\\<\\.\\>\\/\\?\\s\\`\\’]+$', 'g');
             matches = [];
+            let originalText: string = replaceText;
+            if (!isRemove) {
+                originalText = exactText;
+            }
             // eslint-disable  no-cond-assign
-            while (!isNullOrUndefined(matchInfo = endPattern.exec(replaceText))) {
+            while (!isNullOrUndefined(matchInfo = endPattern.exec(originalText))) {
                 matches.push(matchInfo);
             }
 
@@ -926,7 +930,10 @@ export class SpellChecker {
                 elementBox.errorCollection.splice(index, 0, span);
             }
             this.addErrorCollection(span.text, span, suggestions);
-
+            const elements: ElementBox[] = this.errorWordCollection.get(span.text);
+            if (elements.indexOf(elementBox) !== -1 && elements.indexOf(elementBox) !== elements.indexOf(span)) {
+                elements.splice(elements.indexOf(elementBox), 1);
+            }
             const backgroundColor: string = (elementBox.line.paragraph.containerWidget instanceof TableCellWidget) ? (elementBox.paragraph.containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;
             const para = elementBox.line.paragraph;
             let lineY = para.y;
@@ -1045,9 +1052,38 @@ export class SpellChecker {
      */
     public createErrorElementWithInfo(result: TextSearchResult, errorElement: ElementBox): ErrorTextElementBox {
         const element: ErrorTextElementBox = new ErrorTextElementBox();
-        element.text = result.text;
-        element.start = result.start;
-        element.end = result.end;
+        let isUpdated: boolean = false;
+        if (errorElement instanceof ErrorTextElementBox && (isNullOrUndefined(result.start) || isNullOrUndefined(result.end) || isNullOrUndefined(result.text))) {
+            element.text = errorElement.text;
+            let line: LineWidget = errorElement.line;
+            for (let i = 0; i < line.children.length; i++) {
+                if (line.children[i] instanceof TextElementBox) {
+                    let text: string = (line.children[i] as TextElementBox).text;
+                    let exactText: string = errorElement.text;
+                    if (text.indexOf(exactText) !== -1) {
+                        errorElement.start.offset = text.indexOf(exactText);
+                        errorElement.end.offset = errorElement.start.offset + exactText.length;
+                        element.start = errorElement.start;
+                        element.end = errorElement.end;
+                        element.start.currentWidget = errorElement.line;
+                        element.end.currentWidget = errorElement.line;
+                        isUpdated = true;
+                        break;
+                    }
+                }
+            }
+            if (!isUpdated) {
+                element.text = errorElement.text;
+                element.start = errorElement.start;
+                element.end = errorElement.end;
+                isUpdated = true;
+            }
+        }
+        if (!isUpdated) {
+            element.text = result.text;
+            element.start = result.start;
+            element.end = result.end;
+        }
         element.height = errorElement.height;
         element.canTrigger = errorElement.canTrigger;
         element.characterFormat.copyFormat(errorElement.characterFormat);

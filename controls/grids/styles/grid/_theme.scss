@@ -248,7 +248,10 @@
     }
 
     .e-headercell,
-    .e-detailheadercell,
+    .e-detailheadercell {
+      background-color: $grid-header-bg-color;
+    }
+
     .e-gridcontent {
       background-color: $grid-content-bg-color;
     }

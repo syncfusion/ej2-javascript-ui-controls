@@ -1533,6 +1533,8 @@ export class ListBox extends DropDownBase {
             });
             if (this.height.toString().indexOf('%') < 0) {
                 addClass([this.list], 'e-filter-list');
+            } else if (this.height.toString().indexOf('%') > 0) {
+                this.ulElement.style.height = (this.ulElement.offsetHeight - this.filterParent.offsetHeight) + 'px';
             }
             this.inputString = this.filterInput.value;
             this.filterWireEvents();
@@ -2092,7 +2094,7 @@ export class ListBox extends DropDownBase {
         } else {
             elems = [args.target];
         }
-        return { elements: elems, items: this.getDataByElems(elems) } as DragEventArgs;
+        return { elements: elems, event: args.event, items: this.getDataByElems(elems) } as DragEventArgs;
     }
 
     private onKeyDown(e: KeyboardEvent): void {
@@ -2781,6 +2783,10 @@ export interface DragEventArgs {
      * Returns the previous and current list items of the destination list box.
      */
     destination?: SourceDestinationModel;
+    /**
+     * Specifies the event.
+     */
+    event: Event;
 }
 
 /**

@@ -492,6 +492,9 @@ export namespace Input {
         unwireFloatingEvents(args.element);
         if (!isNullOrUndefined(args.element)) {
             delete (args.element as HTMLInputElement & { __eventHandlers?: any }).__eventHandlers;
+            if (args.element.classList.contains(CLASSNAMES.INPUT)) {
+                    args.element.classList.remove(CLASSNAMES.INPUT)
+                }
         }
         privateInputObj = null;
     }

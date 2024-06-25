@@ -90,6 +90,7 @@ export class Editor {
     private checkLastLetterSpace: string = '';
     private checkLastLetterSpaceDot: string = '';
     private pasteFootNoteType: string = '';
+    public dateValue:string;
     /**
     * @private
     */
@@ -734,6 +735,12 @@ export class Editor {
         };
         this.updateCommentElement(commentAdv, commentRangeStart, commentRangeEnd, markerData);
         this.addCommentWidget(commentAdv, true, true, true);
+        if (this.owner.isSpellCheck && commentRangeStart.previousElement && commentRangeStart.previousElement instanceof TextElementBox) {
+            commentRangeStart.previousElement.ischangeDetected = true;
+        }
+        if (this.owner.isSpellCheck && commentRangeEnd.previousElement && commentRangeEnd.previousElement instanceof TextElementBox && commentRangeStart.line !== commentRangeEnd.line) {
+            commentRangeEnd.previousElement.ischangeDetected = true;
+        }
         if (this.editorHistory) {
             this.editorHistory.currentBaseHistoryInfo.insertPosition = this.getCommentHierarchicalIndex(commentAdv);
             this.editorHistory.updateHistory();
@@ -2552,6 +2559,7 @@ export class Editor {
         
     }
     private applyDatePickerContentControl(type:ContentControlType, value?:string, title?: string, tag?: string, lock?: boolean, lockContents?: boolean):void{
+        this.dateValue = value;
         let contentControl: ContentControl = this.getContentControl();
         if(isNullOrUndefined(contentControl) || contentControl.contentControlProperties.type === 'RichText'){
             this.selection.isHighlightContentControlEditRegion = true;
@@ -9742,6 +9750,9 @@ export class Editor {
      */
     public getContentControl(): ContentControl {
         for (let i: number = 0; i < this.documentHelper.contentControlCollection.length; i++) {
+            if(this.documentHelper.contentControlCollection[i].paragraph.isInHeaderFooter && this.documentHelper.owner.layoutType === "Continuous"){
+                continue;
+            }
             let contentControlStart: ContentControl = this.documentHelper.contentControlCollection[i];
             let position: PositionInfo = this.selection.getPosition(contentControlStart);
             let cCstart: TextPosition = position.startPosition;
@@ -17211,10 +17222,10 @@ export class Editor {
         }
         if (inline instanceof ContentControl) {
             let contentControl: ContentControl = this.getContentControl();
-            let selectedCCText = this.selection.selectContentControlInternal(contentControl);
+            this.selection.selectContentControlInternal(contentControl);
             //to prevent the backspacing for content control locked state
-            if ((inline.type === 1 && contentControl.contentControlProperties.lockContentControl || isNullOrUndefined(inline.nextElement))) {
-                if (!isNullOrUndefined(selectedCCText)) {
+            if ((!isNullOrUndefined(contentControl) && inline.type === 1 && contentControl.contentControlProperties.lockContentControl || isNullOrUndefined(inline.nextElement))) {
+                if (this.selection.isEmpty) {
                     this.onBackSpace();
                 } else {
                     return;
@@ -18434,9 +18445,9 @@ export class Editor {
             let inline: ElementBox = inlineObj.element;
             if (inline instanceof ContentControl) {
                 let contentControl: ContentControl = this.getContentControl();
-                let selectedCCText = this.selection.selectContentControlInternal(contentControl);
-                if ((inline.type === 1 && contentControl.contentControlProperties.lockContentControl && isNullOrUndefined(inline.nextElement))) {
-                    if (!isNullOrUndefined(selectedCCText)) {
+                this.selection.selectContentControlInternal(contentControl);
+                if ((!isNullOrUndefined(contentControl) && inline.type === 1 && contentControl.contentControlProperties.lockContentControl && isNullOrUndefined(inline.nextElement))) {
+                    if (this.selection.isEmpty) {
                         this.delete();
                     } else {
                         return;
@@ -19725,9 +19736,15 @@ export class Editor {
         }
         if (!isNullOrUndefined(startElements)) {
             this.insertElementsInternal(this.selection.getTextPosBasedOnLogicalIndex(info.start), startElements,undefined);
+            if (this.owner.isSpellCheck && isBookmark && startElements[0].previousElement && startElements[0].previousElement instanceof TextElementBox) {
+                startElements[0].previousElement.ischangeDetected = true;
+            }
         }
         if (!isNullOrUndefined(endElements)) {
             this.insertElementsInternal(this.selection.getTextPosBasedOnLogicalIndex(info.end), endElements,undefined);
+            if (this.owner.isSpellCheck && isBookmark && (endElements[0] as BookmarkElementBox).reference.line !== endElements[0].line && endElements[0].previousElement && endElements[0].previousElement instanceof TextElementBox) {
+                endElements[0].previousElement.ischangeDetected = true;
+            }
         }
 
     }
@@ -21291,13 +21308,13 @@ export class Editor {
         }
         if (!isNullOrUndefined(tocPara) && (text !== '' || isFirstPara)) {
             widgets.push(tocPara);
-        }
-        if (this.owner.enableTrackChanges && !isNullOrUndefined(tocPara)) {
-            if (widgets.length === 1 || emptyParaAppended) {
-                this.insertRevisionForBlock(tocPara, 'Insertion', true);
-            } else {
-                const revision: Revision = this.owner.revisionsInternal.changes[0];
-                this.insertRevisionForBlock(tocPara, 'Insertion', true, revision);
+            if (this.owner.enableTrackChanges && !isNullOrUndefined(tocPara)) {
+                if (widgets.length === 1 || emptyParaAppended) {
+                    this.insertRevisionForBlock(tocPara, 'Insertion', true);
+                } else {
+                    const revision: Revision = this.owner.revisionsInternal.changes[0];
+                    this.insertRevisionForBlock(tocPara, 'Insertion', true, revision);
+                }
             }
         }
     }

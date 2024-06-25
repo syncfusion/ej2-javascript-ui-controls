@@ -1,6 +1,6 @@
-# Punycode.js [![punycode on npm](https://img.shields.io/npm/v/punycode)](https://www.npmjs.com/package/punycode) [![](https://data.jsdelivr.com/v1/package/npm/punycode/badge)](https://www.jsdelivr.com/package/npm/punycode)
+# Punycode.js [![Build status](https://travis-ci.org/bestiejs/punycode.js.svg?branch=master)](https://travis-ci.org/bestiejs/punycode.js) [![Code coverage status](http://img.shields.io/coveralls/bestiejs/punycode.js/master.svg)](https://coveralls.io/r/bestiejs/punycode.js) [![Dependency status](https://gemnasium.com/bestiejs/punycode.js.svg)](https://gemnasium.com/bestiejs/punycode.js)
 
-Punycode.js is a robust Punycode converter that fully complies to [RFC 3492](https://tools.ietf.org/html/rfc3492) and [RFC 5891](https://tools.ietf.org/html/rfc5891).
+A robust Punycode converter that fully complies to [RFC 3492](https://tools.ietf.org/html/rfc3492) and [RFC 5891](https://tools.ietf.org/html/rfc5891), and works on nearly all JavaScript platforms.
 
 This JavaScript library is the result of comparing, optimizing and documenting different open-source implementations of the Punycode algorithm:
 
@@ -10,26 +10,60 @@ This JavaScript library is the result of comparing, optimizing and documenting d
 * [JavaScript implementation by _some_](http://stackoverflow.com/questions/183485/can-anyone-recommend-a-good-free-javascript-for-punycode-to-unicode-conversion/301287#301287)
 * [`punycode.js` by _Ben Noordhuis_](https://github.com/joyent/node/blob/426298c8c1c0d5b5224ac3658c41e7c2a3fe9377/lib/punycode.js) (note: [not fully compliant](https://github.com/joyent/node/issues/2072))
 
-This project was [bundled](https://github.com/joyent/node/blob/master/lib/punycode.js) with Node.js from [v0.6.2+](https://github.com/joyent/node/compare/975f1930b1...61e796decc) until [v7](https://github.com/nodejs/node/pull/7941) (soft-deprecated).
-
-This project provides a CommonJS module that uses ES2015+ features and JavaScript module, which work in modern Node.js versions and browsers. For the old Punycode.js version that offers the same functionality in a UMD build with support for older pre-ES2015 runtimes, including Rhino, Ringo, and Narwhal, see [v1.4.1](https://github.com/mathiasbynens/punycode.js/releases/tag/v1.4.1).
+This project is [bundled](https://github.com/joyent/node/blob/master/lib/punycode.js) with [Node.js v0.6.2+](https://github.com/joyent/node/compare/975f1930b1...61e796decc) and [io.js v1.0.0+](https://github.com/iojs/io.js/blob/v1.x/lib/punycode.js).
 
 ## Installation
 
-Via [npm](https://www.npmjs.com/):
+Via [npm](https://www.npmjs.com/) (only required for Node.js releases older than v0.6.2):
 
 ```bash
-npm install punycode --save
+npm install punycode
 ```
 
-In [Node.js](https://nodejs.org/):
+Via [Bower](http://bower.io/):
 
-> ⚠️ Note that userland modules don't hide core modules.
-> For example, `require('punycode')` still imports the deprecated core module even if you executed `npm install punycode`.
-> Use `require('punycode/')` to import userland modules rather than core modules.
+```bash
+bower install punycode
+```
+
+Via [Component](https://github.com/component/component):
+
+```bash
+component install bestiejs/punycode.js
+```
+
+In a browser:
+
+```html
+<script src="punycode.js"></script>
+```
+
+In [Node.js](https://nodejs.org/), [io.js](https://iojs.org/), [Narwhal](http://narwhaljs.org/), and [RingoJS](http://ringojs.org/):
 
 ```js
-const punycode = require('punycode/');
+var punycode = require('punycode');
+```
+
+In [Rhino](http://www.mozilla.org/rhino/):
+
+```js
+load('punycode.js');
+```
+
+Using an AMD loader like [RequireJS](http://requirejs.org/):
+
+```js
+require(
+  {
+    'paths': {
+      'punycode': 'path/to/punycode'
+    }
+  },
+  ['punycode'],
+  function(punycode) {
+    console.log(punycode);
+  }
+);
 ```
 
 ## API
@@ -115,33 +149,27 @@ punycode.ucs2.encode([0x1D306]);
 
 A string representing the current Punycode.js version number.
 
-## For maintainers
+## Unit tests & code coverage
 
-### How to publish a new release
+After cloning this repository, run `npm install --dev` to install the dependencies needed for Punycode.js development and testing. You may want to install Istanbul _globally_ using `npm install istanbul -g`.
 
-1. On the `main` branch, bump the version number in `package.json`:
+Once that’s done, you can run the unit tests in Node using `npm test` or `node tests/tests.js`. To run the tests in Rhino, Ringo, Narwhal, PhantomJS, and web browsers as well, use `grunt test`.
 
-    ```sh
-    npm version patch -m 'Release v%s'
-    ```
+To generate the code coverage report, use `grunt cover`.
 
-    Instead of `patch`, use `minor` or `major` [as needed](https://semver.org/).
-
-    Note that this produces a Git commit + tag.
-
-1. Push the release commit and tag:
-
-    ```sh
-    git push && git push --tags
-    ```
-
-    Our CI then automatically publishes the new release to npm, under both the [`punycode`](https://www.npmjs.com/package/punycode) and [`punycode.js`](https://www.npmjs.com/package/punycode.js) names.
+Feel free to fork if you see possible improvements!
 
 ## Author
 
 | [![twitter/mathias](https://gravatar.com/avatar/24e08a9ea84deb17ae121074d0f17125?s=70)](https://twitter.com/mathias "Follow @mathias on Twitter") |
 |---|
 | [Mathias Bynens](https://mathiasbynens.be/) |
+
+## Contributors
+
+| [![twitter/jdalton](https://gravatar.com/avatar/299a3d891ff1920b69c364d061007043?s=70)](https://twitter.com/jdalton "Follow @jdalton on Twitter") |
+|---|
+| [John-David Dalton](http://allyoucanleet.com/) |
 
 ## License
 

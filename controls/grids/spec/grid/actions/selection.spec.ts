@@ -3401,6 +3401,27 @@ describe('Grid Touch Selection', () => {
             .clickHandler({target: gridObj.element.querySelectorAll('.e-row')[3].querySelectorAll('.e-rowcell')[2], shiftKey: true});
         });
 
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('Grid Selection Issue Fixes', () =>{
+        let gridObj: Grid;
+        let rowSelected: () => void;
+        beforeAll((done) => {
+            gridObj = createGrid({
+                    dataSource: data,
+                    columns: [
+                    { type: 'checkbox', width: 50 },
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' }],
+                    allowPaging: true,
+                    rowSelected: rowSelected
+            }, done);
+        });
+
         it('Selecting First row', (done: Function) => {
             rowSelected = (): void => {
                 expect(gridObj.getSelectedRowIndexes().length).toBe(1);
@@ -6880,6 +6901,72 @@ describe('EJ2-885652 - Programmatic row deselect with toggle as true, not trigge
         (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_select' } });
         (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_select' } });
         expect(gridObj.selectionModule.selectedRecords.length).toBe(1);
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('EJ2-890459 - Programmatic row deselect with toggle as true not working properly when initially selected the toggle row index then select another row checkbox', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                toolbar: [ 'Select' ],
+                toolbarClick: function() {
+                    gridObj.selectRow(3, true);
+                },
+                columns: [{ type: 'checkbox' }, { field: 'OrderID' }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight' },
+                { field: 'ShipCity' }],
+                allowSelection: true,
+                selectionSettings: { persistSelection: true },
+                enableHover: false,
+            }, done);
+    });
+
+    it('Selecting with checkbox', (done: Function) => {
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_select' } });
+        (<HTMLElement>gridObj.element.querySelectorAll('.e-row')[0].querySelector('.e-rowcell')).click();
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_select' } });
+        expect(gridObj.selectionModule.selectedRecords.length).toBe(1);
+        done();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('EJ2-891988 - SelectRow method with toggle set to true does not selects the rows properly.', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                toolbar: ['Select1','Select123'],
+                toolbarClick: function (args) {
+                    if (args.item.id === gridObj.element.id + '_select1') {
+                        gridObj.selectRow(0, true);
+                    }
+                    if (args.item.id === gridObj.element.id + '_select123') {
+                        gridObj.selectRows([0, 1, 2]);
+                    }
+                },
+                columns: [{ type: 'checkbox' }, { field: 'OrderID' }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight' },
+                { field: 'ShipCity' }],
+                allowSelection: true,
+                selectionSettings: { persistSelection: true },
+                enableHover: false,
+            }, done);
+    });
+
+    it('Selecting with checkbox', (done: Function) => {
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_select123' } });
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_select1' } });
+        expect(gridObj.selectionModule.selectedRecords.length).toBe(2);
         done();
     });
 

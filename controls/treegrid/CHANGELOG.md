@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 26.1.39 (2024-06-25)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#F58392` - Fixed issue where exporting remained empty when using remote data by returning data in the form of result and count.
+- `#F58393` - Fixed issue where exporting remote data with `exportType` as `AllPages` was sending improper requests to the server.
+- `#596141` - Fixed issue where alphanumeric values were not properly sent in the request during the expand action for remote data.
+- `F58576` - Fixed issue where updating a variable through `useState()` did not reflect in the edit template in tree grid.
+
 ## 26.1.35 (2024-06-11)
 
 ### Tree Grid

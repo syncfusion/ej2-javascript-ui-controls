@@ -8520,6 +8520,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         const rows: Row<Column>[] = this.getRowsObject();
         for (let i: number = 0, len: number = rows.length; i < len; i++) {
             if ((rows[parseInt(i.toString(), 10)].isDataRow || rows[parseInt(i.toString(), 10)].isAggregateRow)
+                && this.getRowElementByUID(rows[parseInt(i.toString(), 10)].uid)
                 && (this.getRowElementByUID(rows[parseInt(i.toString(), 10)].uid) as HTMLTableRowElement).style.display === 'none') {
                 (<{ visible?: boolean }>rows[parseInt(i.toString(), 10)]).visible = false;
             } else {

@@ -8,6 +8,20 @@
 
 #### Bug Fixes
 
+- `#I595571` - Now, inserting the table into the RichTextEditor works properly while using the quick toolbar settings in the editor.
+
+- `#I593447` - Now, when the Rich Text Editor value is set to null, injecting the count module works properly.
+
+- `#I596042` - Now, pasting the content as plain text in the Rich Text Editor works properly without adding styles.
+
+- `#I595789` - Now, applying the quotation in the Rich Text Editor `markdown` mode works properly.
+
+- `#I597774` - Now, enabling and disabling the toolbar on the `focus` and `blur` events, respectively, doesn't bind the drop event multiple times, and it works properly.
+
+- `#F188533` - Now, new lines between the text are deleted properly in the Rich Text Editor.
+
+- `#I596139` - Now, the `afterPasteCleanup` event returns the proper values in the `Value`argument when pasting the image into the Rich Text Editor.
+
 - Now, fixed the issue with font color and the background color popup not opening in rare cases.
 
 ## 26.1.35 (2024-06-11)

@@ -36,6 +36,9 @@ const LABELINDICATOR: string = 'e-step-type-label';
 const INDICATORICON: string = 'e-step-indicator';
 const STEPPERTOOLTIP: string = 'e-stepper-tooltip';
 const STEPPERIPROGRESSTIP: string = 'e-step-inprogress-tip';
+const LINEARSTEP: string = 'e-linear';
+const PREVSTEP: string = 'e-previous';
+const NEXTSTEP: string = 'e-next';
 
 /**
  * Defines the step progress animation of the Stepper.
@@ -1041,6 +1044,17 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
                 }
             }
         }
+        this.updateStepInteractions();
+    }
+
+    private updateStepInteractions(): void {
+        this.element.classList.toggle(LINEARSTEP, this.linear);
+        this.stepperItemElements.forEach((step: HTMLElement, index: number) => {
+            const isPreviousStep: boolean = (index === this.activeStep - 1);
+            const isNextStep: boolean = (index === this.activeStep + 1);
+            step.classList.toggle(PREVSTEP, isPreviousStep);
+            step.classList.toggle(NEXTSTEP, isNextStep);
+        });
     }
 
     private removeItemElements(): void {
@@ -1059,7 +1073,10 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
     }
 
     public reset(): void {
-        if (this.activeStep !== 0) {
+        if (this.activeStep === 0) {
+            this.updateStepInteractions();
+        }
+        else {
             const isDisabled: boolean = this.stepperItemElements[0].classList.contains(DISABLED) ? true : false;
             this.navigateToStep(isDisabled ? -1 : 0, null, null, false);
         }
@@ -1067,7 +1084,7 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
 
     private updateElementClassArray(): void {
         const classArray: string[] = [RTL, READONLY, 'e-steps-focus', LABELAFTER, LABELBEFORE, 'e-label-top',
-            'e-label-bottom', 'e-label-start', 'e-label-end', STEPINDICATOR, LABELINDICATOR, VERTICALSTEP, HORIZSTEP];
+            'e-label-bottom', 'e-label-start', 'e-label-end', STEPINDICATOR, LABELINDICATOR, VERTICALSTEP, HORIZSTEP, LINEARSTEP];
         removeClass([this.element], classArray);
     }
 
@@ -1272,6 +1289,9 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
                 break;
             case 'animation':
                 this.updateAnimation();
+                break;
+            case 'linear':
+                this.updateStepInteractions();
                 break;
             }
         }

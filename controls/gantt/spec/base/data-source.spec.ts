@@ -13149,3 +13149,12 @@ export let resourceCollections1: object[] = [
     { resourceId: 1, resourceName: 'Martin Tamer', resourceGroup: 'Planning Team'}
 ];
 
+export let unscheduledData1: object[] = [
+    {
+        TaskId: 1, TaskName: 'Task 1', TaskType: '',child :[
+            {
+                TaskId: 2, TaskName: 'Task 2',  TaskType: ''
+            },
+        ]
+    },
+];

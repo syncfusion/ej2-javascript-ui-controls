@@ -642,7 +642,8 @@ describe('Filtering module => ', () => {
                                 },
                                 read: (args: any) => {
                                     gridObj.filterByColumn('EmployeeID', "equal", parseInt((gridObj.element.querySelector('.customfiltertemplate') as any).value, 10), "and", true);
-                                }
+                                },
+                                destroy: () => { }
                             }
                         }
                     ],
@@ -3250,5 +3251,40 @@ describe('EJ2-880709 - In ODataV4Adaptor, the filter menu shows "No matches foun
     afterAll(() => {
         destroy(gridObj);
         gridObj = remoteData = null;
+    });
+});
+
+// code coverage
+describe('EJ2-883199 - MemoryLeak Issue when using FilterBarTemplate in gridColumn => ', () => {
+    let gridObj: Grid;
+    (window as any).shipCreate = () => {
+        return '<input/>';
+    };
+    (window as any).shipRead = () => { }
+    (window as any).shipWrite = () => { }
+    (window as any).shipDestroy = () => { }
+    beforeAll((done: Function) => {
+    gridObj = createGrid(
+        {
+            dataSource: filterData.slice(0,2),
+            allowFiltering: true,
+            columns: [{ field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+            {
+                field: 'ShipCountry', headerText: 'Ship Country', width: 130,
+                filterBarTemplate: {
+                    create: 'shipCreate',
+                    write: 'shipWrite',
+                    destroy: 'shipDestroy',
+                    read: 'shipRead'
+                }
+            }],
+        }, done);
+    });
+    it('destroy the filter', function () {
+        gridObj.filterModule.destroy();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = (window as any).shipCreate = (window as any).shipRead = (window as any).shipWrite = (window as any).shipDestroy = null;
     });
 });

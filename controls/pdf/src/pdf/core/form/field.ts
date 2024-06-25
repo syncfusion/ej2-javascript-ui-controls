@@ -965,35 +965,39 @@ export abstract class PdfField {
      * ```
      */
     get tabIndex(): number {
-        let annots: _PdfReference[];
-        if (this.page._pageDictionary.has('Annots')) {
-            annots = this.page._pageDictionary.get('Annots');
-        }
-        if (this._kids && this._kids.length > 0) {
-            for (let i: number = 0; i < this._kids.length; i++) {
-                const reference: _PdfReference = this._kids[Number.parseInt(i.toString(), 10)];
-                if (reference) {
-                    if (this.page._pageDictionary.has('Annots')) {
-                        if (annots) {
-                            const index1: number = annots.indexOf(reference);
-                            if (index1 !== -1) {
-                                return index1;
+        if (this._isLoaded) {
+            let annots: _PdfReference[];
+            if (this.page._pageDictionary.has('Annots')) {
+                annots = this.page._pageDictionary.get('Annots');
+            }
+            if (this._kids && this._kids.length > 0) {
+                for (let i: number = 0; i < this._kids.length; i++) {
+                    const reference: _PdfReference = this._kids[Number.parseInt(i.toString(), 10)];
+                    if (reference) {
+                        if (this.page._pageDictionary.has('Annots')) {
+                            if (annots) {
+                                const index1: number = annots.indexOf(reference);
+                                if (index1 !== -1) {
+                                    return index1;
+                                }
                             }
                         }
                     }
                 }
-            }
-        } else if (this._dictionary.has('Subtype') && this._dictionary.get('Subtype').name === 'Widget') {
-            if (this._ref) {
-                if (annots) {
-                    const index1: number = annots.indexOf(this._ref);
-                    if (index1 !== -1) {
-                        return index1;
+            } else if (this._dictionary.has('Subtype') && this._dictionary.get('Subtype').name === 'Widget') {
+                if (this._ref) {
+                    if (annots) {
+                        const index1: number = annots.indexOf(this._ref);
+                        if (index1 !== -1) {
+                            return index1;
+                        }
                     }
                 }
             }
+            return -1;
+        } else {
+            return this._tabIndex;
         }
-        return -1;
     }
     /**
      * Sets the tab index of a annotation in the current page.
@@ -1014,19 +1018,23 @@ export abstract class PdfField {
      */
     set tabIndex(value: number) {
         this._tabIndex = value;
-        const page: PdfPage = this.page;
-        if (page && (this.form._tabOrder === PdfFormFieldsTabOrder.manual || page.tabOrder === PdfFormFieldsTabOrder.manual)) {
-            if (page._pageDictionary.has('Annots')) {
-                const annots: _PdfReference[] = page._pageDictionary.get('Annots');
-                const annotationCollection: PdfAnnotationCollection = new PdfAnnotationCollection(annots, this._crossReference, page);
-                page._annotations = annotationCollection;
-                let index: number = annots.indexOf(this._ref);
-                if (index < 0) {
-                    index = this._annotationIndex;
+        if (this._isLoaded) {
+            const page: PdfPage = this.page;
+            if (page &&
+                (page.tabOrder === PdfFormFieldsTabOrder.manual ||
+                (this.form && this.form._tabOrder === PdfFormFieldsTabOrder.manual))) {
+                if (page._pageDictionary.has('Annots')) {
+                    const annots: _PdfReference[] = page._pageDictionary.get('Annots');
+                    const annotationCollection: PdfAnnotationCollection = new PdfAnnotationCollection(annots, this._crossReference, page);
+                    page._annotations = annotationCollection;
+                    let index: number = annots.indexOf(this._ref);
+                    if (index < 0) {
+                        index = this._annotationIndex;
+                    }
+                    const annotations: _PdfReference[] = page.annotations._reArrange(this._ref, this._tabIndex, index);
+                    page._pageDictionary.update('Annots', annotations);
+                    page._pageDictionary._updated = true;
                 }
-                const annotations: _PdfReference[] = page.annotations._reArrange(this._ref, this._tabIndex, index);
-                page._pageDictionary.update('Annots', annotations);
-                page._pageDictionary._updated = true;
             }
         }
     }

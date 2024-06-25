@@ -860,10 +860,14 @@
     @if $input-skin-name == 'bootstrap4'  {
       transition: $input-transition-shadow;
     }
-    @if $input-skin-name == 'tailwind' or $input-skin-name == 'bootstrap5' or $input-skin-name == 'FluentUI' {
+    @if $input-skin-name == 'tailwind' or $input-skin-name == 'bootstrap5' {
       border-color: $input-group-border-color-focus;
       border-radius: $input-groupo-focus-border-radius;
       box-shadow: $input-group-focus-box-shadow;
+    }
+    @if $input-skin-name == 'FluentUI' {
+      border-radius: $input-groupo-focus-border-radius;
+      border-width: 2px;
     }
   }
 
@@ -953,14 +957,14 @@
    
   .e-input-group:not(.e-disabled):active:not(.e-success):not(.e-warning):not(.e-error),
   .e-input-group.e-control-wrapper:not(.e-disabled):active:not(.e-success):not(.e-warning):not(.e-error) {
-    @if $input-skin-name == 'fabric' or $input-skin-name == 'FluentUI' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'bootstrap5' or $input-skin-name == 'highcontrast' {
+    @if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'bootstrap5' or $input-skin-name == 'highcontrast' {
       border-color: $input-active-border-color;
     }
     @if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4'  {
       -webkit-box-shadow: $input-border-shadow;
       box-shadow: $input-border-shadow;
     }
-    @if $input-skin-name == 'bootstrap5' or $input-skin-name == 'FluentUI' {
+    @if $input-skin-name == 'bootstrap5' {
       box-shadow: $input-group-focus-box-shadow;
     }
   }

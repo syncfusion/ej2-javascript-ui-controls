@@ -731,7 +731,9 @@
         margin-left: 18px !important;
       }
 
-      .e-toolbar-item.e-template {
+      .e-toolbar-item.e-template,
+      .e-toolbar-item:not(.e-separator):not(.e-spacer)
+      {
         padding: 0 !important;
         /* stylelint-enable */
       }

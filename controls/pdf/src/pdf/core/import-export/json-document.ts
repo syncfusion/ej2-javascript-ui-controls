@@ -445,10 +445,12 @@ export class _JsonDocument extends _ExportHelper {
             }
             break;
         case 'AllowedInteractions':
-            if (primitive.indexOf('"') !== -1) {
-                primitive = primitive.replace(/"/g, '\\"');
+            if (primitive) {
+                const bytes: Uint8Array = _stringToBytes(primitive) as Uint8Array;
+                const styleTable: Map<string, string> = new Map<string, string>();
+                styleTable.set('unicodeData', _byteArrayToHexString(bytes));
+                this._table.set(key, this._convertToJson(styleTable));
             }
-            this._table.set(key, primitive);
             break;
         case 'Type':
         case 'Subtype':
@@ -526,23 +528,33 @@ export class _JsonDocument extends _ExportHelper {
             }
             if (dictionary.has('A')) {
                 const array: _PdfDictionary[] = dictionary.getArray('A');
-                this._exportMeasureFormatDetails('area', array[0]);
+                if (array && array.length > 0 && array[0]) {
+                    this._exportMeasureFormatDetails('area', array[0]);
+                }
             }
             if (dictionary.has('D')) {
                 const array: _PdfDictionary[] = dictionary.getArray('D');
-                this._exportMeasureFormatDetails('distance', array[0]);
+                if (array && array.length > 0 && array[0]) {
+                    this._exportMeasureFormatDetails('distance', array[0]);
+                }
             }
             if (dictionary.has('X')) {
                 const array: _PdfDictionary[] = dictionary.getArray('X');
-                this._exportMeasureFormatDetails('xformat', array[0]);
+                if (array && array.length > 0 && array[0]) {
+                    this._exportMeasureFormatDetails('xformat', array[0]);
+                }
             }
             if (dictionary.has('T')) {
                 const array: _PdfDictionary[] = dictionary.getArray('T');
-                this._exportMeasureFormatDetails('tformat', array[0]);
+                if (array && array.length > 0 && array[0]) {
+                    this._exportMeasureFormatDetails('tformat', array[0]);
+                }
             }
             if (dictionary.has('V')) {
                 const array: _PdfDictionary[] = dictionary.getArray('V');
-                this._exportMeasureFormatDetails('vformat', array[0]);
+                if (array && array.length > 0 && array[0]) {
+                    this._exportMeasureFormatDetails('vformat', array[0]);
+                }
             }
         }
     }
@@ -592,10 +604,7 @@ export class _JsonDocument extends _ExportHelper {
     }
     _writeObject(table?: Map<string, string>,
                  value?: any, dictionary?: _PdfDictionary, key?: string, array?: Map<string, string>[], isColorSpace: boolean = false): void { // eslint-disable-line
-        if (this._isDuplicate && key === 'AllowedInteractions') {
-            const bytes: Uint8Array = _stringToBytes(value) as Uint8Array;
-            this._writeTable('unicodeData', _byteArrayToHexString(bytes), table, key, array);
-        } else if (value instanceof _PdfName) {
+        if (value instanceof _PdfName) {
             value.name = this._getValidString(value.name);
             this._writeTable('name', value.name, table, key, array);
         } else if (Array.isArray(value)) {
@@ -608,8 +617,10 @@ export class _JsonDocument extends _ExportHelper {
             this._isColorSpace = false;
             this._writeTable('array', this._convertToJsonArray(list), table, key, array);
         } else if (typeof value === 'string') {
-            value = this._getValidString(value);
-            if (this._isColorSpace || this._hasUnicodeCharacters(value)) {
+            if (key !== 'AllowedInteractions') {
+                value = this._getValidString(value);
+            }
+            if (this._isColorSpace || key === 'AllowedInteractions' || this._hasUnicodeCharacters(value)) {
                 const bytes: Uint8Array = _stringToBytes(value) as Uint8Array;
                 this._writeTable('unicodeData', _byteArrayToHexString(bytes), table, key, array);
             } else {
@@ -636,7 +647,7 @@ export class _JsonDocument extends _ExportHelper {
             if (isImageStream && baseStream.stream && baseStream.stream instanceof _PdfStream) {
                 const stream: _PdfStream = baseStream.stream;
                 data = baseStream.getString(true, stream.getByteRange(stream.start, stream.end) as Uint8Array);
-            } else if (baseStream.stream && baseStream.stream.stream) {
+            } else if (isImageStream && baseStream.stream && baseStream.stream.stream) {
                 const flateStream: any = baseStream.stream; // eslint-disable-line
                 if (flateStream.stream && flateStream.stream instanceof _PdfStream) {
                     const stream: _PdfStream = flateStream.stream;
@@ -696,11 +707,7 @@ export class _JsonDocument extends _ExportHelper {
         table.forEach((value: string, key: string) => {
             if (value.startsWith('{') || value.startsWith('[')) {
                 if (key === 'AllowedInteractions') {
-                    if (this._isDuplicate) {
-                        json += `"${key}":${value}`;
-                    } else {
-                        json += '"' + key + '":"' + value + '"';
-                    }
+                    json += `"${key}":${value}`;
                 } else {
                     json += '"' + key + '":' + value;
                 }
@@ -718,8 +725,8 @@ export class _JsonDocument extends _ExportHelper {
         return json + '}';
     }
     _hasUnicodeCharacters(value: string): boolean {
-        const unicodeRegex = /[^\x00-\x7F]/;
-        return value.split('').some(char => unicodeRegex.exec(char) !== null);
+        const unicodeRegex = /[^\x00-\x7F]/; // eslint-disable-line
+        return value.split('').some(char => unicodeRegex.exec(char) !== null); // eslint-disable-line
     }
     _convertToJsonArray(array: Map<string, string>[]): string {
         let json: string = '[';
@@ -1150,7 +1157,19 @@ export class _JsonDocument extends _ExportHelper {
                 this._addAppearanceData(dictionary, value);
                 break;
             case 'allowedinteractions':
-                this._addString(dictionary, 'AllowedInteractions', value);
+                if (value) {
+                    if (value && typeof value === 'string') {
+                        this._addString(dictionary, 'AllowedInteractions', value);
+                    } else {
+                        const interactionKeys: string[] = Object.keys(value);
+                        if (interactionKeys && interactionKeys.length > 0 && interactionKeys.indexOf('unicodeData') !== -1) {
+                            let convertString: string = JSON.stringify(value['unicodeData']);
+                            convertString = convertString.substring(1, convertString.length - 1);
+                            value =  _bytesToString(_hexStringToByteArray(convertString, false) as Uint8Array, true);
+                            this._addString(dictionary, 'AllowedInteractions', value);
+                        }
+                    }
+                }
                 break;
             default:
                 if (this._document._allowImportCustomData && key !== 'type' && key !== 'page') {

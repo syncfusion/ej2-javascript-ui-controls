@@ -765,16 +765,11 @@ export abstract class PdfAnnotation {
      * ```
      */
     set subject(value: string) {
-        if (typeof value === 'string') {
-            let hasKey: boolean = false;
-            if (this._dictionary.has('Subj')) {
-                this._dictionary.update('Subj', value);
-                this._subject = value;
-                hasKey = true;
-            }
-            if (!hasKey || this._dictionary.has('Subject')) {
+        if (typeof value === 'string' && this.subject !== value) {
+            this._dictionary.update('Subj', value);
+            this._subject = value;
+            if (this._dictionary.has('Subject')) {
                 this._dictionary.update('Subject', value);
-                this._subject = value;
             }
         }
     }

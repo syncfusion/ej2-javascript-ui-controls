@@ -1319,7 +1319,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         let checkValue: string;
         const isObjectValue: boolean = isChild && isChildFiltering && this.isChildObject();
         checkValue = isObjectValue ? node[(this.fields.child as FieldsModel).text] as string : node[this.fields.text] as string;
-        if (!checkValue) {
+        if (!checkValue && !isNOU((this.fields.child as FieldsModel).text)) {
             let tempChild: string | FieldsModel = this.fields.child;
             while (!node[(tempChild as FieldsModel).text]) {
                 tempChild = (tempChild as FieldsModel).child;
@@ -2788,14 +2788,15 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             this.ensurePlaceHolder();
         }
         if (this.showSelectAll && this.checkBoxElement) {
-            const nodes: NodeList = this.treeObj.element.querySelectorAll('li');
             const checkedNodes: NodeList = this.treeObj.element.querySelectorAll('li[aria-checked=true]');
             const wrap: HTMLElement = closest((this.checkBoxElement as HTMLElement), '.' + CHECKBOXWRAP) as HTMLElement;
             if (wrap && args.action === 'uncheck' && (args.isInteracted || checkedNodes.length === 0 || (!isNOU(args.data[0]) && args.data[0].isChecked === 'false'))) {
                 this.isReverseUpdate = true;
                 this.changeState(wrap, 'uncheck');
                 this.isReverseUpdate = false;
-            } else if (wrap && args.action === 'check' && checkedNodes.length === nodes.length && (args.isInteracted || this.isCheckAllCalled || (!isNOU(args.data[0]) && args.data[0].isChecked === 'true'))) {
+            } else if (wrap && args.action === 'check'
+                && checkedNodes.length === (this.fields.dataSource as { [key: string]: Object; }[]).length
+                && (args.isInteracted || this.isCheckAllCalled || (!isNOU(args.data[0]) && args.data[0].isChecked === 'true'))) {
                 this.isReverseUpdate = true;
                 this.isCheckAllCalled = false;
                 this.changeState(wrap, 'check');

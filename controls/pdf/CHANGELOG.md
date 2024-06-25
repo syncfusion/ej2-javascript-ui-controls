@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 26.1.39 (2024-06-25)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- The destination entry preservation issue in link annotations has been resolved with the support for duplicate pages.
+- Resolved an exception encountered while export annotations as JSON data.
+- Resolved the preservation issue while exporting the rubber stamp annotation appearance template.
+- Resolved the appearance preservation issue when adding custom text to the form fields.
+- Resolved the subject preservation issue when adding new rubber stamp annotations.
+- Resolved the tab order preservation issue when adding a tab index to newly created form fields.
+
 ## 26.1.38 (2024-06-19)
 
 ### PDF Parser

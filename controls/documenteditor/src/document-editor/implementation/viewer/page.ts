@@ -2460,8 +2460,8 @@ export class TableWidget extends BlockWidget {
             this.isDefaultFormatUpdated = true;
         }
         this.tableHolder.validateColumnWidths();
-        let isNeedToAutoFit: boolean = HelperMethods.round(this.tableHolder.getTotalWidth(0), 2) !== HelperMethods.round(tableWidth, 2);
-        if (isAutoFit && (isNeedToAutoFit || isAutoWidth)) {
+        const isNeedToAutoFit: boolean = HelperMethods.round(this.tableHolder.getTotalWidth(0), 2) !== HelperMethods.round(tableWidth, 2) || isAutoWidth || this.wrapTextAround || this.isInsideTable;
+        if (isAutoFit && isNeedToAutoFit) {
             // Fits the column width automatically based on contents.
             this.tableHolder.autoFitColumn(containerWidth, tableWidth, isAutoWidth, this.isInsideTable, isAutoFit, hasSpannedCells, this.leftIndent + this.rightIndent, pageContainerWidth);
         } else {
@@ -3658,8 +3658,12 @@ export class TableCellWidget extends BlockWidget {
             if (this.cellFormat.preferredWidth === 0) {
                 cellWidth = containerWidth;
             } else {
-                // If cell has prefferd width, we need to consider prefferd width.
-                cellWidth = this.cellFormat.preferredWidth - leftMargin - rightMargin;
+                if (this.cellFormat.preferredWidthType === 'Percent') {
+                    cellWidth = (this.cellFormat.preferredWidth * containerWidth) / 100 - leftMargin - rightMargin;
+                } else {
+                    // If cell has prefferd width, we need to consider prefferd width.
+                    cellWidth = this.cellFormat.preferredWidth - leftMargin - rightMargin;
+                }
             }
         } else if (this.cellFormat.preferredWidthType === 'Percent') {
             cellWidth = (this.cellFormat.preferredWidth * containerWidth) / 100 - leftMargin - rightMargin;
@@ -3913,7 +3917,12 @@ export class TableCellWidget extends BlockWidget {
             if (ownerCell.columnIndex === 0 || (ownerCell.cellIndex === 0 && ownerCell.ownerRow.rowFormat.gridBefore > 0)) {
                 isFirstCell = true;
             }
-            const isRowBorderDefined: boolean = !isNullOrUndefined(rowBorders.left) && rowBorders.left.lineStyle !== 'None' && rowBorders.left.isBorderDefined;
+            let isRowBorderDefined: boolean = false;
+            if (!isNullOrUndefined(rowBorders.left) && rowBorders.left.lineStyle !== 'None' 
+                && rowBorders.left.isBorderDefined && !isNullOrUndefined(leftBorder) 
+                && leftBorder.lineStyle === 'None' && leftBorder.isBorderDefined && !leftBorder.hasValue('color')) {
+                isRowBorderDefined = true;
+            }
             if ((!isNullOrUndefined(leftBorder) && leftBorder.lineStyle === 'None' && (!leftBorder.isBorderDefined || isRowBorderDefined)) || isNullOrUndefined(leftBorder)) {
                 if (isFirstCell) {
                     leftBorder = rowBorders.left;
@@ -4008,7 +4017,12 @@ export class TableCellWidget extends BlockWidget {
                 || (ownerCell.cellIndex === ownerCell.ownerRow.childWidgets.length - 1)) {
                 isLastCell = true;
             }
-            const isRowBorderDefined: boolean = !isNullOrUndefined(rowBorders.right) && rowBorders.right.lineStyle !== 'None' && rowBorders.right.isBorderDefined;
+            let isRowBorderDefined: boolean = false;
+            if (!isNullOrUndefined(rowBorders.right) && rowBorders.right.lineStyle !== 'None' 
+                && rowBorders.right.isBorderDefined && !isNullOrUndefined(rightBorder) && rightBorder.lineStyle === 'None' 
+                && rightBorder.isBorderDefined && !rightBorder.hasValue('color')) {
+                isRowBorderDefined = true;
+            }
             if ((!isNullOrUndefined(rightBorder) && rightBorder.lineStyle === 'None' && (!rightBorder.isBorderDefined || isRowBorderDefined)) || isNullOrUndefined(rightBorder)) {
                 if (isLastCell) {
                     rightBorder = rowBorders.right;
@@ -4091,7 +4105,12 @@ export class TableCellWidget extends BlockWidget {
         let ownerCell: TableCellWidget = TableCellWidget.getCellOf(topBorder.ownerBase as WBorders);
         if (!isNullOrUndefined(ownerCell)) {
             let isFirstRow: boolean = isNullOrUndefined(ownerCell.ownerRow.previousWidget);
-            const isRowBorderDefined: boolean = !isNullOrUndefined(rowBorders.top) && rowBorders.top.lineStyle !== 'None' && rowBorders.top.isBorderDefined;
+            let isRowBorderDefined: boolean = false;
+            if (!isNullOrUndefined(rowBorders.top) && rowBorders.top.lineStyle !== 'None' 
+                && rowBorders.top.isBorderDefined && !isNullOrUndefined(topBorder) 
+                && topBorder.lineStyle === 'None' && topBorder.isBorderDefined && !topBorder.hasValue('color')) {
+                isRowBorderDefined = true;
+            }
             if ((!isNullOrUndefined(topBorder) && topBorder.lineStyle === 'None' && (!topBorder.isBorderDefined || isRowBorderDefined)) || isNullOrUndefined(topBorder)) {
                 if (isFirstRow) {
                     topBorder = rowBorders.top;
@@ -4184,7 +4203,12 @@ export class TableCellWidget extends BlockWidget {
         let ownerCell: TableCellWidget = TableCellWidget.getCellOf(bottomBorder.ownerBase as WBorders);
         if (!isNullOrUndefined(ownerCell)) {
             let isLastRow: boolean = isNullOrUndefined(ownerCell.ownerRow.nextWidget);
-            const isRowBorderDefined: boolean = !isNullOrUndefined(rowBorders.bottom) && rowBorders.bottom.lineStyle !== 'None' && rowBorders.bottom.isBorderDefined;
+            let isRowBorderDefined: boolean = false;
+            if (!isNullOrUndefined(rowBorders.bottom) && rowBorders.bottom.lineStyle !== 'None' 
+                && rowBorders.bottom.isBorderDefined && !isNullOrUndefined(bottomBorder) 
+                && bottomBorder.lineStyle === 'None' && bottomBorder.isBorderDefined && !bottomBorder.hasValue('color')) {
+                isRowBorderDefined = true;
+            }
             if ((!isNullOrUndefined(bottomBorder) && bottomBorder.lineStyle === 'None' && (!bottomBorder.isBorderDefined || isRowBorderDefined)) || isNullOrUndefined(bottomBorder)) {
                 if (isLastRow) {
                     bottomBorder = rowBorders.bottom;

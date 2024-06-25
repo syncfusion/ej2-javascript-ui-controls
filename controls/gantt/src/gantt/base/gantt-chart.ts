@@ -8,6 +8,7 @@ import * as cls from '../base/css-constants';
 import { ChartScroll } from '../actions/chart-scroll';
 import { IGanttData, IWorkTimelineRanges } from '../base/interface';
 import { click } from '@syncfusion/ej2-grids';
+import { ColumnModel } from '../models/column';
 import { ITaskbarClickEventArgs, RecordDoubleClickEventArgs, IMouseMoveEventArgs, IIndicator } from '../base/interface';
 import { TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-strategy';
@@ -41,6 +42,7 @@ export class GanttChart {
     public tempNextElement: any;
     public nextElementIndex: number;
     public childrenIndex: number;
+    private currentToolbarIndex: number = -1;
     constructor(parent: Gantt) {
         this.parent = parent;
         this.chartTimelineContainer = null;
@@ -158,7 +160,9 @@ export class GanttChart {
             }
         }
         this.updateWidthAndHeight();
-        this.parent.notify('selectRowByIndex', {});
+        if (this.parent.isLoad) {
+            this.parent.notify('selectRowByIndex', {});
+        }
         if (this.parent.timelineModule.isZoomToFit) {
             this.parent.timelineModule.processZoomToFit();
         }
@@ -1230,6 +1234,20 @@ export class GanttChart {
             item = this.parent.currentViewData[this.getIndexByTaskBar(target)];
         }        return item;
     }
+    
+    private updateElement(next: Element, currentColumn: ColumnModel, isTab: boolean, isInEditedState: boolean, row: IGanttData): Element {
+        if (this.parent.ganttColumns[next.getAttribute('data-colindex')].field === this.parent.taskFields.progress) {
+            let rowIndex: number = row.index;
+            do {
+                next = this.getNextElement(next as Element, isTab, isInEditedState) as Element;
+                currentColumn = this.parent.ganttColumns[(next as Element).getAttribute('data-colindex')];
+                rowIndex = parseInt(next.parentElement.getAttribute('data-rowindex'));
+            } while (!currentColumn.allowEditing);
+            this.parent.treeGrid.saveCell();
+            this.parent.treeGrid.editCell(rowIndex, this.parent.ganttColumns[next.getAttribute('data-colindex')].field);
+        }
+        return next;
+    }
     /**
      * Trigger Tab & Shift + Tab keypress to highlight active element.
      *
@@ -1239,12 +1257,20 @@ export class GanttChart {
      */
     public onTabAction(e: KeyboardEventArgs): void {
         this.parent.treeGrid.grid.enableHeaderFocus = this.parent.enableHeaderFocus;
+        const toolbarItems: HTMLCollectionOf<Element> = document.getElementsByClassName('e-toolbar-item');
         const isInEditedState: boolean = this.parent.editModule && this.parent.editModule.cellEditModule &&
             this.parent.editModule.cellEditModule.isCellEdit;
         if (!this.parent.showActiveElement && !isInEditedState) {
             return;
         }
-        const $target: Element = isInEditedState ? (e.target as Element).closest('.e-rowcell') : e.target as Element;
+        let $target: Element = isInEditedState ? (e.target as Element).closest('.e-rowcell') : e.target as Element;
+        if (this.parent.element.querySelectorAll('.e-focused').length > 0) {
+            $target = this.parent.element.querySelectorAll('.e-focused')[0];
+        }
+        if ($target && !($target.classList.contains('e-toolbar-item') ||
+            $target.classList.contains('e-input') || $target.classList.contains('e-btn'))) {
+            this.currentToolbarIndex = -1;
+        }
         if ($target.closest('.e-rowcell') || $target.closest('.e-chart-row')) {
             this.parent.focusModule.setActiveElement($target as HTMLElement);
         }
@@ -1254,6 +1280,10 @@ export class GanttChart {
             $target.closest('.e-chart-row') ? ($target.closest('.e-chart-row') as any).rowIndex : -1;
         const isTab: boolean = (e.action === 'tab') ? true : false;
         let nextElement: Element | string = this.getNextElement($target, isTab, isInEditedState);
+        if (nextElement && (nextElement === 'noNextRow' || (nextElement as HTMLElement).classList.contains('e-rowdragheader'))) {
+            (nextElement === 'noNextRow' && this.parent.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0) ? this.parent.treeGrid.saveCell() : '';
+            nextElement = null;
+        }
         if (nextElement && $target.classList.contains('e-headercell')) {
             let colIndex: number = parseInt((nextElement as HTMLElement).getAttribute('data-colindex'), 10);
             if (e.action === 'shiftTab') {
@@ -1261,6 +1291,7 @@ export class GanttChart {
                     colIndex = colIndex - 1;
                 }
                 if (colIndex !== -1) {
+                    colIndex = this.parent.allowRowDragAndDrop ? colIndex + 1 : colIndex;
                     nextElement = document.getElementsByClassName('e-columnheader')[0].childNodes[colIndex as number] as HTMLElement;
                 }
                 else {
@@ -1268,6 +1299,7 @@ export class GanttChart {
                     for (let i: number = toolbarItems.length - 1; i > 0; i--) {
                         if (!document.getElementsByClassName('e-toolbar-item')[i as number].classList.contains('e-hidden')) {
                             nextElement = document.getElementsByClassName('e-toolbar-item')[i as number];
+                            this.currentToolbarIndex = i;
                             break;
                         }
                     }
@@ -1277,44 +1309,57 @@ export class GanttChart {
                 while (!this.parent.treeGrid.columns[colIndex as number]['visible']) {
                     colIndex = colIndex + 1;
                 }
+                colIndex = this.parent.allowRowDragAndDrop ? colIndex + 1 : colIndex;
                 nextElement = document.getElementsByClassName('e-columnheader')[0].childNodes[colIndex as number] as HTMLElement;
             }
         }
-        if (!nextElement && e.action === 'shiftTab' && $target.classList.contains('e-headercell')) {
-            const toolbarItems: HTMLCollectionOf<Element> = document.getElementsByClassName('e-toolbar-item');
-            for (let i: number = toolbarItems.length - 1; i > 0; i--) {
-                if (!document.getElementsByClassName('e-toolbar-item')[i as number].classList.contains('e-hidden')) {
-                    nextElement = document.getElementsByClassName('e-toolbar-item')[i as number];
-                    break;
+        if (!nextElement && $target.classList.contains('e-headercell') && e.action === 'tab') {
+            nextElement = document.getElementsByClassName('e-timeline-header-container')[0];
+        }
+        if (!nextElement && ($target.classList.contains('e-headercell') || $target.classList.contains('e-toolbar-item') || $target.classList.contains('e-treegrid') ||
+            $target.classList.contains('e-input') || $target.classList.contains('e-btn')) && this.parent.toolbarModule && this.parent.toolbar.length > 0) {
+            let itemIndex: number = this.currentToolbarIndex !== -1 ? (e.action === 'tab' ? this.currentToolbarIndex + 1 :
+                this.currentToolbarIndex - 1) : (e.action === 'shiftTab' ? toolbarItems.length - 1 : 1);
+            let isUpdated: boolean = false;
+            if (itemIndex !== -1 && (e.action === 'shiftTab' || (e.action === 'tab' && itemIndex < toolbarItems.length))) {
+                do {
+                    if (!toolbarItems[itemIndex as number].classList.contains('e-hidden')) {
+                        nextElement = toolbarItems[itemIndex as number];
+                        nextElement.setAttribute('tabindex', '-1');
+                        if (nextElement.querySelector('.e-btn') === $target) {
+                            e.action === 'tab' ? itemIndex++ : itemIndex--;
+                            nextElement = toolbarItems[itemIndex as number];
+                        }
+                        if (nextElement.querySelector('.e-btn')) {
+                            (nextElement.querySelector('.e-btn')).setAttribute('tabindex', '0');
+                        }
+                        isUpdated = true;
+                        this.currentToolbarIndex = itemIndex;
+                    }
+                    else {
+                        e.action == 'tab' ? itemIndex++ : itemIndex--;
+                    }
                 }
+                while (!isUpdated)
             }
         }
-        if ($target.classList.contains('e-treegrid') && !nextElement) {
-            for (let i: number = 0; i < this.parent.treeGrid.columns.length; i++){
+        if (e.action === 'tab' && !nextElement && (this.currentToolbarIndex === toolbarItems.length - 1 &&
+            ($target.classList.contains('e-toolbar-item') || $target.classList.contains('e-input') ||
+            $target.classList.contains('e-btn')))) {
+            for (let i: number = 0; i < this.parent.treeGrid.columns.length; i++) {
                 if (this.parent.treeGrid.columns[i as number]['visible']) {
                     nextElement = document.getElementsByClassName('e-columnheader')[0].childNodes[i as number] as HTMLElement;
                     break;
                 }
             }
         }
-        if (!nextElement && $target.classList.contains('e-headercell')) {
-            nextElement = document.getElementsByClassName('e-timeline-header-container')[0];
-        }
-        if (e.action !== 'shiftTab' && $target.classList.contains('e-timeline-header-container')) {
-            for (let i: number = 0; i < this.parent.treeGrid.columns.length; i++){
-                if (this.parent.treeGrid.columns[i as number]['visible']) {
-                    nextElement = document.getElementsByClassName('e-row')[0].childNodes[i as number] as HTMLElement;
-                    break;
-                }
-            }
-        }
-        if (e.action === 'shiftTab' && !nextElement) {
+        if (e.action === 'shiftTab' && !nextElement && !$target.classList.contains('e-headercell')) {
             nextElement = document.getElementsByClassName('e-timeline-header-container')[0];
         }
         if (e.action === 'shiftTab' && $target.classList.contains('e-timeline-header-container')) {
-            for (let i: number = this.parent.treeGrid.columns.length - 1; i > 0; i--) {
-                if (this.parent.treeGrid.columns[i as number]['visible']) {
-                    nextElement = document.getElementsByClassName('e-columnheader')[0].childNodes[i as number] as HTMLElement;
+            for (let i: number = this.parent.treeGrid.columns.length; i > 0; i--) {
+                if (this.parent.treeGrid.columns[i - 1]['visible']) {
+                    nextElement = document.getElementsByClassName('e-columnheader')[0].childNodes[i - 1] as HTMLElement;
                     break;
                 }
             }
@@ -1329,7 +1374,8 @@ export class GanttChart {
                 this.childrenIndex = nextElement['cellIndex'];
                 this.nextElementIndex = nextElement['cellIndex'];
             }
-            if (!this.parent.ganttColumns[this.nextElementIndex]['allowEditing'] && this.parent.ganttColumns[this.nextElementIndex]['field'] !== this.parent.taskFields.id) {
+            if (this.nextElementIndex !== -1 && !this.parent.ganttColumns[this.nextElementIndex]['allowEditing'] &&
+                this.parent.ganttColumns[this.nextElementIndex]['field'] !== this.parent.taskFields.id) {
                 this.isEditableElement = true;
             }
             else {
@@ -1342,7 +1388,8 @@ export class GanttChart {
         }
         if (typeof nextElement !== 'string') {
             if ($target.classList.contains('e-rowcell') || $target.closest('.e-chart-row-cell') ||
-                $target.classList.contains('e-headercell') || $target.closest('.e-segmented-taskbar') || $target.classList.contains('e-timeline-header-container')) {
+                $target.classList.contains('e-headercell') || $target.closest('.e-segmented-taskbar') ||
+                $target.classList.contains('e-timeline-header-container')) {
                 e.preventDefault();
             }
             if (isTab && $target.classList.contains('e-rowdragdrop')) {
@@ -1350,16 +1397,16 @@ export class GanttChart {
                 return;
             }
             if ($target.classList.contains('e-rowcell') && (nextElement && nextElement.classList.contains('e-rowcell')) ||
-                $target.classList.contains('e-headercell')){     // eslint-disable-line                                                                                                                                                                                                                                    
+                $target.classList.contains('e-headercell')) {     // eslint-disable-line                                                                                                                                                                                                                                    
                 if (isTab) {
                     if (this.parent.editSettings.allowNextRowEdit) {
                         const rowData: IGanttData = this.parent.currentViewData[this.focusedRowIndex];
                         const columnName: string = this.parent.ganttColumns[nextElement.getAttribute('data-colindex')].field;
                         if (rowData.hasChildRecords) {
                             if (columnName === this.parent.taskFields.endDate || columnName ===
-                                     this.parent.taskFields.duration || columnName === this.parent.taskFields.dependency ||
-                                     columnName === this.parent.taskFields.progress || columnName === this.parent.taskFields.work ||
-                                     columnName === this.parent.taskFields.type || columnName === 'taskType') {
+                                this.parent.taskFields.duration || columnName === this.parent.taskFields.dependency ||
+                                columnName === this.parent.taskFields.progress || columnName === this.parent.taskFields.work ||
+                                columnName === this.parent.taskFields.type || columnName === 'taskType') {
                                 this.parent.treeGrid.grid.endEdit();
                                 this.parent.treeGrid.grid.notify('key-pressed', e);
                             } else if (columnName === this.parent.taskFields.name || columnName === this.parent.taskFields.startDate) {
@@ -1367,28 +1414,83 @@ export class GanttChart {
                             } else {
                                 this.parent.treeGrid.grid.notify('key-pressed', e);
                                 if (isInEditedState) {
-                                    this.parent.treeGrid.editCell(this.focusedRowIndex,columnName);   // eslint-disable-line
+                                    this.parent.treeGrid.editCell(this.focusedRowIndex, columnName);   // eslint-disable-line
                                 }
                             }
                         } else {
                             this.parent.treeGrid.grid.notify('key-pressed', e);
                         }
                     } else {
-                        if (!nextElement || nextElement && !nextElement.classList.contains('e-headercell')) {
+                        if (!nextElement || (nextElement && !nextElement.classList.contains('e-headercell') && !nextElement.classList.contains('e-timeline-header-container'))) {
                             if ($target.classList.contains('e-headercell')) {
                                 this.manageFocus($target as HTMLElement, 'remove', false);
                             }
-                            if (!nextElement || $target.classList.contains('e-editedbatchcell')) {
+                            const row: IGanttData = this.parent.flatData[($target.parentElement as any).rowIndex];
+                            let next: Element = nextElement;
+                            if (row.hasChildRecords &&
+                                (this.parent.ganttColumns[next.getAttribute('data-colindex')].field === this.parent.taskFields.progress ||
+                                !this.parent.ganttColumns[next.getAttribute('data-colindex')].allowEditing) &&
+                                this.parent.ganttColumns[next.getAttribute('data-colindex')].field !== this.parent.taskFields.id
+                                && $target.classList.contains('e-editedbatchcell')) {
+                                let currentColumn: ColumnModel;
+                                next = this.updateElement(next, currentColumn, isTab, isInEditedState, row);
+                                while (!this.parent.ganttColumns[next.getAttribute('data-colindex')].allowEditing) {
+                                    next = this.getNextElement(next as Element, isTab, isInEditedState) as Element;
+                                }
+                                next = this.updateElement(next, currentColumn, isTab, isInEditedState, row);
+                            }
+                            else if (!nextElement || $target.classList.contains('e-editedbatchcell')) {
                                 this.parent.treeGrid.grid.notify('key-pressed', e);
                             }
                         }
                     }
                 } else {
-                    if (!nextElement.classList.contains('e-headercell') && !nextElement.classList.contains('e-rowcell')
+                    if (nextElement && !nextElement.classList.contains('e-headercell') && nextElement.classList.contains('e-rowcell')
                         && !nextElement.classList.contains('e-toolbar-item')) {
-                        this.parent.treeGrid.grid.notify('key-pressed', e);
+                        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+                        const row: IGanttData = this.parent.flatData[($target.parentElement as any).rowIndex];
+                        let next: Element = nextElement;
+                        if (row.hasChildRecords &&
+                            (this.parent.ganttColumns[next.getAttribute('data-colindex')].field === this.parent.taskFields.progress ||
+                            !this.parent.ganttColumns[next.getAttribute('data-colindex')].allowEditing) &&
+                            this.parent.ganttColumns[next.getAttribute('data-colindex')].field !== this.parent.taskFields.id
+                            && $target.classList.contains('e-editedbatchcell')) {
+                            let currentColumn: ColumnModel;
+                            next = this.updateElement(next, currentColumn, isTab, isInEditedState, row);
+                            while (!this.parent.ganttColumns[next.getAttribute('data-colindex')].allowEditing) {
+                                next = this.getNextElement(next as Element, isTab, isInEditedState) as Element;
+                            }
+                            next = this.updateElement(next, currentColumn, isTab, isInEditedState, row);
+                        }
+                        else if (parseInt(next.parentElement.getAttribute('data-rowindex')) !== 0 &&
+                        parseInt(next.getAttribute('data-colindex')) === 0 &&
+                        this.parent.ganttColumns[next.getAttribute('data-colindex')].field === this.parent.taskFields.id &&
+                            $target.classList.contains('e-editedbatchcell')) {
+                            let rowIndex = ($target.parentElement as any).rowIndex;
+                            let rowElement: Element = this.getNextRowElement(rowIndex, isTab, true);
+                            next = this.getChildElement(rowElement, isTab) as Element;
+                            const rowData: IGanttData = this.parent.flatData[parseInt(rowElement.getAttribute('data-rowindex'))];
+                            if (rowData.hasChildRecords && this.parent.ganttColumns[next.getAttribute('data-colindex')].field ===
+                                this.parent.taskFields.progress) {
+                                let currentColumn: ColumnModel;
+                                next = this.updateElement(next, currentColumn, isTab, isInEditedState, rowData);
+                                while (!this.parent.ganttColumns[next.getAttribute('data-colindex')].allowEditing) {
+                                    next = this.getNextElement(next as Element, isTab, isInEditedState) as Element;
+                                }
+                                next = this.updateElement(next, currentColumn, isTab, isInEditedState, rowData);
+                            }
+                            else {
+                                this.parent.treeGrid.grid.notify('key-pressed', e);
+                            }
+                        }
+                        else {
+                            this.parent.treeGrid.grid.notify('key-pressed', e);
+                        }
                     }
                 }
+            }
+            if (this.parent.element.querySelectorAll('.e-focused').length > 0) {
+                this.manageFocus(this.parent.element.querySelectorAll('.e-focused')[0] as HTMLElement, 'remove', false);
             }
             if (!(this.parent.editModule && this.parent.editModule.cellEditModule
                 && !isNullOrUndefined(this.parent.editModule.cellEditModule.editedColumn))) {
@@ -1413,7 +1515,9 @@ export class GanttChart {
                         if (nextElement && (nextElement.classList.contains('e-toolbar-item') || nextElement.classList.contains('e-headercell')
                             || nextElement.classList.contains('e-rowcell'))) {
                             this.manageFocus($target as HTMLElement, 'remove', false);
-                            this.manageFocus(nextElement as HTMLElement, 'add', false);
+                            if (!nextElement.classList.contains('e-toolbar-item')) {
+                                this.manageFocus(nextElement as HTMLElement, 'add', false);
+                            }
                             if ($target.classList.contains('e-treegrid')) {
                                 e.preventDefault();
                             }
@@ -1436,6 +1540,10 @@ export class GanttChart {
      * @returns {Element | string} .
      */
     private getNextElement($target: Element, isTab: boolean, isInEditedState: boolean): Element | string {
+        if ($target.classList.contains("e-timeline-header-container") && isTab) {
+           let rowElement: Element = this.getNextRowElement(-1, isTab, true);
+           return this.getChildElement(rowElement, isTab);
+        }
         let nextElement: Element = isTab ? $target.nextElementSibling : $target.previousElementSibling;
         while (nextElement && nextElement.parentElement.classList.contains('e-row')) {
             if (!nextElement.matches('.e-hide') && !nextElement.matches('.e-rowdragdrop')) {
@@ -1469,12 +1577,19 @@ export class GanttChart {
                 rowIndex = ($target.parentElement as any).rowIndex;
                 if (isTab) {
                     rowElement = this.parent.getRowByIndex(rowIndex);
-                    if (this.validateNextElement(rowElement, 'e-left-label-container')) {
-                        return rowElement.getElementsByClassName('e-left-label-container')[0];
-                    } else if (this.validateNextElement(rowElement, 'e-taskbar-main-container')) {
-                        return rowElement.getElementsByClassName('e-taskbar-main-container')[0];
-                    } else if (this.validateNextElement(rowElement, 'e-right-label-container')) {
-                        return rowElement.getElementsByClassName('e-right-label-container')[0];
+                    if (this.parent.treeGrid.element.getElementsByClassName('e-editedbatchcell').length > 0) {
+                        rowElement = this.getNextRowElement(rowIndex, isTab, true);
+                        const childElement: Element | string = this.getChildElement(rowElement, isTab);
+                        return childElement;
+                    }
+                    else {
+                        if (this.validateNextElement(rowElement, 'e-left-label-container')) {
+                            return rowElement.getElementsByClassName('e-left-label-container')[0];
+                        } else if (this.validateNextElement(rowElement, 'e-taskbar-main-container')) {
+                            return rowElement.getElementsByClassName('e-taskbar-main-container')[0];
+                        } else if (this.validateNextElement(rowElement, 'e-right-label-container')) {
+                            return rowElement.getElementsByClassName('e-right-label-container')[0];
+                        }
                     }
                 } else {
                     rowElement = this.getNextRowElement(rowIndex, isTab, false);
@@ -1499,16 +1614,6 @@ export class GanttChart {
                 return childElement;
             }
             nextElement = $target;
-            if (nextElement && nextElement.parentElement.classList.contains('e-toolbar-item') && this.parent.toolbarModule) {
-                while (nextElement && nextElement.parentElement.classList.contains('e-toolbar-item') &&  nextElement.parentElement.nextElementSibling.classList.contains('e-toolbar-item')) {
-                    if (nextElement.parentElement.nextElementSibling.classList.contains('e-hidden')) {
-                        nextElement = nextElement.parentElement.nextElementSibling.childNodes[0] as Element;
-                    }
-                    else {
-                        return nextElement.parentElement.nextElementSibling;
-                    }
-                }
-            }
         }
         return null;
     }

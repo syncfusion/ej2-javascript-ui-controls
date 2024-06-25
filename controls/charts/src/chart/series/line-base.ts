@@ -261,6 +261,7 @@ export class LineBase {
             },
             end: () => {
                 path.setAttribute('stroke-dasharray', strokeDashArray);
+                path.style.visibility = '';
                 series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
             }
         });

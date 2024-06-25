@@ -11138,6 +11138,9 @@ export class Selection {
         if (this.isHighlightContentControlEditRegionIn) {
             if (this.documentHelper.contentControlCollection.length > 0) {
                 for (let i = 0; i < this.documentHelper.contentControlCollection.length; i++) {
+                    if(this.documentHelper.contentControlCollection[i].paragraph.isInHeaderFooter && this.documentHelper.owner.layoutType === "Continuous"){
+                        continue;
+                    }
                     this.highlightContentControlEditRegionInternal(this.documentHelper.contentControlCollection[i] as ContentControl);
                 }
             }

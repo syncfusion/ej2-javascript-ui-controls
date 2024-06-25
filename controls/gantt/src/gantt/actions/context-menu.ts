@@ -428,7 +428,8 @@ export class ContextMenu {
         const key: string = this.getKeyFromId(item.id);
         const editForm: Element = closest(target as Element, cons.editForm);
         const subMenu: ContextMenuItemModel[] = [];
-        const taskbarElement: Element = closest(target as Element, '.e-gantt-child-taskbar');
+        const taskbarElement: Element = closest(target as Element, '.e-gantt-child-taskbar') ||
+        closest(target as Element, 'e-taskbar-right-resizer') || closest(target as Element, 'e-taskbar-left-resizer');
         if (editForm) {
             if (!(key === 'Save' || key === 'Cancel')) {
                 this.hideItems.push(item.text);

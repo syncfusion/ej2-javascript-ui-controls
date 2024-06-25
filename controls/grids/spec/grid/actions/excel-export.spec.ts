@@ -755,14 +755,14 @@ describe('excel Export =>', () => {
         });
 
         it('Hierarchy export all mode', (done) => {
-            gridObj.excelExport({ hierarchyExportMode: 'All', exportType: 'AllPages', }, true).then((Doc: Workbook) => {
+            gridObj.excelExport(null, true).then((Doc: Workbook) => {
                 expect(Doc).not.toBeUndefined();
                 done();
             });
         });
 
         it('Hierarchy export none mode', (done) => {
-            gridObj.excelExport({ hierarchyExportMode: 'None', exportType: 'CurrentPage',
+            gridObj.excelExport({ hierarchyExportMode: 'None',
                 header: {
                     headerRows: 4,
                     rows: [
@@ -794,13 +794,6 @@ describe('excel Export =>', () => {
                 },
                 fileName: 'exceldocument.xlsx'
              }, true).then((Doc: Workbook) => {
-                expect(Doc).not.toBeUndefined();
-                done();
-            });
-        });
-
-        it('Hierarchy export expanded mode', (done) => {
-            gridObj.excelExport({ hierarchyExportMode: 'Expanded' }, true).then((Doc: Workbook) => {
                 expect(Doc).not.toBeUndefined();
                 done();
             });

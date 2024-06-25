@@ -2329,7 +2329,7 @@ export class FormDesigner {
         obj.pageIndex = obj.pageNumber - 1;
         obj.font = (options as any).font;
         obj.id = id;
-        if (isCollection) {
+        if (isCollection || isNullOrUndefined(isCollection)) {
             this.setFormFieldIndex();
         }
         switch (formFieldType) {

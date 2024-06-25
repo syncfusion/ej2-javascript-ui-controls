@@ -153,6 +153,7 @@ export class Selection implements IAction {
     public isPartialSelection: boolean = false;
     private rmtHdrChkbxClicked: boolean = false;
     private isCheckboxReset: boolean = false;
+    private isRowDeselect: boolean = false;
     /**
      * @hidden
      */
@@ -322,10 +323,18 @@ export class Selection implements IAction {
         }
         const isRowSelected: boolean = selectedRow.hasAttribute('aria-selected');
         this.activeTarget();
-        isToggle = !isToggle ? isToggle :
-            !this.selectedRowIndexes.length ? false :
-                (this.selectedRowIndexes.length ? (this.isKeyAction && this.parent.isCheckBoxSelection ?
-                    false : index === this.selectedRowIndexes[this.selectedRowIndexes.length - 1]) : false);
+        if (!isToggle || !this.selectedRowIndexes.length) {
+            isToggle = false;
+        } else {
+            const isCheckboxModeResetOnRowClick = this.selectionSettings.checkboxMode === 'ResetOnRowClick';
+            const isSelectionTypeMultiple = !this.parent.isCheckBoxSelection && this.selectionSettings.type === 'Multiple';
+            if ((!isCheckboxModeResetOnRowClick && !isSelectionTypeMultiple) ||
+                (this.selectedRowIndexes.length === 1 && (isCheckboxModeResetOnRowClick || isSelectionTypeMultiple))) {
+                isToggle = !(this.isKeyAction && this.parent.isCheckBoxSelection) ? this.selectedRowIndexes.indexOf(index) !== -1 : false;
+            } else {
+                isToggle = false;
+            }
+        }
         this.isKeyAction = false;
         let args: Object;
         const can: string = 'cancel';
@@ -340,11 +349,13 @@ export class Selection implements IAction {
             this.parent.trigger(events.rowSelecting, this.fDataUpdate(args),
                                 this.rowSelectingCallBack(args, isToggle, index, selectData, isRemoved, isRowSelected, can));
         } else {
-            this.rowDeselect(events.rowDeselecting, [rowObj.index], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], this.actualTarget);
-            if (this.isCancelDeSelect) {
-                return;
+            if ( this.selectionSettings.checkboxMode !== 'ResetOnRowClick' ) {
+                this.rowDeselect(events.rowDeselecting, [rowObj.index], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], this.actualTarget);
+                if (this.isCancelDeSelect) {
+                    return;
+                }
+                this.rowDeselect(events.rowDeselected, [rowObj.index], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], this.actualTarget, undefined, undefined, undefined);
             }
-            this.rowDeselect(events.rowDeselected, [rowObj.index], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], this.actualTarget, undefined, undefined, undefined);
             this.rowSelectingCallBack(args, isToggle, index, selectData, isRemoved, isRowSelected, can)(args);
         }
     }
@@ -761,6 +772,7 @@ export class Selection implements IAction {
             const rowIndex: number[] = [];
             const foreignKeyData: Object[] = [];
             const target: Element = this.target;
+            this.isRowDeselect = true;
 
             for (let i: number = 0, len: number = this.selectedRowIndexes.length; i < len; i++) {
                 const currentRow: Element = this.parent.editSettings.mode === 'Batch' ?
@@ -833,6 +845,7 @@ export class Selection implements IAction {
                              },
                              null
             );
+            this.isRowDeselect = false;
         } else {
             if (this.clearRowCheck) {
                 this.clearRowCallBack();
@@ -849,7 +862,7 @@ export class Selection implements IAction {
         type: string, rowIndex: number[], data: Object, row: Element[],
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         foreignKeyData: Object[], target: Element, mRow?: Element[], rowDeselectCallBack?: Function, frozenRightRow?: Element[]): void {
-        if ((this.selectionSettings.persistSelection && (this.isRowClicked || this.deSelectedData.length || this.checkSelectAllClicked || (this.focus['activeKey'] &&
+        if ((this.selectionSettings.persistSelection && (this.isRowClicked || !this.isRowDeselect || this.checkSelectAllClicked || (this.focus['activeKey'] &&
             this.focus.currentInfo.element.classList.contains('e-gridchkbox') && this.focus['activeKey'] === 'space'))) ||
             !this.selectionSettings.persistSelection) {
             const cancl: string = 'cancel';
@@ -887,7 +900,7 @@ export class Selection implements IAction {
                 type, rowDeselectObj,
                 (args: Object) => {
                     this.isCancelDeSelect = args[`${cancl}`];
-                    if (!this.isCancelDeSelect || (!this.isRowClicked && !this.isInteracted && this.deSelectedData.length < 0 && !this.checkSelectAllClicked)) {
+                    if (!this.isCancelDeSelect || (!this.isRowClicked && !this.isInteracted && !this.checkSelectAllClicked)) {
                         this.updatePersistCollection(row[0], false);
                         this.updateCheckBoxes(row[0], undefined, rowIndex[0]);
                     }
@@ -3591,6 +3604,9 @@ export class Selection implements IAction {
         if ((headerAction || (['ctrlPlusA', 'escape'].indexOf(e.keyArgs.action) === -1 &&
             e.keyArgs.action !== 'space' && rowIndex === prev.rowIndex && cellIndex === prev.cellIndex)) &&
             !this.selectionSettings.allowColumnSelection) { return; }
+        if (this.parent.enableVirtualization && this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
+            rowIndex = parseInt(e.element.parentElement.getAttribute('data-rowindex'), 10);
+        }
         if (this.parent.editSettings.showAddNewRow && this.parent.editSettings.newRowPosition === 'Top' &&
             (!this.parent.enableVirtualization && !this.parent.enableInfiniteScrolling) && e.keyArgs.action === 'downArrow') {
             rowIndex--;

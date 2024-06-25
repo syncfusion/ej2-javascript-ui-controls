@@ -49,6 +49,9 @@ export const editedRow: string = 'e-editedrow';
 /** @hidden */
 export const addedRow: string = 'e-addedrow';
 
+/** @hidden */
+export const groupCaptionRow: string = 'e-groupcaptionrow';
+
 /**
  * Specifies repeated strings
  */

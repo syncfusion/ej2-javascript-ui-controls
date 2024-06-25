@@ -166,14 +166,21 @@ export class PdfExport {
                     this.exportWithData(parent, pdfDoc, resolve, returnType, pdfExportProperties, isMultipleExport, reject);
                 });
             });
-        } else if (!isNullOrUndefined(pdfExportProperties) && pdfExportProperties.exportType === 'CurrentPage') {
+        } else if (!isNullOrUndefined(pdfExportProperties) && pdfExportProperties.exportType === 'CurrentPage' &&
+            !(this.parent.groupSettings.enableLazyLoading && this.parent.groupSettings.columns.length && !this.parent.getDataModule().isRemote())) {
             return new Promise((resolve: Function, reject: Function) => {
                 this.exportWithData(parent, pdfDoc, resolve, this.parent.getCurrentViewRecords(), pdfExportProperties,
                                     isMultipleExport, reject);
             });
         } else {
             const allPromise: Promise<Object>[] = [];
-            allPromise.push(this.data.getData({}, ExportHelper.getQuery(parent, this.data)));
+            let query = ExportHelper.getQuery(parent, this.data);
+            if (this.parent.groupSettings.enableLazyLoading && this.parent.groupSettings.columns.length && !this.parent.getDataModule().isRemote()) {
+                if (isNullOrUndefined(pdfExportProperties)) pdfExportProperties = { hierarchyExportMode: 'All' };
+                pdfExportProperties.hierarchyExportMode = pdfExportProperties.hierarchyExportMode === 'None' ? 'None' : 'All';
+                if (pdfExportProperties.hierarchyExportMode === 'All') query.lazyLoad = [];
+            }
+            allPromise.push(this.data.getData({}, query));
             allPromise.push(this.helper.getColumnData(<Grid>parent));
             return new Promise((resolve: Function, reject: Function) => {
                 Promise.all(allPromise).then((e: ReturnType[]) => {
@@ -638,7 +645,8 @@ export class PdfExport {
                 this.currentViewData = false;
             } else if (!isNullOrUndefined(pdfExportProperties.exportType)) {
                 if (pdfExportProperties.exportType === 'CurrentPage') {
-                    dataSource = this.parent.currentViewData;
+                    dataSource = this.parent.groupSettings && this.parent.groupSettings.enableLazyLoading && this.parent.groupSettings.columns.length &&
+                        !this.parent.getDataModule().isRemote() ? dataSource : this.parent.currentViewData;
                     this.currentViewData = true;
                     this.customDataSource = false;
                 } else {

@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 26.1.39 (2024-06-25)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I599108` - Now, the chart updates properly when rendered in the Firefox browser.
+- `#I597246` - The chart with a zero data label is now rendered when setting the position as `Top`.
+
+### Accumulation Chart
+
+- `#I595618` - User interaction now works properly in the nested doughnut chart.
+
+### Sparkline
+
+- `#I601193` - The fill property in Sparkline now works properly.
+
 ## 26.1.38 (2024-06-19)
 
 ### Chart

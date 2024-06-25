@@ -8896,6 +8896,10 @@ describe('Edit date in RTL mode', () => {
                 destroyGantt(ganttObj);
             }
         });
+	beforeEach((done) => {
+            setTimeout(done, 500);
+            ganttObj.openEditDialog(3);
+        });
         it('Checking Custom Column', (done: Function) => {
             ganttObj.actionComplete = (args: any): void => {
                 if(args.requestType === 'save') {
@@ -8903,7 +8907,6 @@ describe('Edit date in RTL mode', () => {
                     done();        
                 }
             }
-            ganttObj.openEditDialog(3);
             let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
             triggerMouseEvent(saveRecord, 'click');
         });

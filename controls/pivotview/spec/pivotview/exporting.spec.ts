@@ -1282,6 +1282,77 @@ describe('PDF Export', () => {
         });
     });
 
+    describe('- Applying back color to table - Excel export', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        if (document.getElementById(elem.id)) {
+            remove(document.getElementById(elem.id));
+        }
+        document.body.appendChild(elem);
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll(() => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                pending(); //Skips test (in Chai)
+                return;
+            }
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll, ExcelExport);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                    columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                    values: [{ name: 'balance' }, { name: 'quantity' }],
+                    expandAll: false
+                },
+                gridSettings: {
+                    excelQueryCellInfo: (args) => {
+                        args.style = { backColor: '#81D0FF' };
+                    },
+                },
+                height: 800,
+                width: '100%',
+                allowExcelExport: true,
+                allowPdfExport: true,
+                showFieldList: true,
+                toolbar: ['Export'],
+                showToolbar: true,
+                enableVirtualization: true
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 100);
+        });
+        it('- Exporting', (done: Function) => {
+            setTimeout(() => {
+                let li: HTMLElement = document.getElementById('PivotGridexport_menu').children[0] as HTMLElement;
+                expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                util.triggerEvent(li, 'mouseover');
+                (document.querySelectorAll('.e-menu-popup li')[1] as HTMLElement).click();
+                done();
+            }, 1000);
+        });
+        it('memory leak', () => {
+            profile.sample();
+            let average: any = inMB(profile.averageChange);
+            //Check average change in memory samples to not be over 10MB
+            let memory: any = inMB(getMemoryProfile());
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        });
+    });
+
     describe('- HeaderAndFooter for Image Without', () => {
         let pivotGridObj: PivotView;
         let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
@@ -1500,7 +1571,7 @@ describe('PDF Export', () => {
                 remove(document.getElementById(elem.id));
             }
             document.body.appendChild(elem);
-            PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll, ExcelExport);
+            PivotView.Inject(Toolbar, PDFExport, FieldList, VirtualScroll);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
                     dataSource: pivot_dataset as IDataSet[],
@@ -1509,11 +1580,18 @@ describe('PDF Export', () => {
                     values: [{ name: 'balance' }, { name: 'quantity' }],
                     expandAll: false
                 },
+                height: 800,
+                width: '100%',
+                allowPdfExport: true,
+                showFieldList: true,
+                toolbar: ['Export'],
+                showToolbar: true,
+                enableVirtualization: true,
                 actionBegin: function (args: PivotActionBeginEventArgs) {
                     if (args.actionName === 'PDF export') {
                         args.cancel = true;
                         let pdfExportProperties: PdfExportProperties = {
-                            fileName: 'Export',
+                            fileName: 'sample',
                             theme: {
                                 header: {
                                     fontColor: '#64FA50', fontName: 'Calibri', fontSize: 17, underline: true, bold: true,
@@ -1529,16 +1607,13 @@ describe('PDF Export', () => {
                                 }
                             }
                         };
-                        pivotGridObj.pdfExport(pdfExportProperties, false, null, true);
+                        pivotGridObj.pdfExport(pdfExportProperties, false, null, false);
                     }
                 },
-                height: 800,
-                width: '100%',
-                allowPdfExport: true,
-                showFieldList: true,
-                toolbar: ['Export'],
-                showToolbar: true,
-                enableVirtualization: true
+                beforeExport: (args: BeforeExportEventArgs) => {
+                    args.fileName = 'Export';
+                },
+                virtualScrollSettings: { allowSinglePage: false }
             });
             pivotGridObj.appendTo('#PivotGrid');
         });

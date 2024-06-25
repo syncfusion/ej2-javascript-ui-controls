@@ -1526,6 +1526,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             this.accumulationSelectionModule.calculateSelectedElements(this, e.target as Element, e.type);
         }
         if (this.visibleSeries[0].explode) {
+            e.stopPropagation(); //Prevent event trigger to parent in nested rendering case.
             this.accBaseModule.processExplode(e);
         }
         if (this.enableBorderOnMouseMove && this.pieSeriesModule && this.type === 'Pie') {

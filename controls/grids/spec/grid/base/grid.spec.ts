@@ -2048,6 +2048,7 @@ describe('Grid base module', () => {
 describe('EJ2-855141 - Height 100% is not working when dynamically changing properties', () => {
     let gridObj: Grid;
     let contentHeight: string;
+    let dataBound: (args: Object) => void;
     let actionComplete: (args: Object) => void;
     beforeAll((done: Function) => {
         gridObj = createGrid(
@@ -2074,6 +2075,28 @@ describe('EJ2-855141 - Height 100% is not working when dynamically changing prop
     it('Get the initial height', () => {
         contentHeight = (gridObj.element.querySelector('.e-gridcontent') as HTMLElement).style.height;
         expect(contentHeight).not.toBeUndefined();
+    });
+    it('EJ2-891083 - Apply filter', (done: Function) => {
+        dataBound = () => {
+            let newHeight: string = (gridObj.element.querySelector('.e-gridcontent') as HTMLElement).style.height;
+            expect(contentHeight).not.toEqual(newHeight);
+            contentHeight = newHeight;
+            gridObj.dataBound = null;
+            done();
+        };
+        gridObj.dataBound = dataBound;
+        gridObj.filterByColumn('CustomerID', 'contains', 'VINET');
+    });
+    it('clear Filter', (done: Function) => {
+        dataBound = () => {
+            let newHeight: string = (gridObj.element.querySelector('.e-gridcontent') as HTMLElement).style.height;
+            expect(contentHeight).not.toEqual(newHeight);
+            contentHeight = newHeight;
+            gridObj.dataBound = null;
+            done();
+        };
+        gridObj.dataBound = dataBound;
+        gridObj.clearFiltering();
     });
     it('Change paging', (done: Function) => {
         actionComplete = (args: Object) => {
@@ -2121,7 +2144,7 @@ describe('EJ2-855141 - Height 100% is not working when dynamically changing prop
     });
     afterAll(() => {
         destroy(gridObj);
-        gridObj = contentHeight = actionComplete = null;
+        gridObj = contentHeight = dataBound = actionComplete = null;
     });
 });
 

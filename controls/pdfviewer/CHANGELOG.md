@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 26.1.39 (2024-06-25)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I598098` - Now, the undo function works properly when the ink annotation mode is not ended after adding.
+- `#I599963` - Now, the form field property name updates correctly when added programmatically.
+- `#I587763` - Now, the form field value that starts with `«` will be visible in the downloaded document.
+- `#I597258` - Now, the thumbnail image is loaded properly when using `IDistributedCache` only as parameter.
+- `#I600864` , `#I58620` , `#I601654` - Now, the blank page does not appear when loading the customer-provided document in server-side rendering.
+- `#I599889` - Now, able to include the capital `H` in the text fields without `FormDesigner` module.
+- `#I595214` - Now, the locked Custom stamp is not able to edited when opened in Adobe.
+
 ## 26.1.38 (2024-06-19)
 
 ### PDF Viewer

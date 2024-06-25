@@ -1514,6 +1514,13 @@ export class PdfDocument {
                 }
                 this.form._clear();
             }
+            if (this.form._isDefaultAppearance) {
+                this.form._dictionary.update('NeedAppearances', this.form._isDefaultAppearance);
+            } else if (!this.form._isDefaultAppearance && this.form._dictionary.has('NeedAppearances') && this.form._isNeedAppearances) {
+                this.form._dictionary.update('NeedAppearances', false);
+            } else if (!this.form._isDefaultAppearance && this.form._dictionary.has('NeedAppearances')) {
+                this.form._dictionary.update('NeedAppearances', this.form.needAppearances);
+            }
         }
     }
     _doPostProcessOnAnnotations(isFlatten: boolean = false): void {
@@ -1648,7 +1655,9 @@ export class PdfDocument {
                 ++this._targetIndex;
             }
         }
-        helper._fixDestinations(document);
+        if (!this._isDuplicatePage) {
+            helper._fixDestinations(document);
+        }
         helper._exportBookmarks(document, correspondancePagecount);
         helper._mergeFormFieldsWithDocument();
         if ((isLayersPresent && !this._isDuplicatePage) || (typeof options !== 'undefined' && !options.optimizeResources)){

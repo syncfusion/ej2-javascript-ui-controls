@@ -453,6 +453,12 @@
         &:not(.e-active) {
           .e-list-icon {
             color: $field-list-tree-icon-color;
+
+            @if ($skin-name == 'fluent2') {
+              &:hover {
+                color: $field-list-icon-hover-color;
+              }
+            }
           }
         }
 
@@ -464,6 +470,15 @@
           float: right !important;
           margin: 0 12px 0 0;
           /* stylelint-enable */
+
+          @if ($skin-name == 'fluent2') {
+            &:hover {
+              color: $field-list-icon-hover-color;
+            }
+            &:active {
+              color: $field-list-icon-hover-color;
+            }
+          }
         }
       }
 
@@ -528,6 +543,11 @@
         margin-right: 4px;
         pointer-events: auto;
         width: 20px;
+
+        @if ($skin-name == 'fluent2') {
+          font-size: 16px;
+          margin-top: 3px;
+        }
       }
       @if ($skin-name == 'tailwind') {
         &.e-active {
@@ -895,7 +915,11 @@
             position: relative;
             top: 3px;
           }
-    
+
+          @if ($skin-name == 'fluent2') {
+            font-size: 20px;
+          }
+          
           @if ($skin-name == 'tailwind') {
             position: relative;
             top: 1px;

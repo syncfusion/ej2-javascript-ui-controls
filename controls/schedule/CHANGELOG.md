@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 26.1.39 (2024-06-25)
+
+### Schedule
+
+#### Bug fixes
+
+- `#F188618` - The issue with the date time format during CSV export in excel has been resolved.
+- `#I602738` - An issue with the print rendered empty page on the print preview window for vertical views has been fixed.
+- `#I603067` - An issue with same duration events are overlapped each other in the vertical view has been fixed.
+
 ## 26.1.38 (2024-06-19)
 
 ### Schedule

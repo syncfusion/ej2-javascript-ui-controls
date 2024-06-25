@@ -5534,3 +5534,106 @@ describe('Incorrect offset update while dragging taskbar - CR 544540', () => {
             destroyGantt(ganttObj);
         });
     });
+describe('Split task left resize', () => {
+        let ganttObj: Gantt;
+        var GanttData = [
+            {
+                TaskID: 1,
+                TaskName: 'Project Initiation',
+                StartDate: new Date('04/02/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    { TaskID: 2, TaskName: 'Identify Site location', StartDate: new Date('04/02/2019'), Duration: 4, Progress: 50,
+                        Segments: [
+                            { StartDate: new Date("04/02/2019"), Duration: 2 },
+                            { StartDate: new Date("04/04/2019"), Duration: 2 }
+                        ] },
+                    { TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2019'), Duration: 4, Progress: 50 },
+                    { TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('04/02/2019'), Duration: 4, Progress: 50 },
+                ]
+            }
+        ];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: GanttData,
+        allowSorting: true,
+        allowReordering: true,
+        enableContextMenu: true,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            child: 'subtasks',
+            segments: 'Segments'
+        },
+        renderBaseline: true,
+        baselineColor: 'red',
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+            'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+        allowExcelExport: true,
+        allowPdfExport: true,
+        allowSelection: false,
+        enableVirtualization: false,
+        allowRowDragAndDrop: true,
+        splitterSettings: {
+            position: "50%",
+        },
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            topTier: {
+                unit: 'Week',
+                count: 1,
+                format: "MMM dd, yyyy"
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1,
+                format: "d"
+            }
+        },
+        searchSettings: { fields: ['TaskName', 'Duration']
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+        projectStartDate: new Date('03/25/2019'),
+        projectEndDate: new Date('05/30/2019'),
+                }, done);
+        });
+        it('duration calculation',()=>{
+            ganttObj.fitToProject();
+            ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
+                expect(args.data.ganttProperties.duration).toBe(5);
+            };
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-segment-last.e-gantt-child-taskbar.e-segmented-taskbar > div.e-taskbar-left-resizer.e-icon') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', (dragElement.offsetLeft - 20), dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mouseup');
+        }); 
+        afterAll(() => {
+            destroyGantt(ganttObj);       
+        });
+    });

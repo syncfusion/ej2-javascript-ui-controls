@@ -1,6 +1,6 @@
 import { L10n, EventHandler, getValue, KeyboardEventArgs, closest, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { addClass, removeClass, extend, Browser } from '@syncfusion/ej2-base';
-import { IGrid, IFocus, FocusInfo, FocusedContainer, IIndex, CellFocusArgs, SwapInfo, GroupEventArgs } from '../base/interface';
+import { IGrid, IFocus, FocusInfo, FocusedContainer, IIndex, CellFocusArgs, SwapInfo, GroupEventArgs, VirtualSelectionInfo } from '../base/interface';
 import { CellType } from '../base/enum';
 import * as event from '../base/constant';
 import { Row } from '../models/row';
@@ -27,6 +27,8 @@ export class FocusStrategy {
     public content: IFocus; public header: IFocus; public active: IFocus;
     /** @hidden */
     public isInfiniteScroll: boolean = false;
+    /** @hidden */
+    public virtualSelectionInfo: VirtualSelectionInfo = {};
     private forget: boolean = false;
     private skipFocus: boolean = true;
     private focusByClick: boolean = false;
@@ -875,17 +877,26 @@ export class FocusStrategy {
                     if (bool) {
                         this.content.matrix.current[0] = index;
                         this.content.matrix.current[1] = this.parent.getColumnIndexByUid(this.focusedColumnUid) || 0;
+                        const isGroup: boolean = this.parent.allowGrouping && this.parent.groupSettings.columns.length ? true : false;
+                        if (isGroup) {
+                            this.content.matrix.current[1] = this.prevIndexes.cellIndex;
+                            if (this.virtualSelectionInfo.isPending) {
+                                this.content.matrix.current[0] = this.virtualSelectionInfo.direction === 'downArrow' ? this.content.matrix.current[0] + 1
+                                    : this.content.matrix.current[0] - 1;
+                            }
+                        }
                         const focusElement: HTMLElement = this.getContent().getFocusInfo().elementToFocus;
                         if (focusElement) {
                             const cellPosition: ClientRect = focusElement.getBoundingClientRect();
                             const gridPosition: ClientRect = this.parent.element.getBoundingClientRect();
-                            if (cellPosition.top >= 0 && cellPosition.left >= 0 &&
+                            if ((cellPosition.top >= 0 && cellPosition.left >= 0 &&
                                 cellPosition.right <= Math.min(gridPosition.right, window.innerWidth ||
                                     document.documentElement.clientWidth) &&
                                 cellPosition.bottom <= Math.min(gridPosition.bottom, window.innerHeight ||
-                                    document.documentElement.clientHeight)) {
+                                    document.documentElement.clientHeight)) || isGroup) {
                                 this.isVirtualScroll = true;
-                                this.focus();
+                                this.focus(isGroup && this.virtualSelectionInfo.isPending ?
+                                    this.virtualSelectionInfo.event as KeyboardEventArgs : undefined);
                             }
                         }
                     }
@@ -895,6 +906,7 @@ export class FocusStrategy {
                         focusElement.focus();
                     }
                 }
+                this.virtualSelectionInfo = {};
             }
             if (e && e.args && e.args.requestType === 'infiniteScroll') {
                 this.isInfiniteScroll = true;
@@ -1026,6 +1038,7 @@ export class FocusStrategy {
                 break;
             }
             this.getContent().matrix.current = current;
+            this.prevIndexes = { rowIndex: current[0], cellIndex: current[1] };
             const groupModule: Group = (this.parent as Grid).groupModule;
             if ( this.parent.allowGrouping && groupModule && groupModule.groupCancelFocus) {
                 const focusableGroupedItems: Element[] = groupModule.getFocusableGroupedItems();

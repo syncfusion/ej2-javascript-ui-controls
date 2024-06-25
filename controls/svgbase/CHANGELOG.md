@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
-## 26.1.38 (2024-06-19)
+## 26.1.39 (2024-06-25)
+
+### Svg Base
+
+- `#I576553` - Now, the tooltip was initially working properly on the right side.
+
+## 26.1.35 (2024-06-11)
 
 ### Svg Base
 

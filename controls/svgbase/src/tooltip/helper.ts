@@ -37,7 +37,6 @@ export function measureText(text: string, font: TextStyleModel, themeFontStyle?:
     htmlObject.innerHTML = (breakText.indexOf('<br>') > -1 || breakText.indexOf('<br/>') > -1) ? breakText : text;
     htmlObject.style.position = 'fixed';
     htmlObject.style.fontSize = font.size || themeFontStyle.size;
-    htmlObject.style.fontWeight = font.fontWeight || themeFontStyle.fontWeight;
     htmlObject.style.fontStyle = font.fontStyle || themeFontStyle.fontStyle;
     htmlObject.style.fontFamily = font.fontFamily || themeFontStyle.fontFamily;
     htmlObject.style.visibility = 'hidden';
@@ -46,7 +45,13 @@ export function measureText(text: string, font: TextStyleModel, themeFontStyle?:
     htmlObject.style.whiteSpace = 'nowrap';
     // For bootstrap line height issue
     htmlObject.style.lineHeight = 'normal';
-    return new Size(htmlObject.clientWidth, htmlObject.clientHeight);
+    const fontWidth: number = htmlObject.clientWidth;
+    const fontHeight: number = htmlObject.clientHeight;
+    const fontWeight: string = htmlObject.style.fontWeight;
+    htmlObject.style.fontWeight = font.fontWeight || themeFontStyle.fontWeight;
+
+    return new Size(htmlObject.style.fontWeight === 'bold' && fontWeight === 'normal' ? Math.max(fontWidth, htmlObject.clientWidth) : htmlObject.clientWidth,
+        htmlObject.style.fontWeight === 'bold' && fontWeight === 'normal' ? Math.max(fontHeight, htmlObject.clientHeight) : htmlObject.clientHeight);
 }
 
 /** @private */

@@ -321,7 +321,18 @@ export class Dependency {
             this.parent.editModule.cellEditModule.isCellEdit) {
             this.parent.undoRedoModule['getUndoCollection'][this.parent.undoRedoModule['getUndoCollection'].length - 1]['connectedRecords'] = parentRecords;
         }
-        return collection;
+        let creatCollection: IPredecessor[] = [];
+        collection.map((data) => {
+            let from = data.from;
+            let to = data.to;
+            let checkColloction: IPredecessor[] = []
+            checkColloction = collection.filter((fdata) => fdata.from === from && fdata.to === to);
+            if (creatCollection.indexOf(checkColloction[checkColloction.length - 1]) === -1) {
+                creatCollection.push(checkColloction[checkColloction.length - 1])
+            }
+
+        })
+        return creatCollection;
     }
 
     /**

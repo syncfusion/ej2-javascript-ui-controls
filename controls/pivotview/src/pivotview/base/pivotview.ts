@@ -3091,7 +3091,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             enableOptimizedRendering: this.enableVirtualization && this.virtualScrollSettings &&
                 this.virtualScrollSettings.allowSinglePage,
             requestType: 'string',
-            headers: {}
+            headers: { 'Content-type': 'application/json' }
         };
         if (this.request.readyState === XMLHttpRequest.UNSENT || this.request.readyState === XMLHttpRequest.OPENED) {
             this.request.withCredentials = false;
@@ -3138,26 +3138,16 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         } else {
             this.request.responseType = '';
         }
-        let contentTypeExists: boolean = false;
         const keys: string[] = Object.keys((params.internalProperties as { [key: string]: Object }).headers);
         for (let i: number = 0; i < keys.length; i++) {
             const headerKey: string = keys[i as number] as string;
             const headerValue: string =
             String(((params.internalProperties as { [key: string]: Object }).headers as { [key: string]: Object })[headerKey as string]);
             this.request.setRequestHeader(headerKey, headerValue);
-            if (headerKey === 'Content-type') {
-                contentTypeExists = true;
-            }
         }
         if ((params.internalProperties as { [key: string]: Object }).requestType === 'string') {
-            if (!contentTypeExists) {
-                this.request.setRequestHeader('Content-type', 'application/json');
-            }
             this.request.send(JSON.stringify(params));
         } else if ((params.internalProperties as { [key: string]: Object }).requestType === 'base64') {
-            if (!contentTypeExists) {
-                this.request.setRequestHeader('Content-type', 'application/octet-stream');
-            }
             this.request.send(btoa(JSON.stringify(params)));
         }
     }
@@ -3898,13 +3888,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 addClass([this.chart.element], cls.PIVOTCHART_LTR);
             }
         }
-        if (this.showFieldList || this.showGroupingBar || this.allowNumberFormatting || this.allowCalculatedField ||
-            this.toolbar || this.allowGrouping || this.gridSettings.contextMenuItems) {
-            this.notify(events.uiUpdate, this);
-            if (this.pivotFieldListModule && this.allowDeferLayoutUpdate) {
-                this.pivotFieldListModule.clonedDataSource = extend({}, this.dataSourceSettings, null, true) as IDataOptions;
-            }
-        }
         if (this.enableVirtualization) {
             this.virtualscrollModule = new VirtualScroll(this);
         }
@@ -3930,6 +3913,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             this.renderModule.render(true);
         } else if (this.grid) {
             remove(this.grid.element);
+        }
+        if (this.showFieldList || this.showGroupingBar || this.allowNumberFormatting || this.allowCalculatedField ||
+            this.toolbar || this.allowGrouping || this.gridSettings.contextMenuItems) {
+            this.notify(events.uiUpdate, this);
+            if (this.pivotFieldListModule && this.allowDeferLayoutUpdate) {
+                this.pivotFieldListModule.clonedDataSource = extend({}, this.dataSourceSettings, null, true) as IDataOptions;
+            }
         }
         if (this.allowConditionalFormatting) {
             this.applyFormatting(this.pivotValues);

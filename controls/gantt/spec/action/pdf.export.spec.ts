@@ -5776,3 +5776,77 @@ describe('Gantt PDF Export with customization of header and footer', () => {
         }
     });
 });
+describe('Gantt PDF Export with customization of header and without footer', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: headerFooter,
+                allowPdfExport: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    baselineStartDate: "BaselineStartDate",
+                    baselineEndDate: "BaselineEndDate",
+                    dependency: 'Predecessor'
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                toolbar: ['PdfExport'],
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                rowHeight: 40,
+                taskbarHeight: 20,
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    {
+                        field: 'TaskName',
+                        headerText: 'Task Name',
+                        width: '250',
+                        clipMode: 'EllipsisWithTooltip',
+                    },
+                    { field: 'StartDate', headerText: 'Start Date', format: 'dd-MMM-yy' },
+                    { field: 'Duration', headerText: 'Duration' },
+                    { field: 'EndDate', headerText: 'End Date' },
+                    { field: 'Predecessor', headerText: 'Predecessor' },
+                ],
+                treeColumnIndex: 0,
+                height: '450px',
+            }, done);
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 100);
+    });
+    it("Export data with header and without footer", () => {
+        let exportProperties: PdfExportProperties = {
+            header: {
+                fromTop: 0,
+                height: 150,
+                contents: [
+                    {
+                        type: 'Text',
+                        value: 'invoice',
+                        position: { x: 380, y: 0 },
+                        style: {textPenColor: '#C25050', penSize: 25 },
+                    },
+                ]
+            },
+           
+          
+        };
+        ganttObj.pdfExport(exportProperties);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

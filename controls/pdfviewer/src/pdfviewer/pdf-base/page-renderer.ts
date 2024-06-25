@@ -1,7 +1,7 @@
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PdfViewer, PdfViewerBase } from '../index';
 import {AnnotationRenderer, ShapeAnnotationBase, PopupAnnotationBase, FreeTextAnnotationBase, MeasureShapeAnnotationBase, TextMarkupAnnotationBase, SignatureAnnotationBase, InkSignatureAnnotation, ImageStructureBase  } from './index';
-import { PdfDocument, PdfPage, PdfRotationAngle, PdfSquareAnnotation, PdfAnnotationFlag, PdfPopupAnnotation, PdfFreeTextAnnotation, PdfRubberStampAnnotation, PdfTextMarkupAnnotation, PdfInkAnnotation, PdfLineAnnotation, PdfRectangleAnnotation, PdfCircleAnnotation, PdfEllipseAnnotation, PdfPolygonAnnotation, PdfPolyLineAnnotation , PdfAnnotation, PdfAnnotationCollection, PdfAngleMeasurementAnnotation, _PdfDictionary, PdfRubberStampAnnotationIcon, PdfAnnotationState, PdfAnnotationStateModel, _ContentParser, _stringToBytes, _PdfRecord, _encode, _PdfBaseStream, PdfPageSettings, PdfMargins, PdfTemplate } from '@syncfusion/ej2-pdf';
+import { PdfDocument, PdfPage, PdfRotationAngle, PdfSquareAnnotation, PdfAnnotationFlag, PdfPopupAnnotation, PdfFreeTextAnnotation, PdfRubberStampAnnotation, PdfTextMarkupAnnotation, PdfInkAnnotation, PdfLineAnnotation, PdfRectangleAnnotation, PdfCircleAnnotation, PdfEllipseAnnotation, PdfPolygonAnnotation, PdfPolyLineAnnotation , PdfAnnotation, PdfAnnotationCollection, PdfAngleMeasurementAnnotation, _PdfDictionary, PdfRubberStampAnnotationIcon, PdfAnnotationState, PdfAnnotationStateModel, _ContentParser, _stringToBytes, _PdfRecord, _encode, _PdfBaseStream, PdfPageSettings, PdfMargins, PdfTemplate, _annotationFlagsToString } from '@syncfusion/ej2-pdf';
 import { Matrix, Rect, Size } from '@syncfusion/ej2-drawings';
 
 /**
@@ -392,15 +392,21 @@ export class PageRenderer{
                             else {
                                 rubberStampAnnotation.Note = '';
                             }
-                            if (stampAnnotation.flags === PdfAnnotationFlag.readOnly) {
+                            let annotFlags: string = _annotationFlagsToString(stampAnnotation.flags);
+                            if (!isNullOrUndefined(annotFlags) && annotFlags.includes("locked")) {
+                                rubberStampAnnotation.IsLocked = true;
+                            }
+                            else {
+                                rubberStampAnnotation.IsLocked = false;
+                            }
+                            if (!isNullOrUndefined(annotFlags) && annotFlags.includes("readOnly")) {
                                 rubberStampAnnotation.IsCommentLock = true;
-                            } else {
+                            }
+                            else {
                                 rubberStampAnnotation.IsCommentLock = false;
                             }
-                            if (stampAnnotation.flags === PdfAnnotationFlag.locked) {
-                                rubberStampAnnotation.IsLocked = true;
-                            } else {
-                                rubberStampAnnotation.IsLocked = false;
+                            if (!isNullOrUndefined(annotFlags) && annotFlags.includes('print')) {
+                                rubberStampAnnotation.IsPrint = true;
                             }
                             if (!isNullOrUndefined(stampAnnotation.reviewHistory)) {
                                 for (let i: number = 0; i < stampAnnotation.reviewHistory.count; i++) {

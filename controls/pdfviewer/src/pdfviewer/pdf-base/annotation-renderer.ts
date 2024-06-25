@@ -1050,7 +1050,7 @@ export class AnnotationRenderer {
             if (!isNullOrUndefined(stampAnnotation.subject) && stampAnnotation.subject) {
                 rubberStampAnnotation.subject = stampAnnotation.subject.toString();
             }
-            if (!isNullOrUndefined(stampAnnotation.isLocked) && stampAnnotation.isLocked) {
+            if ((!isNullOrUndefined(stampAnnotation.isLocked) && stampAnnotation.isLocked) || (!isNullOrUndefined(isLock) && isLock)) {
                 rubberStampAnnotation.flags = PdfAnnotationFlag.locked | PdfAnnotationFlag.print;
             }
             else if (!isNullOrUndefined(stampAnnotation.isCommentLock) && stampAnnotation.isCommentLock) {

@@ -4031,6 +4031,18 @@
   }
 }
 
+@media print {
+  .e-schedule {
+    .e-table-container {
+      display: block;
+    }
+
+    .e-vertical-view .e-content-table thead {
+      break-inside: auto;
+    }
+  }
+}
+
 .e-bigger .e-more-popup-wrapper,
 .e-more-popup-wrapper {
   background: $schedule-popup-bg-color;

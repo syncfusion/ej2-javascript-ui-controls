@@ -3059,3 +3059,209 @@ describe("Virtual Scrolling with paging", () => {
     destroy(gridObj);
   });
 });
+describe("Virtual Scroll Current view data check", () => {
+  let treegrid: TreeGrid;
+  beforeAll((done: Function) => {
+    treegrid = createGrid(
+      {
+        dataSource: virtualData.slice(0, 1000),
+        parentIdMapping: "ParentID",
+        idMapping: "TaskID",
+        height: 200,
+        enableVirtualMaskRow: false,
+        enableVirtualization: true,
+        columns: [
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD4",
+            headerText: "TMID",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD5",
+            headerText: "LGID",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD6",
+            headerText: "GP",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD7",
+            headerText: "GS",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD8",
+            headerText: "Minutes",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD9",
+            headerText: "Points",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD10",
+            headerText: "oRebounds",
+            width: 130,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD11",
+            headerText: "dRebounds",
+            width: 130,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD12",
+            headerText: "Rebounds",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD13",
+            headerText: "Assists",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD14",
+            headerText: "Steals",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD15",
+            headerText: "Blocks",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD16",
+            headerText: "Turnovers",
+            width: 130,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD17",
+            headerText: "PF",
+            width: 130,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD18",
+            headerText: "fgAttempted",
+            width: 150,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD19",
+            headerText: "fgMade",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD20",
+            headerText: "ftAttempted",
+            width: 150,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD21",
+            headerText: "ftMade",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD22",
+            headerText: "ThreeAttempted",
+            width: 150,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD23",
+            headerText: "ThreeMade",
+            width: 130,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD24",
+            headerText: "PostGP",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD25",
+            headerText: "PostGS",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD26",
+            headerText: "PostMinutes",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD27",
+            headerText: "PostPoints",
+            width: 130,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD28",
+            headerText: "PostoRebounds",
+            width: 130,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD29",
+            headerText: "PostdRebounds",
+            width: 130,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD30",
+            headerText: "PostRebounds",
+            width: 130,
+            textAlign: "Right",
+          },
+        ],
+        treeColumnIndex: 1,
+      },
+      done
+    );
+  });
+  it("Checking for Current View Data", (done: Function) => {
+    treegrid.selectedRowIndex = 30
+    treegrid.selectedRowIndex = 6
+    let content: HTMLElement = <HTMLElement>treegrid.getContent().firstChild;
+    EventHandler.trigger(content, "wheel");
+    content.scrollTop = 0;
+    expect(treegrid.getCurrentViewRecords()[0]['TaskID']).toBe(1)
+    done();
+  });
+  afterAll(() => {
+    destroy(treegrid);
+  });
+}); 

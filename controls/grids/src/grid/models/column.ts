@@ -347,7 +347,7 @@ export class Column {
      * @default null
      * @aspType object
      */
-    public defaultValue: string;
+    public defaultValue: string | number | Date | boolean | null;
 
     /**
      * Defines the `IEditCell` object to customize default edit cell.
@@ -1139,7 +1139,7 @@ export interface ColumnModel {
      * @default null
      * @aspType object
      */
-    defaultValue?: string;
+    defaultValue?: string | number | Date | boolean | null;
 
     /**
      * Defines the `IEditCell`(../../grid/edit/#cell-edit-template) object to customize default edit cell.

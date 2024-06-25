@@ -223,6 +223,9 @@ export class Layout {
                 }
             }
             else {
+                if (isNullOrUndefined(nextOrPrevSibling) && paragraph.paragraphFormat.baseStyle.name === "Normal" && paragraph.paragraphFormat.listFormat.listId < 0) {
+                    return paragraph;
+                }
                 return nextOrPrevSibling;
             }
         } else if (paragraph.index === 0 && !isAfterSpacing) {
@@ -6782,9 +6785,6 @@ export class Layout {
         //cell.margin.left += (isLeftStyleNone) ? 0 : (cell.leftBorderWidth);
         cell.margin.right += (isRightStyleNone && !linestyle) ? 0 : (cell.rightBorderWidth);
         //cell.ownerWidget = owner;
-        if (cell.width < cell.sizeInfo.minimumWidth / 2 && !this.isInitialLoad) {
-            cell.width = cell.sizeInfo.minimumWidth / 2;
-        }
         return cell;
     }
     private checkPreviousMargins(table: TableWidget): boolean {
@@ -9273,7 +9273,8 @@ export class Layout {
             this.viewer.clientArea.x = this.viewer.clientArea.x - wrapDiff;
         }
         let tableWidget: TableWidget[] = table.getSplitWidgets() as TableWidget[];
-        if (table.wrapTextAround && table.bodyWidget && table.bodyWidget.lastChild !== tableWidget[tableWidget.length - 1]) {
+        if (table.wrapTextAround && table.bodyWidget && (table.bodyWidget.lastChild !== tableWidget[tableWidget.length - 1] 
+            || (this.isRelayout && clientActiveAreaForTableWrap.height < table.height))) {
             this.updateClientAreaForWrapTable(tableView, table, false, clientActiveAreaForTableWrap, clientAreaForTableWrap);
         }
         tableView[tableView.length - 1].isLayouted = true;
@@ -9310,6 +9311,7 @@ export class Layout {
                             this.moveBlocksToNextPage(table.previousWidget as BlockWidget, false);
                         }
                     } else {
+                        this.documentHelper.tableLefts.pop();
                         this.viewer.updateClientArea(table.bodyWidget, table.bodyWidget.page);
                     }
                     if (table.bodyWidget.floatingElements.indexOf(table) === -1) {
@@ -9998,6 +10000,9 @@ export class Layout {
                 this.clearTableWidget(block as TableWidget, true, true, true);
             }
             viewer.updateClientAreaForBlock(block, true);
+            if ((block as TableWidget).wrapTextAround) {
+                block.isLayouted = false;
+            }
             this.isRelayout = true;
             this.layoutBlock(block, 0);
             this.isRelayout = false;

@@ -1023,7 +1023,7 @@ export class ExportHelper {
     }
     private setContentFormat(content: PdfHeaderFooterContent, format: PdfStringFormat): { format: PdfStringFormat, size: SizeF } {
         const width: number = (content.size) ? content.size.width * 0.75 : this.pdfDoc.pageSettings.size.width;
-        const height: number = (content.size) ? content.size.height * 0.75 : this.exportProps.footer.height * 0.50;
+        const height: number = (content.size) ? content.size.height * 0.75 : (!isNullOrUndefined(this.exportProps.footer) ? this.exportProps.footer.height * 0.50 : 0);
         format = new PdfStringFormat(PdfTextAlignment.Left, PdfVerticalAlignment.Middle);
         if (!isNullOrUndefined(content.style.hAlign)) {
             switch (content.style.hAlign) {

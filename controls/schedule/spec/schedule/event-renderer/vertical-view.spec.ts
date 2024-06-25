@@ -1368,7 +1368,7 @@ describe('Vertical View Event Render Module', () => {
         beforeAll((done: Function) => {
             const model: ScheduleModel = {
                 currentView: 'Month', views: [
-                    { option: 'Month' },
+                    { option: 'Month' }
                 ], height: '550px', width: '500px',
                 allowInline: true, selectedDate: new Date(2017, 10, 6)
             };
@@ -1454,7 +1454,7 @@ describe('Vertical View Event Render Module', () => {
         afterAll(() => {
             util.destroy(schObj);
         });
-        
+
         it('Checking allowInline property in Week view', () => {
             const eventElement: HTMLElement = schObj.element.querySelector('[data-id="Appointment_22"]');
             eventElement.click();
@@ -2133,7 +2133,7 @@ describe('Vertical View Event Render Module', () => {
         });
     });
 
-describe('EJ2-876307 - Hide appointment wrappers until template rendering is completed', () => {
+    describe('EJ2-876307 - Hide appointment wrappers until template rendering is completed', () => {
         let schObj: Schedule;
         const data: Record<string, any>[] = [{
             Id: 1,
@@ -2193,12 +2193,12 @@ describe('EJ2-876307 - Hide appointment wrappers until template rendering is com
             schObj.dataBinding = () => {
                 const hiddenWraps: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.APPOINTMENT_WRAPPER_HIDDEN_CLASS));
                 expect(hiddenWraps.length).toEqual(14);
-            }
+            };
             schObj.dataBound = () => {
                 const hiddenWraps: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.APPOINTMENT_WRAPPER_HIDDEN_CLASS));
                 expect(hiddenWraps.length).toEqual(0);
                 done();
-            }
+            };
             schObj.eventSettings.dataSource = data;
             schObj.dataBind();
         });
@@ -2206,14 +2206,60 @@ describe('EJ2-876307 - Hide appointment wrappers until template rendering is com
             schObj.dataBinding = () => {
                 const hiddenWraps: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.APPOINTMENT_WRAPPER_HIDDEN_CLASS));
                 expect(hiddenWraps.length).toEqual(42);
-            }
+            };
             schObj.dataBound = () => {
                 const hiddenWraps: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.' + cls.APPOINTMENT_WRAPPER_HIDDEN_CLASS));
                 expect(hiddenWraps.length).toEqual(0);
                 done();
-            }
+            };
             schObj.group = { resources: ['Owners'] };
             schObj.dataBind();
+        });
+    });
+
+    describe('minimumEventDuration property', () => {
+        let schObj: Schedule;
+        const appointments: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Paris',
+            StartTime: new Date(2017, 10, 1, 10, 0),
+            EndTime: new Date(2017, 10, 1, 10, 0),
+            IsAllDay: false
+        }, {
+            Id: 2,
+            Subject: 'Meeting',
+            StartTime: new Date(2017, 10, 1, 10, 10),
+            EndTime: new Date(2017, 10, 1, 10, 10),
+            IsAllDay: false
+        }];
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '500px', selectedDate: new Date(2017, 10, 1),
+                eventSettings: { minimumEventDuration: 30 }
+            };
+            schObj = util.createSchedule(model, appointments, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking appointment height by setting minimumEventDuration property to 30 minutes', () => {
+            const appointmentWrapper: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            expect(appointmentWrapper[3].childElementCount).toEqual(2);
+            const firstEvent: HTMLElement = schObj.element.querySelector('[data-id ="Appointment_1"]');
+            expect(firstEvent.style.height).toEqual('36px');
+            const secondEvent: HTMLElement = schObj.element.querySelector('[data-id ="Appointment_2"]');
+            expect(secondEvent.style.height).toEqual('36px');
+        });
+        it('Checking appointment height by setting minimumEventDuration property to 1 minute (default)', () => {
+            schObj.dataBound = null;
+            schObj.eventSettings.minimumEventDuration = 1;
+            schObj.dataBind();
+            const appointmentWrapper: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
+            expect(appointmentWrapper[3].childElementCount).toEqual(2);
+            const firstEvent: HTMLElement = schObj.element.querySelector('[data-id ="Appointment_1"]');
+            expect(firstEvent.style.height).toEqual('1.2px');
+            const secondEvent: HTMLElement = schObj.element.querySelector('[data-id ="Appointment_2"]');
+            expect(secondEvent.style.height).toEqual('1.2px');
         });
     });
 

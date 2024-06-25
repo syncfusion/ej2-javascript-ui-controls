@@ -359,16 +359,20 @@ export class DataManipulation {
         const clonequries: QueryOptions[] = qry.queries.filter((e: QueryOptions) => e.fn !== 'onPage' && e.fn !== 'onWhere');
         qry.queries = clonequries;
         qry.isCountRequired = true;
+        let idMappingValue: number | string = parseInt(rowDetails.record[this.parent.idMapping], 10);
+        if (isNaN(idMappingValue)) {
+            idMappingValue = rowDetails.record[this.parent.idMapping].toString();
+        }
         if (this.parent.enableVirtualization && rowDetails.action === 'remoteExpand') {
             qry.take(this.parent.pageSettings.pageSize);
             const expandDetail: Object[] = [];
-            expandDetail.push('ExpandingAction', parseInt(rowDetails.record[this.parent.idMapping], 10).toString());
+            expandDetail.push('ExpandingAction', idMappingValue.toString());
             qry.expand(expandDetail);
         }
         else if (this.parent.enableVirtualization && rowDetails.action === 'collapse') {
             qry.take(this.parent.grid.pageSettings.pageSize);
             const expandDetail: Object[] = [];
-            expandDetail.push('CollapsingAction', parseInt(rowDetails.record[this.parent.idMapping], 10).toString());
+            expandDetail.push('CollapsingAction', idMappingValue.toString());
             qry.expand(expandDetail);
         }
         qry.where(this.parent.parentIdMapping, 'equal', rowDetails.record[this.parent.idMapping]);

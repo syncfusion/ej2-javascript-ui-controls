@@ -626,7 +626,7 @@ export class NormalEdit {
             }
             if (cols[parseInt(i.toString(), 10)].field) {
                 if (cols[parseInt(i.toString(), 10)].type === 'string') {
-                    cols[parseInt(i.toString(), 10)].defaultValue = this.parent.sanitize(cols[parseInt(i.toString(), 10)].defaultValue);
+                    cols[parseInt(i.toString(), 10)].defaultValue = this.parent.sanitize(cols[parseInt(i.toString(), 10)].defaultValue as string);
                 }
                 DataUtil.setValue(cols[parseInt(i.toString(), 10)].field, cols[parseInt(i.toString(), 10)].defaultValue, this.previousData);
             }

@@ -592,7 +592,7 @@ export class Mention extends DropDownBase {
         const isNavigation: boolean = (e.action === 'down' || e.action === 'up' || e.action === 'pageUp' || e.action === 'pageDown'
             || e.action === 'home' || e.action === 'end');
         const isTabAction: boolean = e.action === 'tab' || e.action === 'close';
-        if (this.list === undefined && !this.isRequested && !isTabAction && e.action !== 'escape' && e.action !== 'space') {
+        if (this.list === undefined && !this.isRequested && !isTabAction && e.action !== 'escape' && e.action !== 'space' && this.mentionChar.charCodeAt(0) === this.getLastLetter(this.getTextRange()).charCodeAt(0)) {
             this.renderList();
         }
         if (isNullOrUndefined(this.list) || (!isNullOrUndefined(this.liCollections) &&

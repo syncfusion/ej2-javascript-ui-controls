@@ -58,8 +58,17 @@ export class PivotButton implements IAction {
     }
 
     private renderPivotButton(args: PivotButtonArgs): void {
+        this.parentElement = this.parent.getModuleName() === 'pivotview' ? this.parent.element :
+            document.getElementById(this.parent.element.id + '_Container');
+        const currentAxisElements: Element[] = Array.prototype.slice.call(this.parentElement.querySelectorAll('.e-group-' + args.axis));
+        let axisElement: Element;
+        if (args.axis === 'rows' && (this.parent as PivotView).showGroupingBar && (this.parent as PivotView).groupingBarModule
+        && isNullOrUndefined(this.parentElement.querySelector('.' + cls.GROUP_PIVOT_ROW))) {
+            currentAxisElements.push((this.parent as PivotView).groupingBarModule.rowPanel);
+            axisElement = (this.parent as PivotView).groupingBarModule.rowPanel;
+        }
         const field: IFieldOptions[] = extend([], args.field, null, true) as IFieldOptions[];
-        const axis: string = args.axis; let axisElement: Element; let valuePos: number = -1;
+        const axis: string = args.axis; let valuePos: number = -1;
         const showValuesButton: boolean = (this.parent.dataType === 'pivot' ? (this.parent.getModuleName() === 'pivotfieldlist' &&
             (this.parent as PivotFieldList).pivotGridModule) ?
             (this.parent as PivotFieldList).pivotGridModule.showValuesButton : this.parent.showValuesButton : false);
@@ -83,8 +92,6 @@ export class PivotButton implements IAction {
                 }
             }
         }
-        this.parentElement = this.parent.getModuleName() === 'pivotview' ? this.parent.element :
-            document.getElementById(this.parent.element.id + '_Container');
         if (this.parent.getModuleName() === 'pivotfieldlist') {
             this.parentElement = document.getElementById(this.parent.element.id + '_Container');
             if (this.parentElement.querySelector('.' + cls.FIELD_LIST_CLASS + '-' + axis)) {
@@ -101,13 +108,15 @@ export class PivotButton implements IAction {
                 return;
             }
         } else {
-            this.parentElement = this.parent.element; axisElement = this.parentElement.querySelector('.e-group-' + axis);
+            this.parentElement = this.parent.element;
+            if (!isNullOrUndefined(this.parentElement.querySelector('.e-group-' + axis))) {
+                axisElement = this.parentElement.querySelector('.e-group-' + axis);
+            }
         }
         if (axisElement) {
             if (this.parent.getModuleName() === 'pivotview' && field.length === 0) {
-                const elements: NodeListOf<HTMLElement> = this.parentElement.querySelectorAll('.e-group-' + axis);
-                for (let i: number = 0; i < elements.length; i++) {
-                    const element: HTMLElement = elements[i as number];
+                for (let i: number = 0; i < currentAxisElements.length; i++) {
+                    const element: Element = currentAxisElements[i as number];
                     if (!element.classList.contains(cls.GROUP_CHART_VALUE) && !element.classList.contains(cls.GROUP_CHART_COLUMN)) {
                         const axisPrompt: HTMLElement = createElement('span', {
                             className: cls.AXIS_PROMPT_CLASS
@@ -122,8 +131,8 @@ export class PivotButton implements IAction {
                 }
             } else {
                 for (let i: number = 0, cnt: number = field.length; i < cnt; i++) {
-                    const elements: Element[] | NodeListOf<HTMLElement> = (this.parent.getModuleName() === 'pivotfieldlist' ?
-                        [axisElement] : this.parentElement.querySelectorAll('.e-group-' + axis));
+                    const elements: Element[] | NodeListOf<HTMLElement> = this.parent.getModuleName() === 'pivotfieldlist' ?
+                        [axisElement] : currentAxisElements;
                     for (let j: number = 0; j < elements.length; j++) {
                         const element: HTMLElement | Element = elements[j as number];
                         if ((this.parent.olapEngineModule && (this.parent.olapEngineModule.fieldList[field[i as number].name] ||
@@ -241,9 +250,8 @@ export class PivotButton implements IAction {
                 if (axis === 'values') {
                     let valueFiedDropDownList: DropDownList = select('.' + cls.GROUP_CHART_VALUE_DROPDOWN_DIV, this.parentElement) ?
                         getInstance(select('.' + cls.GROUP_CHART_VALUE_DROPDOWN_DIV, this.parentElement), DropDownList) as DropDownList : null;
-                    const elements: NodeListOf<HTMLElement> = this.parentElement.querySelectorAll('.e-group-' + axis);
-                    for (let i: number = 0; i < elements.length; i++) {
-                        const element: HTMLElement = elements[i as number];
+                    for (let i: number = 0; i < currentAxisElements.length; i++) {
+                        const element: Element = currentAxisElements[i as number];
                         if (element.classList.contains(cls.GROUP_CHART_VALUE) && (this.parent as PivotView).pivotChartModule) {
                             const valueData: { text: string, value: string }[] = field.map((item: IFieldOptions) => {
                                 return { text: item.caption ? item.caption : item.name, value: item.name };
@@ -281,9 +289,8 @@ export class PivotButton implements IAction {
                     let availColindex: number = undefined;
                     let columnFieldDropDownList: DropDownList = select('.' + cls.GROUP_CHART_COLUMN_DROPDOWN_DIV, this.parentElement) ?
                         getInstance(select('.' + cls.GROUP_CHART_COLUMN_DROPDOWN_DIV, this.parentElement), DropDownList) as DropDownList : null;
-                    const elements: NodeListOf<HTMLElement> = this.parentElement.querySelectorAll('.e-group-' + axis);
-                    for (let i: number = 0; i < elements.length; i++) {
-                        const element: HTMLElement = elements[i as number];
+                    for (let i: number = 0; i < currentAxisElements.length; i++) {
+                        const element: Element = currentAxisElements[i as number];
                         if (element.classList.contains(cls.GROUP_CHART_COLUMN) && (this.parent as PivotView).pivotChartModule) {
                             const currentMeasure: string = (this.parent as PivotView).pivotChartModule.currentMeasure;
                             const delimiter: string = (this.parent as PivotView).chartSettings.columnDelimiter ? (this.parent as PivotView).chartSettings.columnDelimiter : '-';

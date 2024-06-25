@@ -740,6 +740,7 @@ export class TaskProcessor extends DateProcessor {
         }
         if (ganttSegments.length > 1) {
             this.parent.setRecordValue('segments', ganttSegments, data.ganttProperties, true);
+            this.parent.setRecordValue(this.parent.taskFields.segments, data.taskData[this.parent.taskFields.segments], data, true);
         } else {
             ganttSegments = null;
         }

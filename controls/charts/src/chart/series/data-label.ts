@@ -159,7 +159,7 @@ export class DataLabel {
     }
 
     public renderDataLabel(series: Series, point: Points, element: HTMLElement, dataLabel: DataLabelSettingsModel): Element[] {
-        if (!dataLabel.showZero && ((point.y !== 0) || (point.y === 0 && series.emptyPointSettings.mode === 'Zero'))) {
+        if (!dataLabel.showZero && ((point.y === 0) || (point.y === 0 && series.emptyPointSettings.mode === 'Zero'))) {
             return null;
         }
         this.margin = dataLabel.margin;
@@ -634,7 +634,7 @@ export class DataLabel {
             break;
         default:
             this.extraSpace += this.errorHeight;
-            labelLocation = this.calculateTopAndOuterPosition(labelLocation, rect, position, series, labelIndex, this.extraSpace, isMinus);
+            labelLocation = this.calculateTopAndOuterPosition(labelLocation, rect, position, series, labelIndex, this.extraSpace, isMinus, point);
 
             break;
         }
@@ -749,7 +749,7 @@ export class DataLabel {
     //calculation for top and outer position of datalabel for rect series
     private calculateTopAndOuterPosition(
         location: number, rect: Rect, position: LabelPosition, series: Series, index: number,
-        extraSpace: number, isMinus: boolean
+        extraSpace: number, isMinus: boolean, point: Points
     ): number {
         const margin: MarginModel = this.margin;
         let top: boolean;
@@ -781,7 +781,7 @@ export class DataLabel {
             }
             break;
         default:
-            if ((isMinus && position === 'Top') || (!isMinus && position === 'Outer')) {
+            if (((isMinus && position === 'Top') || (!isMinus && position === 'Outer')) || (position === 'Top' && series.visiblePoints[point.index].yValue === 0)) {
                 location = !this.inverted ? location + (isMinus && series.type === 'Waterfall' ? (-rect.height + extraSpace + margin.bottom) : (-extraSpace - margin.bottom - this.markerHeight)) :
                     location + (isMinus && series.type === 'Waterfall' ?  (+ rect.width - extraSpace - margin.left) : (+ extraSpace + margin.left + this.markerHeight));
             } else {

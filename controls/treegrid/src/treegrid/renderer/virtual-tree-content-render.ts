@@ -215,6 +215,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     private rowSelectedEvent(args: RowSelectEventArgs): void {
         const rowSelected: string = 'rowSelected';
         super[`${rowSelected}`](args);
+        this.parent.notify('virtualTransform', { requestType: 'transformChange'});
     }
 
     private toSelectVirtualRow(args: { selectedIndex: number }): void {
@@ -400,7 +401,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         const outBuffer: number = this.parent.pageSettings.pageSize - Math.ceil(this.parent.pageSettings.pageSize / 2);
         const content: HTMLElement = this.parent.getContent().querySelector('.e-content');
         const scrollHeight: number = outBuffer * rowHeight;
-        const upScroll: boolean = (scrollArgs.offset.top - this.translateY) < 0;
+        const upScroll: boolean = (scrollArgs.offset.top - this.translateY) <= 0;
         const downScroll: boolean = Math.ceil(scrollArgs.offset.top - this.translateY) + rowHeight >= scrollHeight;
         const selectedRowIndex: string = 'selectedRowIndex';
         const currentViewData: Object[] = this.parent.currentViewData; const indexValue: string = 'index';
@@ -411,7 +412,8 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
           + Math.ceil(vHeight / rowHeight))
             - this.parent.pageSettings.pageSize;
             index = (index > 0) ? index : 0;
-            if (!isNullOrUndefined(this[`${selectedRowIndex}`]) && this[`${selectedRowIndex}`] !== -1 && index !== this[`${selectedRowIndex}`]) {
+            if (!isNullOrUndefined(this[`${selectedRowIndex}`]) && this[`${selectedRowIndex}`] !== -1 && index !== this[`${selectedRowIndex}`] &&
+                ((this.parent.rowHeight * this.parent.pageSettings.pageSize) < content.scrollTop)) {
                 index = this[`${selectedRowIndex}`];
             }
             this.startIndex = index;

@@ -2,7 +2,27 @@
 
 ## [Unreleased]
 
+## 26.1.39 (2024-06-25)
+
+### Stepper
+
+#### Bug fixes
+
+- `#I592870` - Prevented step interactions for non-linear steps when the linear property is enabled.
+
+### TreeView
+
+#### Bug fixes
+
+- `#I602280` - The issue where child filtering and `dataBound` event were not working for remote data has been resolved.
+
 ## 26.1.38 (2024-06-19)
+
+### TreeView
+
+#### Bug fixes
+
+- `#I596651` - Resolved the fluent 2 theme spacing issue with the checkbox in the TreeView component.
 
 ### Breadcrumb
 

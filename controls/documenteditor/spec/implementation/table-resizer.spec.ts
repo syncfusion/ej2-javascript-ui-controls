@@ -168,7 +168,7 @@ console.log('Resize without selection');
         editor.editorModule.tableResize.resizerPosition = 1;
         editor.editorModule.tableResize.startingPoint = new Point(1075, 124);
         (editor.editorModule.tableResize as any).resizeTableCellColumn(500.5);
-        expect(((editor.editorModule.tableResize.currentResizingTable.childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).cellFormat.cellWidth).toBe(468);
+        expect(((editor.editorModule.tableResize.currentResizingTable.childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).cellFormat.cellWidth).toBe(456.2);
     });
     // it('Resize without selection and merge cell in first column', () => {
     //     viewer = editor.viewer as PageLayoutViewer;

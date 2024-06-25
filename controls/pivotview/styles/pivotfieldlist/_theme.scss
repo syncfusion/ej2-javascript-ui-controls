@@ -463,6 +463,10 @@
                 vertical-align: bottom;
                 width: 20px;
 
+                @if ($skin-name =='fluent2') {
+                  font-size: 16px;
+                }
+
                 @if ($skin-name =='bootstrap5') or ($skin-name =='FluentUI') {
                   margin-right: 4px;
                   padding-left: 8px;
@@ -742,6 +746,10 @@
                   font-size: $field-list-icon-size;
                   height: 20px;
                   width: 20px;
+
+                  @if ($skin-name =='fluent2') {
+                    font-size: 16px;
+                  }
 
                   &.e-disable-drag {
                     cursor: not-allowed;
@@ -1721,6 +1729,11 @@
           margin-bottom: $field-list-treeview-drag-bigger-padding !important;
           margin-right: 4px !important;
           width: 24px !important;
+
+          @if ($skin-name =='fluent2') {
+            font-size: 20px !important;
+            margin-bottom: 5px !important;
+          }
         }
 
         .e-calc-measure-icon,
@@ -1822,6 +1835,10 @@
               .e-drag {
                 font-size: $field-list-bigger-icon-size;
                 width: 24px;
+
+                @if ($skin-name =='fluent2') {
+                  font-size: 20px;
+                }
               }
             }
           }

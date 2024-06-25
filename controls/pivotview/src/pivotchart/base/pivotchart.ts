@@ -495,15 +495,23 @@ export class PivotChart {
                 currentSeries.yName = 'y';
                 currentSeries.visible = true;
                 let multiAxisKey: string;
+                let fieldName : string;
+                let currentSeriesName: string;
+                for (let i: number = 0, j: string[] = key.split(' | '); i < j.length; i++) {
+                    if (this.measuresNames && this.measuresNames[j[i as number] as string]) {
+                        fieldName = j[i as number];
+                        currentSeriesName = key.split((' | ' + fieldName))[0];
+                    }
+                }
                 if (this.chartSettings.enableMultipleAxis) {
-                    let fieldCaptionName: string = key.split(' | ')[1];
+                    let fieldCaptionName: string = fieldName;
                     fieldCaptionName = !isNullOrUndefined(fieldWithCaption[fieldCaptionName as string]) ?
                         fieldWithCaption[fieldCaptionName as string] : fieldCaptionName;
-                    multiAxisKey = key.split(' | ')[0] + ' | ' + fieldCaptionName;
+                    multiAxisKey = currentSeriesName + ' | ' + fieldCaptionName;
                 }
-                currentSeries.name = this.chartSettings.enableMultipleAxis ? multiAxisKey : key.split(' | ')[0];
+                currentSeries.name = this.chartSettings.enableMultipleAxis ? multiAxisKey : currentSeriesName;
                 if (this.chartSettings.showPointColorByMembers && this.chartSettings.enableMultipleAxis) {
-                    currentSeries.name = currentSeries.name.split(' |')[0];
+                    currentSeries.name = currentSeriesName;
                     const seriesName: string = this.chartSeriesInfo[currentSeries.name].caption;
                     currentSeries.name = seriesName !== undefined && seriesName !== null ? seriesName : currentSeries.name;
                     if (!chartSeriesInfo[currentSeries.name]) {
@@ -519,7 +527,7 @@ export class PivotChart {
                     }
                 }
                 if (['Radar', 'Polar'].indexOf(chartType) < 0) {
-                    const measure: string = key.split(' | ')[1];
+                    const measure: string = fieldName;
                     (currentSeries as SeriesModel).tooltipMappingName = this.measuresNames[measure as string];
                     (currentSeries as SeriesModel).yAxisName = (this.chartSettings.enableMultipleAxis && this.chartSettings.multipleAxisMode === 'Combined') ?
                         this.measureList.join('_') : this.measuresNames[measure as string] ? this.measuresNames[measure as string] : measure;

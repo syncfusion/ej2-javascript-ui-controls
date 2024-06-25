@@ -3,7 +3,7 @@ import { PivotView } from '../../pivotview/base/pivotview';
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
 import { PivotButtonArgs } from '../base/interface';
-import { createElement, prepend } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, prepend } from '@syncfusion/ej2-base';
 import { PivotUtil } from '../../base/util';
 import { PivotButton } from '../actions/pivot-button';
 import { DataManager } from '@syncfusion/ej2-data';
@@ -35,13 +35,7 @@ export class AxisFields {
         }
         this.createPivotButtons();
         let pivotButtons: HTMLElement[] = [];
-        const elements: NodeListOf<HTMLElement> = this.parent.element.querySelectorAll('.' + cls.GROUP_ROW_CLASS);
-        for (let i: number = 0; i < elements.length; i++) {
-            const element: HTMLElement = elements[i as number];
-            if (!element.classList.contains(cls.GROUP_CHART_ROW)) {
-                pivotButtons = pivotButtons.concat([].slice.call(element.querySelectorAll('.' + cls.PIVOT_BUTTON_WRAPPER_CLASS)));
-            }
-        }
+        pivotButtons = pivotButtons.concat([].slice.call(this.parent.groupingBarModule.rowPanel.querySelectorAll('.' + cls.PIVOT_BUTTON_WRAPPER_CLASS)));
         const vlen: number = pivotButtons.length;
         for (let j: number = 0; j < vlen; j++) {
             const indentWidth: number = 24;
@@ -56,10 +50,13 @@ export class AxisFields {
         const fields: IFieldOptions[][] =
             [this.parent.dataSourceSettings.rows, this.parent.dataSourceSettings.columns,
                 this.parent.dataSourceSettings.values, this.parent.dataSourceSettings.filters];
-        const elements: NodeListOf<HTMLElement> = this.parent.element.querySelectorAll('.' + cls.GROUP_ALL_FIELDS_CLASS +
-            ',.' + cls.GROUP_ROW_CLASS + ',.' + cls.GROUP_COLUMN_CLASS + ',.' + cls.GROUP_VALUE_CLASS + ',.' + cls.GROUP_FILTER_CLASS);
+        const elements: Element[] = Array.prototype.slice.call(this.parent.element.querySelectorAll('.' + cls.GROUP_ALL_FIELDS_CLASS +
+            ',.' + cls.GROUP_ROW_CLASS + ',.' + cls.GROUP_COLUMN_CLASS + ',.' + cls.GROUP_VALUE_CLASS + ',.' + cls.GROUP_FILTER_CLASS));
+        if (isNullOrUndefined(this.parent.element.querySelector('.' + cls.GROUP_PIVOT_ROW))) {
+            elements.push(this.parent.groupingBarModule.rowPanel);
+        }
         for (let i: number = 0; i < elements.length; i++) {
-            const element: HTMLElement = elements[i as number];
+            const element: Element = elements[i as number];
             if ((this.parent.dataSourceSettings.values.length > 0 ? !element.classList.contains(cls.GROUP_CHART_VALUE) : true) ||
                 (this.parent.dataSourceSettings.columns.length > 0 ? !element.classList.contains(cls.GROUP_CHART_COLUMN) : true)) {
                 element.innerHTML = '';

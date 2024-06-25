@@ -347,9 +347,8 @@ export class MarkerExplode extends ChartData {
             const trackballElements: HTMLCollectionOf<Element> = document.getElementsByClassName(this.elementId + '_EJ2-Trackball_Series_' + series.index + '_Point_' + point.index);
             if (trackballElements.length === 0) {
                 const elements: NodeListOf<Element> = document.querySelectorAll(`[class*="${this.elementId + '_EJ2-Trackball_Series_' + series.index + '_Point_' + point.index}"]`);
-                for (let i: number = 0, len: number = elements.length; i < len; i++) {
-                    if (elements[0]) { remove(elements[0]); }
-                }
+                if (elements[1]) { elements[1].remove(); }
+                if (elements[0]) { elements[0].remove(); }
             }
             for (let i: number = 0, len: number = trackballElements.length; i < len; i++) {
                 remove(trackballElements[0]);

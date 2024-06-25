@@ -740,6 +740,12 @@ export class StampAnnotation {
             if (subject === null) {
                 subject = (this.pdfViewer.annotationSettings.subject !== '' && !isNullOrUndefined(this.pdfViewer.annotationSettings.subject)) ? this.pdfViewer.annotationSettings.subject : this.pdfViewer.customStampSettings.subject ? this.pdfViewer.customStampSettings.subject : '';
             }
+            if (annotation.IsLocked && annotation.AnnotationSettings) {
+                annotation.AnnotationSettings.isLock = annotation.IsLocked;
+            }
+            else {
+                annotationSettings.isLock = annotation.IsLocked;
+            }
         } else {
             annotationName = this.pdfViewer.annotation.createGUID();
             author = (this.pdfViewer.annotationSettings.author !== 'Guest') ? this.pdfViewer.annotationSettings.author : this.pdfViewer.customStampSettings.author ? this.pdfViewer.customStampSettings.author : 'Guest';
@@ -1105,7 +1111,11 @@ export class StampAnnotation {
                             let bounds: any = JSON.parse(pageAnnotationObject.annotations[parseInt(z.toString(), 10)].bounds);
                             let iconSize: number = this.pdfViewer.annotationModule.calculateFontSize(pageAnnotationObject.annotations[parseInt(z.toString(), 10)].icon.toUpperCase(), bounds);
                             pageAnnotationObject.annotations[parseInt(z.toString(), 10)].iconFontSize = iconSize;
-                            let textSize: number = this.pdfViewer.annotationModule.calculateFontSize(pageAnnotationObject.annotations[parseInt(z.toString(), 10)].dynamicText, bounds);
+                            let textSize: number = 10;
+                            let dynamicText: string = pageAnnotationObject.annotations[parseInt(z.toString(), 10)].dynamicText;
+                            if (dynamicText.trim().length !== 0) {
+                                textSize = this.pdfViewer.annotationModule.calculateFontSize(dynamicText, bounds);
+                            }
                             pageAnnotationObject.annotations[parseInt(z.toString(), 10)].textFontSize = textSize;
                         }
                     }

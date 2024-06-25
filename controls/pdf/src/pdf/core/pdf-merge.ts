@@ -119,8 +119,8 @@ export class _PdfMergeHelper {
                     const destination: any = annotation._dictionary._get('Dest'); // eslint-disable-line
                     if (destinationArray instanceof Array) {
                         const destArray: any[]  = destinationArray; // eslint-disable-line
-                        if (destinationArray[0]) {
-                            dest.push(destArray[0]);
+                        for (let j: number = 0; j < destArray.length; j++) {
+                            dest.push(destArray[Number.parseInt(j.toString(), 10)]);
                         }
                         isDestination = true;
                     }
@@ -161,6 +161,8 @@ export class _PdfMergeHelper {
                     }
                 }
             }
+            isDestination = false;
+            dest = [];
         }
         if (array.length > 0) {
             newPage._pageDictionary.update('Annots', array);
@@ -861,13 +863,15 @@ export class _PdfMergeHelper {
                 const dest: any = this._destination[Number.parseInt(i.toString(), 10)]; // eslint-disable-line
                 if (dest instanceof Array) {
                     const destination: any = dest; // eslint-disable-line
-                    const ref: any = document._crossReference._fetch(destination[0]); // eslint-disable-line
-                    const index: PdfPage = pageLinkReference.get(ref) as PdfPage;
-                    if (ref && pageLinkReference.has(ref) && index !== null) {
-                        destination[0] = index._ref;
-                    }
-                    if (ref && pageLinkReference.has(ref) && index === null) {
-                        destination[0] = null;
+                    if (destination.length > 0) {
+                        const ref: any = document._crossReference._fetch(destination[0]); // eslint-disable-line
+                        const index: PdfPage = pageLinkReference.get(ref) as PdfPage;
+                        if (ref && pageLinkReference.has(ref) && index !== null) {
+                            destination[0] = index._ref;
+                        }
+                        if (ref && pageLinkReference.has(ref) && index === null) {
+                            destination[0] = null;
+                        }
                     }
                 }
             }

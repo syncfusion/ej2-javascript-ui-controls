@@ -49,7 +49,7 @@ export class ExcelExport {
             fields.forEach((field: ExportFieldInfo, n: number) => {
                 let columnRule: Record<string, any> = { index: n + 1, value: event[field.name] || '' };
                 if (field.name === this.parent.eventFields.startTime || field.name === this.parent.eventFields.endTime) {
-                    const styleRule: Record<string, any> = { fontSize: 12, numberFormat: 'm/d/yyyy h:mm AM/PM' };
+                    const styleRule: Record<string, any> = { fontSize: 12, numberFormat: 'm/d/yyyy h:mm a' };
                     columnRule = extend({}, columnRule, { style: styleRule }, true) as Record<string, any>;
                 }
                 columnData.push(columnRule);

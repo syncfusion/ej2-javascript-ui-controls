@@ -1732,8 +1732,7 @@ export class TaskbarEdit extends DateProcessor {
         const segment: ITaskSegment = item.segments[this.segmentIndex];
         const left: number = this.segmentIndex === 0 ? this.getRoundOffStartLeft(item, this.roundOffDuration) :
             this.getRoundOffStartLeft(segment, this.roundOffDuration);
-        const projectStartDate: Date = this.segmentIndex === 0 ? this.getDateByLeft(left) : this.getDateByLeft(item.left + left);
-
+        const projectStartDate: Date = this.getDateByLeft(left);
         const startDate: Date = this.parent.dataOperation.checkStartDate(projectStartDate, item, false);
         const duration: number = this.parent.dataOperation.getDuration(
             startDate, segment.endDate, item.durationUnit,
@@ -1796,7 +1795,7 @@ export class TaskbarEdit extends DateProcessor {
     private setSplitTaskDrag(item: ITaskData): void {
         const segment: ITaskSegment = item.segments[this.segmentIndex as number];
         const left: number = this.getRoundOffStartLeft(segment, this.roundOffDuration);
-        let projectStartDate: Date = this.getDateByLeft(item.left + left);
+        let projectStartDate: Date = this.getDateByLeft(left);
         projectStartDate = this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null);
         segment.startDate = projectStartDate;
         const segmentDate: Date = this.parent.dataOperation.getEndDate(segment.startDate, segment.duration, item.durationUnit, item, false);
@@ -1912,6 +1911,9 @@ export class TaskbarEdit extends DateProcessor {
     public getRoundOffStartLeft(ganttRecord: ITaskData | ITaskSegment, isRoundOff: boolean): number {
         let left: number = isNullOrUndefined(ganttRecord as ITaskData) ? (ganttRecord as ITaskSegment).left
             : (ganttRecord as ITaskData).left;
+        if (this.segmentIndex !== -1 && isNullOrUndefined((ganttRecord as ITaskData).segments)) {
+            left = ganttRecord.left + this.taskBarEditRecord.ganttProperties.left;
+        }
         const tierMode: string = this.parent.timelineModule.bottomTier !== 'None' ? this.parent.timelineModule.bottomTier :
             this.parent.timelineModule.topTier;
         let remainingContribution: number =

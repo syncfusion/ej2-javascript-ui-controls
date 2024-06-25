@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 26.1.39 (2024-06-25)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I585937`, `I588421` - Resolve the editor shrink issue, while close the comment pane.
+- `#I466554` - Resolved the unresponsive issue while backspacing table.
+- `#I588278`, `I558603` - Resolved table layout issue while opening HTML pages.
+- `#I595405` - Resolved the paste image issue after opening document content through paste API.
+- `#I597223` - SFDT is exported properly for selected content.
+- `#I600065` - Resolved the script error issue when accept or reject track changes.
+- `#I588943` - Resolved the script error, while delete the contents.
+- `#I591394` - Resolved the coping and pasting lists loses indentation issue.
+- `#I591792` - Resolved the table border render issue when opening exported document.
+- `#I591145` - Resolved the overlapping issue while opening the attached sfdt.
+
 ## 26.1.38 (2024-06-19)
 
 ### DocumentEditor
@@ -12,7 +29,6 @@
 - `#I598215` - Resolved the table auto fit columns issue when opening attached document
 - `#I591154` - Resolved the spellcheck local storage issue.
 - `#I592343` - Resolved the comment icon removal issue.
-- `#I585937` - Resolved the editor shrink issue while closing the comment pane.
 - `#I576560` - Resolved the multi column layout issue in Word 2010 Compatibility mode.
 - `#I588649` - Resolved the table resizing issue.
 

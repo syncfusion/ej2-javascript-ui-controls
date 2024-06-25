@@ -4,7 +4,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
  * Gantt taskbaredit spec
  */
 import {Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport } from '../../src/index';
-import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData, projectData, editingData, customSelfReferenceData, autoDateCalculate, customZoomingdata, parentProgressData, virtualData, virtualData1, resourcesDatas, splitTasksData, coverageData, taskModeData, resourceCollection, cR885322, cellEditData1, dataSource1, splitTasksDataRelease, releaseVirtualData, crValidateIssue} from '../base/data-source.spec';
+import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData, projectData, editingData, customSelfReferenceData, autoDateCalculate, customZoomingdata, parentProgressData, virtualData, virtualData1, resourcesDatas, splitTasksData, coverageData, taskModeData, resourceCollection, cR885322, cellEditData1, dataSource1, splitTasksDataRelease, releaseVirtualData, crValidateIssue,unscheduledData1} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent, getKeyUpObj } from '../base/gantt-util.spec';
 import { DatePickerEditCell } from '@syncfusion/ej2-grids';
 import { Input } from '@syncfusion/ej2-inputs';
@@ -2647,7 +2647,7 @@ describe('Edit for start date column to be null', () => {
     it('Editing Start date', (done: Function) => {
         ganttObj.actionComplete = (args: any): void => {
             if(args.requestType === 'save') {
-                // expect(args.data.ganttProperties.startDate).toBe(null);
+                expect(args.data.ganttProperties.startDate).toBe(null);
                 done();
             }
         }
@@ -4547,6 +4547,101 @@ describe('CR issue validation', () => {
         triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
         triggerMouseEvent(dragElement, 'mousemove', dragElement.offsetLeft + 180, 0);
         triggerMouseEvent(dragElement, 'mouseup');
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Check for correct parent start date', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: unscheduledData1,
+                allowSorting: true,
+                enableContextMenu: true,
+                taskFields: {
+                    id: 'TaskId',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    child: 'child'
+                },
+
+
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                allowSelection: true,
+                gridLines: "Both",
+                showColumnMenu: false,
+                highlightWeekends: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                actionBegin: (args) => {
+                    if (args.requestType === "beforeSave") {
+                        args.data.ganttProperties.startDate = args.data.ActualStartDate;
+                        args.data.StartDate = args.data.ActualStartDate;
+                        args.data.taskData.StartDate = args.data.ActualStartDate;
+                    }
+                },
+                columns: [
+                    { field: 'TaskId', width: 90 },
+                    { field: 'TaskName', width: 80 },
+                    { field: 'StartDate', width: 120 },
+                    { field: 'EndDate', width: 120, editType: 'datepickeredit' },
+                    { field: 'ActualStartDate', width: 120, editType: 'datepickeredit' },
+                    { field: 'ActualEndDate', width: 120, editType: 'datepickeredit' },
+                    { field: 'Duration', width: 90 }
+                ],
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: 'Progress'
+                },
+                height: '550px',
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('01/01/2019'),
+                projectEndDate: new Date('01/20/2019'),
+            }, done);
+    });
+    it('Checking of start date', (done: Function) => {
+        ganttObj.actionBegin = function (args: any): void {
+            if (args.requestType === "beforeSave") {
+                args.data.ganttProperties.startDate = args.data.ActualStartDate;
+                args.data.StartDate = args.data.ActualStartDate;
+                args.data.taskData.StartDate = args.data.ActualStartDate;
+            }
+        }
+        ganttObj.actionComplete = (args: any): void => {
+            if (args.type === 'save' && !isNullOrUndefined(ganttObj.currentViewData[0].ganttProperties.startDate)) {
+                expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.startDate, 'M/d/yyyy')).toBe('1/11/2019')
+                done()
+            }
+        }
+        let actualStartDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(5)') as HTMLElement;
+        triggerMouseEvent(actualStartDate, 'dblclick');
+        let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolActualStartDate') as any).ej2_instances[0];
+        input.value = '1/11/2019'
+        input.dataBind();
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+
+
     });
     afterAll(() => {
         if (ganttObj) {

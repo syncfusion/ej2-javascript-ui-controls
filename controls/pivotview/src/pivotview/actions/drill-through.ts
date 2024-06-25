@@ -4,7 +4,7 @@ import * as events from '../../common/base/constant';
 import { IAxisSet, IDataSet, PivotEngine, OlapEngine, ITupInfo, INumberIndex } from '../../base';
 import { DrillThroughEventArgs } from '../../common/base/interface';
 import { DrillThroughDialog } from '../../common/popups/drillthrough-dialog';
-import { EventHandler, isNullOrUndefined, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { closest, EventHandler, isNullOrUndefined, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 
 /**
  * `DrillThrough` module.
@@ -57,11 +57,11 @@ export class DrillThrough {
         let ele: Element = null;
         if (target.classList.contains('e-stackedheadercelldiv') || target.classList.contains('e-cellvalue') ||
             target.classList.contains('e-headercelldiv')) {
-            ele = target.parentElement;
+            ele = closest(target.parentElement, 'th');
         } else if (target.classList.contains('e-headercell') || target.classList.contains('e-rowcell')) {
             ele = target;
         } else if (target.classList.contains('e-headertext')) {
-            ele = target.parentElement.parentElement;
+            ele = closest(target.parentElement, 'th');
         }
         if (ele) {
             if (this.parent.allowDrillThrough && ele.classList.contains('e-valuescontent') || this.parent.editSettings.allowEditing) {
@@ -83,7 +83,7 @@ export class DrillThrough {
         let valueCaption: string = '';
         let aggType: string = '';
         let rawData: IDataSet[] = [];
-        if (pivotValue.rowHeaders !== undefined && pivotValue.columnHeaders !== undefined) {
+        if (!isNullOrUndefined(pivotValue.rowHeaders) && !isNullOrUndefined(pivotValue.columnHeaders)) {
             if (this.parent.dataType === 'olap') {
                 let tupleInfo: ITupInfo;
                 if (this.parent.dataSourceSettings.valueAxis === 'row') {

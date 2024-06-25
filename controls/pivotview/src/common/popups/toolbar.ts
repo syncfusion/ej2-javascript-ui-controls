@@ -1138,7 +1138,6 @@ export class Toolbar {
         }
     }
     private whitespaceRemove(args: BeforeOpenCloseMenuEventArgs): void {
-        args.element.style.padding = '0px';
         const separator: HTMLElement = args.element.querySelector('.e-separator');
         if (separator) {
             separator.style.margin = '0px';

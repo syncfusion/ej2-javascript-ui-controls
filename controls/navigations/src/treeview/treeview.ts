@@ -1824,7 +1824,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             return 2;
         }
         for (let i: number = 0, len: number = ds.length; i < len; i++) {
-            if ((typeof mapper.child === 'string') && !isNOU(getValue(mapper.child, ds[parseInt(i.toString(), 10)]))) {
+            if ((typeof mapper.child === 'string') && (!isNOU(getValue(mapper.child, ds[parseInt(i.toString(), 10)])) || (Object.prototype.hasOwnProperty.call(ds[parseInt(i.toString(), 10)], mapper.child)))) {
                 return 2;
             }
             if (this.isChildObject()) {
@@ -2433,6 +2433,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 this.afterFinalized();
             }
         });
+        if (this.index > 0) {
+            this.index = 0;
+        }
     }
 
     private expandCallback(eUid: string, callback: Function): void {
@@ -2441,9 +2444,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             const icon: Element = select('.' + EXPANDABLE, select('.' + TEXTWRAP, eNode));
             if (!isNOU(icon)) {
                 this.expandAction(eNode, icon, null, false, callback);
-            } else {
-                callback();
             }
+            callback();
         } else {
             callback();
         }

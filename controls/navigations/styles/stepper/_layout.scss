@@ -47,6 +47,16 @@
         font-weight: $stepper-font-weight;
       }
     }
+    &.e-linear {
+      .e-step-container {
+        pointer-events: none;
+      }
+      .e-previous:not(.e-step-disabled),
+      .e-next:not(.e-step-disabled),
+      .e-step-selected:not(.e-step-disabled) {
+        pointer-events: auto;
+      }
+    }
     &.e-stepper-readonly,
     .e-step-disabled {
       cursor: default;

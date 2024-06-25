@@ -163,6 +163,7 @@ export class PivotEngine {
     private enableHtmlSanitizer: boolean = false;
     private isParentLevelAdded: boolean = true;
     private enableOptimizedRendering: boolean = false;
+    private groupedDataType: { [key: string]: string } = {};
 
     /**
      * It is used to clear properties.
@@ -768,17 +769,24 @@ export class PivotEngine {
                                             };
                                             axis.splice(i, 0, newField);
                                             this.groupingFieldsInfo[newField.name] = fieldName;
+                                        } else {
+                                            this.groupingFieldsInfo[groupKeys[gCnt as number]] = fieldName;
                                         }
                                     }
                                     break;
                                 } else if (axis[i as number].name.indexOf(fieldName) > -1) {
                                     const axisField: string = groupFields[axis[i as number].name];
-                                    const currentField: IFieldOptions =
-                                        axis.filter((axisField: IFieldOptions) => { return axisField.name === fieldName; })[0];
-                                    const currentFieldCaption: string =
-                                        (currentField.caption.indexOf(' (') !== -1 && currentField.caption.indexOf(')') !== -1) ?
-                                            currentField.caption.slice(currentField.caption.indexOf('(') + 1, currentField.caption.length - 1) : currentField.caption;
-                                    axis[i as number].caption = (this.localeObj ? this.localeObj.getConstant(axisField) : currentField) + ' (' + currentFieldCaption + ')';
+                                    const currentField: IFieldOptions = axis.filter((axisField: IFieldOptions) => {
+                                        return axisField.name === fieldName;
+                                    })[0];
+                                    if (!isNullOrUndefined(currentField)) {
+                                        const currentFieldCaption: string = (currentField.caption.indexOf(' (') !== -1 &&
+                                            currentField.caption.indexOf(')') !== -1) ? currentField.caption.slice(
+                                                currentField.caption.indexOf('(') + 1, currentField.caption.length - 1
+                                            ) : currentField.caption;
+                                        axis[i as number].caption = (this.localeObj ? this.localeObj.getConstant(axisField) : currentField)
+                                            + ' (' + currentFieldCaption + ')';
+                                    }
                                 }
                                 i++;
                             }
@@ -869,6 +877,9 @@ export class PivotEngine {
                                 const startValue: number = groupName[0];
                                 const endValue: number = groupName[groupName.length - 1];
                                 currentData[fieldName as string] = this.getNumberGroupHeaders(startValue, endValue, cEndValue);
+                                if (isNullOrUndefined(this.groupedDataType[fieldName as string])) {
+                                    this.groupedDataType[fieldName as string] = 'string';
+                                }
                             } else {
                                 if (groupName.length === 0) {
                                     for (let i: number = currentStartValue; i <= currentEndValue; i++) {
@@ -877,6 +888,9 @@ export class PivotEngine {
                                     const startValue: number = groupName[0];
                                     const endValue: number = groupName[groupName.length - 1];
                                     currentData[fieldName as string]  = this.getNumberGroupHeaders(startValue, endValue, cEndValue);
+                                    if (isNullOrUndefined(this.groupedDataType[fieldName as string])) {
+                                        this.groupedDataType[fieldName as string] = 'string';
+                                    }
                                 } else {
                                     let startValue: number = groupName[groupName.length - 1] + 1;
                                     let endValue: number = startValue + (group.rangeInterval - 1);
@@ -885,6 +899,9 @@ export class PivotEngine {
                                     while (grouping) {
                                         if (currentStartValue >= startValue && currentStartValue <= endValue) {
                                             currentData[fieldName as string]  = this.getNumberGroupHeaders(startValue, endValue, cEndValue);
+                                            if (isNullOrUndefined(this.groupedDataType[fieldName as string])) {
+                                                this.groupedDataType[fieldName as string] = 'string';
+                                            }
                                             groupName.push(startValue);
                                             groupName.push(endValue);
                                             grouping = false;
@@ -1138,8 +1155,12 @@ export class PivotEngine {
                     }
                     this.updateMembersOrder(key);
                 } else {
-                    type = (field && 'dataType' in field && field.dataType && dataTypes.indexOf(field.dataType.toLowerCase()) > -1) ?
-                        field.dataType.toLowerCase() : type;
+                    if (!isNullOrUndefined(this.groupedDataType[key as string])) {
+                        type = this.groupedDataType[key as string];
+                    } else {
+                        type = (field && 'dataType' in field && field.dataType && dataTypes.indexOf(field.dataType.toLowerCase()) > -1) ?
+                            field.dataType.toLowerCase() : type;
+                    }
                     this.fieldList[key as string] = {
                         caption: (field && 'caption' in field && field.caption) ? field.caption : key,
                         id: key,
@@ -1189,8 +1210,12 @@ export class PivotEngine {
             while (len--) { /** while is used for better performance than for */
                 const key: string = keys[len as number];
                 const field: IFieldOptions = this.getMappingField(key, this.dataSourceSettings.fieldMapping);
-                type = (field && 'dataType' in field && field.dataType && dataTypes.indexOf(field.dataType.toLowerCase()) > -1) ?
-                    field.dataType.toLowerCase() : PivotUtil.getType(fields[this.fieldKeys[key as string] as string | number] as Date);
+                if (!isNullOrUndefined(this.groupedDataType[key as string])) {
+                    type = this.groupedDataType[key as string];
+                } else {
+                    type = (field && 'dataType' in field && field.dataType && dataTypes.indexOf(field.dataType.toLowerCase()) > -1) ?
+                        field.dataType.toLowerCase() : PivotUtil.getType(fields[this.fieldKeys[key as string] as string | number] as Date);
+                }
                 this.fieldList[key as string] = {
                     id: key,
                     pid: (field && 'groupName' in field && field.groupName) ? field.groupName :
@@ -1235,6 +1260,7 @@ export class PivotEngine {
                 this.updateMembersOrder(key);
             }
         }
+        this.groupedDataType = {};
         this.updateTreeViewData(dataFields);
     }
 
@@ -2828,8 +2854,8 @@ export class PivotEngine {
         }
     }
     private sortHeaders(
-        fieldName: string, childrens: IField, sortMembersOrder: IAxisSet[], sortOrder: string,
-        type: string | boolean): IAxisSet[] {
+        fieldName: string, childrens: IField, sortMembersOrder: IAxisSet[], sortOrder: string, type: string | boolean
+    ): IAxisSet[] {
         let isHeaderSortByDefault: boolean = false;
         const membersInfo: string[] | number[] = this.fieldList[fieldName as string] && this.fieldList[fieldName as string].membersOrder ?
             [...this.fieldList[fieldName as string].membersOrder] as string[] | number[] : [];
@@ -2842,11 +2868,20 @@ export class PivotEngine {
         type = (type === 'datetime' || type === 'date' || type === 'time') ? (this.formatFields[fieldName as string] &&
             (['date', 'dateTime', 'time'].indexOf(this.formatFields[fieldName as string].type) > -1)) ? type : 'string' : type;
         const isDateType: boolean = (type === 'datetime' || type === 'date' || type === 'time');
+        let isNumberGroupSorting: boolean = false;
+        if (this.dataSourceSettings.groupSettings.length > 0) {
+            const groupField: IGroupSettings[] = this.dataSourceSettings.groupSettings.filter((field: IGroupSettings) => {
+                return field.name === childrens.id as string
+            })
+            if (!isNullOrUndefined(groupField) && groupField.length > 0) {
+                isNumberGroupSorting = groupField[0].type === 'Number' && childrens.type === 'string';
+            }
+        }
         if (membersInfo && membersInfo.length > 0) {
             PivotUtil.applyCustomSort(sortDetails, sortMembersOrder, type);
         }
         else {
-            PivotUtil.applyHeadersSort(sortMembersOrder, sortOrder, type);
+            PivotUtil.applyHeadersSort(sortMembersOrder, sortOrder, type, isNumberGroupSorting);
             isHeaderSortByDefault = true;
         }
         if (isHeaderSortByDefault && this.getHeaderSortInfo) {
@@ -3742,7 +3777,7 @@ export class PivotEngine {
             indexObject: {},
             members: [],
             actualText: 'Grand' + customText,
-            formattedText: 'Grand' + customText,
+            formattedText: this.localeObj ? this.localeObj.getConstant('grandTotal') : ('Grand' + customText),
             ordinal: len,
             type: 'grand sum',
             valueSort: {}

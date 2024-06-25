@@ -947,6 +947,56 @@ describe('pdf Export =>', () => {
             gridObj = pdfpropery = null;
         });
     });
+
+    // used for code coverage
+    describe('Lazy load group pdf export', () => {
+        let gridObj: Grid;
+
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 1),
+                    allowPdfExport: true,
+                    allowPaging: true,
+                    allowGrouping: true,
+                    groupSettings: { enableLazyLoading: true, columns: ['ShipCountry'] },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: '120px' },
+                        { field: 'Freight', headerText: 'Freight($)', textAlign: 'Right', width: 120, format: 'C2' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 140 },
+                    ],
+                    aggregates: [{
+                        columns: [
+                            {
+                                type: 'Sum',
+                                field: 'Freight',
+                                format: 'C2',
+                                footerTemplate: 'Sum: ${Sum}'
+                            },
+                        ]
+                    }],
+                }, done);
+        });
+
+        it('Hierarchy export all mode', (done) => {
+            gridObj.pdfExport(null, true).then((pdfDoc: PdfDocument) => {
+                expect(pdfDoc instanceof PdfDocument).toBeTruthy();
+                done();
+            });
+        });
+
+        it('Hierarchy export none mode', (done) => {
+            gridObj.pdfExport({ hierarchyExportMode: 'None' }, true).then((pdfDoc: PdfDocument) => {
+                expect(pdfDoc instanceof PdfDocument).toBeTruthy();
+                done();
+            });
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });
 
 

@@ -213,13 +213,24 @@ export class Filter implements IAction {
         this.updateFilterMsg();
         this.removeEventListener();
         this.unWireEvents();
-        if (this.filterSettings.type === 'FilterBar' && this.filterSettings.showFilterBarOperator) {
-            const dropdownlist: NodeListOf<Element> = [].slice.call(this.element.getElementsByClassName('e-filterbaroperator'));
-            for (let i: number = 0; i < dropdownlist.length; i++) {
-                if ((<EJ2Intance>dropdownlist[parseInt(i.toString(), 10)]).ej2_instances[0]) {
-                    (<EJ2Intance>dropdownlist[parseInt(i.toString(), 10)]).ej2_instances[0].destroy();
+        if (this.filterSettings.type === 'FilterBar' && !this.parent.isDestroyed) {
+            if (this.filterSettings.showFilterBarOperator) {
+                const dropdownlist: NodeListOf<Element> = [].slice.call(this.element.getElementsByClassName('e-filterbaroperator'));
+                for (let i: number = 0; i < dropdownlist.length; i++) {
+                    if ((<EJ2Intance>dropdownlist[parseInt(i.toString(), 10)]).ej2_instances[0]) {
+                        (<EJ2Intance>dropdownlist[parseInt(i.toString(), 10)]).ej2_instances[0].destroy();
+                    }
                 }
             }
+            this.parent.getColumns().map((column: Column) => {
+                if (column.filterBarTemplate && !isNullOrUndefined(column.filterBarTemplate.destroy)) {
+                    let destroyFn: Function | String = column.filterBarTemplate.destroy;
+                    if (typeof destroyFn === 'string') {
+                        destroyFn = getValue(destroyFn, window);
+                    }
+                    (destroyFn as Function)();
+                }
+            })
         }
         if (this.element) {
             if (this.element.parentElement) {
@@ -1018,6 +1029,9 @@ export class Filter implements IAction {
             }
             if (gObj.allowPaging) {
                 gObj.updateExternalMessage(this.filterStatusMsg);
+                if (this.parent.height === '100%') {
+                    this.parent.scrollModule.refresh();
+                }
             }
 
             //TODO: virtual paging

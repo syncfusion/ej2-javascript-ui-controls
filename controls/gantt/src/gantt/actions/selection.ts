@@ -61,7 +61,7 @@ export class Selection {
      * @private
      */
     public selectRowByIndex(): void {
-        if ((this.parent.selectedRowIndex !== -1 || this.parent.staticSelectedRowIndex !== -1) && this.parent.isLoad) {
+        if ((this.parent.selectedRowIndex !== -1 || this.parent.staticSelectedRowIndex !== -1)) {
             this.selectRow(
                 this.parent.staticSelectedRowIndex !== -1 ? this.parent.staticSelectedRowIndex : this.parent.selectedRowIndex);
             this.parent.staticSelectedRowIndex = -1;
@@ -233,10 +233,10 @@ export class Selection {
         }
         const selectedRow: HTMLElement = ganttRow.filter((e: HTMLElement) => parseInt(e.getAttribute('data-rowindex'), 10) === index)[0];
         let condition: boolean;
-        if (index === -1 || isNullOrUndefined(selectedRow) || this.parent.selectionSettings.mode === 'Cell') {
+        if (index === -1 || (isNullOrUndefined(selectedRow) && !this.parent.enableVirtualization) || this.parent.selectionSettings.mode === 'Cell') {
             return;
         }
-        if (this.parent.showActiveElement && !isPreventFocus) {
+        if (this.parent.showActiveElement && (!isNullOrUndefined(isPreventFocus) || this.parent.enableVirtualization) && !isPreventFocus) {
             this.parent.treeGrid.grid.selectionModule.preventFocus = true;
         } else {
             this.parent.treeGrid.grid.selectionModule.preventFocus = false;

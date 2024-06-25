@@ -3990,7 +3990,7 @@ export class PdfViewerBase {
             return;
         }
         if (event.shiftKey) {
-            if (!(event.target as HTMLElement).classList.contains("e-pv-formfield-input") && (!(event.target as HTMLElement).classList.contains("e-textbox"))) {
+            if (!(event.target as HTMLElement).classList.contains("e-pv-formfield-input") && (!(event.target as HTMLElement).classList.contains("e-textbox")) && (!(event.target as HTMLElement).classList.contains("e-pdfviewer-formFields"))) {
                 switch (event.keyCode) {
                     case 72: { //h key
                         event.preventDefault();
@@ -4031,6 +4031,12 @@ export class PdfViewerBase {
                     break;
                 }
             }
+            if (event.ctrlKey) {
+                if (!isNullOrUndefined(this.pdfViewer.annotationModule)) {
+                    this.pdfViewer.annotationModule.setAnnotationMode('None');
+                }
+            }
+
             switch (event.keyCode) {
             case 79: // o key
                 if (this.pdfViewer.toolbarModule && this.pdfViewer.enableToolbar) {
@@ -7330,25 +7336,13 @@ export class PdfViewerBase {
      * @returns {number} - number
      */
     public getTileCount(pageWidth: any, pageHeight: any): number {
-        if (pageWidth && pageHeight && typeof pageWidth === 'number' && typeof pageHeight === 'number') {
+        if (pageWidth && typeof pageWidth === 'number') {
             const defaultWidth: number = 816;
-            const maxTileWidth: number = 1200;
             let tileCount: number = 1;
-            let tileWidth: number = pageWidth;
-            if (Math.min(pageWidth, pageHeight) < defaultWidth && Math.max(pageWidth, pageHeight) > maxTileWidth) {
-                tileWidth = Math.max(pageWidth, pageHeight);
-            }
-            else {
-                tileWidth = Math.min(pageWidth, pageHeight);
-            }
-            if (this.getZoomFactor() > 2 && tileWidth < defaultWidth) {
-                tileCount = 1;
-            }
-            else if (this.getZoomFactor() > 2 && tileWidth <= maxTileWidth) {
+            if (this.getZoomFactor() > 2 && pageWidth <= 1200) {
                 tileCount = 2;
-            }
-            else {
-                tileCount = tileWidth / defaultWidth;
+            } else {
+                tileCount = pageWidth / defaultWidth;
             }
             const tileValue: number = Math.ceil(tileCount);
             if (tileValue <= 0) {
@@ -10732,7 +10726,6 @@ export class PdfViewerBase {
                                 }
                                 break;
                             case 'signature':
-                            case 'Signature':
                                 if (annotation[parseInt(i.toString(), 10)].signatureAnnotation.length !== 0 ||
                                 annotationData.length !== 0) {
                                     for (let j: number = 0; j < annotationData.length; j++) {
@@ -11107,6 +11100,7 @@ export class PdfViewerBase {
                         this.pdfViewer.annotationModule.stickyNotesAnnotationModule.renderStickyNotesAnnotations(annotationData, pageIndex);
                         break;
                     case 'signature':
+                    case 'Signature':
                         storeObject = window.sessionStorage.getItem(this.documentId + '_annotations_sign');
                         annotObject = JSON.parse(storeObject);
                         if (annotationData) {
@@ -12529,7 +12523,7 @@ export class PdfViewerBase {
         let pageTop: number = pageAnotationBounds.y ? parseFloat(pageAnotationBounds.y.toFixed(10)) : parseFloat(pageAnotationBounds.top.toFixed(10));
         let pageWidth: number = parseFloat(pageAnotationBounds.width.toFixed(10));
         let pageHeight: number = parseFloat(pageAnotationBounds.height.toFixed(10));
-        return (left !== pageLeft && top !== pageTop && width !== pageWidth && height !== pageHeight);
+        return (left !== pageLeft || top !== pageTop || width !== pageWidth || height !== pageHeight);
     }
 }
 

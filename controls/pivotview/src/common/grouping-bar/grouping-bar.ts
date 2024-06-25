@@ -26,7 +26,8 @@ export class GroupingBar implements IAction {
     private groupingTable: HTMLElement;
     private groupingChartTable: HTMLElement;
     private rightAxisPanel: HTMLElement;
-    private rowPanel: HTMLElement;
+    /** @hidden */
+    public rowPanel: HTMLElement;
     private rowAxisPanel: HTMLElement;
     private touchObj: Touch;
     private resColWidth: number;
@@ -418,6 +419,10 @@ export class GroupingBar implements IAction {
      * @hidden
      */
     public setGridRowWidth(): void {
+        const emptyRowHeader: HTMLElement =
+        this.parent.element.querySelector('.' + cls.HEADERCONTENT).querySelector('.e-columnheader') as HTMLElement;
+        addClass([emptyRowHeader.querySelector('.' + cls.HEADERCELL)], 'e-group-row');
+        emptyRowHeader.querySelector('.e-group-row').appendChild(this.rowAxisPanel);
         const colGroupElement: HTMLElement =
             this.parent.element.querySelector('.' + cls.HEADERCONTENT).querySelector('colgroup').children[0] as HTMLElement;
         if (this.rowPanel.querySelector('.' + cls.PIVOT_BUTTON_CLASS)) {

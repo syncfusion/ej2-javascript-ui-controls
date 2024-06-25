@@ -1953,7 +1953,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
             detach(this.popupObj.element);
         }
         if (this.inputEle) {
-            const attrArray: string[] = ['placeholder', 'aria-expanded', 'spellcheck', 'aria-label', 'role', 'tabindex', 'type', 'id', 'aria-owns', 'aria-controls'];
+            const attrArray: string[] = ['placeholder', 'aria-expanded', 'spellcheck', 'aria-label', 'role', 'type', 'aria-owns', 'aria-controls'];
             for (let i: number = 0; i < attrArray.length; i++) {
                 this.inputEle.removeAttribute(attrArray[i as number]);
             }

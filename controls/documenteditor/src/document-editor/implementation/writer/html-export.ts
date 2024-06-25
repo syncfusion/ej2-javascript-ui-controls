@@ -4,7 +4,7 @@ import { CellVerticalAlignment, LineStyle } from '../../base/types';
 import { WCharacterFormat } from '../format/character-format';
 import { WParagraphFormat } from '../format/paragraph-format';
 import { HelperMethods } from '../editor/editor-helper';
-import { sectionsProperty, characterFormatProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, nameProperty, boldProperty, italicProperty, underlineProperty, baselineAlignmentProperty, strikethroughProperty, highlightColorProperty, fontSizeProperty, fontColorProperty, fontFamilyProperty, styleNameProperty, allCapsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, bordersProperty, leftMarginProperty, rightMarginProperty, topMarginProperty, bottomMarginProperty, cellWidthProperty, columnSpanProperty, rowSpanProperty, verticalAlignmentProperty, isHeaderProperty, cellSpacingProperty, shadingProperty, tableAlignmentProperty, preferredWidthProperty, preferredWidthTypeProperty, backgroundColorProperty, hasNoneStyleProperty, lineStyleProperty, lineWidthProperty, textProperty, widthProperty, heightProperty, colorProperty, imageStringProperty, topProperty, bottomProperty, rightProperty, leftProperty, fieldTypeProperty, inlinesProperty, cellFormatProperty, rowFormatProperty, cellsProperty, rowsProperty, tableFormatProperty, blocksProperty, listLevelPatternProperty, abstractListIdProperty, levelsProperty, bookmarkTypeProperty, inlineFormatProperty, startAtProperty, characterSpacingProperty, scalingProperty, DocumentEditor,imagesProperty, Dictionary, isMetaFileProperty, isCreatedUsingHtmlSpanTagProperty} from '../../index';
+import { sectionsProperty, characterFormatProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, nameProperty, boldProperty, italicProperty, underlineProperty, baselineAlignmentProperty, strikethroughProperty, highlightColorProperty, fontSizeProperty, fontColorProperty, fontFamilyProperty, styleNameProperty, allCapsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, bordersProperty, leftMarginProperty, rightMarginProperty, topMarginProperty, bottomMarginProperty, cellWidthProperty, columnSpanProperty, rowSpanProperty, verticalAlignmentProperty, isHeaderProperty, cellSpacingProperty, shadingProperty, tableAlignmentProperty, preferredWidthProperty, preferredWidthTypeProperty, backgroundColorProperty, hasNoneStyleProperty, lineStyleProperty, lineWidthProperty, textProperty, widthProperty, heightProperty, colorProperty, imageStringProperty, topProperty, bottomProperty, rightProperty, leftProperty, fieldTypeProperty, inlinesProperty, cellFormatProperty, rowFormatProperty, cellsProperty, rowsProperty, tableFormatProperty, blocksProperty, listLevelPatternProperty, abstractListIdProperty, levelsProperty, bookmarkTypeProperty, inlineFormatProperty, startAtProperty, characterSpacingProperty, scalingProperty, DocumentEditor,imagesProperty, Dictionary, isMetaFileProperty, isCreatedUsingHtmlSpanTagProperty, restartLevelProperty} from '../../index';
 
 /**
  * @private
@@ -50,15 +50,24 @@ export class HtmlExport {
     }
     private serializeSection(section: any): string {
         let string: string = '';
+        let listLevel: any = undefined;
+        let listCloseCount: any[] = [];
         for (let i: number = 0; i < section[blocksProperty[this.keywordIndex]].length; i++) {
             const block: any = section[blocksProperty[this.keywordIndex]][i];
             if (block.hasOwnProperty(inlinesProperty[this.keywordIndex])) {
-                string += this.serializeParagraph(block);
+                string += this.serializeParagraph(block, listCloseCount);
+                listLevel = this.getListLevel(block);
             } else if (block.hasOwnProperty(blocksProperty[this.keywordIndex])) {
                 string += this.serializeSection(block);
             } else {
                 string += this.closeList();
                 string += this.serializeTable(block);
+            }
+        }
+        if (listCloseCount.length > 0 && (isNullOrUndefined(listLevel) || isNullOrUndefined(this.prevListLevel) || (this.prevListLevel[restartLevelProperty[this.keywordIndex]] === listLevel[restartLevelProperty[this.keywordIndex]] && this.prevListLevel[paragraphFormatProperty[this.keywordIndex]][leftIndentProperty[this.keywordIndex]] === listLevel[paragraphFormatProperty[this.keywordIndex]][leftIndentProperty[this.keywordIndex]]))) {
+            while (listCloseCount.length > 0) {
+                string += this.closeList();
+                listCloseCount.pop();
             }
         }
         string += this.closeList();
@@ -68,11 +77,12 @@ export class HtmlExport {
     }
 
     // Serialize Paragraph
-    private serializeParagraph(paragraph: any): string {
+    private serializeParagraph(paragraph: any, listCloseCount?: any[]): string {
         let blockStyle: string = '';
         let isList: boolean = false;
         let isPreviousList: boolean = false;
-
+        let restartLevel: number = undefined;
+        let leftIndent: number = 0;
         if (!isNullOrUndefined(this.prevListLevel)) {
             isPreviousList = true;
         }
@@ -86,9 +96,20 @@ export class HtmlExport {
             if (this.prevListLevel !== listLevel) {
                 isPreviousList = false;
             }
+            if (!isNullOrUndefined(listCloseCount) && !isNullOrUndefined(listLevel) && !isNullOrUndefined(this.prevListLevel) && ((this.prevListLevel[restartLevelProperty[this.keywordIndex]] < listLevel[restartLevelProperty[this.keywordIndex]] && this.prevListLevel !== listLevel) || (this.prevListLevel[paragraphFormatProperty[this.keywordIndex]][leftIndentProperty[this.keywordIndex]] !== listLevel[paragraphFormatProperty[this.keywordIndex]][leftIndentProperty[this.keywordIndex]]))) {
+                listCloseCount.push(listCloseCount.length);
+                restartLevel = this.prevListLevel[restartLevelProperty[this.keywordIndex]];
+                leftIndent = this.prevListLevel[paragraphFormatProperty[this.keywordIndex]][leftIndentProperty[this.keywordIndex]];
+            }
             this.prevListLevel = listLevel;
         }
-        if (!isPreviousList) {
+        if (!isNullOrUndefined(listCloseCount) && listCloseCount.length > 0 && (isNullOrUndefined(listLevel) || isNullOrUndefined(this.prevListLevel) || (this.prevListLevel[restartLevelProperty[this.keywordIndex]] === restartLevel && this.prevListLevel[paragraphFormatProperty[this.keywordIndex]][leftIndentProperty[this.keywordIndex]] === leftIndent))) {
+            while (listCloseCount.length > 0) {
+                blockStyle += this.closeList();
+                listCloseCount.pop();
+            }
+        }
+        if (!isPreviousList && !(listCloseCount && listCloseCount.length !== 0)) {
             blockStyle += this.closeList();
         }
 

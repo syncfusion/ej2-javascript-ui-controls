@@ -432,7 +432,7 @@ export class SparklineRenderer {
         for (let i: number = 0; i < len; i++) {
             temp = points[i as number];
             rectOptions.id = id + i;
-            rectOptions.fill = colors[0];
+            rectOptions.fill = spark.fill !== '#00bdae' ? spark.fill : colors[0];
             rectOptions.rect = new Rect(temp.x, temp.y, temp.width, temp.height);
             this.getSpecialPoint(true, temp, spark, rectOptions, i, highPos, lowPos, len);
             temp.location.y = (temp.markerPosition <= this.axisHeight) ? temp.y : (temp.y + temp.height);

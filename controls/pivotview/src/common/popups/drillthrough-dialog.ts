@@ -415,7 +415,8 @@ export class DrillThroughDialog {
                     this.drillThroughGrid.editSettings.allowEditOnDblClick = this.parent.editSettings.allowEditOnDblClick;
                 }
                 (this.drillThroughGrid.columns as ColumnModel[]).push({
-                    field: '__index', visible: false, isPrimaryKey: true, type: 'string', showInColumnChooser: false
+                    field: '__index', visible: false, isPrimaryKey: true, type: 'string', showInColumnChooser: false,
+                    defaultValue: '0', validationRules: { required: true }
                 });
             } catch (execption) {
                 this.parent.actionFailureMethod(execption);

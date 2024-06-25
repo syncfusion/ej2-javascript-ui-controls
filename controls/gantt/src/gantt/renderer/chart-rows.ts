@@ -506,7 +506,9 @@ export class ChartRows extends DateProcessor {
             rowData: data
         };
         this.triggerQueryTaskbarInfoByIndex(tr, data);
-        this.parent.selectionModule.clearSelection();
+        if (this.parent.selectionModule) {
+            this.parent.selectionModule.clearSelection();
+        }
         const segments: ITaskSegment[] = (args.rowData as IGanttData).taskData[this.parent.taskFields.segments];
         if (this.parent.timezone && segments != null) {
             for (let i: number = 0; i < segments.length; i++) {
@@ -706,8 +708,20 @@ export class ChartRows extends DateProcessor {
                 const dayStartTime: number = this.parent['getCurrentDayStartTime'](startDate);
                 this.setTime(dayStartTime, startDate);
                 startDate = this.parent.dataOperation.checkStartDate(startDate, ganttProp, false);
+                if (!this.parent.taskFields.duration && increment <= 0) {
+                    startDate.setDate(startDate.getDate() + 1);
+                }
                 segmentEndDate = new Date(endDate.getTime());
                 segmentEndDate.setDate(segmentEndDate.getDate() + 1);
+                if (this.isOnHolidayOrWeekEnd(segmentEndDate, true)) {
+                    do {
+                        segmentEndDate.setDate(segmentEndDate.getDate() + 1);
+                    }
+                    while (this.isOnHolidayOrWeekEnd(segmentEndDate, true));
+                }
+                if (!this.parent.includeWeekend) {
+                    segmentEndDate = this.getNextWorkingDay(segmentEndDate);
+                }
             }
             if (endDateState !== -1) {
                 const diff: number = segmentDuration - segment.duration;
@@ -2278,7 +2292,7 @@ export class ChartRows extends DateProcessor {
             const nextEditableElement: HTMLElement = this.parent.ganttChartModule.tempNextElement;
             if (this.parent.ganttChartModule.isEditableElement && nextEditableElement) {
                 this.parent.treeGrid.grid.focusModule.focus();
-                addClass([this.parent.treeGrid.getRows()[tr['ariaRowIndex']].children[this.parent.ganttChartModule.childrenIndex]], 'e-focused');
+                addClass([this.parent.treeGrid.getRows()[(tr as HTMLElement).getAttribute('data-rowindex')].children[this.parent.ganttChartModule.childrenIndex]], 'e-focused');
                 this.parent.ganttChartModule.tempNextElement = null;
             }
             const row: Row<Column> = this.parent.treeGrid.grid.getRowObjectFromUID(

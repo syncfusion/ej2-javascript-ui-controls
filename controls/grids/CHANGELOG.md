@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 26.1.39 (2024-06-25)
+
+### Grid
+
+#### Bug fixes
+
+- `#I584245` - Programmatic `rowDeselect` with toggle as true not working properly when initially selected the toggle row index then select another row checkbox has been resolved.
+- `#FB58586` - Resolved the issue where the `SelectRow` method with toggle set to true does not selects the rows properly.
+- `#FB58744` - The issue where selecting multiple rows in a grid with multiple selection enabled and then clicking on the last selected row does not retain the selection has been resolved.
+- `#FB58571` - The issue where an unexpected `rowDeselect` event was triggered when using checkboxes in conjunction with the `persistSelection` functionality has been resolved.
+- `#I576241` - The memory leak issue occurring when using the `filterBarTemplate` in a grid column has been resolved.
+- `#FB58494` - Resolved the issue where the column's Default Value property only allowed `string` values.
+- `#FB58490` - Resolved the issue where setting the `numeric editType` before the `primaryKey` caused problems with tab navigation.
+
 ## 26.1.38 (2024-06-19)
 
 ### Grid

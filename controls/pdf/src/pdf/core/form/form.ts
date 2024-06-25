@@ -4,7 +4,8 @@ import { PdfField, PdfTextBoxField, PdfButtonField, PdfCheckBoxField, PdfRadioBu
 import { _getInheritableProperty, _getPageIndex } from './../utils';
 import { PdfFormFieldsTabOrder, _FieldFlag, _SignatureFlag } from './../enumerator';
 import { PdfPage } from './../pdf-page';
-import { PdfWidgetAnnotation } from './../annotations';
+import { PdfAnnotationCollection } from './../annotations/annotation-collection';
+import { PdfWidgetAnnotation } from './../annotations/annotation';
 import { PdfDocument } from '../pdf-document';
 /**
  * Represents a PDF form.
@@ -26,6 +27,7 @@ export class PdfForm {
     _widgetReferences: Array<_PdfReference>;
     _parsedFields: Map<number, PdfField>;
     _needAppearances: boolean;
+    _isDefaultAppearance: boolean = false;
     _hasKids: boolean = false;
     _setAppearance: boolean = false;
     _exportEmptyFields: boolean = false;
@@ -37,6 +39,7 @@ export class PdfForm {
     _fieldCollection: PdfField[] = [];
     _tabCollection: Map<number, PdfFormFieldsTabOrder>;
     _signFlag: _SignatureFlag = _SignatureFlag.none;
+    _isNeedAppearances: boolean = false;
     /**
      * Represents a loaded from the PDF document.
      *
@@ -165,6 +168,7 @@ export class PdfForm {
         let field: PdfField;
         if (this._parsedFields.has(index)) {
             field = this._parsedFields.get(index);
+            this._isNeedAppearances = true;
         } else {
             let dictionary: _PdfDictionary;
             const ref: _PdfReference = this._fields[index]; // eslint-disable-line
@@ -245,6 +249,7 @@ export class PdfForm {
         if (field instanceof PdfSignatureField) {
             field._form._signatureFlag = _SignatureFlag.signatureExists | _SignatureFlag.appendOnly;
         }
+        this._isNeedAppearances = true;
         return (this._fields.length - 1);
     }
     /**
@@ -346,7 +351,7 @@ export class PdfForm {
     setDefaultAppearance(value: boolean): void {
         this._setAppearance = !value;
         this._needAppearances = value;
-        this._dictionary.update('NeedAppearances', value);
+        this._isDefaultAppearance = value;
     }
     /**
      * Order the form fields.
@@ -601,6 +606,30 @@ export class PdfForm {
     _doPostProcess(isFlatten: boolean, pageToImport?: PdfPage): void {
         for (let i: number = this.count - 1; i >= 0; i--) {
             const field: PdfField = this.fieldAt(i);
+            if (field && !field._isLoaded && typeof field._tabIndex !== 'undefined' && field._tabIndex >= 0) {
+                const page: PdfPage = field._page;
+                if (page &&
+                    page._pageDictionary.has('Annots') &&
+                    (page.tabOrder === PdfFormFieldsTabOrder.manual ||  this._tabOrder === PdfFormFieldsTabOrder.manual)) {
+                    const annots: _PdfReference[] = page._pageDictionary.get('Annots');
+                    const annotationCollection: PdfAnnotationCollection = new PdfAnnotationCollection(annots, this._crossReference, page);
+                    page._annotations = annotationCollection;
+                    for (let i: number = 0; i < field.itemsCount; i++) {
+                        const item: PdfWidgetAnnotation = field.itemAt(i);
+                        if (item && item instanceof PdfWidgetAnnotation) {
+                            let index: number = annots.indexOf(item._ref);
+                            if (index < 0) {
+                                index = field._annotationIndex;
+                            }
+                            if (index >= 0) {
+                                const annotations: _PdfReference[] = page.annotations._reArrange(field._ref, field._tabIndex, index);
+                                page._pageDictionary.update('Annots', annotations);
+                                page._pageDictionary._updated = true;
+                            }
+                        }
+                    }
+                }
+            }
             if (field && ((pageToImport && field.page === pageToImport) || !pageToImport)) {
                 field._doPostProcess(isFlatten || field.flatten);
                 if (!isFlatten && field.flatten) {

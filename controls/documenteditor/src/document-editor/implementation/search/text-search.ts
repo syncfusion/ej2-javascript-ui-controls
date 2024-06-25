@@ -5,7 +5,9 @@ import { TextPosition } from '../selection/selection-helper';
 import {
     LineWidget, ElementBox, TextElementBox, ParagraphWidget,
     BlockWidget, ListTextElementBox, BodyWidget, FieldElementBox, Widget, HeaderFooterWidget,
-    HeaderFooters, ShapeElementBox, TextFrame, FootnoteElementBox
+    HeaderFooters, ShapeElementBox, TextFrame, FootnoteElementBox,
+    BookmarkElementBox,
+    CommentCharacterElementBox
 } from '../viewer/page';
 import { ElementInfo, TextInLineInfo } from '../editor/editor-helper';
 import { TextSearchResult } from './text-search-result';
@@ -168,6 +170,7 @@ export class TextSearch {
             }
             const result: TextSearchResult = results.addResult();
             const spanKeys: TextElementBox[] = textInfo.keys;
+            let isContainField: boolean = false;
             for (let j: number = 0; j < spanKeys.length; j++) {
                 const span: TextElementBox = spanKeys[parseInt(j.toString(), 10)];
                 const startIndex: number = textInfo.get(span);
@@ -193,7 +196,28 @@ export class TextSearch {
                     if (span as ElementBox === inlines) {
                         index += indexInInline;
                     }
-                    const offset: number = (span.line).getOffset(span, index);
+                    if (span.text.charAt(span.text.length - 1) !== ' ' && !isNullOrUndefined(span.nextElement) && (span.nextElement instanceof BookmarkElementBox || span.nextElement instanceof CommentCharacterElementBox)) {
+                        let element: ElementBox = span.nextElement;
+                        while (element) {
+                            element = element.nextElement;
+                            if (element instanceof TextElementBox) {
+                                break;
+                            }
+                        }
+                        if (element && element instanceof TextElementBox && element.text.charAt(0) !== ' ') {
+                            isContainField = true;
+                            continue;
+                        }
+                    }
+                    if (span.previousElement && (span.previousElement instanceof BookmarkElementBox || span.previousElement instanceof CommentCharacterElementBox)) {
+                        isContainField = true;
+                    }
+                    let offset: number = 0;
+                    if (isContainField) {
+                        offset = (span.line).getOffset(span, 0) + span.length;
+                    } else {
+                        offset = (span.line).getOffset(span, index)
+                    }
                     result.end = this.getTextPosition(span.line, offset.toString());
                     result.end.location = this.owner.selectionModule.getPhysicalPositionInternal(span.line, offset, true);
                     result.end.setPositionParagraph(span.line, offset);

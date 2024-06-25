@@ -68,7 +68,7 @@ describe('Sparkline Column and WinLoss series spec', () => {
                 args.sparkline.loaded = () => { /* null function */ };
                 ele = getIdElement(id + '_sparkline_column_1');
                 rect = getRect(ele);
-                expect(ele.getAttribute('fill')).toBe('#00bdae');
+                expect(ele.getAttribute('fill')).toBe('#0ffa847c');
                 expect(ele.getAttribute('stroke')).toBe('#0cfd84');
                 expect(ele.getAttribute('stroke-width')).toBe('1');
                 expect(rect.x).toBe(44);
@@ -81,7 +81,7 @@ describe('Sparkline Column and WinLoss series spec', () => {
         it('Sparkline Column x and y value first point checking', () => {
             ele = getIdElement(id + '_sparkline_column_0');
             rect = getRect(ele);
-            expect(ele.getAttribute('fill')).toBe('#00bdae');
+            expect(ele.getAttribute('fill')).toBe('#0ffa847c');
             expect(ele.getAttribute('stroke')).toBe('#0cfd84');
             expect(ele.getAttribute('stroke-width')).toBe('1');
             expect(rect.x).toBe(5);
@@ -92,7 +92,7 @@ describe('Sparkline Column and WinLoss series spec', () => {
         it('Sparkline Column x and y value last point checking', () => {
             ele = getIdElement(id + '_sparkline_column_9');
             rect = getRect(ele);
-            expect(ele.getAttribute('fill')).toBe('#00bdae');
+            expect(ele.getAttribute('fill')).toBe('#0ffa847c');
             expect(ele.getAttribute('stroke')).toBe('#0cfd84');
             expect(ele.getAttribute('stroke-width')).toBe('1');
             expect(rect.x).toBe(356);
@@ -103,7 +103,7 @@ describe('Sparkline Column and WinLoss series spec', () => {
         it('Sparkline Column x and y value random point checking', () => {
             ele = getIdElement(id + '_sparkline_column_8');
             rect = getRect(ele);
-            expect(ele.getAttribute('fill')).toBe('#00bdae');
+            expect(ele.getAttribute('fill')).toBe('#0ffa847c');
             expect(ele.getAttribute('stroke')).toBe('#0cfd84');
             expect(ele.getAttribute('stroke-width')).toBe('1');
             expect(rect.x).toBe(317);
@@ -116,7 +116,7 @@ describe('Sparkline Column and WinLoss series spec', () => {
             sparkline.dataBind();
             ele = getIdElement(id + '_sparkline_column_8');
             rect = getRect(ele);
-            expect(ele.getAttribute('fill')).toBe('#00bdae');
+            expect(ele.getAttribute('fill')).toBe('#0ffa847c');
             expect(ele.getAttribute('stroke')).toBe('#0cfd84');
             expect(ele.getAttribute('stroke-width')).toBe('1');
             expect(rect.x).toBe(317);
@@ -133,7 +133,7 @@ describe('Sparkline Column and WinLoss series spec', () => {
             sparkline.dataBind();
             ele = getIdElement(id + '_sparkline_column_8');
             rect = getRect(ele);
-            expect(ele.getAttribute('fill')).toBe('#00bdae');
+            expect(ele.getAttribute('fill')).toBe('#0ffa847c');
             expect(ele.getAttribute('stroke')).toBe('#0cfd84');
             expect(ele.getAttribute('stroke-width')).toBe('1');
             expect(rect.x).toBe(317);
@@ -144,7 +144,7 @@ describe('Sparkline Column and WinLoss series spec', () => {
         it('Sparkline Column minus values and axis value 0 checking low point', () => {
             ele = getIdElement(id + '_sparkline_column_4');
             rect = getRect(ele);
-            expect(ele.getAttribute('fill')).toBe('#00bdae');
+            expect(ele.getAttribute('fill')).toBe('#0ffa847c');
             expect(ele.getAttribute('stroke')).toBe('#0cfd84');
             expect(ele.getAttribute('stroke-width')).toBe('1');
             expect(rect.x).toBe(161);
@@ -155,7 +155,7 @@ describe('Sparkline Column and WinLoss series spec', () => {
         it('Sparkline Column minus values and axis value 0 checking high point', () => {
             ele = getIdElement(id + '_sparkline_column_3');
             rect = getRect(ele);
-            expect(ele.getAttribute('fill')).toBe('#00bdae');
+            expect(ele.getAttribute('fill')).toBe('#0ffa847c');
             expect(ele.getAttribute('stroke')).toBe('#0cfd84');
             expect(ele.getAttribute('stroke-width')).toBe('1');
             expect(rect.x).toBe(122);
@@ -384,7 +384,7 @@ describe('Sparkline Column and WinLoss series spec', () => {
                 args.sparkline.loaded = () => { /* null function */ };
                 ele = getIdElement(id + '_sparkline_column_1');
                 rect = getRect(ele);
-                expect(ele.getAttribute('fill')).toBe('#00bdae');
+                expect(ele.getAttribute('fill')).toBe('#5af02c');
                 expect(ele.getAttribute('stroke-width')).toBe('1');
                 expect(rect.x).toBe(44);
                 expect(rect.y).toBe(37);
@@ -499,7 +499,7 @@ describe('Sparkline Column and WinLoss series spec', () => {
                 args.sparkline.loaded = () => { /* null function */ };
                 ele = getIdElement(id + '_sparkline_column_1');
                 rect = getRect(ele);
-                expect(ele.getAttribute('fill')).toBe('#00bdae');
+                expect(ele.getAttribute('fill')).toBe('#3C78EF');
                 expect(ele.getAttribute('stroke-width')).toBe('1');
             };
             sparkline.appendTo('#' + id);
@@ -510,7 +510,7 @@ describe('Sparkline Column and WinLoss series spec', () => {
                 args.sparkline.loaded = () => { /* null function */ };
                 ele = getIdElement(id + '_sparkline_column_1');
                 rect = getRect(ele);
-                expect(ele.getAttribute('fill')).toBe('#00bdae');
+                expect(ele.getAttribute('fill')).toBe('#3C78EF');
                 expect(ele.getAttribute('stroke-width')).toBe('1');
                 expect(rect.x).toBe(58);
                 expect(rect.y).toBe(50);

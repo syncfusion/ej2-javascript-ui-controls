@@ -98,13 +98,10 @@ export class PdfGantt extends PdfTreeGrid {
             }
             const detail: TimelineDetails = {};
             const range: number[] = [];
-            const convertedWidth: number = (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) ?
-                pixelToPoint(this.chartHeader.bottomTierCellWidth) : this.chartHeader.bottomTierCellWidth;
+            const convertedWidth: number = pixelToPoint(this.chartHeader.bottomTierCellWidth);
             let width: number = 0;
             if (this.chartHeader.bottomTierCellWidth !== 0) {
-                width = (this.parent.pdfExportModule.gantt.taskbar.isAutoFit()) ?
-                    (Math.floor(pageWidth / convertedWidth) * convertedWidth) :
-                    (Math.floor(pageWidth / convertedWidth) * convertedWidth) + 3;
+                width = (Math.floor(pageWidth / convertedWidth) * convertedWidth);
             }
             range[0] = point;
             if (headerWidth - point <= width) {
@@ -263,7 +260,7 @@ export class PdfGantt extends PdfTreeGrid {
                         pageData.width = (detail.totalWidth);
                     }
                     else {
-                        pageData.width = pixelToPoint(detail.totalWidth);
+                        pageData.width = (detail.totalWidth);
                     }
                     this.pdfPageDetail.push(pageData);
                     pagePoint.y += pageData.height;

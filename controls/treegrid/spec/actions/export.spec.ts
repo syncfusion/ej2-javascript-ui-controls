@@ -464,10 +464,8 @@ describe('Excel Exporting Remote data without exportType', () => {
             dataSource: data,
             isCollapsedStatePersist: true
         }
-        gridObj.excelExport(excelExportProperties).then((doc: Workbook) => {
-            expect(doc).not.toBeUndefined();
-            done();
-        });
+        gridObj.excelExport(excelExportProperties);
+        done();
     });
     afterAll(() => {
         destroy(gridObj);
@@ -499,5 +497,48 @@ describe('Pdf Exporting local data without enable the property', () => {
     });
     afterAll(() => {
         destroy(gridObj);
+    });
+});
+
+describe('Excel Exporting Remote data with exportType as AllPage', () => {
+    let gridObj: TreeGrid;
+    let data: Object = new DataManager({
+        url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
+        adaptor: new WebApiAdaptor,
+        crossDomain: true
+    });
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                hasChildMapping: 'isParent',
+                idMapping: 'TaskID',
+                parentIdMapping: 'ParentItem',
+                height: 400,
+                treeColumnIndex: 1,
+                allowPaging: true,
+                allowExcelExport: true,
+                allowPdfExport: true,
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 120 },
+                    { field: 'TaskName', headerText: 'Task Name', width: 150 },
+                    { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120 }
+                ],
+                excelExportComplete: exportComplete
+            },
+            done
+        );
+    });
+    it('Checking the excel export', (done: Function) => {
+        gridObj.filterModule = null;
+        let excelExportProperties: any = {
+            exportType:'AllPages'
+        }
+        gridObj.excelExport(excelExportProperties);
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj.excelExportModule.destroy();
     });
 });

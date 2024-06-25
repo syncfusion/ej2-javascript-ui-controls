@@ -1096,8 +1096,20 @@ export class PivotUtil {
      * @returns {IAxisSet[]} - It returns the sorted data as IAxisSet[].
      * @hidden
      */
-    public static applyHeadersSort(sortMembersOrder: IAxisSet[], sortOrder: string, type: string | boolean): IAxisSet[] {
-        if (type === 'datetime' || type === 'date' || type === 'time') {
+    public static applyHeadersSort(sortMembersOrder: IAxisSet[], sortOrder: string, type: string | boolean, isNumberGroupSorting?: boolean): IAxisSet[] {
+        if (isNumberGroupSorting) {
+            sortMembersOrder = sortOrder === 'Ascending' ? (sortMembersOrder.sort(function (a: IAxisSet, b: IAxisSet): number {
+                    return (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : (a.actualText === 'Out of Range') ? 1 :
+                        (b.actualText === 'Out of Range') ? -1 : (a.actualText as string).localeCompare(b.actualText as string, undefined, {
+                            numeric: true, sensitivity: 'base'
+                        });
+                })) : sortOrder === 'Descending' ? (sortMembersOrder.sort(function (a: IAxisSet, b: IAxisSet): number {
+                    return (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : (a.actualText === 'Out of Range') ? 1 :
+                        (b.actualText === 'Out of Range') ? -1 : (b.actualText as string).localeCompare(a.actualText as string, undefined, {
+                            numeric: true, sensitivity: 'base'
+                        }); 
+                })) : sortMembersOrder;
+        } else if (type === 'datetime' || type === 'date' || type === 'time') {
             sortMembersOrder = sortOrder === 'Ascending' ?
                 (sortMembersOrder.sort((a: IAxisSet, b: IAxisSet): number => (a.dateText > b.dateText) ? 1 :
                     ((b.dateText > a.dateText) ? -1 : 0))) : sortOrder === 'Descending' ?

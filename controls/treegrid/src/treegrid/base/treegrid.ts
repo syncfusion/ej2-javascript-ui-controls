@@ -1817,7 +1817,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public requiredModules(): ModuleDeclaration[] {
         const modules: ModuleDeclaration[] = [];
         const splitFrozenCount: string = 'splitFrozenCount';
-        this.grid[`${splitFrozenCount}`](this.getColumns());
+        if (!this.isReact && isNullOrUndefined(this['changedProperties'].columns)) {
+            this.grid[`${splitFrozenCount}`](this.getColumns());
+        }
         if (this.isDestroyed) { return modules; }
         modules.push({
             member: 'filter', args: [this, this.filterSettings],
@@ -3057,6 +3059,11 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public onPropertyChanged(newProp: TreeGridModel): void {
         const properties: string[] = Object.keys(newProp);
         let requireRefresh: boolean = false;
+        if (properties.indexOf('columns') > -1) {
+            this.grid.columns = this.getGridColumns(newProp.columns as Column[]);
+            this.grid['updateColumnObject']();
+            requireRefresh = true;
+        }
         for (const prop of properties) {
             switch (prop) {
             case 'treeColumnIndex':

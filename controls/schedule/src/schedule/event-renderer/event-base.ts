@@ -1243,7 +1243,9 @@ export class EventBase {
     }
 
     public updateEventMinimumDuration(startEndHours: Record<string, Date>, startTime: Date, endTime: Date): Record<string, Date> {
-        if (startTime.getTime() < endTime.getTime()) {
+        if (startTime.getTime() < endTime.getTime() || (startTime.getTime() === endTime.getTime() &&
+            (startEndHours.startHour.getTime() < endTime.getTime() && startEndHours.endHour.getTime() > startTime.getTime()) &&
+            this.parent.currentView.indexOf('Timeline') === -1)) {
             const eventDuration: number = (util.getUniversalTime(endTime) - util.getUniversalTime(startTime)) / util.MS_PER_MINUTE;
             if (eventDuration < this.parent.eventSettings.minimumEventDuration) {
                 const tempEnd: Date = new Date(startTime);
