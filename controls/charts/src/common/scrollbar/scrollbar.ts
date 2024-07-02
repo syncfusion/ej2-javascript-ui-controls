@@ -10,7 +10,7 @@ import { scrollChanged, scrollEnd, scrollStart } from '../model/constants';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 
 /**
- * Scrollbar Base
+ * Configures the scrollbar base.
  */
 
 export class ScrollBar {

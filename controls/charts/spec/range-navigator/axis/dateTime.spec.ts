@@ -219,6 +219,7 @@ describe('Range navigator', () => {
         it('checked with secondary axis label alignment far', (done: Function) => {
             range.loaded = (args: Object): void => {
                 axisLabel = document.getElementById('container_AxisLabels');
+                expect(axisLabel !== null).toBe(true);
                 done();
             };
             range.series[0].dataSource = [{ x: new Date(2018, 10, 1), y: 23 }, { x: new Date(2018, 10, 12), y: 34 },
@@ -230,6 +231,7 @@ describe('Range navigator', () => {
         it('checked with secondary axis label alignment near', (done: Function) => {
             range.loaded = (args: Object): void => {
                 axisLabel = document.getElementById('container_AxisLabels');
+                expect(axisLabel !== null).toBe(true);
                 done();
             };
             range.series[0].dataSource = [{ x: new Date(2018, 10, 1), y: 23 }, { x: new Date(2018, 10, 12), y: 34 },
@@ -323,6 +325,8 @@ describe('Range navigator', () => {
         });
         it('checked edge label placements checking first labels', (done: Function) => {
             range.loaded = (args: Object): void => {
+                axisLabel = document.getElementById('container_AxisLabels');
+                expect(axisLabel !== null).toBe(true);
                 done();
             };
             range.series[0].dataSource = data;
@@ -333,6 +337,7 @@ describe('Range navigator', () => {
         });
         it('checking with last labels', () => {
             axisLabel = document.getElementById('container_AxisLabel_13');
+            expect(axisLabel === null).toBe(true);
         });
         it('checcking with Years and enable grouping', (done: Function) => {
             range.loaded = (args: Object) => {
@@ -433,6 +438,8 @@ describe('Range navigator', () => {
         });
         it('checking with lightweight interval type as Weeks', (done: Function) => {
             range.loaded = (args: Object) => {
+                axisLabel = document.getElementById('container_AxisLabels');
+                expect(axisLabel !== null).toBe(true);
                 done();
             };
             range.intervalType = 'Weeks';
@@ -475,6 +482,8 @@ describe('Range navigator', () => {
         });
         it('checking with lightweight interval type as hours', (done: Function) => {
             range.loaded = (args: Object) => {
+                axisLabel = document.getElementById('container_AxisLabels');
+                expect(axisLabel !== null).toBe(true);
                 done();
             };
             range.intervalType = 'Hours';
@@ -518,6 +527,8 @@ describe('Range navigator', () => {
 
         it('checking with skeleton type', (done: Function) => {
             range.loaded = (args: Object) => {
+                axisLabel = document.getElementById('container_AxisLabels');
+                expect(axisLabel !== null).toBe(true);
                 done();
             };
             range.skeletonType = 'Date';

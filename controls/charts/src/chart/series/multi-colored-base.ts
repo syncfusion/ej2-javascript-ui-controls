@@ -11,12 +11,12 @@ import { DataUtil } from '@syncfusion/ej2-data';
 import { DateFormatOptions } from '@syncfusion/ej2-base';
 import {PathAttributes }  from '@syncfusion/ej2-svg-base';
 /**
- * Base class for multi colored series
+ * Base class for multi colored series.
  */
 
 export class MultiColoredSeries extends LineBase {
     /**
-     * To Generate the area path direction.
+     * To generate the area path direction.
      *
      * @param {number} xValue xValue
      * @param {number} yValue yValue
@@ -41,7 +41,7 @@ export class MultiColoredSeries extends LineBase {
         return direction;
     }
     /**
-     * To Generate the empty point direction.
+     * To generate the empty point direction.
      *
      * @param {ChartLocation} firstPoint firstPoint
      * @param {ChartLocation} secondPoint secondPoint

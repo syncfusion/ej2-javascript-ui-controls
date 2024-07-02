@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.1.40 (2024-07-02)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `F58902` - Fixed an issue where the `CollapseAll` / `ExpandAll` button in the toolbar was not working properly when virtualization was enabled.
+
 ## 26.1.39 (2024-06-25)
 
 ### Tree Grid

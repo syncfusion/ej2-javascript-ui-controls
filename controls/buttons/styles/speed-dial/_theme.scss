@@ -42,6 +42,13 @@
           border-color: $sd-li-border-color;
         }
       }
+      &.e-speeddial-text-li .e-speeddial-li-text {
+        @if ($skin-name == 'fluent2') {
+          background: $secondary-bg-color;
+          box-shadow: $shadow-lg;
+          border-color: $secondary-border-color;
+        }
+      }
     }
     .e-speeddial-li.e-disabled {
       @include speeddial-text-icon-colors($sd-disabled-font-color, $sd-disabled-li-bg, $sd-disabled-li-border-color);

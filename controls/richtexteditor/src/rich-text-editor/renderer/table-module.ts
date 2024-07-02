@@ -2088,8 +2088,8 @@ export class Table {
             const argument: ITableNotifyArgs = ((Browser.isDevice || (!isNullOrUndefined(args.args as ClickEventArgs)
                 && !isNullOrUndefined((args.args as ClickEventArgs).originalEvent) &&
                 ((args.args as ClickEventArgs).originalEvent as
-                 KeyboardEventArgs).action === 'insert-table')
-                || proxy.parent.inlineMode.enable || !isNullOrUndefined(proxy.parent.quickToolbarSettings.text)) ? args :
+                    KeyboardEventArgs).action === 'insert-table')
+                || proxy.parent.inlineMode.enable || ((!isNullOrUndefined(proxy.parent.quickToolbarSettings.text)) && !(args instanceof PointerEvent))) ? args :
                 this as ITableNotifyArgs);
             proxy.tableInsert(proxy.rowTextBox.value, proxy.columnTextBox.value, e, argument);
         }

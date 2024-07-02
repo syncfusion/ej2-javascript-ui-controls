@@ -1165,6 +1165,7 @@ export class HelperMethods {
             splittedText = text.substring(index, spaceIndex);
             if (index === 0) {
                 textElementBox.text = splittedText;
+                textElementBox.isWidthUpdated = false;
             } else {
                 const splittedElement: TextElementBox = new TextElementBox();
                 splittedElement.text = splittedText;

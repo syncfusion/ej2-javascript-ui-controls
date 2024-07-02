@@ -830,6 +830,7 @@ export class PivotEngine {
                                 this.groupingFieldsInfo[newField.name] = fieldName;
                             } else if (groupKeys[gCnt as number] !== fieldName) {
                                 mappingField.caption = (this.localeObj ? this.localeObj.getConstant(groupField) : groupField) + ' (' + caption + ')';
+                                this.groupingFieldsInfo[mappingField.name] = fieldName;
                             }
                         }
                     }
@@ -845,6 +846,7 @@ export class PivotEngine {
                             this.groupingFieldsInfo[newField.name] = fieldName;
                         } else {
                             mappingField.caption = (this.localeObj ? this.localeObj.getConstant(groupField) : groupField) + ' (' + caption + ')';
+                            this.groupingFieldsInfo[mappingField.name] = fieldName;
                         }
                     }
                 } else if (group.type === 'Number' && group.rangeInterval) {

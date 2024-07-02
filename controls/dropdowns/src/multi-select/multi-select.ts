@@ -3767,6 +3767,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     this.isRemoteSelection = true;
                 }
                 this.checkAndResetCache();
+                this.isRequesting = false;
                 const eventArgs: { [key: string]: Object } = {
                     preventDefaultAction: false,
                     text: this.targetElement(),

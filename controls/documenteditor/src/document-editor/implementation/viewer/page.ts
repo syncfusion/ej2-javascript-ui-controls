@@ -4728,6 +4728,10 @@ export abstract class ElementBox {
      */
     public height: number = 0;
     /**
+    * @private
+    */
+    public isWidthUpdated: boolean = false;
+    /**
      * @private
      */
     public margin: Margin = new Margin(0, 0, 0, 0);

@@ -1611,7 +1611,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      */
     public open(data: string | ImageData): void {
         if (isNullOrUndefined(data)) { return; }
-        document.getElementById(this.element.id + '_dropArea').style.display = 'none';
+        const dropArea: HTMLElement = document.getElementById(this.element.id + '_dropArea');
+        if (dropArea) {
+            dropArea.style.display = 'none';
+        }
         this.notify('draw', {prop: 'open', value: {data: data}});
     }
 
@@ -2629,7 +2632,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.notify('toolbar', { prop: 'destroy-top-toolbar', onPropertyChange: false });
         this.notify('toolbar', { prop: 'create-toolbar', onPropertyChange: false });
         this.notify('toolbar', { prop: 'create-contextual-toolbar', onPropertyChange: false });
-        document.getElementById(this.element.id + '_dropArea').style.display = 'block';
+        const dropArea: HTMLElement = document.getElementById(this.element.id + '_dropArea');
+        if (dropArea) {
+            dropArea.style.display = 'block';
+        }
     }
 
     // Toolbar related codes

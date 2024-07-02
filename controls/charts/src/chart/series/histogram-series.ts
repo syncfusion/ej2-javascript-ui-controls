@@ -5,7 +5,7 @@ import { ColumnSeries } from './column-series';
 import { animationMode } from '@syncfusion/ej2-base';
 
 /**
- * `HistogramSeries` Module used to render the histogram series.
+ * `HistogramSeries` module is used to render the histogram series.
  */
 export class HistogramSeries extends ColumnSeries {
     /**

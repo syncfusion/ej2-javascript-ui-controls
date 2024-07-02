@@ -7,7 +7,7 @@ import { LineBase } from './line-base';
 import { AnimationModel } from '../../common/model/base-model';
 
 /**
- * render Line series
+ * Base for spline type series.
  */
 
 export class SplineBase extends LineBase {

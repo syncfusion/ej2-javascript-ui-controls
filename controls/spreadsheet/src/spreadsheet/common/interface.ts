@@ -358,8 +358,6 @@ export interface CellSaveEventArgs {
 export interface NoteSaveEventArgs {
     /** Defines the note text. */
     notes: string;
-    /** Defines the element. */
-    element: HTMLElement;
     /** Defines the address. */
     address: string;
     /** Defines the type of Event. */

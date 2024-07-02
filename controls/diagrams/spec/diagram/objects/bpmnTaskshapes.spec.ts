@@ -531,7 +531,7 @@ describe('Diagram Control', () => {
                 //third node
                 (wrapper.children[3].actualSize.width === 12
                     && wrapper.children[3].actualSize.height === 12 &&
-                    (wrapper.children[3].offsetX === 690 || wrapper.children[3].offsetX === 700) && wrapper.children[3].offsetY === 339) &&
+                    (wrapper.children[3].offsetX === 687 || wrapper.children[3].offsetX === 700) && wrapper.children[3].offsetY === 339) &&
                 //fourth node
                 (wrapper.children[4].actualSize.width === 12
                     && wrapper.children[4].actualSize.height === 12 &&

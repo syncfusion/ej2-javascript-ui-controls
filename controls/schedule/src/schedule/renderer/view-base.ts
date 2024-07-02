@@ -51,7 +51,7 @@ export class ViewBase {
                 }
             });
         });
-        const rendereData: TdData[]= this.parent.resourceBase.renderedResources;
+        const rendereData: TdData[] = this.parent.resourceBase.renderedResources;
         if (!isNullOrUndefined(rendereData) && rendereData.length > 0) {
             for (let i: number = 0; i < resourceTd.length; i++) {
                 const element: HTMLElement = resourceTd[parseInt(i.toString(), 10)];
@@ -499,8 +499,9 @@ export class ViewBase {
             const scheduleId: string = this.parent.element.id + '_';
             const viewName: string = this.parent.activeViewOptions.resourceHeaderTemplateName;
             const templateId: string = scheduleId + viewName + 'resourceHeaderTemplate';
-            const quickTemplate: HTMLElement[] = [].slice.call(this.parent.getResourceHeaderTemplate()
-                (data, this.parent, 'resourceHeaderTemplate', templateId, false, undefined, undefined, this.parent.root));
+            const quickTemplate: HTMLElement[] = [].slice.call(this.parent.getResourceHeaderTemplate()(data, this.parent,                                                                                                       'resourceHeaderTemplate',
+                                                                                                       templateId, false, undefined,
+                                                                                                       undefined, this.parent.root));
             append(quickTemplate, tdElement);
         } else {
             const resourceText: HTMLElement = createElement('div', { className: className });

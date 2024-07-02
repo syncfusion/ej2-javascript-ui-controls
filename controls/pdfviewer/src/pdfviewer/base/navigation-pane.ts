@@ -275,7 +275,7 @@ export class NavigationPane {
         } else {
             const splitterElement: HTMLElement = this.pdfViewerBase.getElement('_sideBarToolbarSplitter');
             const toolbarContainer: HTMLElement = this.pdfViewerBase.getElement('_toolbarContainer');
-            let toolbarHeight: number = toolbarContainer.getBoundingClientRect().height;
+            let toolbarHeight: number = toolbarContainer.clientHeight;
             if (toolbarHeight === 0) {
                 toolbarHeight = parseFloat(window.getComputedStyle(toolbarContainer)['height']) + 1;
             }

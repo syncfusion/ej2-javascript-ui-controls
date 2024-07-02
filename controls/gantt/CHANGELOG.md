@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 26.1.40 (2024-07-02)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I605424` - `ValidationRules` property not working properly issue has been fixed.
+- `#I599788` - Duration column is not working properly when using `editType` as `numericedit` issue has been fixed.
+- `#I603492` - `CollapseAll` / `ExpandAll` button in is not working properly when virtualization is enabled issue has been fixed.
+
 ## 26.1.39 (2024-06-25)
 
 ### GanttChart

@@ -378,8 +378,9 @@ export class VerticalView extends ViewBase implements IRenderer {
                 templateName = 'dateHeaderTemplate';
                 const args: CellTemplateArgs = { date: date, type: type };
                 const viewName: string = this.parent.activeViewOptions.dateHeaderTemplateName;
-                cntEle = [].slice.call(this.parent.getDateHeaderTemplate()
-                    (args, this.parent, templateName, templateId + viewName + templateName, false, undefined, undefined, this.parent.root));
+                cntEle = [].slice.call(this.parent.getDateHeaderTemplate()(args, this.parent, templateName,
+                                                                           templateId + viewName + templateName,
+                                                                           false, undefined, undefined, this.parent.root));
             } else {
                 wrapper.innerHTML = this.parent.activeView.isTimelineView() ?
                     `<span class="e-header-date e-navigate">${this.getTimelineDate(date)}</span>` :
@@ -392,8 +393,9 @@ export class VerticalView extends ViewBase implements IRenderer {
             if (this.parent.activeViewOptions.timeScale.majorSlotTemplate) {
                 templateName = 'majorSlotTemplate';
                 const args: CellTemplateArgs = { date: date, type: type };
-                cntEle = [].slice.call(this.parent.getMajorSlotTemplate()
-                    (args, this.parent, templateName, templateId + templateName, false, undefined, undefined, this.parent.root));
+                cntEle = [].slice.call(this.parent.getMajorSlotTemplate()(args, this.parent, templateName,
+                                                                          templateId + templateName,
+                                                                          false, undefined, undefined, this.parent.root));
             } else {
                 wrapper.innerHTML = `<span>${this.getTime(date)}</span>`;
                 cntEle = [].slice.call(wrapper.childNodes);
@@ -403,8 +405,9 @@ export class VerticalView extends ViewBase implements IRenderer {
             if (this.parent.activeViewOptions.timeScale.minorSlotTemplate) {
                 templateName = 'minorSlotTemplate';
                 const args: CellTemplateArgs = { date: date, type: type };
-                cntEle = [].slice.call(this.parent.getMinorSlotTemplate()
-                    (args, this.parent, templateName, templateId + templateName, false, undefined, undefined, this.parent.root));
+                cntEle = [].slice.call(this.parent.getMinorSlotTemplate()(args, this.parent,
+                                                                          templateName, templateId + templateName,
+                                                                          false, undefined, undefined, this.parent.root));
             } else {
                 cntEle = [].slice.call(wrapper.childNodes);
             }
@@ -414,8 +417,9 @@ export class VerticalView extends ViewBase implements IRenderer {
                 const viewName: string = this.parent.activeViewOptions.cellTemplateName;
                 templateName = 'cellTemplate';
                 const args: CellTemplateArgs = { date: date, type: type, groupIndex: groupIndex };
-                cntEle = [].slice.call(this.parent.getCellTemplate()
-                    (args, this.parent, templateName, templateId + viewName + templateName, false, undefined, undefined, this.parent.root));
+                cntEle = [].slice.call(this.parent.getCellTemplate()(args, this.parent, templateName,
+                                                                     templateId + viewName + templateName,
+                                                                     false, undefined, undefined, this.parent.root));
             }
             break;
         }
@@ -717,8 +721,9 @@ export class VerticalView extends ViewBase implements IRenderer {
             const scheduleId: string = this.parent.element.id + '_';
             const viewName: string = this.parent.activeViewOptions.cellTemplateName;
             const templateId: string = scheduleId + viewName + 'cellTemplate';
-            const tooltipTemplate: HTMLElement[] = [].slice.call(this.parent.getCellTemplate()
-                (args, this.parent, 'cellTemplate', templateId, false, undefined, undefined, this.parent.root));
+            const tooltipTemplate: HTMLElement[] = [].slice.call(this.parent.getCellTemplate()(args, this.parent, 'cellTemplate',
+                                                                                               templateId, false, undefined, undefined,
+                                                                                               this.parent.root));
             append(tooltipTemplate, ntd);
         }
         ntd.setAttribute('data-date', cellDate.getTime().toString());

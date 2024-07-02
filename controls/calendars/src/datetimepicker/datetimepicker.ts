@@ -1892,6 +1892,10 @@ export class DateTimePicker extends DatePicker {
      */
     public onPropertyChanged(newProp: DateTimePickerModel, oldProp: DateTimePickerModel): void {
         for (const prop of Object.keys(newProp)) {
+            const openPopup = ['blur', 'change', 'cleared', 'close', 'created', 'destroyed', 'focus', 'navigated', 'open', 'renderDayCell'];
+            if (openPopup.indexOf(prop) > 0 && this.isReact) {
+                this.isDynamicValueChanged = true;
+            }
             switch (prop) {
             case 'value':
                 this.isDynamicValueChanged = true;

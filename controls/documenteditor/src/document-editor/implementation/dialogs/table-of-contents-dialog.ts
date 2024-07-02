@@ -6,6 +6,7 @@ import { ListView, SelectEventArgs } from '@syncfusion/ej2-lists';
 import { TableOfContentsSettings } from '../index';
 import { TabLeader } from '../../base/types';
 import { DocumentHelper } from '../viewer';
+import { DialogUtility } from '@syncfusion/ej2-popups';
 /**
  * The Table of contents dialog is used to insert or edit table of contents at selection.
  */
@@ -576,14 +577,38 @@ export class TableOfContentsDialog {
      * @returns {void}
      */
     private changeStyle = (args: KeyboardEvent): void => {
-        let headingValue: string = (args.srcElement as HTMLInputElement).value;
-        let value = this.getElementValue(args.srcElement as HTMLInputElement);
-        if (headingValue !== value && headingValue !== '') {
-            this.showLevel.enabled = false;
-        } else {
-            this.showLevel.enabled = true;
-            this.checkLevel();
+        let headingLevel: number = 0;
+        if (!isNullOrUndefined((args.srcElement as HTMLInputElement).value)) {
+            let headingValue: string = (args.srcElement as HTMLInputElement).value;
+            headingLevel = parseInt(headingValue);
+            if (!headingValue.match(/^[0-9]+$/) && headingValue !== '') {
+                this.initAlertDialog(false);
+                return;
+            } else if (headingLevel < 1 || headingLevel > 9) {
+                this.initAlertDialog(true);
+                return;
+            } else {
+                let value = this.getElementValue(args.srcElement as HTMLInputElement);
+                if (headingValue !== value && headingValue !== '') {
+                    this.showLevel.enabled = false;
+                } else {
+                    this.showLevel.enabled = true;
+                    this.checkLevel();
+                }
+            }
         }
+    }
+    private initAlertDialog(isvalid: boolean): void {
+        let localValue: L10n = new L10n("documenteditor", this.documentHelper.owner.defaultLocale);
+        localValue.setLocale(this.documentHelper.owner.locale);
+        let dialogContent: string = isvalid ? localValue.getConstant("The number must be between") : localValue.getConstant("The Invalid number");
+        DialogUtility.alert({
+            title: localValue.getConstant("Information"),
+            content: dialogContent,
+            closeOnEscape: true,
+            showCloseIcon: true,
+            position: { X: "center", Y: "center" },
+        }).enableRtl = this.documentHelper.owner.enableRtl;
     }
     private checkLevel(): void {
         if (this.heading1.value !== '') {
@@ -643,15 +668,27 @@ export class TableOfContentsDialog {
      * @returns {void}
      */
     private changeHeadingStyle = (args: KeyboardEvent): void => {
-        let headingValue = (args.srcElement as HTMLInputElement).value;
-        if (headingValue === '') {
-            this.showLevel.enabled = true;
-        } else {
-            this.showLevel.enabled = false;
-        }
-        if (this.normal === (args.srcElement as HTMLInputElement)) {
-            this.outline.checked = false;
-            this.outline.disabled = true;
+        let headingLevel: number = 0;
+        if (!isNullOrUndefined((args.srcElement as HTMLInputElement).value)) {
+            let headingValue: string = (args.srcElement as HTMLInputElement).value;
+            headingLevel = parseInt(headingValue);
+            if (!headingValue.match(/^[0-9]+$/) && headingValue !== '') {
+                this.initAlertDialog(false);
+                return;
+            } else if (headingLevel < 1 || headingLevel > 9) {
+                this.initAlertDialog(true);
+                return;
+            } else {
+                if (headingValue === '') {
+                    this.showLevel.enabled = true;
+                } else {
+                    this.showLevel.enabled = false;
+                }
+                if (this.normal === (args.srcElement as HTMLInputElement)) {
+                    this.outline.checked = false;
+                    this.outline.disabled = true;
+                }
+            }
         }
     }
     /**
@@ -733,15 +770,16 @@ export class TableOfContentsDialog {
         }
 
     }
-    private applyLevelSetting(tocSettings: TableOfContentsSettings): void {
+    private applyLevelSetting(tocSettings: TableOfContentsSettings): boolean {
         tocSettings.levelSettings = {};
         let headingPrefix: string = 'Heading ';
         let newStartLevel: number = 0;
         let newEndLevel: number = 0;
         let isEndLevel: boolean = false;
         for (let i: number = 1; i <= tocSettings.endLevel; i++) {
+            let outlineLevelValue: string = this.getTOCInputValue(i);
             let outlineLevel: number = this.getHeadingLevel(i);
-            if (i === outlineLevel) {
+            if (i === outlineLevel && outlineLevelValue.match(/^[0-9]+$/)) {
                 if (newStartLevel === 0) {
                     newStartLevel = i;
                     isEndLevel = false;
@@ -751,7 +789,13 @@ export class TableOfContentsDialog {
                 }
             } else {
                 isEndLevel = true;
-                if (outlineLevel !== 0) {
+                if (!outlineLevelValue.match(/^[0-9]+$/)) {
+                    this.initAlertDialog(false);
+                    return false;
+                } else if (outlineLevel < 1 || outlineLevel > 9) {
+                    this.initAlertDialog(true);
+                    return false;
+                } else {
                     let headingStyle: string = headingPrefix + i.toString();
                     tocSettings.levelSettings[headingStyle] = outlineLevel;
                 }
@@ -759,8 +803,57 @@ export class TableOfContentsDialog {
         }
         tocSettings.startLevel = newStartLevel;
         tocSettings.endLevel = newEndLevel;
+        if (newEndLevel) {
+            for (let j: number = newEndLevel + 1; j <= 9; j++) {
+                let outlineHeader: string = this.getTOCInputValue(j);
+                let outlineLevel: number = this.getHeadingLevel(j);
+                if (!outlineHeader.match(/^[0-9]+$/) && outlineHeader!=="") {
+                    this.initAlertDialog(false);
+                    return false;
+                } else {
+                    if (outlineLevel < 1 || outlineLevel > 9) {
+                        this.initAlertDialog(true);
+                        return false;
+                    }
+                }
+            }
+        }
         if (this.normal.value !== '') {
-            tocSettings.levelSettings['Normal'] = +this.normal.value;
+            let normalvalue: number = parseInt(this.normal.value);
+            if (!this.normal.value.match(/^[0-9]+$/)) {
+                this.initAlertDialog(false);
+                return false;
+            } else if (normalvalue < 1 || normalvalue > 9) {
+                this.initAlertDialog(true);
+                return false;
+            } else {
+                tocSettings.levelSettings["Normal"] = normalvalue;
+            }
+        }
+        return true;
+    }
+    private getTOCInputValue(input: number): string {
+        switch (input) {
+            case 1:
+                return this.heading1.value;
+            case 2:
+                return this.heading2.value;
+            case 3:
+                return this.heading3.value;
+            case 4:
+                return this.heading4.value;
+            case 5:
+                return this.heading5.value;
+            case 6:
+                return this.heading6.value;
+            case 7:
+                return this.heading7.value;
+            case 8:
+                return this.heading8.value;
+            case 9:
+                return this.heading9.value;
+            default:
+                return "";
         }
     }
     /**
@@ -777,10 +870,11 @@ export class TableOfContentsDialog {
             tabLeader: this.tabLeader.value as TabLeader,
             includeOutlineLevels: this.outline.checked
         };
-        this.applyLevelSetting(tocSettings);
-        this.documentHelper.owner.editorModule.insertTableOfContents(tocSettings);
-        this.documentHelper.dialog3.hide();
-        this.documentHelper.updateFocus();
+        if (this.applyLevelSetting(tocSettings)) {
+            this.documentHelper.owner.editorModule.insertTableOfContents(tocSettings);
+            this.documentHelper.dialog3.hide();
+            this.documentHelper.updateFocus();
+        }
     }
     /**
      * @private

@@ -9251,3 +9251,92 @@ describe('Edit date in RTL mode', () => {
             expect(dialog.editSettings.allowAdding).toBe(false)
         });
     });
+    describe('Validation Rule on Custom Column', () => {
+        let ganttObj: Gantt;
+        const logTimeValidation = {
+            number: true,
+            min: 0,
+        };
+        const estimatedTimeValidation = {
+            number: true,
+            min: 0,
+        };
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: [],
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    notes: 'info',
+                    resourceInfo: 'resources',
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID' },
+                    { field: 'TaskName' },
+                    { field: 'StartDate' },
+                    {
+                        field: 'estimatedTime', editType:'numericedit',format: "yMd",validationRules: {estimatedTimeValidation}
+                    },
+                    {
+                        field: 'logTime', editType:'numericedit', format: "yMd",validationRules: {logTimeValidation}
+                    },
+                ],
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                },
+                resources: [
+                    { resourceId: 1, resourceName: 'Martin Tamer' },
+                    { resourceId: 2, resourceName: 'Rose Fuller' },
+                    { resourceId: 3, resourceName: 'Margaret Buchanan' },
+                    { resourceId: 4, resourceName: 'Fuller King' },
+                    { resourceId: 5, resourceName: 'Davolio Fuller' },
+                    { resourceId: 6, resourceName: 'Van Jack' },
+                    { resourceId: 7, resourceName: 'Fuller Buchanan' },
+                    { resourceId: 8, resourceName: 'Jack Davolio' },
+                    { resourceId: 9, resourceName: 'Tamer Vinet' },
+                    { resourceId: 10, resourceName: 'Vinet Fuller' },
+                    { resourceId: 11, resourceName: 'Bergs Anton' },
+                    { resourceId: 12, resourceName: 'Construction Supervisor' }
+                ],
+                allowUnscheduledTasks: true,
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach(() => {
+           ganttObj.openAddDialog();
+        });
+        it('add record', () => {
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType == "refresh") {
+                    expect(ganttObj.currentViewData.length).toBe(1);
+                }
+            }
+            let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+        });
+    });

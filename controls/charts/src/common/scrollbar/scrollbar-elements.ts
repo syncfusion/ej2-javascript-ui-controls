@@ -46,7 +46,7 @@ export function createScrollSvg(scrollbar: ScrollBar, renderer: SvgRenderer): vo
     scrollbar.elements.push(scrollbar.svgObject);
 }
 /**
- * Scrollbar elements renderer
+ * Scrollbar elements renderer.
  */
 export class ScrollElements {
     /** @private */

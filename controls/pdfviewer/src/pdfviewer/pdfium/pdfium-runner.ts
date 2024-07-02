@@ -190,7 +190,7 @@ export function PdfiumRunner(): void {
                 const firstPage: Page = documentDetails.getPage(event.data.pageIndex);
                 const ImageData: any = event.data;
                 const data: object = firstPage.render(null, ImageData.zoomFactor, ImageData.isTextNeed, null, null,
-                                                      ImageData.textDetailsId, null, event.data.cropBoxRect);
+                                                      ImageData.textDetailsId, null, event.data.cropBoxRect, event.data.mediaBoxRect);
                 ctx.postMessage(data);
             }
             else if (event.data.message === 'renderPageSearch') {
@@ -215,9 +215,22 @@ export function PdfiumRunner(): void {
                 ctx.postMessage(data);
             }
             else if (event.data.message === 'renderThumbnail') {
-                const firstPage: Page = documentDetails.getPage(event.data.pageIndex);
-                const data: object = firstPage.render('thumbnail', null, false, null, null);
-                ctx.postMessage(data);
+                let thumbnail: Promise<any> = new Promise((resolve, reject) => {
+                    // Simulate an asynchronous task
+                    setTimeout(() => {
+                        try {
+                            const firstPage: Page = documentDetails.getPage(event.data.pageIndex);
+                            const data: object = firstPage.render('thumbnail', null, false, null, null);
+                            resolve(data);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    }, 1000);
+                });
+
+                thumbnail.then(results => {
+                    ctx.postMessage(results);
+                });
             }
             else if (event.data.message === 'renderPreviewTileImage') {
                 const firstPage: Page = documentDetails.getPage(event.data.pageIndex);
@@ -244,14 +257,14 @@ export function PdfiumRunner(): void {
                 const values: any = event.data;
                 const firstPage: Page = documentDetails.getPage(event.data.pageIndex);
                 const data: object = firstPage.renderTileImage(values.tileX, values.tileY, values.tileXCount, values.tileYCount,
-                                                               values.zoomFactor, event.data.isTextNeed, event.data.textDetailsId);
+                                                               values.zoomFactor, event.data.isTextNeed, event.data.textDetailsId, event.data.cropBoxRect, event.data.mediaBoxRect);
                 ctx.postMessage(data);
             }
             else if (event.data.message === 'renderImageAsTileSearch') {
                 const values: any = event.data;
                 const firstPage: Page = documentDetails.getPage(event.data.pageIndex);
                 const data: object = firstPage.renderTileImage(values.tileX, values.tileY, values.tileXCount, values.tileYCount,
-                                                               values.zoomFactor, event.data.isTextNeed, event.data.textDetailsId, event.data.cropBoxRect);
+                                                               values.zoomFactor, event.data.isTextNeed, event.data.textDetailsId, event.data.cropBoxRect, event.data.mediaBoxRect);
                 (data as any).message = 'renderTileImageSearch';
                 ctx.postMessage(data);
             }
@@ -276,13 +289,13 @@ export function PdfiumRunner(): void {
             this.processor = processor;
         }
         public render(message: any, zoomFactor?: number, isTextNeed?: boolean, printScaleFactor?: any,
-                      printDevicePixelRatio?: number, textDetailsId?: any, isTransparent?: boolean, cropBoxRect?: Rect): object {
+                      printDevicePixelRatio?: number, textDetailsId?: any, isTransparent?: boolean, cropBoxRect?: Rect, mediaBoxRect?: Rect): object {
             return this.processor.render(this.index, message, zoomFactor, isTextNeed, printScaleFactor,
-                                         printDevicePixelRatio, textDetailsId, isTransparent, cropBoxRect);
+                                         printDevicePixelRatio, textDetailsId, isTransparent, cropBoxRect, mediaBoxRect);
         }
         public renderTileImage(x: any, y: any, tileX: any, tileY: any, zoomFactor?: number, isTextNeed?: boolean,
-                               textDetailsId?: any, cropBoxRect?: Rect): object {
-            return this.processor.renderTileImage(this.index, x, y, tileX, tileY, zoomFactor, isTextNeed, textDetailsId, cropBoxRect);
+                               textDetailsId?: any, cropBoxRect?: Rect, mediaBoxRect?: Rect): object {
+            return this.processor.renderTileImage(this.index, x, y, tileX, tileY, zoomFactor, isTextNeed, textDetailsId, cropBoxRect, mediaBoxRect);
         }
     }
 
@@ -332,7 +345,7 @@ export function PdfiumRunner(): void {
                 GetCharBox(pagePointer, i, left, right, bottom, top));
         }
 
-        public getRender(i: number = 0, w: any, h: any, isTextNeed: boolean, isTransparent?: boolean, cropBoxRect?: Rect): any {
+        public getRender(i: number = 0, w: any, h: any, isTextNeed: boolean, isTransparent?: boolean, cropBoxRect?: Rect, mediaBoxRect?: Rect): any {
             const flag: any = (FPDF as any).REVERSE_BYTE_ORDER;
             const heap: any = PDFiumModule.asm.malloc(w * h * 4);
             PDFiumModule.HEAPU8.fill(0, heap, heap + (w * h * 4));
@@ -341,14 +354,15 @@ export function PdfiumRunner(): void {
             (FPDF as any).Bitmap_FillRect(bmap, 0, 0, w, h, isTransparent ? 0x00FFFFFF : 0xFFFFFFFF);
             (FPDF as any).RenderPageBitmap(bmap, page, 0, 0, w, h, 0, flag);
             (FPDF as any).Bitmap_Destroy(bmap);
-            this.textExtraction(page, i, isTextNeed, cropBoxRect);
+            this.textExtraction(page, i, isTextNeed, cropBoxRect, mediaBoxRect);
             (FPDF as any).ClosePage(page);
             return heap;
         }
 
-        public textExtraction(pagePointer: any, pageIndex: number, isTextNeed: boolean, cropBoxRect?: Rect): void {
+        public textExtraction(pagePointer: any, pageIndex: number, isTextNeed: boolean, cropBoxRect?: Rect, mediaBoxRect?: Rect): void {
             if (isTextNeed) {
-                const [pageWidth, pageHeight] = this.getPageSize(pageIndex);
+                let [pageWidth, pageHeight] = this.getPageSize(pageIndex);
+                pageHeight = pageHeight + this.pointerToPixelConverter(mediaBoxRect && mediaBoxRect.y ? mediaBoxRect.y : 0);
                 const textPage: any = (FPDF as any).LoadTextPage(pagePointer, pageIndex);
                 const pageRotation: any = (FPDF as any).GetPageRotation(pagePointer);
                 const totalCharacterCount: any = (FPDF as any).TextCountChars(textPage);
@@ -960,8 +974,8 @@ export function PdfiumRunner(): void {
             return rtlDirCheck.test(text);
         }
 
-        public getPageRender(n: number = 0, w: any, h: any, isTextNeed: boolean, isTransparent?: boolean, cropBoxRect?: Rect): any {
-            const pageRenderPtr: any = this.getRender(n, w, h, isTextNeed, isTransparent, cropBoxRect);
+        public getPageRender(n: number = 0, w: any, h: any, isTextNeed: boolean, isTransparent?: boolean, cropBoxRect?: Rect, mediaBoxRect?: Rect): any {
+            const pageRenderPtr: any = this.getRender(n, w, h, isTextNeed, isTransparent, cropBoxRect, mediaBoxRect);
             let pageRenderData: any[] = [];
             pageRenderData = PDFiumModule.HEAPU8.slice(pageRenderPtr, pageRenderPtr + (w * h * 4));
             PDFiumModule.asm.free(pageRenderPtr);
@@ -969,7 +983,7 @@ export function PdfiumRunner(): void {
         }
 
         public render(n: number = 0, message: any, zoomFactor: number, isTextNeed: boolean, printScaleFactor: any,
-                      printDevicePixelRatio: number, textDetailsId: any, isTransparent?: boolean, cropBoxRect?: Rect): object {
+                      printDevicePixelRatio: number, textDetailsId: any, isTransparent?: boolean, cropBoxRect?: Rect, mediaBoxRect?: Rect): object {
             const [w, h] = this.getPageSize(n);
             const scaleFactor: number = 1.5;
             const thumbnailWidth: number = 99.7;
@@ -1012,13 +1026,13 @@ export function PdfiumRunner(): void {
                     newWidth = Math.round(this.pointerToPixelConverter(w) * zoomFactor);
                     newHeight = Math.round(this.pointerToPixelConverter(h) * zoomFactor);
                 }
-                const data: any = this.getPageRender(n, newWidth, newHeight, isTextNeed, isTransparent, cropBoxRect);
+                const data: any = this.getPageRender(n, newWidth, newHeight, isTextNeed, isTransparent, cropBoxRect, mediaBoxRect);
                 return { value: data, width: newWidth, height: newHeight, pageWidth: w, pageHeight: h, pageIndex: n, message: 'imageRendered', textBounds: this.TextBounds, textContent: this.TextContent, rotation: this.Rotation, pageText: this.PageText, characterBounds: this.CharacterBounds, zoomFactor: zoomFactor, isTextNeed: isTextNeed, textDetailsId: textDetailsId };
             }
         }
 
         public renderTileImage(n: number = 0, tileX: any, tileY: any, xCount: any, yCount: any, zoomFactor: number,
-                               isTextNeed: boolean, textDetailsId: any, cropBoxRect?: Rect): object {
+                               isTextNeed: boolean, textDetailsId: any, cropBoxRect?: Rect, mediaBoxRect?: Rect): object {
             const [w, h] = this.getPageSize(n);
             const newWidth: number = Math.round(w * 1.5 * zoomFactor);
             const newHeight: number = Math.round(h * 1.5 * zoomFactor);
@@ -1032,7 +1046,7 @@ export function PdfiumRunner(): void {
             FPDF.Bitmap_FillRect(bmap, 0, 0, w1, h1, 0xFFFFFFFF);
             FPDF.RenderPageBitmap(bmap, page, -tileX * w1, -tileY * h1, newWidth, newHeight, 0, flag);
             FPDF.Bitmap_Destroy(bmap);
-            this.textExtraction(page, n, isTextNeed, cropBoxRect);
+            this.textExtraction(page, n, isTextNeed, cropBoxRect, mediaBoxRect);
             FPDF.ClosePage(page);
             const pageRenderPtr: any = heap;
             let data: any[] = [];

@@ -1357,9 +1357,11 @@ export class Layout {
     private layoutBlock(block: BlockWidget, index: number, isUpdatedList?: boolean): BlockWidget {
         let nextBlock: BlockWidget;
         if (block instanceof ParagraphWidget) {
-            block.splitTextRangeByScriptType(0);
-            block.splitLtrAndRtlText(0);
-            block.combineconsecutiveRTL(0);
+            if (this.isInitialLoad || (!this.isRelayout && block.paragraphFormat.bidi && this.isDocumentContainsRtl)) {
+                block.splitTextRangeByScriptType(0);
+                block.splitLtrAndRtlText(0);
+                block.combineconsecutiveRTL(0);
+            }
             nextBlock = this.layoutParagraph(block, index, isUpdatedList);
             const nextBlockToLayout: BlockWidget = this.checkAndRelayoutPreviousOverlappingBlock(block);
             if (nextBlockToLayout) {
@@ -2002,6 +2004,7 @@ export class Layout {
                         if(element instanceof TextElementBox && element.text.indexOf(" ") == 0 && element.text.length > 2){
                             if(isNullOrUndefined(element.nextElement) && element.text.trim().length > 0){
                                 element.text = element.text.substring(1,element.text.length);
+                                element.isWidthUpdated = false;
                                 let elementIndex = element.line.children.indexOf(element);
                                 element.line.children.splice(elementIndex,1);
                                 let textElement = new TextElementBox();
@@ -2106,9 +2109,14 @@ export class Layout {
                         element.reference = bookmrkElement;
                     }
                     if (isNullOrUndefined(bookmrkElement.properties)) {
-                        if (!isNullOrUndefined(this.documentHelper.selection) && this.documentHelper.selection.isRenderBookmarkAtEnd(bookmrkElement.reference)) {
+                        if (!isNullOrUndefined(this.documentHelper.selection)) {
                             let cell: TableCellWidget = bookmrkElement.reference.paragraph.associatedCell;
-                            cell.isRenderBookmarkEnd = true;
+                            if (!isNullOrUndefined(cell)) {
+                                cell.isRenderBookmarkEnd = false;
+                                if (this.documentHelper.selection.isRenderBookmarkAtEnd(bookmrkElement.reference)) {
+                                    cell.isRenderBookmarkEnd = true;
+                                }
+                            }
                         }
                     } else{
                         if (!isNullOrUndefined(element.paragraph.associatedCell)) {
@@ -2274,11 +2282,12 @@ export class Layout {
         }
         // Here field code width and height update need to skipped based on the hidden property.
         if (element instanceof TextElementBox) {
-            // if (this.isRelayout) {
-            width = this.documentHelper.textHelper.getTextSize(element as TextElementBox, element.characterFormat);
-            /*} else {
+            if (!element.isWidthUpdated || element.width === 0 || this.isInitialLoad) {
+                width = this.documentHelper.textHelper.getTextSize(element as TextElementBox, element.characterFormat);
+                element.isWidthUpdated = true;
+            } else {
                 width = element.trimEndWidth;
-            }*/
+            }
 
             if (element.text === '\t') {
                 width = this.getTabWidth(paragraph, this.viewer, index, line, element as TabElementBox);
@@ -4005,8 +4014,12 @@ export class Layout {
                 index += prevLength - text.length;
             }
             splittedElementBox.characterFormat.copyFormat(elementBox.characterFormat);
-            splittedElementBox.width = this.documentHelper.textHelper.getWidth(splittedElementBox.text, characterFormat, splittedElementBox.scriptType);
-            splittedElementBox.trimEndWidth = splittedElementBox.width;
+            splittedElementBox.width = this.documentHelper.textHelper.getWidth(splittedElementBox.text, characterFormat, splittedElementBox.scriptType); 
+            if (splittedElementBox.text[splittedElementBox.text.length - 1] === ' ') {
+                splittedElementBox.trimEndWidth = this.documentHelper.textHelper.getWidth(HelperMethods.trimEnd(splittedElementBox.text), characterFormat, splittedElementBox.scriptType);
+            } else {
+                splittedElementBox.trimEndWidth = splittedElementBox.width;
+            }
             splittedElementBox.characterRange = elementBox.characterRange;
             //splittedElementBox.revisions = splittedElementBox.revisions;
             elementBox.text = elementBox.text.substr(0, index);
@@ -4016,7 +4029,11 @@ export class Layout {
                 indexOf = lineWidget.children.indexOf(textElement);
             }
             elementBox.width = this.documentHelper.textHelper.getWidth(elementBox.text, elementBox.characterFormat, elementBox.scriptType);
-            elementBox.trimEndWidth = this.documentHelper.textHelper.getWidth(HelperMethods.trimEnd(elementBox.text), elementBox.characterFormat, elementBox.scriptType);
+            if (elementBox.text[elementBox.text.length - 1] === ' ') {
+                elementBox.trimEndWidth = this.documentHelper.textHelper.getWidth(HelperMethods.trimEnd(elementBox.text), elementBox.characterFormat, elementBox.scriptType);
+            } else {
+                elementBox.trimEndWidth = elementBox.width;
+            }
             if (elementBox.revisions.length > 0) {
                 this.updateRevisionForSplittedElement(elementBox, splittedElementBox, true);
                 splittedElementBox.isMarkedForRevision = elementBox.isMarkedForRevision;
@@ -4108,10 +4125,18 @@ export class Layout {
             textElement.text = textElement.text.substr(0, index);
             splittedElement.characterFormat.copyFormat(textElement.characterFormat);
             splittedElement.width = this.documentHelper.textHelper.getWidth(splittedElement.text, characterFormat, splittedElement.scriptType);
-            splittedElement.trimEndWidth = splittedElement.width;
+            if (splittedElement.text[splittedElement.text.length - 1] === ' ') {
+                splittedElement.trimEndWidth = this.documentHelper.textHelper.getWidth(HelperMethods.trimEnd(splittedElement.text), characterFormat, splittedElement.scriptType);
+            } else {
+                splittedElement.trimEndWidth = splittedElement.width;
+            }
             splittedElement.characterRange = textElement.characterRange;
             textElement.width = this.documentHelper.textHelper.getWidth(textElement.text, characterFormat, textElement.scriptType);
-            textElement.trimEndWidth = textElement.width;
+            if (textElement.text[textElement.text.length - 1] === ' ') {
+                textElement.trimEndWidth = this.documentHelper.textHelper.getWidth(HelperMethods.trimEnd(textElement.text), characterFormat, textElement.scriptType);
+            } else {
+                textElement.trimEndWidth = textElement.width;
+            }
             splittedElement.height = textElement.height;
             splittedElement.baselineOffset = textElement.baselineOffset;
             lineWidget.children.splice(textElement.indexInOwner + 1, 0, splittedElement);
@@ -4199,10 +4224,18 @@ export class Layout {
                         indexOf = lineWidget.children.indexOf(elementBox);
                     }
                     splittedElement.width = this.documentHelper.textHelper.getWidth(splittedElement.text, format, splittedElement.scriptType);
-                    splittedElement.trimEndWidth = splittedElement.width;
+                    if (splittedElement.text[splittedElement.text.length - 1] === ' ') {
+                        splittedElement.trimEndWidth = this.documentHelper.textHelper.getWidth(HelperMethods.trimEnd(splittedElement.text), format, splittedElement.scriptType);
+                    } else {
+                        splittedElement.trimEndWidth = splittedElement.width;
+                    }
                     textElement.text = text;
                     textElement.width = this.documentHelper.textHelper.getWidth(textElement.text, textElement.characterFormat, textElement.scriptType);
-                    textElement.trimEndWidth = textElement.width;
+                    if (textElement.text[textElement.text.length - 1] === ' ') {
+                        textElement.trimEndWidth = this.documentHelper.textHelper.getWidth(HelperMethods.trimEnd(textElement.text), textElement.characterFormat, textElement.scriptType);
+                    } else {
+                        textElement.trimEndWidth = textElement.width;
+                    }
                     if (textElement.width === 0 && lineWidget.children.indexOf(textElement) !== -1) {
                         lineWidget.children.splice(lineWidget.children.indexOf(textElement), 1);
                     }
@@ -4274,6 +4307,7 @@ export class Layout {
         newSpan.characterFormat.copyFormat(span.characterFormat);
         newSpan.characterRange = span.characterRange;
         span.line.children.splice(inlineIndex + 1, 0, newSpan);
+        span.isWidthUpdated = false;
         if (index > 0 && remainder.length === 1) {
             newSpan.text = value.substring(index);
             span.text = value.substring(0, index);
@@ -5219,6 +5253,7 @@ export class Layout {
             //Updates the text to base line offset.
             if (!isNullOrUndefined(textElement) && textAlignment === 'Justify' && whiteSpaceCount > 0) {
                 //Aligns the text as Justified.
+                textElement.isWidthUpdated = false;
                 let width: number = textElement.width;
                 let text: string = textElement.text;
                 if (!addSubWidth) {
@@ -5374,7 +5409,11 @@ export class Layout {
                     textElement.text = text.substr(0, index);
                     this.documentHelper.textHelper.getTextSize(splittedElement, textElement.characterFormat);
                     textElement.width -= splittedElement.width;
-                    textElement.trimEndWidth = textElement.width;
+                    if (textElement.text[textElement.text.length - 1] === ' ') {
+                        textElement.trimEndWidth = this.documentHelper.textHelper.getWidth(HelperMethods.trimEnd(textElement.text), textElement.characterFormat, textElement.scriptType);
+                    } else {
+                        textElement.trimEndWidth = textElement.width;
+                    }
                     textElement.height = splittedElement.height;
                     if (textElement.width === 0) {
                         line.children.splice(i, 1);
@@ -9967,6 +10006,7 @@ export class Layout {
                                     textElement.text = this.documentHelper.pages.length.toString();
                                 }
                                 if (prevPageNum !== textElement.text) {
+                                    textElement.isWidthUpdated = false;
                                     const lineIndex: number = paragraph.childWidgets.indexOf(fieldBegin.line);
                                     const elementIndex: number = fieldBegin.line.children.indexOf(textElement);
                                     if (paragraph.isInsideTable) {

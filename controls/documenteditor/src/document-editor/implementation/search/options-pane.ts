@@ -59,6 +59,7 @@ export class OptionsPane {
     private replaceTabButton: HTMLElement;
     private searchIcon: HTMLSpanElement;
     private matchDiv: HTMLElement;
+    private tabDiv: HTMLDivElement
     private replacePaneText: string = 'Replace';
     private findPaneText: string = 'Find';
     private headingPaneText: string = 'Heading';
@@ -129,8 +130,8 @@ export class OptionsPane {
         this.closeButton.appendChild(closeSpan);
         this.focusedElement.push(this.closeButton);
         // tab
-        let tabDiv: HTMLDivElement = createElement('div') as HTMLDivElement;
-        this.findTab.appendChild(tabDiv);
+        this.tabDiv = createElement('div') as HTMLDivElement;
+        this.findTab.appendChild(this.tabDiv);
         this.findTabButton = createElement('div', { innerHTML: localeValue.getConstant(this.findPaneText) });
         this.replaceTabButton = createElement('div', { innerHTML: localeValue.getConstant(this.replacePaneText) });
         this.headingTabButton = createElement('div', { innerHTML: localeValue.getConstant(this.headingPaneText) });
@@ -140,7 +141,7 @@ export class OptionsPane {
             { header: { text: this.replaceTabButton } }] as TabItemModel[];
         this.tabInstance = new Tab({ items: items, enableRtl: isRtl, selected: this.selectedTabItem.bind(this) });
         this.tabInstance.isStringTemplate = true;
-        this.tabInstance.appendTo(tabDiv);
+        this.tabInstance.appendTo(this.tabDiv);
         //search
         this.findTabContentDiv = createElement('div', { className: 'e-de-search-tab-content', styles: 'display:none;' });
         this.findTab.appendChild(this.findTabContentDiv);
@@ -704,6 +705,7 @@ export class OptionsPane {
      */
     public onHeadingPane(): void {
         this.treeviewDiv.style.display = 'block';
+        this.refreshHeadingPaneHeight();
         this.messageDiv.classList.remove('e-de-op-msg');
         this.messageDiv.classList.remove('e-de-op-replace-messagediv');
         this.replaceDiv.style.display = 'none';
@@ -713,6 +715,18 @@ export class OptionsPane {
         this.checkboxDiv.style.display = 'none';
         this.resultContainer.style.display = 'none';
 
+    }
+    /**
+     * @private
+     * @returns {void} 
+     */
+    public refreshHeadingPaneHeight(): void {
+        if (!isNullOrUndefined(this.optionsPane) && !isNullOrUndefined(this.searchDiv) && !isNullOrUndefined(this.tabDiv)) {
+            const computedStyle = window.getComputedStyle(this.searchDiv);
+            const marginBottom: number = parseFloat(computedStyle.marginBottom);
+            let resultsContainerHeight: number = this.optionsPane.offsetHeight - (marginBottom + this.searchDiv.offsetHeight + this.tabDiv.offsetHeight);
+            this.treeviewDiv.style.height = resultsContainerHeight + 'px';
+        }
     }
     /**
      * Enable find pane only.

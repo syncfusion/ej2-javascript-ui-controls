@@ -150,7 +150,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     public height: string;
 
     /**
-     * Title for accumulation chart
+     * The title for accumulation chart.
      *
      * @default null
      */
@@ -166,7 +166,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     public backgroundImage: string;
 
     /**
-     * Center of pie
+     * Configuration for the center of the pie chart.
      */
     @Complex<PieCenterModel>({}, PieCenter)
     public center: PieCenterModel;
@@ -208,7 +208,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     public titleStyle: FontModel;
 
     /**
-     * SubTitle for accumulation chart
+     * The subtitle for accumulation chart.
      *
      * @default null
      */
@@ -216,7 +216,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     public subTitle: string;
 
     /**
-     * Options for customizing the `subtitle` of accumulation chart.
+     * Options for customizing the `subTitle` of the accumulation chart.
      */
 
     @Complex<FontModel>({fontFamily: null, size: null, fontStyle: null, fontWeight: null, color: null}, Font)
@@ -244,8 +244,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
     /**
      * Specifies whether point has to get selected or not. Takes value either 'None 'or 'Point'
-     * None: Disables the selection.
-     * Point: selects a point.
+     * * None: Disables the selection.
+     * * Point: selects a point.
      *
      * @default None
      */
@@ -263,8 +263,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
     /**
      * Specifies whether point has to get highlighted or not. Takes value either 'None 'or 'Point'
-     * None: Disables the highlight.
-     * Point: highlight a point.
+     * * None: Disables the highlight.
+     * * Point: highlight a point.
      *
      * @default None
      */
@@ -273,26 +273,26 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
     /**
      * Specifies whether series or data point for accumulation chart has to be selected. They are,
-     * * none: sets none as selecting pattern to accumulation chart .
-     * * chessboard: sets chess board as selecting pattern accumulation chart .
-     * * dots: sets dots as  selecting pattern accumulation chart .
-     * * diagonalForward: sets diagonal forward as selecting pattern to accumulation chart .
-     * * crosshatch: sets crosshatch as selecting pattern to accumulation chart.
-     * * pacman: sets pacman selecting pattern to accumulation chart.
-     * * diagonalbackward: sets diagonal backward as selecting pattern to accumulation chart.
-     * * grid: sets grid as selecting pattern to accumulation chart.
-     * * turquoise: sets turquoise as selecting pattern to accumulation chart.
-     * * star: sets star as selecting pattern to accumulation chart.
-     * * triangle: sets triangle as selecting pattern to accumulation chart.
-     * * circle: sets circle as selecting pattern to accumulation chart.
-     * * tile: sets tile as selecting pattern to accumulation chart.
-     * * horizontaldash: sets horizontal dash as selecting pattern to accumulation chart.
-     * * verticaldash: sets vertical dash as selecting pattern to accumulation chart.
-     * * rectangle: sets rectangle as selecting pattern.
-     * * box: sets box as selecting pattern to accumulation chart.
-     * * verticalstripe: sets vertical stripe as  selecting pattern to accumulation chart.
-     * * horizontalstripe: sets horizontal stripe as selecting pattern to accumulation chart.
-     * * bubble: sets bubble as selecting pattern to accumulation chart.
+     * * None: Sets none as selecting pattern to accumulation chart .
+     * * Chessboard: Sets chess board as selecting pattern accumulation chart .
+     * * Dots: Sets dots as  selecting pattern accumulation chart .
+     * * DiagonalForward: Sets diagonal forward as selecting pattern to accumulation chart .
+     * * Crosshatch: Sets crosshatch as selecting pattern to accumulation chart.
+     * * Pacman: Sets pacman selecting pattern to accumulation chart.
+     * * DiagonalBackward: Sets diagonal backward as selecting pattern to accumulation chart.
+     * * Grid: Sets grid as selecting pattern to accumulation chart.
+     * * Turquoise: Sets turquoise as selecting pattern to accumulation chart.
+     * * Star: Sets star as selecting pattern to accumulation chart.
+     * * Triangle: Sets triangle as selecting pattern to accumulation chart.
+     * * Circle: Sets circle as selecting pattern to accumulation chart.
+     * * Tile: Sets tile as selecting pattern to accumulation chart.
+     * * HorizontalDash: Sets horizontal dash as selecting pattern to accumulation chart.
+     * * VerticalDash: Sets vertical dash as selecting pattern to accumulation chart.
+     * * Rectangle: Sets rectangle as selecting pattern.
+     * * Box: Sets box as selecting pattern to accumulation chart.
+     * * VerticalStripe: Sets vertical stripe as  selecting pattern to accumulation chart.
+     * * HorizontalStripe: Sets horizontal stripe as selecting pattern to accumulation chart.
+     * * Bubble: Sets bubble as selecting pattern to accumulation chart.
      *
      * @default None
      */
@@ -301,26 +301,26 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
 
     /**
      * Specifies whether series or data point has to be selected. They are,
-     * * none: sets none as highlighting pattern to accumulation chart.
-     * * chessboard: sets chess board as highlighting pattern to accumulation chart.
-     * * dots: sets dots as highlighting pattern to accumulation chart.
-     * * diagonalForward: sets diagonal forward as highlighting pattern to accumulation chart.
-     * * crosshatch: sets crosshatch as highlighting pattern to accumulation chart.
-     * * pacman: sets pacman highlighting  pattern to accumulation chart.
-     * * diagonalbackward: sets diagonal backward as highlighting pattern to accumulation chart.
-     * * grid: sets grid as highlighting pattern to accumulation chart.
-     * * turquoise: sets turquoise as highlighting pattern to accumulation chart.
-     * * star: sets star as highlighting  pattern to accumulation chart.
-     * * triangle: sets triangle as highlighting pattern to accumulation chart.
-     * * circle: sets circle as highlighting  pattern to accumulation chart.
-     * * tile: sets tile as highlighting pattern to accumulation chart.
-     * * horizontaldash: sets horizontal dash as highlighting pattern to accumulation chart.
-     * * verticaldash: sets vertical dash as highlighting pattern to accumulation chart.
-     * * rectangle: sets rectangle as highlighting  pattern to accumulation chart.
-     * * box: sets box as highlighting pattern to accumulation chart.
-     * * verticalstripe: sets vertical stripe as highlighting  pattern to accumulation chart.
-     * * horizontalstripe: sets horizontal stripe as highlighting  pattern to accumulation chart.
-     * * bubble: sets bubble as highlighting  pattern to accumulation chart.
+     * * None: Sets none as highlighting pattern to accumulation chart.
+     * * Chessboard: Sets chess board as highlighting pattern to accumulation chart.
+     * * Dots: Sets dots as highlighting pattern to accumulation chart.
+     * * DiagonalForward: Sets diagonal forward as highlighting pattern to accumulation chart.
+     * * Crosshatch: Sets crosshatch as highlighting pattern to accumulation chart.
+     * * Pacman: Sets pacman highlighting  pattern to accumulation chart.
+     * * Diagonalbackward: Sets diagonal backward as highlighting pattern to accumulation chart.
+     * * Grid: Sets grid as highlighting pattern to accumulation chart.
+     * * Turquoise: Sets turquoise as highlighting pattern to accumulation chart.
+     * * Star: Sets star as highlighting  pattern to accumulation chart.
+     * * Triangle: Sets triangle as highlighting pattern to accumulation chart.
+     * * Circle: Sets circle as highlighting  pattern to accumulation chart.
+     * * Tile: Sets tile as highlighting pattern to accumulation chart.
+     * * HorizontalDash: Sets horizontal dash as highlighting pattern to accumulation chart.
+     * * VerticalDash: Sets vertical dash as highlighting pattern to accumulation chart.
+     * * Rectangle: Sets rectangle as highlighting  pattern to accumulation chart.
+     * * Box: Sets box as highlighting pattern to accumulation chart.
+     * * VerticalStripe: Sets vertical stripe as highlighting  pattern to accumulation chart.
+     * * HorizontalStripe: Sets horizontal stripe as highlighting  pattern to accumulation chart.
+     * * Bubble: Sets bubble as highlighting  pattern to accumulation chart.
      *
      * @default None
      */
@@ -849,7 +849,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * @returns {void}
      */
     private setTheme(): void {
-        /*! Set theme for accumulation chart */
+        /** Set theme for accumulation chart */
         this.themeStyle = getThemeColor(this.theme, false, this);
     }
     /**
@@ -894,14 +894,14 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * @returns {void}
      */
     private unWireEvents(): void {
-        /*! Find the Events type */
+        /** Find the Events type */
         const isIE11Pointer: boolean = Browser.isPointer;
 
         const start: string = Browser.touchStartEvent;
         const move: string = Browser.touchMoveEvent;
         const stop: string = Browser.touchEndEvent;
         const cancel: string = isIE11Pointer ? 'pointerleave' : 'mouseleave';
-        /*! UnBind the Event handler */
+        /** UnBind the Event handler */
 
         EventHandler.remove(this.element, move, this.accumulationMouseMove);
         EventHandler.remove(this.element, stop, this.accumulationMouseEnd);
@@ -930,7 +930,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         if (!this.element) {
             return;
         }
-        /*! Find the Events type */
+        /** Find the Events type */
 
         const isIE11Pointer: boolean = Browser.isPointer;
         const start: string = Browser.touchStartEvent;
@@ -938,7 +938,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         const move: string = Browser.touchMoveEvent;
         const cancel: string = isIE11Pointer ? 'pointerleave' : 'mouseleave';
 
-        /*! Bind the Event handler */
+        /** Bind the Event handler */
         EventHandler.add(this.element, move, this.accumulationMouseMove, this);
         EventHandler.add(this.element, stop, this.accumulationMouseEnd, this);
         EventHandler.add(this.element, start, this.accumulationMouseStart, this);
@@ -955,7 +955,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             this.accumulationResizeBound
         );
         new Touch(this.element); // To avoid geasture blocking for browser
-        /*! Apply the style for chart */
+        /** Apply the style for chart */
         this.setStyle(<HTMLElement>this.element);
     }
     /**

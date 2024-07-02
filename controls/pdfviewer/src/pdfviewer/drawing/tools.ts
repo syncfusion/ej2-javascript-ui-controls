@@ -1734,7 +1734,7 @@ export class NodeDrawingTool extends ToolBase {
                     insertSpaces: drawingObject.insertSpaces, isTransparent : drawingObject.isTransparent,
                     rotateAngle: drawingObject.rotateAngle,
                     selectedIndex: drawingObject.selectedIndex, options: drawingObject.options ? drawingObject.options : [],
-                    signatureType: drawingObject.signatureType, zIndex : drawingObject.zIndex
+                    signatureType: drawingObject.signatureType, zIndex : drawingObject.zIndex, customData: drawingObject.customData ? drawingObject.customData : ""
                 };
                 this.commandHandler.formFieldCollections.push(formField);
                 this.commandHandler.formDesignerModule.drawHTMLContent(this.drawingObject.formFieldAnnotationType,

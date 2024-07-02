@@ -850,7 +850,7 @@ describe('Spreadsheet cell navigation module ->', () => {
             it('Formula selection not worked properly while selecting the cells using Shift+Down arrow key', (done: Function) => {
                 helper.invoke('selectRange', ['A1']);
                 helper.invoke('startEdit');
-                helper.getInstance().editModule.editCellData.value = '=SUM(';
+                helper.getInstance().notify('editOperation', { action: 'refreshEditor', value: '=SUM(', refreshCurPos: true, refreshEditorElem: true });
                 const td: HTMLElement = helper.invoke('getCell', [0, 2]);
                 const coords: ClientRect = td.getBoundingClientRect();
                 helper.triggerMouseAction('mousedown', { x: coords.left + 1, y: coords.top }, null, td);

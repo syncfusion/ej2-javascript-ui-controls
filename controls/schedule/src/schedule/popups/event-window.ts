@@ -387,11 +387,14 @@ export class EventWindow {
                     this.recurrenceEditor = null;
                 }
                 this.destroyComponents();
-                const formElements: HTMLElement[] = [].slice.call(form.children);
-                for (const element of formElements) {
-                    remove(element);
-                }
                 this.parent.resetTemplates(['editorTemplate']);
+                EventHandler.clearEvents(form);
+                if (!this.parent.isReact) {
+                    const formElements: HTMLElement[] = [].slice.call(form.children);
+                    for (const element of formElements) {
+                        remove(element);
+                    }
+                }
             }
             const templateId: string = this.parent.element.id + '_editorTemplate';
             const tempEle: HTMLElement[] =
@@ -1012,6 +1015,10 @@ export class EventWindow {
         const descriptionRule: Record<string, any> = getValidationRule(this.parent.eventSettings.fields.description.validation);
         if (!isNullOrUndefined(descriptionRule)) {
             rules[this.parent.eventSettings.fields.description.name] = descriptionRule;
+        }
+        if (this.fieldValidator) {
+            this.fieldValidator.destroy();
+            this.fieldValidator = null;
         }
         this.fieldValidator = new FieldValidator();
         this.fieldValidator.renderFormValidator(form, rules, this.element, this.parent.locale);

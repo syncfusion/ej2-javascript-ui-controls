@@ -6588,6 +6588,7 @@ export class PdfInkAnnotation extends PdfComment {
     private _previousCollection: Array<number[]> = [];
     private _isFlatten: boolean;
     _isModified: boolean = false;
+    _isEnableControlPoints: boolean = true;
     /**
      * Initializes a new instance of the `PdfInkAnnotation` class.
      *
@@ -6851,19 +6852,36 @@ export class PdfInkAnnotation extends PdfComment {
                         point[Number.parseInt(count.toString(), 10)] = [inkPoints[Number.parseInt(j.toString(), 10)], inkPoints[j + 1]];
                         count++;
                     }
-                    const pathPointCont: number = count + (count * 2) - 2;
-                    const pathPoints: Array<number[]> = new Array(pathPointCont);
-                    let p1: Array<number[]> = [];
-                    let p2: Array<number[]> = [];
-                    const value: {controlP1: Array<number[]> , controlP2: Array<number[]>} = this._getControlPoints(point, p1, p2);
-                    p1 = value.controlP1;
-                    p2 = value.controlP2;
-                    let index: number = 0;
-                    for (let i: number = 0; i < pathPointCont - 1; i = i + 3) {
-                        pathPoints[Number.parseInt(i.toString(), 10)] = point[Number.parseInt(index.toString(), 10)];
-                        pathPoints[i + 1] = p1[Number.parseInt(index.toString(), 10)];
-                        pathPoints[i + 2] = p2[Number.parseInt(index.toString(), 10)];
-                        index++;
+                    let pathPointCont: number = count + (count * 2) - 2;
+                    let pathPoints: Array<number[]> = new Array(pathPointCont);
+                    if (this._isEnableControlPoints) {
+                        let p1: Array<number[]> = [];
+                        let p2: Array<number[]> = [];
+                        const value: { controlP1: Array<number[]>, controlP2: Array<number[]> } = this._getControlPoints(point, p1, p2);
+                        p1 = value.controlP1;
+                        p2 = value.controlP2;
+                        let index: number = 0;
+                        for (let i: number = 0; i < pathPointCont - 1; i = i + 3) {
+                            pathPoints[Number.parseInt(i.toString(), 10)] = point[Number.parseInt(index.toString(), 10)];
+                            pathPoints[i + 1] = p1[Number.parseInt(index.toString(), 10)];
+                            pathPoints[i + 2] = p2[Number.parseInt(index.toString(), 10)];
+                            index++;
+                        }
+                    } else {
+                        pathPointCont = count;
+                        pathPoints = new Array(pathPointCont);
+                        if (count % 3 === 1) {
+                            pathPoints = point;
+                        } else if (count % 3 === 0) {
+                            for (let i: number = 0; i < count; i++) {
+                                pathPoints[Number.parseInt(i.toString(), 10)] = point[Number.parseInt(i.toString(), 10)];
+                            }
+                        } else {
+                            for (let i: number = 0; i < count; i++) {
+                                pathPoints[Number.parseInt(i.toString(), 10)] = point[Number.parseInt(i.toString(), 10)];
+                            }
+                            pathPoints[pathPointCont - 2] = point[point.length - 2];
+                        }
                     }
                     pathPoints[pathPointCont - 1] = point[point.length - 1];
                     if (pathPoints !== null) {
@@ -6985,7 +7003,11 @@ export class PdfInkAnnotation extends PdfComment {
                 this._previousCollection.push(inkList);
             });
         }
-        return this._getInkBoundsValue();
+        if (this._isEnableControlPoints) {
+            return this._getInkBoundsValue();
+        } else {
+            return [this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height];
+        }
     }
     _getInkBoundsValue(): number[] {
         let bounds: number[] = [0, 0, 0, 0];

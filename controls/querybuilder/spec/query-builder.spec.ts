@@ -1377,7 +1377,9 @@ describe('QueryBuilder', () => {
             document.body.appendChild(createElement('div', { id: 'querybuilder' }));
         });
         afterEach(() => {
-            remove(queryBuilder.element.nextElementSibling);
+            if (queryBuilder.element.nextElementSibling) {
+                remove(queryBuilder.element.nextElementSibling);
+            }
             remove(queryBuilder.element);
             queryBuilder.destroy();
         });
@@ -1486,7 +1488,7 @@ describe('QueryBuilder', () => {
             expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(1);
             queryBuilder.setRules(queryBuilder.getRulesFromSql("Category LIKE ('%Laptop') AND (NOT (Category LIKE ('%L')))"));
             queryBuilder.setRules(queryBuilder.getRulesFromSql("Date BETWEEN '1/6/2020' AND '1/8/2020'"));
-            queryBuilder.setRules(queryBuilder.getRulesFromSql("Category LIKE ('%Laptop') AND (NOT (Category IS NULL)"));
+            queryBuilder.setRules(queryBuilder.getRulesFromSql("Category LIKE ('%Laptop') AND (NOT (Category IS NULL))"));
         });
 
         it('getDataManagerQuery', () => {

@@ -11,7 +11,7 @@ import { ColorValue, colorNameToHex, convertHexToColor } from '../../common/util
 import { ChartShape } from '../../index';
 
 /**
- * Marker Module used to render the marker for line type series.
+ * `Marker` Module used to render the marker for line type series.
  */
 export class MarkerExplode extends ChartData {
     private markerExplode: number;

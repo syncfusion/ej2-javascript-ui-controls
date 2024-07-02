@@ -685,14 +685,14 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
      * @returns {void}
      */
     private unWireEvents(): void {
-        /*! Find the Events type */
+        /** Find the Events type */
         const isIE11Pointer: boolean = Browser.isPointer;
 
         const start: string = Browser.touchStartEvent;
         const move: string = Browser.touchMoveEvent;
         const stop: string = Browser.touchEndEvent;
         const cancel: string = isIE11Pointer ? 'pointerleave' : 'mouseleave';
-        /*! UnBind the Event handler */
+        /** UnBind the Event handler */
 
         EventHandler.remove(this.element, move, this.chartOnMouseMove);
         EventHandler.remove(this.element, stop, this.chartMouseUp);
@@ -894,7 +894,7 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
         if (!this.element) {
             return;
         }
-        /*! Find the Events type */
+        /** Find the Events type */
 
         const isIE11Pointer: boolean = Browser.isPointer;
         const start: string = Browser.touchStartEvent;
@@ -902,7 +902,7 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
         const move: string = Browser.touchMoveEvent;
         const cancel: string = isIE11Pointer ? 'pointerleave' : 'mouseleave';
 
-        /*! Bind the Event handler */
+        /** Bind the Event handler */
         EventHandler.add(this.element, move, this.chartOnMouseMove, this);
         EventHandler.add(this.element, stop, this.chartMouseUp, this);
         EventHandler.add(this.element, start, this.chartMouseDown, this);
@@ -916,7 +916,7 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
             this.chartResizeBound
         );
         //new Touch(this.element); // To avoid geasture blocking for browser
-        /*! Apply the style for chart */
+        /** Apply the style for chart */
         this.setStyle(<HTMLElement>this.element);
     }
 
@@ -1082,7 +1082,7 @@ export class CircularChart3D extends Component<HTMLElement> implements INotifyPr
      * @returns {void}
      */
     private setTheme(): void {
-        /*! Set theme for circular 3D chart */
+        /** Set theme for circular 3D chart */
         this.themeStyle = getCircular3DThemeColor(this.theme);
     }
 

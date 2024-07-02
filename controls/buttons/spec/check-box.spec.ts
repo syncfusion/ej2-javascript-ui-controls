@@ -243,6 +243,14 @@ describe('CheckBox', () => {
             expect(element.parentElement.children[2].textContent).toEqual('checkbox1');
         });
 
+        it('CheckBox with Label with html', () => {
+            checkbox = new CheckBox({ label: '<div>CheckBox:false</div>', enableHtmlSanitizer: false }, '#checkbox');
+            expect(element.parentElement.children[2].textContent).toEqual('CheckBox:false');
+            checkbox.label = '<div>CheckBox:true</div>';
+            checkbox.dataBind();
+            expect(element.parentElement.children[2].textContent).toEqual('CheckBox:true');
+        });
+
         it('CheckBox with checked state', () => {
             checkbox = new CheckBox({}, '#checkbox');
             checkbox.checked = true;

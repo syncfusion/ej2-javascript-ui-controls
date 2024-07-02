@@ -463,7 +463,7 @@ export class Timeline extends Component<HTMLElement> implements INotifyPropertyC
         case 'dotCss':
             dotEle = timelineItemElements[parseInt(index.toString(), 10)].querySelector('.' + DOTCONTENT);
             if (oldPropItems.dotCss !== '') { dotEle.classList.remove(...oldPropItems.dotCss.trim().split(' ')); }
-            dotEle.classList.add(...this.items[parseInt(index.toString(), 10)].dotCss.trim().split(' '));
+            if (item.dotCss !== '') { dotEle.classList.add(...this.items[parseInt(index.toString(), 10)].dotCss.trim().split(' ')); }
             break;
         case 'content':
             contentEle = timelineItemElements[parseInt(index.toString(), 10)].querySelector('.' + CONTENT);
@@ -484,7 +484,9 @@ export class Timeline extends Component<HTMLElement> implements INotifyPropertyC
             if (oldPropItems.cssClass !== '') {
                 timelineItemElements[parseInt(index.toString(), 10)].classList.remove(...oldPropItems.cssClass.trim().split(' '));
             }
-            timelineItemElements[parseInt(index.toString(), 10)].classList.add(...item.cssClass.trim().split(' '));
+            if (item.cssClass !== '') {
+                timelineItemElements[parseInt(index.toString(), 10)].classList.add(...item.cssClass.trim().split(' '));
+            }
             break;
         }
     }
@@ -505,11 +507,14 @@ export class Timeline extends Component<HTMLElement> implements INotifyPropertyC
                     this.removeItemElements();
                     this.renderItems();
                 } else {
-                    const itemObject: Object[] = Object.keys(newProp.items);
-                    for (let i: number = 0; i < itemObject.length; i++) {
-                        const index: number = parseInt(Object.keys(newProp.items)[i as number], 10);
-                        const property: string = Object.keys(newProp.items[index as number])[0];
-                        this.updateItems(property, oldProp.items[index as number], index, newProp.items[index as number]);
+                    const itemLength: number = Object.keys(newProp.items).length;
+                    for (let i: number = 0; i < itemLength; i++) {
+                        const itemPropLength: number = parseInt(Object.keys(newProp.items)[i as number], 10);
+                        for (let j: number = 0; j < Object.keys(newProp.items[itemPropLength as number]).length; j++) {
+                            const property: string = Object.keys(newProp.items[itemPropLength as number])[j as number];
+                            this.updateItems(property, oldProp.items[itemPropLength as number], itemPropLength,
+                                             newProp.items[itemPropLength as number]);
+                        }
                     }
                 }
                 break;

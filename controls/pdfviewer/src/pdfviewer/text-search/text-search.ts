@@ -282,7 +282,7 @@ export class TextSearch {
      * @returns {void}
      */
     public initiateSearch(inputString: string): void {
-        if (inputString !== this.searchString) {
+        if (inputString !== this.searchString || this.searchPageIndex === null) {
             this.isTextSearch = false;
             this.searchPageIndex = this.pdfViewerBase.currentPageNumber - 1;
         }
@@ -1270,9 +1270,13 @@ export class TextSearch {
                     const textDetailsId: string = this.pdfViewerBase.documentId + '_' + pageIndex + '_textDetails';
                     const isTextNeed: boolean = this.pdfViewerBase.pageTextDetails ? this.pdfViewerBase.pageTextDetails[`${textDetailsId}`] ? false : true : true;
                     let cropBoxRect: Rect = new Rect(0, 0, 0, 0);
+                    let mediaBoxRect: Rect = new Rect(0, 0, 0, 0);
                     let currentPage: PdfPage = this.pdfViewer.pdfRenderer.loadedDocument.getPage(pageIndex);
                     if (currentPage && currentPage._pageDictionary && currentPage._pageDictionary._map && currentPage._pageDictionary._map.CropBox) {
                         [cropBoxRect.x, cropBoxRect.y, cropBoxRect.width, cropBoxRect.height] = currentPage._pageDictionary._map.CropBox;
+                    }
+                    if (currentPage && currentPage._pageDictionary && currentPage._pageDictionary._map && currentPage._pageDictionary._map.MediaBox) {
+                        [mediaBoxRect.x, mediaBoxRect.y, mediaBoxRect.width, mediaBoxRect.height] = currentPage._pageDictionary._map.MediaBox;
                     }
                     if (viewPortWidth >= pageWidth || !this.pdfViewer.tileRenderingSettings.enableTileRendering) {
                         this.pdfViewerBase.pdfViewerRunner.postMessage({
@@ -1281,7 +1285,8 @@ export class TextSearch {
                             zoomFactor: proxy.pdfViewer.magnificationModule.zoomFactor,
                             isTextNeed: isTextNeed,
                             textDetailsId: textDetailsId,
-                            cropBoxRect: cropBoxRect
+                            cropBoxRect: cropBoxRect,
+                            mediaBoxRect: mediaBoxRect
                         });
                     } else {
                         this.pdfViewerBase.pdfViewerRunner.postMessage({
@@ -1294,7 +1299,8 @@ export class TextSearch {
                             tileYCount: noTileY,
                             isTextNeed: isTextNeed,
                             textDetailsId: textDetailsId,
-                            cropBoxRect: cropBoxRect
+                            cropBoxRect: cropBoxRect,
+                            mediaBoxRect: mediaBoxRect
                         });
                     }
                     this.pdfViewerBase.pdfViewerRunner.onmessage = function (event: any): void {

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.1.40 (2024-07-02)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I604532` - Removed exclamation mark from comments in the chart source.
+
 ## 26.1.39 (2024-06-25)
 
 ### Chart

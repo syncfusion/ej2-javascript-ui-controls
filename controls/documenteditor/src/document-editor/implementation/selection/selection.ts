@@ -591,7 +591,8 @@ export class Selection {
                                 if (endCell && bmEndPosCell && endCell.ownerTable.equals(bmEndPosCell.ownerTable) &&
                                     !(endCell.ownerTable
                                         && selectedCells.indexOf(this.getCellInTable(endCell.ownerTable, bmEndPosCell)) >= 0)) {
-                                    continue;
+                                    // Bug 891131: The below code is comment to resolve the bookmark is not retrieved when selecting the table cell
+                                    // continue;
                                 }
                             }
                         }
@@ -6016,7 +6017,7 @@ export class Selection {
                 if(isNullOrUndefined(lastCell)){
                     return false;
                 }
-                if (endCell == lastCell) {
+                if (endCell == lastCell && !(bookmark.bookmarkType === 1 && !isNullOrUndefined(bookmark.line) && bookmark.line.children.indexOf(bookmark) !== bookmark.line.children.length - 1)) {
                     return true;
                 } else {
                     return false;
@@ -6984,7 +6985,6 @@ export class Selection {
                                 width = element.width + element.padding.left;
                             } else {
                                 width = this.documentHelper.textHelper.getWidth((element as TextElementBox).text.substr(0, i), element.characterFormat, (element as TextElementBox).scriptType);
-                                (element as TextElementBox).trimEndWidth = width;
                             }
                             if (x < width || i === (element as TextElementBox).length) {
                                 //Updates exact left position of the caret.
@@ -9801,7 +9801,26 @@ export class Selection {
         return this.htmlWriter.writeHtml(documentContent, isOptimizedSfdt);
     }
 
-    private copyToClipboard(htmlContent: string): boolean {
+    private async copyToClipboard(htmlContent: string): Promise<boolean> {
+        const navigator: any = window.navigator;
+        if (navigator.clipboard && navigator.clipboard['write']) {
+            try {
+                let blob: Blob = new Blob([htmlContent], { type: 'text/html' });
+                if (!document.hasFocus()) {
+                    document.body.focus();
+                }
+                await new Promise(resolve => window.requestAnimationFrame(resolve));
+                await navigator.clipboard.write([new ClipboardItem({ 'text/html': blob })]);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        } else {
+            return this.copyExecCommand(htmlContent);
+        }
+    }
+
+    private copyExecCommand(htmlContent: string): boolean {
         window.getSelection().removeAllRanges();
         //Skip the copy operation Using shadow DOM if it is mobile device or IE browser.
         let isSafariOnMac = (navigator.vendor && navigator.vendor.indexOf('Apple') > -1 &&
@@ -12055,6 +12074,14 @@ export class Selection {
         return start.paragraph.associatedCell.equals(firstcell) && isRowSelect;
     }
 }
+
+/**
+ * @private
+ */
+declare class ClipboardItem {
+    constructor(data: { [mimeType: string]: Blob | string | ArrayBuffer });
+}
+
 /**
  *  Specifies the settings for selection.
  */

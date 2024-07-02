@@ -255,7 +255,7 @@ export class Selection {
                 updateCell(
                     this.parent, this.parent.getActiveSheet(), { rowIdx: cellIndexes[0], colIdx: cellIndexes[1], preventEvt: true,
                         cell: { notes: noteContainer.value, isNoteEditable:  false }});
-                const eventArgs : NoteSaveEventArgs =  { notes: noteContainer.value, address: address, element: targetElement};
+                const eventArgs : NoteSaveEventArgs =  { notes: noteContainer.value, address: address};
                 this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'addNote' });
             }
             this.parent.spreadsheetNoteModule.isShowNote = null;
@@ -362,8 +362,18 @@ export class Selection {
                     } else {
                         this.touchSelectionStarted = false;
                     }
-                    if (!preventEvt && !isTouchEnd(e)) {
-                        EventHandler.add(document, getEndEvent(), this.mouseUpHandler, this);
+                    if (!isTouchEnd(e)) {
+                        if (preventEvt) {
+                            if (this.parent.isEdit) {
+                                const updateFormulaCurPos: Function = (e: MouseEvent & TouchEvent): void => {
+                                    EventHandler.remove(document, getEndEvent(), updateFormulaCurPos);
+                                    this.updateFormulaCursorPosition(e);
+                                }
+                                EventHandler.add(document, getEndEvent(), updateFormulaCurPos, this);
+                            }
+                        } else {
+                            EventHandler.add(document, getEndEvent(), this.mouseUpHandler, this);
+                        }
                     }
                     const isNoteAvailable: boolean = ((e.target as HTMLElement).className === 'e-addNoteIndicator' ||
                         ((e.target as HTMLElement).children.length > 0 && (e.target as HTMLElement).children[(e.target as HTMLElement).childElementCount - 1].className.indexOf('e-addNoteIndicator') > -1));
@@ -395,8 +405,9 @@ export class Selection {
         if (isFormulaEdit && ((e.target as HTMLElement).classList.contains('e-cell') || (e.target as HTMLElement).classList.contains('e-wrap-content') ||
             (e.target as HTMLElement).classList.contains('e-header-cell')) && this.parent.isEdit) {
             let range: string = this.parent.getActiveSheet().selectedRange;
-            range = isSingleCell(getIndexesFromAddress(range)) ? range.split(':')[0] : range;
-            this.parent.notify(addressHandle, { range: range, isSelect: false });
+            let lastRange: string[] = range.split(' ');
+            range = isSingleCell(getIndexesFromAddress(lastRange[lastRange.length - 1])) ? lastRange[lastRange.length - 1].split(':')[0] : lastRange[lastRange.length - 1];
+            this.parent.notify(addressHandle, { range: range, isSelect: false, isMouseDown: e.ctrlKey });
         }
     }
 
@@ -515,7 +526,8 @@ export class Selection {
             } else {
                 range = this.parent.getActiveSheet().selectedRange;
             }
-            this.parent.notify(addressHandle, { range: range, isSelect: false });
+            let lastRange: string[] = range.split(' ');
+            this.parent.notify(addressHandle, { range: lastRange[lastRange.length - 1], isSelect: false });
         }
     }
 
@@ -550,11 +562,14 @@ export class Selection {
         } else {
             this.parent.notify(hideAutoFillElement, null);
         }
-        const eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
-        this.parent.notify(editOperation, eventArgs);
-        const isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue) ||
-            (eventArgs.editedValue && eventArgs.editedValue.toString().indexOf('=') === 0);
+        this.updateFormulaCursorPosition(e);
+    }
+
+    private updateFormulaCursorPosition(e: MouseEvent & TouchEvent): void {
         if (this.parent.isEdit) {
+            const eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
+            this.parent.notify(editOperation, eventArgs);
+            const isFormulaEdit: boolean = checkIsFormula(eventArgs.editedValue, true);
             if (isFormulaEdit) {
                 this.parent.notify(initiateCur, { isCellEdit: (e.target as HTMLElement).classList.contains('e-spreadsheet-edit') });
             }
@@ -796,7 +811,7 @@ export class Selection {
             if (isMultiRange) {
                 if (selectedRowColIdx === undefined) {
                     let selRange: string = getRangeAddress(range);
-                    if (sheet.selectedRange.includes(selRange)) {
+                    if (sheet.selectedRange.includes(selRange) && !isFormulaEdit) {
                         const selRanges: string[] = sheet.selectedRange.split(' ');
                         if (selRanges.length > 1) {
                             selRanges.splice(selRanges.indexOf(selRange), 1); selRange = selRanges.join(' ');
@@ -862,7 +877,7 @@ export class Selection {
             range[0] = 0;
         }
         let selRange: string = getRangeAddress(range);
-        if (e && e.ctrlKey && (isMouseMove(e as MouseEvent) || isMouseUp(e as MouseEvent))) {
+        if (e && e.ctrlKey && (isMouseMove(e as MouseEvent) || isMouseUp(e as MouseEvent)) && !isFormulaEdit) {
             selRange = sheet.selectedRange.slice(0, sheet.selectedRange.lastIndexOf(' ')) + ' ' + selRange;
         } else if (selectedRowColIdx > -1) {
             const selRanges: string[] = sheet.selectedRange.split(' ');
@@ -973,7 +988,7 @@ export class Selection {
 
     private getSelectionElement(e?: MouseEvent, selectedRowColIdx?: number): HTMLElement {
         const sheet: SheetModel = this.parent.getActiveSheet();
-        if (e && e.ctrlKey) {
+        if (e && e.ctrlKey && !this.parent.isEdit) {
             if (isMouseUp(e) || isMouseMove(e)) {
                 if (sheet.frozenColumns || sheet.frozenRows) {
                     let ele: HTMLElement = this.parent.getMainContent().querySelector('.e-cur-selection');

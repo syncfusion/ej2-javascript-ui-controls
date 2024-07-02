@@ -131,7 +131,7 @@ export class SplineSeries extends SplineBase {
      * @param {PathOption} options - The options for the path.
      * @param {Series} series - The series to which the path belongs.
      * @param {string} clipRect - The clip rectangle for the path.
-     * * @param {ChartLocation[]} [firstSymbol] - The location of the first symbol.
+     * @param {ChartLocation[]} [firstSymbol] - The location of the first symbol.
      * @returns {void}
      */
     public addPath (options: PathOption, series: Series, clipRect: string): void {

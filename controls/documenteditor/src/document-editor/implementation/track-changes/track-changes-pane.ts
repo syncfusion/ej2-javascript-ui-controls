@@ -394,7 +394,7 @@ export class TrackChangesPane {
     }
     public updateTrackChanges(show?: boolean): void {
         if (show || isNullOrUndefined(show)) {
-            if (this.owner.documentHelper.layout.isInitialLoad) {
+            if (!this.owner.isUpdateTrackChanges) {
                 this.tableRevisions.clear();
                 this.renderedChanges.clear();
                 this.removeAllChanges();
@@ -427,7 +427,7 @@ export class TrackChangesPane {
             }
             this.isChangesTabVisible = true;
             this.owner.notify('reviewPane', { comment: this.commentReviewPane.isCommentTabVisible, changes: this.isChangesTabVisible});
-            if (this.owner.documentHelper.layout.isInitialLoad) {
+            if (!this.owner.isUpdateTrackChanges) {
                 for (let i: number = 0; i < this.owner.revisions.changes.length; i++) {
                     let revision: Revision = this.owner.revisions.changes[i];
                     let ranges: object = this.owner.revisions.changes[i].range[0];

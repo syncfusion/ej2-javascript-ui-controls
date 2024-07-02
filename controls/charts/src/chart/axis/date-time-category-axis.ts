@@ -52,7 +52,7 @@ export class DateTimeCategory extends Category {
      */
 
     public calculateVisibleLabels(axis: Axis): void {
-        /*! Generate axis labels */
+        /** Generate axis labels */
         axis.visibleLabels = [];
         let labelStyle: Font;
         const padding: number = axis.labelPlacement === 'BetweenTicks' ? 0.5 : 0;

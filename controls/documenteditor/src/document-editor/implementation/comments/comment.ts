@@ -1106,7 +1106,7 @@ export class CommentView {
     private deleteComment(): void {
         const eventArgs: CommentDeleteEventArgs = { author: this.comment.author, cancel: false};
         this.owner.trigger(commentDeleteEvent, eventArgs);
-        const eventActionArgs: CommentActionEventArgs = { author: this.comment.author, cancel: eventArgs.cancel, type: 'Delete'};
+        const eventActionArgs: CommentActionEventArgs = { author: this.comment.author, cancel: eventArgs.cancel, type: 'Delete', mentions: this.comment.mentions};
         this.owner.trigger(beforeCommentActionEvent, eventActionArgs);
         if (eventActionArgs.cancel) {
             return;
@@ -1136,7 +1136,7 @@ export class CommentView {
     }
 
     private enableReplyView(): void {
-        const eventArgs: CommentActionEventArgs = { author: this.comment.author, cancel: false, type: 'Reply' };
+        const eventArgs: CommentActionEventArgs = { author: this.comment.author, cancel: false, type: 'Reply', mentions: this.comment.mentions };
         this.owner.trigger(beforeCommentActionEvent, eventArgs);
         if (eventArgs.cancel && eventArgs.type === 'Reply') {
             return;
@@ -1229,7 +1229,7 @@ export class CommentView {
     }
 
     public editComment(): void {
-        const eventArgs: CommentActionEventArgs = { author: this.comment.author, cancel: false, type: 'Edit' };
+        const eventArgs: CommentActionEventArgs = { author: this.comment.author, cancel: false, type: 'Edit', mentions: this.comment.mentions };
         this.owner.trigger(beforeCommentActionEvent, eventArgs);
         if (eventArgs.cancel && eventArgs.type === 'Edit') {
             return;

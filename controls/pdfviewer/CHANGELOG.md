@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 26.1.40 (2024-07-02)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I598100` - Now, when importing the position of the exported ink annotation is correct.
+- `#I598074` - Now, the annotations are not missing in `annotationCollection` after undo action.
+- `#I599164` - Now, the highlight position is working properly for OCR documents in client and server-side rendering.
+- `#I597488` , `#I599166` - Now, the page rendering performance has been increased.
+- `#I599114` - Now, the required page requests are only sent when we scroll using the mouse or touchpad.
+- `#I598716` - Now, the signature field indicator is placed in correct position in the provided document without `FormDesigner` module.
+- `#I598109` - Now, the performance issue did not occur when updating multiple form fields at once.
+
 ## 26.1.39 (2024-06-25)
 
 ### PDF Viewer

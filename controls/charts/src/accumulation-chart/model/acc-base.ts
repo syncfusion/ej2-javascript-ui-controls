@@ -21,7 +21,7 @@ import { Units, Alignment, Regions, Position, SeriesCategories, LabelOverflow, T
 import { GroupModes } from './enum';
 
 /**
- * Annotation for accumulation series
+ * Annotation settings for accumulation series.
  */
 export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAnnotationSettings> {
     /**
@@ -33,8 +33,8 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
     public content: string;
 
     /**
-     * if set coordinateUnit as `Pixel` X specifies the axis value.
-     * else is specifies pixel or percentage of coordinate.
+     * If set coordinateUnit as `Pixel` X specifies the axis value.
+     * Else is specifies pixel or percentage of coordinate.
      *
      * @default '0'
      */
@@ -42,8 +42,8 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
     public x: string | Date | number;
 
     /**
-     * if set coordinateUnit as `Pixel` Y specifies the axis value.
-     * else is specifies pixel or percentage of coordinate.
+     * If set coordinateUnit as `Pixel` Y specifies the axis value.
+     * Else is specifies pixel or percentage of coordinate.
      *
      * @default '0'
      */
@@ -51,7 +51,7 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
     public y: string | number;
 
     /**
-     * Specifies the coordinate units of the annotation. They are
+     * Specifies the coordinate units of the annotation. They are:
      * * Pixel - Annotation renders based on x and y pixel value.
      * * Point - Annotation renders based on x and y axis value.
      *
@@ -62,7 +62,7 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
     public coordinateUnits: Units;
 
     /**
-     * Specifies the regions of the annotation. They are
+    * Specifies the regions of the annotation. They are:
      * * Chart - Annotation renders based on chart coordinates.
      * * Series - Annotation renders based on series coordinates.
      *
@@ -73,7 +73,7 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
     public region: Regions;
 
     /**
-     * Specifies the position of the annotation. They are
+     * Specifies the position of the annotation. They are:
      * * Top - Align the annotation element as top side.
      * * Bottom - Align the annotation element as bottom side.
      * * Middle - Align the annotation element as mid point.
@@ -86,7 +86,7 @@ export class AccumulationAnnotationSettings extends ChildProperty<AccumulationAn
     public verticalAlignment: Position;
 
     /**
-     * Specifies the alignment of the annotation. They are
+     * Specifies the alignment of the annotation. They are:
      * * Near - Align the annotation element as top side.
      * * Far - Align the annotation element as bottom side.
      * * Center - Align the annotation element as mid point.
@@ -150,7 +150,7 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
     public fill: string;
 
     /**
-     * Specifies the position of data label. They are.
+     * Specifies the position of data label. They are:
      * * Outside - Places label outside the point.
      * * Inside - Places label inside the point.
      *
@@ -299,29 +299,29 @@ export class PieCenter extends ChildProperty<PieCenter> {
  * @public
  */
 export class AccPoints {
-    /** accumulation point x value. */
+    /** Accumulation point x value. */
     public x: Object;
-    /** accumulation point y value. */
+    /** Accumulation point y value. */
     public y: number;
-    /** accumulation point visibility. */
+    /** Accumulation point visibility. */
     public visible: boolean = true;
-    /** accumulation point text. */
+    /** Accumulation point text. */
     public text: string;
-    /** accumulation point tooltip. */
+    /** Accumulation point tooltip. */
     public tooltip: string;
-    /** accumulation point slice radius. */
+    /** Accumulation point slice radius. */
     public sliceRadius: string;
-    /** accumulation point original text. */
+    /** Accumulation point original text. */
     public originalText: string;
     /** @private */
     public label: string;
-    /** accumulation point color. */
+    /** Accumulation point color. */
     public color: string;
-    /** accumulation point percentage value. */
+    /** Accumulation point percentage value. */
     public percentage: number;
-    /** accumulation point symbol location. */
+    /** Accumulation point symbol location. */
     public symbolLocation: ChartLocation = null;
-    /** accumulation point index. */
+    /** Accumulation point index. */
     public index: number;
     /** @private */
     public midAngle: number;
@@ -433,7 +433,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public xName: string;
 
     /**
-     * Specifies the series name
+     * Specifies the series name.
      *
      * @default ''
      */
@@ -482,7 +482,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public animation: AnimationModel;
 
     /**
-     * The shape of the legend. Each series has its own legend shape. They are
+     * The shape of the legend. Each series has its own legend shape. They are:
      * * Circle - Renders a circle.
      * * Rectangle - Renders a rectangle.
      * * Triangle - Renders a triangle.
@@ -644,7 +644,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     public explodeIndex: number;
 
     /**
-     * options to customize the empty points in series.
+     * Options to customize the empty points in series.
      */
     @Complex<EmptyPointSettingsModel>({ mode: 'Drop' }, EmptyPointSettings)
     public emptyPointSettings: EmptyPointSettingsModel;

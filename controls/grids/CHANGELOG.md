@@ -15,6 +15,8 @@
 - `#I576241` - The memory leak issue occurring when using the `filterBarTemplate` in a grid column has been resolved.
 - `#FB58494` - Resolved the issue where the column's Default Value property only allowed `string` values.
 - `#FB58490` - Resolved the issue where setting the `numeric editType` before the `primaryKey` caused problems with tab navigation.
+- `#I596584` - Resolved the issues with sorting, `selectRow`, and up and down navigation in the `enableVirtualization` grid with grouping.
+- `#I592590` - Support has been provided for exporting grouped items in an expanded state with lazy load group in PDF.
 
 ## 26.1.38 (2024-06-19)
 

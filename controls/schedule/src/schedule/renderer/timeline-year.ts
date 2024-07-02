@@ -382,11 +382,11 @@ export class TimelineYear extends Year {
         const monthId: string = `schedule_${this.parent.activeViewOptions.dayHeaderTemplateName}monthHeaderTemplate`;
         if (type === 'dayHeaderTemplate') {
             args.day = this.parent.getDayNames('wide')[column % 7];
-            return [].slice.call(this.parent.getDayHeaderTemplate()
-                (args, this.parent, 'dayHeaderTemplate', dayId, false, undefined, undefined, this.parent.root));
+            return [].slice.call(this.parent.getDayHeaderTemplate()(args, this.parent, 'dayHeaderTemplate', dayId,
+                                                                    false, undefined, undefined, this.parent.root));
         } else {
-            return [].slice.call(this.parent.getMonthHeaderTemplate()
-                (args, this.parent, 'monthHeaderTemplate', monthId, false, undefined, undefined, this.parent.root));
+            return [].slice.call(this.parent.getMonthHeaderTemplate()(args, this.parent, 'monthHeaderTemplate', monthId,
+                                                                      false, undefined, undefined, this.parent.root));
         }
     }
 
@@ -401,8 +401,8 @@ export class TimelineYear extends Year {
         const scheduleId: string = this.parent.element.id + '_';
         const viewName: string = this.parent.activeViewOptions.cellTemplateName;
         const templateId: string = scheduleId + viewName + 'cellTemplate';
-        const cellTemplate: HTMLElement[] = [].slice.call(this.parent.getCellTemplate()
-            (args, this.parent, 'cellTemplate', templateId, false, undefined, undefined, this.parent.root));
+        const cellTemplate: HTMLElement[] = [].slice.call(this.parent.getCellTemplate()(args, this.parent, 'cellTemplate', templateId,
+                                                                                        false, undefined, undefined, this.parent.root));
         append(cellTemplate, td);
     }
 

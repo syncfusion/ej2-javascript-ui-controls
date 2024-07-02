@@ -483,4 +483,37 @@ describe('Diagram Control', () => {
 
     });
 
+    describe('883335: loading data wihout nodeTeamplate issue', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
+            ele = createElement('div', { id: 'diagramloadWithoutTemplate' });
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                width: '500px', height: '600px'
+            });
+            diagram.appendTo('#diagramloadWithoutTemplate');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking Add data with node template without defining nodeteamplate at application level', (done: Function) => {
+            diagram.loadDiagram(
+                '{"width":"100%","height":"600px","nodes":[{"shape":{"type":"HTML","content":""},"ports":[],"id":"Node","offsetX":100,"offsetY":100,"width":100,"height":100,"annotations":[],"zIndex":0,"container":null,"visible":true,"horizontalAlignment":"Left","verticalAlignment":"Top","backgroundColor":"transparent","borderColor":"none","borderWidth":0,"rotateAngle":0,"pivot":{"x":0.5,"y":0.5},"margin":{},"flip":"None","wrapper":{"actualSize":{"width":100,"height":100},"offsetX":100,"offsetY":100},"constraints":5240814,"style":{"fill":"white","gradient":{"type":"None"},"strokeColor":"black","strokeWidth":1,"strokeDashArray":"","opacity":1,"textOverflow":"Wrap"},"isExpanded":true,"expandIcon":{"shape":"None"},"fixedUserHandles":[],"flipMode":"All","tooltip":{"openOn":"Auto","content":"","isSticky":false},"inEdges":[],"outEdges":[],"parentId":"","processId":"","umlIndex":-1,"isPhase":false,"isLane":false}],"nodeTemplate":"#nodetemplate","enableRtl":false,"locale":"en-US","enablePersistence":false,"scrollSettings":{"viewPortWidth":656.7999877929688,"viewPortHeight":600,"currentZoom":1,"horizontalOffset":0,"verticalOffset":0,"padding":{"left":0,"right":0,"top":0,"bottom":0},"scrollLimit":"Diagram"},"rulerSettings":{"showRulers":false},"backgroundColor":"transparent","dataSourceSettings":{"crudAction":{"read":""},"dataManager":null,"dataSource":null},"mode":"SVG","layers":[{"id":"default_layer","visible":true,"lock":false,"objects":["Node"],"zIndex":0,"objectZIndex":0}],"connectors":[],"diagramSettings":{"inversedAlignment":true},"constraints":500,"layout":{"type":"None","enableRouting":false},"pageSettings":{"boundaryConstraints":"Infinity","orientation":"Landscape","height":null,"width":null,"background":{"source":"","color":"transparent"},"showPageBreaks":false,"fitOptions":{"canFit":false}},"snapSettings":{"constraints":31,"gridType":"Lines","verticalGridlines":{"lineIntervals":[1.25,18.75,0.25,19.75,0.25,19.75,0.25,19.75,0.25,19.75],"snapIntervals":[20],"lineDashArray":"","lineColor":"lightgray"},"horizontalGridlines":{"lineIntervals":[1.25,18.75,0.25,19.75,0.25,19.75,0.25,19.75,0.25,19.75],"snapIntervals":[20],"lineDashArray":"","lineColor":"lightgray"}},"selectedItems":{"nodes":[],"connectors":[],"constraints":16382,"selectedObjects":[],"userHandles":[],"rotateAngle":0,"canToggleSelection":false,"pivot":{"x":0.5,"y":0.5},"width":0,"height":0,"offsetX":0,"offsetY":0,"handleSize":14,"wrapper":null},"basicElements":[],"tooltip":{"content":""},"commandManager":{"commands":[]},"tool":3,"customCursor":[],"version":17.1}'
+            );
+            expect(diagram.nodes.length === 1).toBe(true)
+            expect((diagram.nodes[0].shape as any).content === '').toBe(true)
+            expect((diagram as any).nodeTemplate === undefined).toBe(true)
+            done();
+        });
+    });
+
 });

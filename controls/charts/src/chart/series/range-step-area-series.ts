@@ -5,7 +5,7 @@ import { LineBase } from './line-base';
 import { AnimationModel } from '../../common/model/base-model';
 import { Axis } from '../../chart/axis/axis';
 /**
- * `RangeStepAreaSeries` Module used to render the range step area series.
+ * `RangeStepAreaSeries` module is used to render the range step area series.
  */
 export class RangeStepAreaSeries extends LineBase {
     private borderDirection: string = '';

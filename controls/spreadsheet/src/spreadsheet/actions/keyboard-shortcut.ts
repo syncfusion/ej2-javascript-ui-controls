@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../base/index';
 import { keyDown, cut, paste, copy, clearCopy, performUndoRedo, initiateHyperlink, editHyperlink, HideShowEventArgs, renderInsertDlg, getRightIdx, getBottomOffset, keyUp } from '../common/index';
-import { findDlg, gotoDlg, initiateFilterUI, getFilterRange, FilterInfoArgs, FillRangeInfo, performAutoFill, focus, addNote } from '../common/index';
+import { findDlg, gotoDlg, initiateFilterUI, getFilterRange, FilterInfoArgs, FillRangeInfo, performAutoFill, focus, addNote, editNote } from '../common/index';
 import { setCellFormat, textDecorationUpdate, FontWeight, getCellIndexes, FontStyle, findToolDlg, getRangeIndexes, InsertDeleteModelArgs, hideShow, applyNumberFormatting, insertModel, getSwapRange, getRangeAddress } from '../../workbook/common/index';
 import { CellModel, SheetModel, getColumn, isLocked as isCellLocked, exportDialog, getFormatFromType } from '../../workbook/index';
 import { setCell, getCell, skipHiddenIdx, selectionComplete, refreshRibbonIcons } from '../../workbook/index';
@@ -288,7 +288,11 @@ export class KeyboardShortcut {
         if (e.shiftKey && !isSelectionNone) {
             if (e.keyCode === 113) { /*shift + F2(Add note)*/
                 e.preventDefault();
-                this.parent.notify(addNote, null);
+                if ((e.target as HTMLElement).children.length > 0 && (e.target as HTMLElement).children[(e.target as HTMLElement).children.length - 1].className.indexOf('e-addNoteIndicator') > -1 ) {
+                    this.parent.notify(editNote, null);
+                } else {
+                    this.parent.notify(addNote, null);
+                }
             } else if (e.keyCode === 114) { /*shift + F3(insert-function dialog)*/
                 e.preventDefault();
                 this.parent.notify(renderInsertDlg, null);

@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 26.1.40 (2024-07-02)
+
+### Uploader
+
+#### Bug Fixes
+
+- `#I601231` - Fixed issue where change event would return all uploaded files instead of single file when multiple is set to false.
+
+### FormValidator
+
+#### Bug Fixes
+
+- `#F58905` - Fixed an issue where the min and max validation rules were not functioning correctly.
+
+### Input
+
+#### Bug Fixes
+
+- `#I603191` - Fixed console error on component rendering when using float label with outline cssClass property.
+
 ## 26.1.38 (2024-06-19)
 
 ### NumericTextBox

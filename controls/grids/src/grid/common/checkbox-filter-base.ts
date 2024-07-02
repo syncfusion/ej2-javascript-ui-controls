@@ -1790,7 +1790,8 @@ export class CheckBoxFilterBase {
     private updateInfiniteUnLoadedCheckboxExistPred(value: string | number, updatePredArr: Object[]): void {
         for (let j: number = 0; j < updatePredArr.length; j++) {
             const pred: PredicateModel = updatePredArr[j as number] as PredicateModel;
-            if (value === pred.value && (pred.operator === 'equal' || pred.operator === 'notequal')) {
+            const predValue = pred.value instanceof Date ? this.valueFormatter.toView(pred.value , this.options.formatFn) as string : pred.value;
+            if (value === predValue && (pred.operator === 'equal' || pred.operator === 'notequal')) {
                 this.infiniteManualSelectMaintainPred.push(updatePredArr[j as number]);
                 updatePredArr.splice(j, 1);
                 j--;

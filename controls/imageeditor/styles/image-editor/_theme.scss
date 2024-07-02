@@ -111,3 +111,10 @@
     }
   }
 }
+
+.e-ie-filter-canvas:focus,
+.filter-wrapper:focus .e-ie-filter-canvas,
+.filter-wrapper:focus canvas,
+.filter-wrapper canvas:focus {
+  border: $image-editor-filter-canvas-focus;
+}

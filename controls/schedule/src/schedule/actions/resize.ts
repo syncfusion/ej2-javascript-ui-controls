@@ -379,7 +379,8 @@ export class Resize extends ActionBase {
                 if (!isLeft) {
                     offsetValue += (util.getElementWidth(this.actionObj.clone) - this.actionObj.cellWidth);
                 }
-                cellIndex = Math.floor(offsetValue / Math.floor(util.getElementWidth(tr) / noOfDays));
+                cellIndex = !isTimelineMonth ? Math.round(offsetValue / (util.getElementWidth(tr) / noOfDays)) :
+                    Math.floor(offsetValue / Math.floor(util.getElementWidth(tr) / noOfDays));
                 isDateHeader = isTimeViews && headerName === 'Date';
                 cellIndex = isLeft ? cellIndex : isTimelineMonth ? cellIndex + 1 : cellIndex;
                 isLastCell = cellIndex === tdCollections.length;

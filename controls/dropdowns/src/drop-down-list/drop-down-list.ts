@@ -2265,6 +2265,7 @@ export class DropDownList extends DropDownBase implements IInput {
         this.isDataFetched = false;
         if (this.isFiltering()) {
             this.checkAndResetCache();
+            this.isRequesting = false;
             const eventArgs: FilteringEventArgs = {
                 preventDefaultAction: false,
                 text: this.filterInput.value,

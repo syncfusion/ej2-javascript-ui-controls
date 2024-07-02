@@ -8764,7 +8764,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     if (FormFieldsData_1[parseInt(m.toString(), 10)].FormField.id.split("_")[0] == fieldValue.id) {
                         FormFieldsData_1[parseInt(m.toString(), 10)].FormField.value = fieldValue.value;
                         FormFieldsData_1[parseInt(m.toString(), 10)].FormField.signatureType = fieldValue.signatureType;
-                        this.viewerBase.setItemInSessionStorage(FormFieldsData_1, '_formDesigner');
                     }
                 }
             }
@@ -8978,6 +8977,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @returns {void}
      */
     public unload(): void {
+        this.viewerBase.pdfViewerRunner.postMessage({ message: 'unloadFPDF' });
         this.viewerBase.clear(true);
         this.pageCount = 0;
         if (!isBlazor()) {

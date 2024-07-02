@@ -1918,6 +1918,7 @@ export class DocumentHelper {
             this.owner.editorHistoryModule.destroy();
         }
         this.owner.isDocumentLoaded = true;
+        this.owner.isUpdateTrackChanges = false;
         this.layout.isInitialLoad = true;
         this.layout.footHeight = 0;
         this.layout.footnoteHeight = 0;
@@ -1967,6 +1968,9 @@ export class DocumentHelper {
         setTimeout((): void => {
             if (!isNullOrUndefined(this.owner) && this.owner.showRevisions) {
                 this.showRevisions(true);
+            }
+            if (!isNullOrUndefined(this.owner)) {
+                this.owner.isUpdateTrackChanges = true;
             }
         });
         let picture_cc: HTMLElement = document.getElementById('container_editorPICTURE_CONTENT_CONTROL');

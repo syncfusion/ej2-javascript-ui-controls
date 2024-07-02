@@ -108,7 +108,7 @@ export class VerticalEvent extends EventBase {
             this.parent.crudModule.crudObj.isCrudAction = false;
         }
         this.parent.renderTemplates(() => {
-            if ((this.parent as any).isReact && this.parent.activeViewOptions.eventTemplate) {
+            if (this.parent && (this.parent as any).isReact && this.parent.activeViewOptions.eventTemplate) {
                 const wraps: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_WRAPPER_HIDDEN_CLASS));
                 removeClass(wraps, cls.APPOINTMENT_WRAPPER_HIDDEN_CLASS);
             }
@@ -355,8 +355,8 @@ export class VerticalEvent extends EventBase {
             const templateId: string = elementId + viewName + 'eventTemplate';
             const resIndex: number = this.parent.uiStateValues.isGroupAdaptive ? this.parent.uiStateValues.groupIndex : resource;
             const templateName: string = this.isResourceEventTemplate ? this.parent.getEventTemplateName(resIndex) : 'eventTemplate';
-            templateElement = this.parent.getAppointmentTemplate()
-                (record, this.parent, templateName, templateId, false, undefined, undefined, this.parent.root);
+            templateElement = this.parent.getAppointmentTemplate()(record, this.parent, templateName, templateId, false,
+                                                                   undefined, undefined, this.parent.root);
         } else {
             const appointmentSubject: HTMLElement = createElement('div', { className: cls.SUBJECT_CLASS });
             this.parent.sanitize(recordSubject, appointmentSubject);

@@ -427,7 +427,7 @@ export class CartesianAxisLayoutPanel {
      */
 
     private calculateRowSize(rect: Rect): void {
-        /*! Calculate row size */
+        /** Calculate row size */
         const chart: Chart = this.chart;
         let row: Row;
         let rowTop: number = rect.y + rect.height;
@@ -457,7 +457,7 @@ export class CartesianAxisLayoutPanel {
      * @returns {void}
      */
     private calculateColumnSize(rect: Rect): void {
-        /*! Calculate column size */
+        /** Calculate column size */
 
         const chart: Chart = this.chart;
         let column: Column;

@@ -1347,11 +1347,11 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
      * @returns {void}
      */
     private unWireEvents(): void {
-        /*! Find the Events type */
+        /** Find the Events type */
         const startEvent: string = Browser.touchStartEvent;
         const moveEvent: string = Browser.touchMoveEvent;
         const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
-        /*! UnBind the Event handler */
+        /** UnBind the Event handler */
 
         EventHandler.remove(this.element, startEvent, this.bulletMouseDown);
         EventHandler.remove(this.element, moveEvent, this.bulletMouseMove);
@@ -1373,7 +1373,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
      */
     private wireEvents(): void {
         const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
-        /*! Bind the Event handler */
+        /** Bind the Event handler */
         EventHandler.add(this.element, Browser.touchMoveEvent, this.bulletMouseMove, this);
         EventHandler.add(this.element, cancelEvent, this.bulletMouseLeave, this);
         EventHandler.add(this.element, Browser.touchStartEvent, this.bulletMouseDown, this);
@@ -1384,7 +1384,7 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
             this.resizeBound
         );
-        /*! Apply the style for chart */
+        /** Apply the style for chart */
         this.setStyle(<HTMLElement>this.element);
     }
 

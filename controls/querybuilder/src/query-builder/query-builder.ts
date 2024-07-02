@@ -1390,12 +1390,14 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private updateDropdowntreeDS(columns: { [key: string]: Object }[]): void {
         for (let i: number = 0; i < columns.length; i++) {
             if (columns[parseInt(i.toString(), 10)].type === 'object') {
-                if (this.isAngular && columns[parseInt(i.toString(), 10)].template) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                if ((this as any).isAngular && columns[parseInt(i.toString(), 10)].template) {
                     delete columns[parseInt(i.toString(), 10)].template;
                 }
                 columns[parseInt(i.toString(), 10)].selectable = false;
                 this.updateDropdowntreeDS(columns[parseInt(i.toString(), 10)].columns as { [key: string]: Object }[]);
-            } else if (this.isAngular && columns[parseInt(i.toString(), 10)].template) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } else if ((this as any).isAngular && columns[parseInt(i.toString(), 10)].template) {
                 delete columns[parseInt(i.toString(), 10)].template;
             }
         }
@@ -1548,10 +1550,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     }
                     if (excludeOprs.indexOf(rule.rules[index as number].operator) < -1 &&
                     (isNullOrUndefined(rule.rules[index as number].value) &&
-                    rule.rules[index as number].type !== 'date') || rule.rules[index as number].value === '' ||
+                    rule.rules[index as number].type !== 'date') || rule.rules[index as number].value === '' || rule.rules[index as number].value === null ||
                     (rule.rules[index as number].value instanceof Array && valArray.length < 1)) {
                         const valElem: NodeListOf<Element> = tempElem.querySelectorAll('.e-rule-value .e-control');
-                        isValid = false;
+                        if (excludeOprs.indexOf(rule.rules[index as number].operator) < 0) {
+                            isValid = false;
+                        }
                         for (let j: number = 0, jLen: number = valElem.length; j < jLen; j++) {
                             const element: Element = valElem[j as number]; let elem: Element;
                             if (element.parentElement.className.indexOf('e-searcher') > -1) {
@@ -1563,6 +1567,17 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                                 this.renderToolTip(valElem[j as number].parentElement);
                             }
                             j++;
+                        }
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    } else if (rule.rules[index as number].type === 'date' && (rule.rules[index as number].value === null || (rule.rules[index as number].value as any).indexOf(null) > -1)) {
+                        const valElem: NodeListOf<Element> = tempElem.querySelectorAll('.e-rule-value .e-control');
+                        if (excludeOprs.indexOf(rule.rules[index as number].operator) < 0) {
+                            isValid = false;
+                        }
+                        for (let j: number = 0, jLen: number = valElem.length; j < jLen; j++) {
+                            if (valElem[j as number].parentElement.className.indexOf('e-tooltip') < 0  && valElem[j as number].className.indexOf('e-tooltip') < 0 && (isNullOrUndefined(rule.rules[index as number].value) || rule.rules[index as number].value[j as number] == null)) {
+                                this.renderToolTip(valElem[j as number].parentElement);
+                            }
                         }
                     }
                 } else if ((dropDownObj && dropDownObj.element && isNullOrUndefined(dropDownObj.index)) ||
@@ -2246,6 +2261,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             element = (args as any).element;
         }
+        if (!element) { return; }
         if (element.className.indexOf('e-day') > -1 || element.className.indexOf('e-today') > -1 || element.className.indexOf('e-cell') > -1) {
             const calenderArgs: CalendarChangeEventArgs = args as CalendarChangeEventArgs;
             element = calenderArgs.element;
@@ -3737,6 +3753,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 }
                 if (valElem[1] && valElem[1].parentElement.className.indexOf('e-tooltip') > -1) {
                     (getComponent(valElem[1].parentElement as HTMLElement, 'tooltip') as Tooltip).destroy();
+                }
+                if (valElem[2] && valElem[2].parentElement.className.indexOf('e-tooltip') > -1) {
+                    (getComponent(valElem[2].parentElement as HTMLElement, 'tooltip') as Tooltip).destroy();
                 }
             }
         }
@@ -6502,6 +6521,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         let j: number; let jLen: number; let rule: RuleModel; let subRules: RuleModel; let numVal: number[] = []; let strVal: string[] = [];
         let k: number; let kLen: number; let l: number; let lLen: number; let grpCount: number;
         let operator: string; let isLeftOpened: boolean = false;
+        let isNotOpened: boolean = false;
         for (let i: number = 0, iLen: number = parser.length; i < iLen; i++) {
             if (parser[i as number][0] === 'Literal') {
                 const column: ColumnsModel = this.getColumn(parser[i as number][1]);
@@ -6609,7 +6629,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 }
                 rules.rules.push(rule);
             } else if (parser[i as number][0] === 'Left') {
-                if (!(parser[0][0] === 'Left') && (parser[i - 1][1] === 'not' || sqlLocale && this.l10n.getConstant('NOT').toLowerCase() === parser[i - 1][1])) { continue; }
+                if (!(parser[0][0] === 'Left') && (parser[i - 1][1] === 'not' || sqlLocale && this.l10n.getConstant('NOT').toLowerCase() === parser[i - 1][1])) {
+                    isNotOpened = true;
+                    continue;
+                }
                 this.parser = parser.splice(i + 1, iLen - (i + 1));
                 if (this.enableNotCondition) {
                     subRules = { condition: 'and', rules: [], not: false };
@@ -6632,6 +6655,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     rules.condition = parser[i as number][1];
                 }
             } else if (parser[i as number][0] === 'Right') {
+                if (isNotOpened && parser[i + 1][0] === 'Right') {
+                    isNotOpened = false;
+                    continue;
+                }
                 this.parser = parser.splice(i + 1, iLen - (i + 1));
                 levelColl.pop();   //To get the parent Group
                 rules = this.rule; lLen = levelColl.length;

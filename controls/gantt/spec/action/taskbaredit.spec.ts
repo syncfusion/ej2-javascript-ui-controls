@@ -3,7 +3,7 @@
  */
 import { Gantt, ITaskbarEditedEventArgs, Edit, RowDD, ContextMenu } from '../../src/index';
 import { DataManager } from '@syncfusion/ej2-data';
-import { baselineData, scheduleModeData, splitTasksData, editingData, scheduleModeData1, dragSelfReferenceData, multiTaskbarData, resources, projectData, resourcesData, resourceCollection, multiResources, predecessorOffSetValidation, customCRData, customCrIssue,crDialogEditData } from '../base/data-source.spec';
+import { baselineData, scheduleModeData, splitTasksData, editingData, scheduleModeData1, dragSelfReferenceData, multiTaskbarData, resources, projectData, resourcesData, resourceCollection, multiResources, predecessorOffSetValidation, customCRData, customCrIssue,crDialogEditData, projectSplitTask } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { falseLine } from '../../src/gantt/base/css-constants';
@@ -5635,5 +5635,63 @@ describe('Split task left resize', () => {
         }); 
         afterAll(() => {
             destroyGantt(ganttObj);       
+        });
+    });
+    describe('890951 - Duration column is not working properly when using editType as numericedit ', () => {
+        Gantt.Inject(Edit);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectSplitTask,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        segments: 'Segments'
+                    },
+                    editSettings: {
+                        allowEditing: true,
+                        allowAdding: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true
+                    },
+                    columns: [
+                        { field: 'TaskID', headerText: 'Task ID' },
+                        { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                        { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                        { field: 'EndDate', headerText: 'EndDate', },
+                        { field: 'Duration', headerText: 'Duration', type: 'number', editType: 'numericedit' },
+                    ],
+                    toolbar: ['Add', 'Edit', 'Delete', 'Cancel', 'Update', 'ExpandAll', 'CollapseAll'],
+                    allowSelection: true,
+                    enableContextMenu: true
+                }, done);
+        });
+        it('Right resizing', () => {
+            ganttObj.actionBegin = (args: object) => { };         
+            ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
+                expect(ganttObj.getFormatedDate(args.data['EndDate'], 'MM/dd/yyyy HH:mm')).toBe('04/08/2019 17:00');
+                expect(args.taskBarEditAction).toBe('RightResizing');
+            };
+
+            ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
+                expect(ganttObj.getFormatedDate(args.data.ganttProperties.endDate, 'MM/dd/yyyy HH:mm')).toBe('04/05/2019 17:00');
+                expect(args.taskBarEditAction).toBe('RightResizing');
+                expect(ganttObj.currentViewData[1].taskData['Duration']).toBe(3);
+            };      
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-segment-last > div.e-taskbar-right-resizer.e-icon') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', 100, 0);
+            triggerMouseEvent(dragElement, 'mouseup');
+        });   
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
         });
     });

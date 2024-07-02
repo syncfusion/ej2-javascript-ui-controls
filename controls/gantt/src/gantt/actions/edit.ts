@@ -2484,7 +2484,18 @@ export class Edit {
         }
         const deleteRecordIDs: string[] = [];
         if (deletedRecords.length > 0) {
-            this.parent.selectedRowIndex = deletedRecords[deletedRecords.length - 1].index;
+            const recordIndex : number = this.parent.flatData.indexOf(deletedRecords[deletedRecords.length - 1]);
+            this.parent.staticSelectedRowIndex = this.parent.selectedRowIndex = recordIndex;
+            const record : IGanttData = this.parent.flatData[this.parent.selectedRowIndex + 1];
+            if (!isNullOrUndefined(record)) {
+                this.parent.currentSelection = record.ganttProperties;
+            }
+            else {
+                const prevRecordIndex: number = this.parent.selectedRowIndex - 1;
+                if (prevRecordIndex >= 0) {
+                    this.parent.currentSelection = this.parent.flatData[prevRecordIndex as number].ganttProperties;
+                }
+            }
         }
         for (let i: number = 0; i < deletedRecords.length; i++) {
             const deleteRecord: IGanttData = deletedRecords[i as number];

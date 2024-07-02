@@ -3083,7 +3083,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         }
         this.trigger('success', args, (args: Object) => {
             this.updateStatus(file, (args as any).statusText, '2');
-            this.uploadedFilesData.push(file);
+            this.multiple ? this.uploadedFilesData.push(file) : this.uploadedFilesData = [file];
             this.trigger('change', { file: this.uploadedFilesData });
             this.checkActionButtonStatus();
             if (this.fileList.length > 0) {

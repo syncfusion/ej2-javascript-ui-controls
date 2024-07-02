@@ -106,7 +106,7 @@
         }
       }
       #{if(&, '&', '*')} .e-content.e-year,
-      #{if(&, '&', '*')} .e-content.e-decade, {
+      #{if(&, '&', '*')} .e-content.e-decade {
         #{if(&, '&', '*')} td.e-selected span.e-day {
           @if $skin-name == 'fluent2' {
             font-weight: 600;

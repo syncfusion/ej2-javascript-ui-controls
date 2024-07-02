@@ -762,6 +762,11 @@ export class FormFieldsBase {
             let customData: string = JSON.stringify(formFieldAttributes.radiobuttonItem[0].customData);
             field._dictionary.set('CustomData', customData);
         }
+        else if(!isNullOrUndefined(formFieldAttributes.customData))
+        {
+            let customData: string = JSON.stringify(formFieldAttributes.customData);
+            field._dictionary.set('CustomData', customData);
+        }
         return field;
     }
 

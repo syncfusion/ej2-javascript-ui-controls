@@ -352,6 +352,7 @@ export class AutoComplete extends ComboBox {
         }
         this.isSelected = false;
         this.activeIndex = null;
+        this.isRequesting = false;
         const eventArgs: { [key: string]: Object } = {
             preventDefaultAction: false,
             text: this.filterInput.value,

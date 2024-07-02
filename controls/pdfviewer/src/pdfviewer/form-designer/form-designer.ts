@@ -898,6 +898,13 @@ export class FormDesigner {
                                             FormField.radiobuttonItem[parseInt(j.toString(), 10)].zoomValue = zoomValue;
                                     }
                                 } else {
+                                    const filteredField: any = this.pdfViewerBase.formFieldCollection.filter(function (field) {
+                                        return field.FormField.id === currentData.id;
+                                    });
+                                    if (currentData && currentData.value === "") {
+                                        currentData.value = filteredField[0] ? filteredField[0].FormField.value : "";
+                                        currentData.signatureType = filteredField[0] ? filteredField[0].FormField.signatureType : "";
+                                    }
                                     const zoomCurrentData: any =
                                     this.renderFormFieldsInZooming(element, currentData, signatureField, zoomValue);
                                     if (currentData.formFieldAnnotationType === 'SignatureField' || currentData.formFieldAnnotationType === 'InitialField') {
@@ -912,7 +919,7 @@ export class FormDesigner {
                                                     }
                                                 }
                                             });
-                                            if ((isNullOrUndefined(proxy.pdfViewer.nameTable[currentData.id]) || proxy.pdfViewer.nameTable[currentData.id].value === '') && currentData.value !== '') {
+                                            if (currentData.value !== '') {
                                                 this.pdfViewer.formFieldsModule.drawSignature(currentData.signatureType,
                                                                                               currentData.value, currentData);
                                                 signatureValueRender = true;

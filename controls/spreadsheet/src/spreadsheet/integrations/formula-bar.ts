@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { formulaBar, locale, enableFormulaInput, DialogBeforeOpenEventArgs, focus, getUpdateUsingRaf, dialog, isNavigationKey } from '../common/index';
+import { formulaBar, locale, enableFormulaInput, DialogBeforeOpenEventArgs, focus, getUpdateUsingRaf, dialog, isNavigationKey, isMouseDown } from '../common/index';
 import { mouseUpAfterSelection, click } from '../common/index';
 import { getRangeIndexes, getRangeFromAddress, getCellAddress, getCellIndexes } from './../../workbook/common/address';
 import { CellModel, getSheetName, getSheet, SheetModel, checkIsFormula, Workbook, getCell, isCustomDateTime, isReadOnly, getRow } from '../../workbook/index';
@@ -112,7 +112,7 @@ export class FormulaBar {
         const trgtElem: HTMLTextAreaElement = <HTMLTextAreaElement>e.target;
         if (this.parent.isEdit && (!this.parent.getActiveSheet().isProtected || (trgtElem.classList.contains('e-formula-bar') && !trgtElem.disabled))) {
             if ((checkIsFormula(trgtElem.value) || (trgtElem.validity && trgtElem.value.toString().indexOf('=') === 0)) &&
-                e.keyCode === 16) {
+                (e.keyCode === 16 || e.keyCode === 17)) {
                 return;
             }
             if (trgtElem.classList.contains('e-formula-bar') && (!e.shiftKey || (e.shiftKey && !isNavigationKey(e.keyCode)))) {
@@ -128,7 +128,7 @@ export class FormulaBar {
                 const eventArg: { editedValue: string, action: string } = { action: 'getCurrentEditValue', editedValue: '' };
                 this.parent.notify(
                     editOperation, eventArg);
-                if (eventArg.editedValue !== trgtElem.value && e.keyCode !== 16 &&
+                if (eventArg.editedValue !== trgtElem.value && e.keyCode !== 16 && e.keyCode !== 17 &&
                     (!e.shiftKey || (e.shiftKey && !isNavigationKey(e.keyCode)))) {
                     this.parent.notify(
                         editOperation, { action: 'refreshEditor', value: trgtElem.value, refreshEditorElem: true });
@@ -201,7 +201,7 @@ export class FormulaBar {
             address = `${Math.abs(indexes1[0] - indexes2[0]) + 1}R x ${Math.abs(indexes1[1] - indexes2[1]) + 1}C`;
             if (this.parent.isEdit) {
                 if (e.target as Element && !(e.target as Element).classList.contains('e-spreadsheet-edit')) {
-                    this.parent.notify(editValue, null);
+                    this.parent.notify(editValue, {});
                 } else if (editArgs.element) {
                     formulaBar.value = editArgs.element.textContent;
                 }
@@ -275,13 +275,14 @@ export class FormulaBar {
                     this.parent.notify(editOperation, eventArgs);
                     const formulaInp: HTMLTextAreaElement =
                         (<HTMLTextAreaElement>document.getElementById(this.parent.element.id + '_formula_input'));
+                    const previousVal = formulaInp.value;
                     formulaInp.value = value;
                     if (!eventArgs.editedValue || !checkIsFormula(eventArgs.editedValue.toString(), true)) {
                         this.parent.notify(editOperation, { action: 'refreshEditor', value: value, refreshEditorElem: true });
                     }
                     if (this.parent.isEdit) {
                         if (e.target && !(e.target as Element).classList.contains('e-spreadsheet-edit')) {
-                            this.parent.notify(editValue, null);
+                            this.parent.notify(editValue, { isMouseDown: isMouseDown(e), formulaBarVal: previousVal });
                         } else if (editArgs.element) {
                             formulaBar.value = editArgs.element.textContent;
                         }

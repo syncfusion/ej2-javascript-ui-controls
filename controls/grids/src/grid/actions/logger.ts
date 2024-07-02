@@ -311,7 +311,7 @@ export const detailLists: {[key: string]: ItemDetails} = {
             return { success: true, options: {args} };
         },
         generateMessage(args: Object, parent: IGrid, options: {args: string}): string {
-            return INFO + `: EXPORTNIG INPROGRESS \n Grid ${options.args}ing is in progress`;
+            return INFO + `: EXPORTING INPROGRESS \n Grid ${options.args}ing is in progress`;
         }
     },
     // eslint-disable-next-line camelcase
@@ -322,7 +322,7 @@ export const detailLists: {[key: string]: ItemDetails} = {
             return { success: true, options: {args} };
         },
         generateMessage(args: Object, parent: IGrid, options: {args: string}): string {
-            return INFO + `: EXPORTNIG COMPLETED \n Grid ${options.args}ing is complete`;
+            return INFO + `: EXPORTING COMPLETED \n Grid ${options.args}ing is complete`;
         }
     },
     // eslint-disable-next-line camelcase

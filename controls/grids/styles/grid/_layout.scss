@@ -2082,7 +2082,9 @@
         padding: $grid-group-caption-header-padding $grid-content-right-padding;
       }
       white-space: normal;
-      word-wrap: break-word;
+      text-wrap: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
       &.e-lastrowcell {
         border-bottom-width: 1px;
       }
@@ -4006,7 +4008,7 @@
 
       &.e-default {
         & tr td:last-child:not(.e-xlsel-left-border, .e-addfreezefirstchildborder),
-        & .e-gridheader table tr th:last-child {
+        & .e-gridheader table tr th:last-child:not(.e-firstcell) {
           border-left: 0;
         }
       }

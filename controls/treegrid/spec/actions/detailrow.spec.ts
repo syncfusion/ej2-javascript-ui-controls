@@ -696,39 +696,39 @@ describe('check expand status after sorting', () => {
     });
 });
 
-// describe('EJ2-49013 - Issue with collapseAll method in detail template sample ', () => {
-//     let gridObj: TreeGrid;
-//     beforeAll((done: Function) => {
-//         gridObj = createGrid(
-//             {
-//                 dataSource: employeeData3,
-//                 childMapping: 'Children',
-//                 treeColumnIndex: 0,
-//                 detailTemplate: template,
-//                 height: 335,
-//                 width: 'auto',
-//                 columns: [
-//                     { field: 'Name', headerText: 'First Name', width: '160' },
-//                     { field: 'DOB', headerText: 'DOB', width: '85', type: 'date', format: 'yMd', textAlign: 'Right' },
-//                     { field: 'Designation', headerText: 'Designation', width: '147' },
-//                     { field: 'EmpID', headerText: 'EmployeeID', width: '125'},
-//                     { field: 'Country', headerText: 'Country' , width: '148'},
-//                 ]
-//             },
-//             done
-//         );
-//     });
-//     it('collapseAll ', (done: Function)  => {
-//         gridObj.collapseAll();
-//         expect(document.querySelectorAll('.e-treegridcollapse').length).toBe(4);
-//         gridObj.expandAll();
-//         expect(document.querySelectorAll('.e-treegridcollapse').length).toBe(0);
-//         done();
-//     });
-//     afterAll(() => {
-//         destroy(gridObj);
-//     });
-// });
+describe('EJ2-49013 - Issue with collapseAll method in detail template sample ', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: employeeData3,
+                childMapping: 'Children',
+                treeColumnIndex: 0,
+                detailTemplate: template,
+                height: 335,
+                width: 'auto',
+                columns: [
+                    { field: 'Name', headerText: 'First Name', width: '160' },
+                    { field: 'DOB', headerText: 'DOB', width: '85', type: 'date', format: 'yMd', textAlign: 'Right' },
+                    { field: 'Designation', headerText: 'Designation', width: '147' },
+                    { field: 'EmpID', headerText: 'EmployeeID', width: '125'},
+                    { field: 'Country', headerText: 'Country' , width: '148'},
+                ]
+            },
+            done
+        );
+    });
+    it('collapseAll ', (done: Function)  => {
+        gridObj.collapseAll();
+        expect(gridObj.element.querySelectorAll('.e-treegridcollapse').length).toBe(4);
+        gridObj.expandAll();
+        expect(gridObj.element.querySelectorAll('.e-treegridcollapse').length).toBe(0);
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
 
 describe('Detail template with virtualization', () => {
     let gridObj: TreeGrid;

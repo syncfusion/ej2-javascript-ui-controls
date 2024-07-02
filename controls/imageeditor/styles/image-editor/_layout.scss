@@ -483,6 +483,14 @@
         }
       }
     }
+    & .e-ie-save-dialog .e-slider-container .e-slider .e-handle,
+    & .e-blr-ie-save-dialog .e-slider-container .e-slider .e-handle {
+      @if $skin-name == 'Material3' {
+        height: 16px !important; /* stylelint-disable-line declaration-no-important */
+        top: calc(50% - 10px) !important; /* stylelint-disable-line declaration-no-important */
+        width: 16px !important; /* stylelint-disable-line declaration-no-important */
+      }
+    }
   }
   
   .e-ie-img-save-dlg .e-btn {
@@ -688,11 +696,17 @@
     @if $skin-name == 'highcontrast' {
       margin-left: calc(100% - 175px);
     }
-    @if $skin-name == 'FluentUI' or $skin-name == 'material' or $skin-name == 'Material3' {
+    @if $skin-name == 'FluentUI' or $skin-name == 'material' {
       margin-left: calc(100% - 185px);
     }
     @if $skin-name == 'fabric' {
       margin-left: calc(100% - 180px);
+    }
+    @if $skin-name == 'fluent2' {
+      margin-left: calc(100% - 188px);
+    }
+    @if $skin-name == 'Material3' {
+      margin-left: calc(100% - 190px);
     }
   }
 
@@ -715,6 +729,9 @@
     }
     @if $skin-name == 'bootstrap5' {
       margin-left: calc(100% - 156px) !important; /* stylelint-disable-line declaration-no-important */
+    }
+    @if $skin-name == 'Material3' {
+      margin-left: calc(100% - 140px) !important; /* stylelint-disable-line declaration-no-important */
     }
   }
 
@@ -813,7 +830,12 @@
 
     & .e-ie-img-size-value-span {
       vertical-align: middle;
-      margin-left: calc(50% - 55px);
+      @if $skin-name == 'Material3' {
+        margin-left: calc(50% - 52px);
+      }
+      @else {
+        margin-left: calc(50% - 55px);
+      }
     }
 
     & .e-btn-group .e-btn {
@@ -844,10 +866,10 @@
       }
  
       & .e-ie-img-size-value-span {
-        @if $skin-name == 'Material3' or $skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' {
+        @if $skin-name == 'material' or $skin-name == 'material-dark' or $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' {
           margin-left: calc(75% - 100px) !important; /* stylelint-disable-line declaration-no-important */
         }
-        @else if $skin-name == 'bootstrap' {
+        @else if $skin-name == 'Material3' or $skin-name == 'bootstrap' {
           margin-left: calc(73% - 100px) !important; /* stylelint-disable-line declaration-no-important */
         }
         @else if $skin-name == 'tailwind' {
@@ -867,6 +889,12 @@
           padding: 8.5px;
         }
       }
+    }
+  }
+
+  .e-bigger .e-blr-ie-save-dialog .e-slider-container .e-slider .e-handle {
+    @if $skin-name == 'Material3' {
+      top: calc(50% - 8px) !important; /* stylelint-disable-line declaration-no-important */
     }
   }
 

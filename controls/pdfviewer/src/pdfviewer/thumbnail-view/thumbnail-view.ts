@@ -15,7 +15,8 @@ export class ThumbnailView {
     private thumbnailImage: HTMLImageElement;
     private startIndex: number;
     private thumbnailLimit: number = 30;
-    private thumbnailThreshold: number = 50;
+    private thumbnailThreshold: number = 5;
+    private thumbnailRequestsBatch : number = 5;
     private thumbnailTopMargin: number = 10;
     private thumbnailTop: number = 8;
     private isRendered: boolean = false;
@@ -64,7 +65,7 @@ export class ThumbnailView {
             const scrollPosition: number = this.pdfViewerBase.navigationPane.sideBarContent.scrollTop;
             const index: number = this.thumbnailPageSize.findIndex((page: any) => page.top >= scrollPosition);
             if (index !== -1) {
-                const number: number = Math.floor((index) / 50) * 50;
+                const number: number = Math.floor((index) / this.thumbnailRequestsBatch ) * this.thumbnailRequestsBatch ;
                 this.updateScrollTopForThumbnail(number);
                 break;
             }
@@ -100,6 +101,7 @@ export class ThumbnailView {
     public createRequestForThumbnails(): void {
         // eslint-disable-next-line
         const proxy: ThumbnailView = this;
+        proxy.thumbnailLimit = 0;
         for (let i: number = 0; i < proxy.pdfViewer.pageCount; i++) {
             proxy.renderThumbnailEmptyPage(i);
         }
@@ -158,7 +160,7 @@ export class ThumbnailView {
      * @private
      */
     public updateScrollTopForThumbnail(pageNumber: number): void {
-        const step: number = 50;
+        const step: number = this.thumbnailRequestsBatch;
         const number: number = Math.floor((pageNumber + 1) / step) * step;
         const lastNum: number = this.pdfViewer.thumbnailViewModule.thumbnailLimit;
         const numbers: any = [number, number - step, number + step, lastNum];
@@ -310,22 +312,23 @@ export class ThumbnailView {
             if (currentPageImage){
                 currentPageImage.src = imageUrl;
             }
-            const data: any = ({
-                thumbnailImage: imageUrl,
-                startPage: this.startIndex,
-                endPage: this.thumbnailLimit,
-                uniqueId: this.pdfViewerBase.documentId,
-                pageIndex: pageIndex
-            });
-            if (!Browser.isDevice || this.pdfViewer.enableDesktopMode){
-                this.updateThumbnailCollection(data);
-            }
-            else{
-                if (!isNullOrUndefined(this.pdfViewer.pageOrganizer)) {
-                    this.pdfViewer.pageOrganizer.updatePreviewCollection(data);
+            if (this.pdfViewer.pageOrganizerModule) {
+                const data: any = ({
+                    thumbnailImage: imageUrl,
+                    startPage: this.startIndex,
+                    endPage: this.thumbnailLimit,
+                    uniqueId: this.pdfViewerBase.documentId,
+                    pageIndex: pageIndex
+                });
+                if (!Browser.isDevice || this.pdfViewer.enableDesktopMode) {
+                    this.updateThumbnailCollection(data);
+                }
+                else {
+                    if (!isNullOrUndefined(this.pdfViewer.pageOrganizer)) {
+                        this.pdfViewer.pageOrganizer.updatePreviewCollection(data);
+                    }
                 }
             }
-
         }
     }
 
@@ -376,9 +379,11 @@ export class ThumbnailView {
                     thumbnail.style.marginRight = '0px';
                     height = 140;
                 }
-                this.thumbnailTop = this.thumbnailPageSize[i - 1].top + this.thumbnailPageSize[i - 1].height;
-                const thumbnailSize: any = {height: height, top:  this.thumbnailTop};
-                this.thumbnailPageSize[parseInt(i.toString(), 10)] =  thumbnailSize;
+                if (this.thumbnailPageSize.length > 0) {
+                    this.thumbnailTop = this.thumbnailPageSize[i - 1].top + this.thumbnailPageSize[i - 1].height;
+                    const thumbnailSize: any = {height: height, top:  this.thumbnailTop};
+                    this.thumbnailPageSize[parseInt(i.toString(), 10)] =  thumbnailSize;
+                }
             }
             this.isRendered = true;
         }
@@ -430,7 +435,7 @@ export class ThumbnailView {
      */
     private determineThumbnailsRequest(currentPageNumber: number): number {
         const pageCount: number = this.pdfViewer.pageCount;
-        const batchSize: number = 50; // Assuming thumbnails are requested in batches of 50
+        const batchSize: number = this.thumbnailRequestsBatch; // Assuming thumbnails are requested in batches of 5
         const numberOfBatches: number = Math.ceil(pageCount / batchSize);
         if (this.list.length === numberOfBatches) {
             return pageCount;

@@ -1132,11 +1132,11 @@ export class BaseHistoryInfo {
                         }
                         deletedNodes.splice(deletedNodes.indexOf(firstNode), 1);
                         //Removes the intermediate empty paragraph instance.
-                        if (this.action !== 'Paste') {
+                        if (this.action !== 'Paste' && this.owner.selectionModule.start.paragraph !== firstNode.containerWidget.lastChild) {
                             editor.removeBlock(this.owner.selectionModule.start.paragraph);
                         }
                         let paragraph: ParagraphWidget = this.documentHelper.selection.getNextParagraphBlock(firstNode.getSplitWidgets().pop() as BlockWidget);
-                        if (!isNullOrUndefined(paragraph)) {
+                        if (!isNullOrUndefined(paragraph) && firstNode !== firstNode.containerWidget.lastChild) {
                             this.owner.selectionModule.selectParagraphInternal(paragraph, true);
                         } else if (!isNullOrUndefined(firstNode)) {
                             this.owner.selectionModule.selectParagraphInternal(firstNode, false);

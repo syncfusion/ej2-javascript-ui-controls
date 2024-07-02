@@ -14,7 +14,7 @@ export interface DataLabelSettingsModel {
     visible?: boolean;
 
     /**
-     * If set true, data label for zero values in series renders.
+     * If set to true, data labels for zero values in the series render.
      *
      * @default true
      */
@@ -151,7 +151,7 @@ export interface DataLabelSettingsModel {
 export interface MarkerSettingsModel {
 
     /**
-     * If set to true the marker for series is rendered. This is applicable only for line and area type series.
+     * If set to true the marker for the series is rendered. This is applicable only for line and area type series.
      *
      * @default false
      */
@@ -159,7 +159,7 @@ export interface MarkerSettingsModel {
     visible?: boolean;
 
     /**
-     * The different shape of a marker:
+     * The different shapes of a marker:
      * * Circle
      * * Rectangle
      * * Triangle
@@ -257,7 +257,7 @@ export interface MarkerSettingsModel {
 export interface ParetoOptionsModel {
 
     /**
-     * The fill color of the pareto line that accepts value in hex and rgba as a valid CSS color string. By default, it will take color based on theme.
+     * The fill color of the pareto line, which accepts a value in hex or rgba as a valid CSS color string. By default, it will use a color based on the theme.
      *
      * @default null
      */
@@ -273,7 +273,7 @@ export interface ParetoOptionsModel {
     width?: number;
 
     /**
-     * Defines the pattern of dashes and gaps to stroke.
+     * Defines the pattern of dashes and gaps for the stroke.
      *
      * @default '0'
      */
@@ -514,9 +514,9 @@ export interface ErrorBarSettingsModel {
 
     /**
      * The direction of the error bar . They are
-     * * both -  Renders both direction of error bar.
-     * * minus - Renders minus direction of error bar.
-     * * plus - Renders plus direction error bar.
+     * * Both -  Renders both direction of error bar.
+     * * Minus - Renders minus direction of error bar.
+     * * Plus - Renders plus direction error bar.
      *
      * @default 'Both'
      */
@@ -524,10 +524,10 @@ export interface ErrorBarSettingsModel {
     direction?: ErrorBarDirection;
 
     /**
-     * The mode of the error bar . They are
+     * The mode of the error bar . They are:
      * * Vertical -  Renders a vertical error bar.
      * * Horizontal - Renders a horizontal error bar.
-     * * Both - Renders both side error bar.
+     * * Both - Renders an error bar on both sides.
      *
      * @default 'Vertical'
      */
@@ -552,7 +552,7 @@ export interface ErrorBarSettingsModel {
     verticalError?: number | string;
 
     /**
-     * The stroke width of the error bar..
+     * The stroke width of the error bar.
      *
      * @default 1
      */
@@ -625,7 +625,7 @@ export interface SeriesBaseModel {
 
     /**
      * The DataSource field that contains the x value.
-     * It is applicable for series and technical indicators
+     * It is applicable for both series and technical indicators.
      *
      * @default ''
      */
@@ -633,14 +633,14 @@ export interface SeriesBaseModel {
     xName?: string;
 
     /**
-     * The Data Source field that contains the color mapping value.
+     * The DataSource field that contains the color mapping value.
      * It is applicable for range color mapping properly.
      */
     colorName?: string;
 
     /**
-     * The DataSource field that contains the high value of y
-     * It is applicable for series and technical indicators
+     * The DataSource field that contains the high value of y.
+     * It is applicable for both series and technical indicators.
      *
      * @default ''
      */
@@ -666,8 +666,8 @@ export interface SeriesBaseModel {
     open?: string;
 
     /**
-     * The DataSource field that contains the close value of y
-     * It is applicable for series and technical indicators
+     * The DataSource field that contains the close value of y.
+     * It is applicable for both series and technical indicators
      *
      * @default ''
      */
@@ -675,8 +675,8 @@ export interface SeriesBaseModel {
     close?: string;
 
     /**
-     * Defines the data source field that contains the volume value in candle charts
-     * It is applicable for financial series and technical indicators
+     * Defines the data source field that contains the volume value in candle charts.
+     * It is applicable for both financial series and technical indicators
      *
      * @default ''
      */
@@ -684,7 +684,7 @@ export interface SeriesBaseModel {
     volume?: string;
 
     /**
-     * The DataSource field that contains the color value of point.
+     * The DataSource field that contains the color value of a point.
      * It is applicable for series.
      *
      * @default ''
@@ -759,7 +759,7 @@ export interface SeriesBaseModel {
     yAxisName?: string;
 
     /**
-     * Options to customizing animation for the series.
+     * Options for customizing animation for the series.
      */
 
     animation?: AnimationModel;
@@ -767,7 +767,7 @@ export interface SeriesBaseModel {
     /**
      * The fill color for the series, which can accept values in hex or rgba as a valid CSS color string.
      * It also represents the color of the signal lines in technical indicators.
-     * For technical indicators, the default value is 'blue' and for series, it has null.
+     * For technical indicators, the default value is 'blue' and for series, it is null.
      *
      * @default null
      */
@@ -837,7 +837,7 @@ export interface SeriesBaseModel {
     segmentAxis?: Segment;
 
     /**
-     * This property used to improve chart performance via data mapping for series dataSource.
+     * This property is used to improve chart performance via data mapping for series dataSource.
      *
      * @default false
      */
@@ -867,23 +867,23 @@ export interface SeriesModel extends SeriesBaseModel{
     yName?: string;
 
     /**
-     * Type of series to be drawn in radar or polar series. They are
-     *  'Line'
-     *  'Column'
-     *  'Area'
-     *  'Scatter'
-     *  'Spline'
-     *  'StackingColumn'
-     *  'StackingArea'
-     *  'RangeColumn'
-     *  'SplineArea'
+     * Type of series to be drawn in radar or polar series. They are:
+     * * 'Line'
+     * * 'Column'
+     * * 'Area'
+     * * 'Scatter'
+     * * 'Spline'
+     * * 'StackingColumn'
+     * * 'StackingArea'
+     * * 'RangeColumn'
+     * * 'SplineArea'
      *
      * @default 'Line'
      */
     drawType?: ChartDrawType;
 
     /**
-     * Specifies whether to join start and end point of a line/area series used in polar/radar chart to form a closed path.
+     * Specifies whether to join the start and end point of a line/area series used in polar/radar chart to form a closed path.
      *
      * @default true
      */
@@ -916,7 +916,7 @@ export interface SeriesModel extends SeriesBaseModel{
     enableSolidCandles?: boolean;
 
     /**
-     * The DataSource field that contains the size value of y
+     * The DataSource field that contains the size value of y.
      *
      * @default ''
      */
@@ -924,7 +924,7 @@ export interface SeriesModel extends SeriesBaseModel{
     size?: string;
 
     /**
-     * The bin interval of each histogram points.
+     * The bin interval of each histogram point.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -941,9 +941,9 @@ export interface SeriesModel extends SeriesBaseModel{
     showNormalDistribution?: boolean;
 
     /**
-     * This property allows grouping series in `stacked column / bar` charts.
+     * This property allows grouping of series in `stacked column / bar` charts.
      * Any string value can be provided to the stackingGroup property.
-     * If any two or above series have the same value, those series will be grouped together.
+     * If any two or more series have the same value, those series will be grouped together.
      *
      * @default ''
      */
@@ -951,7 +951,7 @@ export interface SeriesModel extends SeriesBaseModel{
     stackingGroup?: string;
 
     /**
-     * Options to customizing the border of the series. This is applicable only for `Column` and `Bar` type series.
+     * Options for customizing the border of the series. This is applicable only for `Column` and `Bar` type series.
      */
 
     border?: BorderModel;
@@ -980,7 +980,7 @@ export interface SeriesModel extends SeriesBaseModel{
     groupName?: string;
 
     /**
-     * The type of the series are
+     * The type of the series are:
      * * Line
      * * Column
      * * Area
@@ -1015,7 +1015,7 @@ export interface SeriesModel extends SeriesBaseModel{
     type?: ChartSeriesType;
 
     /**
-     * Options for displaying and customizing error bar for individual point in a series.
+     * Options for displaying and customizing error bar for individual points in a series.
      */
     errorBar?: ErrorBarSettingsModel;
 
@@ -1035,7 +1035,7 @@ export interface SeriesModel extends SeriesBaseModel{
     dragSettings?: DragSettingsModel;
 
     /**
-     * Defines the collection of trendlines that are used to predict the trend
+     * Defines the collection of trendlines that are used to predict the trend.
      */
     trendlines?: TrendlineModel[];
 
@@ -1080,7 +1080,7 @@ export interface SeriesModel extends SeriesBaseModel{
     legendShape?: LegendShape;
 
     /**
-     * The URL for the Image that is to be displayed as a Legend icon.  It requires  `legendShape` value to be an `Image`.
+     * The URL for the image that is to be displayed as a legend icon.  It requires `legendShape` value to be an `Image`.
      *
      * @default ''
      */
@@ -1109,21 +1109,21 @@ export interface SeriesModel extends SeriesBaseModel{
     nonHighlightStyle?: string;
 
     /**
-     * Minimum radius
+     * Specifies the minimum radius.
      *
      * @default 1
      */
     minRadius?: number;
 
     /**
-     * Maximum radius
+     * Specifies the maximum radius.
      *
      * @default 3
      */
     maxRadius?: number;
 
     /**
-     * Defines type of spline to be rendered.
+     * Defines the type of spline to be rendered.
      *
      * @default 'Natural'
      */
@@ -1137,12 +1137,12 @@ export interface SeriesModel extends SeriesBaseModel{
     cardinalSplineTension?: number;
 
     /**
-     * options to customize the empty points in series.
+     * Options to customize the empty points in series.
      */
     emptyPointSettings?: EmptyPointSettingsModel;
 
     /**
-     * If set true, the mean value for box and whisker will be visible.
+     * If set to true, the mean value for box and whisker will be visible.
      *
      * @default true
      */
@@ -1179,8 +1179,8 @@ export interface SeriesModel extends SeriesBaseModel{
 
     /**
      * Defines the shape of the data in a column and bar chart.
-     * Rectangle: Displays the data in a column and bar chart in a rectangle shape.
-     * Cylinder: Displays the data in a column and bar chart in a cylinder shape.
+     * * Rectangle: Displays the data in a column and bar chart in a rectangle shape.
+     * * Cylinder: Displays the data in a column and bar chart in a cylinder shape.
      *
      * @default 'Rectangle'
      */

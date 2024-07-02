@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.1.40 (2024-07-02)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I591715` - An issue with the resizing event in the scheduler, using the enabled interval and header rows property in the Timeline view, which miscalculated the end time, has been fixed.
+
 ## 26.1.39 (2024-06-25)
 
 ### Schedule

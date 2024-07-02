@@ -2214,6 +2214,10 @@ export class DatePicker extends Calendar implements IInput {
      */
     public onPropertyChanged(newProp: DatePickerModel, oldProp: DatePickerModel): void {
         for (const prop of Object.keys(newProp)) {
+            const openPopup = ['blur', 'change', 'cleared', 'close', 'created', 'destroyed', 'focus', 'navigated', 'open', 'renderDayCell'];
+            if (openPopup.indexOf(prop) > 0 && this.isReact) {
+                this.isDynamicValueChanged = true;
+            }
             switch (prop) {
             case 'value':
                 this.isDynamicValueChanged = true;

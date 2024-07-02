@@ -44,7 +44,7 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
         }
         this.childRefs = [];
         if (args.type === 'refreshCommandColumn') {
-            let elem: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-unboundcell');
+            let elem: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-gridcontent .e-unboundcell');
             if (elem.length) {
                 for (let i: number = 0; i < elem.length; i++) {
                     if (elem[parseInt(i.toString(), 10)] && !(this.parent.editSettings.showAddNewRow && this.parent.enableVirtualization

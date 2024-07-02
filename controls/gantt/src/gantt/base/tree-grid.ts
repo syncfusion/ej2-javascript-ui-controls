@@ -522,8 +522,6 @@ export class GanttTreeGrid {
                 let indexvalue: number = 0;
                 this.parent.currentViewData.map((data: Object, index: number) => {
                     if (!isNullOrUndefined(this.parent.currentSelection)
-                    && ((data['ganttProperties'].taskId === this.parent.currentSelection[this.parent.taskFields.id]))
-                    || (!isNullOrUndefined(this.parent.currentSelection))
                     && (data['ganttProperties'].taskId === this.parent.currentSelection.taskId))  {
                         indexvalue = index;
                     }

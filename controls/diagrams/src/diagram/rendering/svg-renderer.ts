@@ -675,7 +675,12 @@ export class SvgRenderer implements IRenderer {
                     handle[0].template = element.template;
                 }
                 // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-                element.isTemplate ? htmlElement.appendChild(element.template) : htmlElement.appendChild(element.template.cloneNode(true));
+                // 883335-Exception Throws When Loading Data Without Defining Node Template at Application Level
+                if (element.isTemplate && element.template) {
+                    htmlElement.appendChild(element.template)
+                } else if (element.template) {
+                    htmlElement.appendChild(element.template.cloneNode(true));
+                }
             }
             if (indexValue !== undefined && canvas.childNodes.length > indexValue) {
                 canvas.insertBefore(htmlElement, canvas.childNodes[parseInt(indexValue.toString(), 10)]);

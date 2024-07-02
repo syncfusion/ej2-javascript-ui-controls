@@ -94,7 +94,7 @@ export interface IPeriodSelectorControl {
 }
 
 /**
- * Header Footer Content
+ * Header Footer Content.
  *
  * @private
  */
@@ -119,18 +119,18 @@ export interface IPDFArgs {
 }
 
 /**
- * Axis visible range
+ * Axis visible range.
  *
  * @public
  */
 export interface VisibleRangeModel {
-    /** axis minimum value. */
+    /** Axis minimum value. */
     min?: number;
-    /** axis maximum value. */
+    /** Axis maximum value. */
     max?: number;
-    /** axis interval value. */
+    /** Axis interval value. */
     interval?: number;
-    /** axis delta value. */
+    /** Axis delta value. */
     delta?: number;
 }
 

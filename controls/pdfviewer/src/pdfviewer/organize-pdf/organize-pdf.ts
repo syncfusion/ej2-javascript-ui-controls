@@ -1044,11 +1044,12 @@ export class PageOrganizer {
                 return null;
             },
             drag: (e: DragEventArgs) => {
+                e.event.preventDefault();
                 if (proxy.pdfViewer.pageOrganizerSettings.canRearrange) {
                     proxy.autoScroll(e);
                     proxy.addSelectionRingStyle();
-                    const mainTileElement: HTMLElement = !isNullOrUndefined(e.target) ? (e.target.closest('.e-pv-organize-anchor-node') as HTMLElement) : null;
-                    if(!isNullOrUndefined(mainTileElement)) {
+                    const mainTileElement: HTMLElement = !isNullOrUndefined(e.target) && e.target instanceof Element ? (e.target.closest('.e-pv-organize-anchor-node') as HTMLElement) : null;
+                    if (!isNullOrUndefined(mainTileElement)) {
                         const pageOrder: number = parseInt(mainTileElement.getAttribute('data-page-order'), 10);
                         proxy.dragHoveredIndex = pageOrder;
                         const tileRect: DOMRect = mainTileElement.getBoundingClientRect() as DOMRect;
@@ -1058,11 +1059,12 @@ export class PageOrganizer {
                             outerBorder = createElement('div', { className: 'e-pv-organize-outer-border' });
                             proxy.tileAreaWrapper.appendChild(outerBorder);
                         }
+                        outerBorder.style.display = 'block';
                         const isHoveredOnSelected: boolean = proxy.isHoveredOnSelectedPages(proxy.selectedPageIndexes, proxy.dragHoveredIndex);
-                        if (isHoveredOnSelected) {
+                        if (isHoveredOnSelected && !isNullOrUndefined(e.target) && (e.target.classList.contains('e-pv-organize-image') || e.target.classList.contains('e-pv-image-container'))) {
                             outerBorder.classList.add('e-pv-selected');
                             outerBorder.classList.remove('e-pv-not-selected');
-                        } else {
+                        } else if(!isNullOrUndefined(e.target) && (e.target.classList.contains('e-pv-organize-image') || e.target.classList.contains('e-pv-image-container'))) {
                             outerBorder.classList.add('e-pv-not-selected');
                             outerBorder.classList.remove('e-pv-selected');
                         }
@@ -1105,24 +1107,31 @@ export class PageOrganizer {
                 }
             },
             dragStop: (e: DragEventArgs) => {
-                if (proxy.autoScrollInterval !== null) {
-                    clearInterval(proxy.autoScrollInterval);
-                    proxy.autoScrollInterval = null;
-                }
-                proxy.removeSelectionRingStyle();
-                if (e.target == null || !(e.target.classList.contains('e-pv-organize-image') || e.target.classList.contains('e-pv-image-container'))) {
+                const clearDraggedElements = () => {
                     proxy.virtualEle.parentNode.removeChild(proxy.virtualEle);
-                    // Remove the added classes here
                     const draggedElements = proxy.tileAreaDiv.querySelectorAll('.e-pv-organize-tile-draggedEle');
                     draggedElements.forEach((element) => {
                         element.classList.remove('e-pv-organize-tile-draggedEle');
                     });
                     const outerBorder: HTMLElement = document.querySelector('.e-pv-organize-outer-border');
-                    if(!isNullOrUndefined(outerBorder)) {
+                    if (!isNullOrUndefined(outerBorder)) {
                         outerBorder.classList.remove('e-pv-selected', 'e-pv-not-selected');
                         proxy.selectedPageIndexes = [];
                     }
-                }                
+                }
+                if (proxy.autoScrollInterval !== null) {
+                    clearInterval(proxy.autoScrollInterval);
+                    proxy.autoScrollInterval = null;
+                }
+                proxy.removeSelectionRingStyle();
+                if (e.target instanceof Element && e.target.classList) {
+                    if (e.target == null || !(e.target.classList.contains('e-pv-organize-image') || e.target.classList.contains('e-pv-image-container'))) {
+                        clearDraggedElements();
+                    }
+                }
+                else {
+                    clearDraggedElements();
+                }
             }
         });
         const droppableElement: HTMLElement = this.thumbnail;
@@ -1195,22 +1204,28 @@ export class PageOrganizer {
             }
         })();
         function adjustWindowScroll(): boolean {
-            let elementBounds = proxy.virtualEle.getBoundingClientRect();
-            let dragDownDiffrence = elementBounds.bottom - (proxy.previousClientY + elementBounds.height);
-            let dragUpDiffrence = elementBounds.top - proxy.previousClientY;
+            proxy.tileAreaDiv.onscroll = function () {
+                const outerBorder: HTMLElement = document.querySelector('.e-pv-organize-outer-border') as HTMLElement;
+                if (!isNullOrUndefined(outerBorder)) {
+                    outerBorder.style.display = 'none';
+                }
+            };
+            const elementBounds = proxy.virtualEle.getBoundingClientRect();
+            const dragDownDiffrence: number = elementBounds.bottom - (proxy.previousClientY + elementBounds.height);
+            const dragUpDiffrence: number = elementBounds.top - proxy.previousClientY;
             proxy.previousClientY = elementBounds.top;
-            let currentScrollY = proxy.tileAreaDiv.scrollTop;
-            let canScrollUp = (currentScrollY > 0 && dragUpDiffrence <= 0);
-            let canScrollDown = (currentScrollY < maxScrollY && dragDownDiffrence >= 0);
-            let nextScrollY = currentScrollY;
-            let maxStep = 10;
+            const currentScrollY: number = proxy.tileAreaDiv.scrollTop;
+            const canScrollUp: boolean = (currentScrollY > 0 && dragUpDiffrence <= 0);
+            const canScrollDown: boolean = (currentScrollY < maxScrollY && dragDownDiffrence >= 0);
+            let nextScrollY: number = currentScrollY;
+            const maxStep: number = 10;
             // Should we scroll up?
             if (isInTopEdge && canScrollUp) {
-                let intensity = ((edgeTop - proxy.virtualEle.getBoundingClientRect().top) / edgeSize);
+                const intensity: number = ((edgeTop - proxy.virtualEle.getBoundingClientRect().top) / edgeSize);
                 nextScrollY = (nextScrollY - (maxStep * intensity));
                 // Should we scroll down?
             } else if (isInBottomEdge && canScrollDown) {
-                let intensity = ((proxy.virtualEle.getBoundingClientRect().bottom - edgeBottom) / edgeSize);
+                const intensity: number = ((proxy.virtualEle.getBoundingClientRect().bottom - edgeBottom) / edgeSize);
                 nextScrollY = (nextScrollY + (maxStep * intensity));
             }
             nextScrollY = Math.max(0, Math.min(maxScrollY, nextScrollY));
@@ -1226,7 +1241,7 @@ export class PageOrganizer {
     private handlePageMove(e: DropEventArgs, tileRect: DOMRect, gapBetweenDivs: number,
         outerBorder: HTMLElement): void {
         const isRightInsertion: boolean = this.isTileRightInsertion(e);
-        if(!isNullOrUndefined(this.isTileRightInsertion)) {
+        if (!isNullOrUndefined(this.isTileRightInsertion)) {
             const offset = isRightInsertion ? (tileRect['width'] + gapBetweenDivs / 2) : (-gapBetweenDivs / 2);
             const parentBound: DOMRect = outerBorder.parentElement.getBoundingClientRect() as DOMRect;
             outerBorder.style.left = (tileRect['x'] + offset - parentBound.x) + 'px';
@@ -1240,7 +1255,7 @@ export class PageOrganizer {
         const mainTileElement: HTMLElement = !isNullOrUndefined(e.target) ? (e.target.closest('.e-pv-organize-anchor-node') as HTMLElement) : null;
         if (!isNullOrUndefined(mainTileElement)) {
             const tileRect: DOMRect = mainTileElement.getBoundingClientRect() as DOMRect;
-            const virtualElementClientX = e.event.type == 'mousemove' ? e.event.clientX : e.event.touches[0].clientX;
+            const virtualElementClientX = e.event.type === 'mousemove' ? e.event.clientX : e.event.touches[0].clientX;
             return virtualElementClientX > tileRect['x'] + (tileRect['width'] / 2);
         }
         return null;
@@ -1960,151 +1975,172 @@ export class PageOrganizer {
         if (undoActionObject) {
             const actionObject: IActionOrganizeElements = JSON.parse(JSON.stringify(undoActionObject));
             switch (actionObject.action) {
-                case 'Insert Right':
-                case 'Insert Left':
-                case 'Copy':
-                    this.removePage(actionObject.UndoRedoTileActions[0].currentPageIndex);
-                    break;
-                case 'Rotate Right':
-                    this.rotateImage(actionObject.UndoRedoTileActions[0].currentPageIndex, -90);
-                    break;
-                case 'Rotate Left':
-                    this.rotateImage(actionObject.UndoRedoTileActions[0].currentPageIndex, 90);
-                    break;
-                case 'Delete':
-                    {
-                        const mainTileElement: HTMLElement =
+            case 'Insert Right':
+            case 'Insert Left':
+            case 'Copy':
+                this.removePage(actionObject.UndoRedoTileActions[0].currentPageIndex);
+                break;
+            case 'Rotate Right':
+                this.rotateImage(actionObject.UndoRedoTileActions[0].currentPageIndex, -90);
+                break;
+            case 'Rotate Left':
+                this.rotateImage(actionObject.UndoRedoTileActions[0].currentPageIndex, 90);
+                break;
+            case 'Delete':
+                {
+                    const mainTileElement: HTMLElement =
                             this.tileAreaDiv.childNodes[parseInt(actionObject.UndoRedoTileActions[0].
                                 currentPageIndex.toString(), 10)] as HTMLElement;
-                        if (actionObject.UndoRedoTileActions[0].isCopied) {
-                            this.insertRemovedPages(actionObject.UndoRedoTileActions[0],
-                                actionObject.UndoRedoTileActions[0].currentPageIndex,
-                                mainTileElement);
-                            this.tileImageRender(actionObject.UndoRedoTileActions[0].copiedPageIndex, 0,
-                                actionObject.UndoRedoTileActions[0].currentPageIndex, mainTileElement,
-                                true, true, false);
-                        }
-                        else if (actionObject.UndoRedoTileActions[0].isInserted) {
-                            this.insertRemovedPages(actionObject.UndoRedoTileActions[0],
-                                actionObject.UndoRedoTileActions[0].currentPageIndex,
-                                mainTileElement);
-                            this.tileImageRender(actionObject.UndoRedoTileActions[0].copiedPageIndex, 0,
-                                actionObject.UndoRedoTileActions[0].currentPageIndex, mainTileElement,
-                                true, true, true);
-                        }
-                        else if (!actionObject.UndoRedoTileActions[0].isCopied && !actionObject.UndoRedoTileActions[0].isInserted) {
-                            this.undoDeletedPage(actionObject.UndoRedoTileActions[0].currentPageIndex,
-                                actionObject.UndoRedoTileActions[0].pageIndex,
-                                actionObject.UndoRedoTileActions[0].rotateAngle, mainTileElement);
-                            this.tileImageRender(actionObject.UndoRedoTileActions[0].pageIndex, 0,
-                                actionObject.UndoRedoTileActions[0].currentPageIndex, mainTileElement, true, true, false);
-                        }
-                        this.updatePageDetail();
+                    if (actionObject.UndoRedoTileActions[0].isCopied) {
+                        this.insertRemovedPages(actionObject.UndoRedoTileActions[0],
+                                                actionObject.UndoRedoTileActions[0].currentPageIndex,
+                                                mainTileElement);
+                        this.tileImageRender(actionObject.UndoRedoTileActions[0].copiedPageIndex, 0,
+                                             actionObject.UndoRedoTileActions[0].currentPageIndex, mainTileElement,
+                                             true, true, false);
                     }
-                    break;
-                case 'Move Pages':
-                    {
-                        const dropIndex: number = actionObject.dropIndex;
-                        const isRightInsertion: boolean = actionObject.isRightInsertion;
+                    else if (actionObject.UndoRedoTileActions[0].isInserted) {
+                        this.insertRemovedPages(actionObject.UndoRedoTileActions[0],
+                                                actionObject.UndoRedoTileActions[0].currentPageIndex,
+                                                mainTileElement);
+                        this.tileImageRender(actionObject.UndoRedoTileActions[0].copiedPageIndex, 0,
+                                             actionObject.UndoRedoTileActions[0].currentPageIndex, mainTileElement,
+                                             true, true, true);
+                    }
+                    else if (!actionObject.UndoRedoTileActions[0].isCopied && !actionObject.UndoRedoTileActions[0].isInserted) {
+                        this.undoDeletedPage(actionObject.UndoRedoTileActions[0].currentPageIndex,
+                                             actionObject.UndoRedoTileActions[0].pageIndex,
+                                             actionObject.UndoRedoTileActions[0].rotateAngle, mainTileElement);
+                        this.tileImageRender(actionObject.UndoRedoTileActions[0].pageIndex, 0,
+                                             actionObject.UndoRedoTileActions[0].currentPageIndex, mainTileElement, true, true, false);
+                    }
+                    this.updatePageDetail();
+                }
+                break;
+            case 'Move Pages':
+            {
+                const dropIndex: number = actionObject.dropIndex;
+                const beforeDropIndex: { currentPageIndex: number, selectedIndexes: number[] }[] = [];
+                const afterDropIndex: { currentPageIndex: number, selectedIndexes: number[] }[] = [];
+                const processedIndexes: Set<number> = new Set();
+                // Helper function to check if index is in range
+                const isInRange = (start: number, end: number, value: number): boolean => value >= start && value <= end;
 
-                        const beforeDropIndex: { currentPageIndex: number, selectedIndexes: number[] }[] = [];
-                        const afterDropIndex: { currentPageIndex: number, selectedIndexes: number[] }[] = [];
+                // Collect all selected indexes
+                for (let i: number = 0; i < actionObject.UndoRedoTileActions.length; i++) {
+                    const action: OrganizeDetails = actionObject.UndoRedoTileActions[parseInt(i.toString(), 10)];
 
-                        // Collect all selected indexes
-                        for (let i: number = actionObject.UndoRedoTileActions.length - 1; i >= 0; i--) {
-                            const action: OrganizeDetails = actionObject.UndoRedoTileActions[parseInt(i.toString(), 10)];
-                            const selectedIndexes: number[] = this.tempOrganizePagesCollection
-                                .filter((item: OrganizeDetails) => {
-                                    return action.isCopied ? item.copiedPageIndex === action.copiedPageIndex : item.pageIndex === action.pageIndex;
-                                })
-                                .map((item: OrganizeDetails) => item.currentPageIndex);
-
-                            if (selectedIndexes.length > 0) {
-                                if (dropIndex < action.currentPageIndex) {
-                                    afterDropIndex.push({ currentPageIndex: action.currentPageIndex, selectedIndexes: selectedIndexes });
-                                } else {
-                                    beforeDropIndex.push({ currentPageIndex: action.currentPageIndex, selectedIndexes: selectedIndexes });
-                                }
+                    const selectedItem: OrganizeDetails = this.tempOrganizePagesCollection
+                        .find((item: OrganizeDetails) => {
+                            if (action.isCopied) {
+                                return item.copiedPageIndex === action.copiedPageIndex && isInRange(
+                                    dropIndex - actionObject.selectedPagesIndexes.length,
+                                    dropIndex + actionObject.selectedPagesIndexes.length,
+                                    item.currentPageIndex
+                                ) && !processedIndexes.has(item.currentPageIndex);
+                            } else if (action.isInserted) {
+                                return item.copiedPageIndex === action.copiedPageIndex && item.isInserted && isInRange(
+                                    dropIndex - actionObject.selectedPagesIndexes.length,
+                                    dropIndex + actionObject.selectedPagesIndexes.length,
+                                    item.currentPageIndex
+                                ) && !processedIndexes.has(item.currentPageIndex);
+                            } else {
+                                return item.pageIndex === action.pageIndex;
                             }
-                        }
+                        });
 
-                        // Sort and rearrange for beforeDropIndex
-                        if (beforeDropIndex.length > 0) {
-                            // Sort in descending order based on selectedIndexes and rearrange
-                            beforeDropIndex.sort((a, b) => a.currentPageIndex - b.currentPageIndex);
-                            for (let j: number = 0; j < beforeDropIndex.length; j++) {
-                                this.rearrangePages(beforeDropIndex[parseInt(j.toString(), 10)].selectedIndexes, beforeDropIndex[parseInt(j.toString(), 10)].currentPageIndex, beforeDropIndex[parseInt(j.toString(), 10)].currentPageIndex > beforeDropIndex[parseInt(j.toString(), 10)].selectedIndexes[0]);
-                            }
+                    if (selectedItem) {
+                        const selectedIndexes: number[] = [selectedItem.currentPageIndex];
+                        processedIndexes.add(selectedItem.currentPageIndex);
+                        if (dropIndex < action.currentPageIndex) {
+                            afterDropIndex.push({ currentPageIndex: action.currentPageIndex, selectedIndexes: selectedIndexes });
+                        } else {
+                            beforeDropIndex.push({ currentPageIndex: action.currentPageIndex, selectedIndexes: selectedIndexes });
                         }
-
-                        // Sort and rearrange for afterDropIndex
-                        if (afterDropIndex.length > 0) {
-                            // Sort in ascending order based on currentPageIndex and rearrange
-                            afterDropIndex.sort((a, b) => b.currentPageIndex - a.currentPageIndex);
-                            for (let j: number = 0; j < afterDropIndex.length; j++) {
-                                this.rearrangePages(afterDropIndex[parseInt(j.toString(), 10)].selectedIndexes, afterDropIndex[parseInt(j.toString(), 10)].currentPageIndex, afterDropIndex[parseInt(j.toString(), 10)].currentPageIndex > afterDropIndex[parseInt(j.toString(), 10)].selectedIndexes[0]);
-                            }
-                        }
-                        break;
-                    }                    
-                case 'Toolbar Rotate Right':
-                    this.rotateImages(actionObject, -90);
-                    break;
-                case 'Toolbar Rotate Left':
-                    this.rotateImages(actionObject, 90);
-                    break;
-                case 'Toolbar Copy':
-                    if (actionObject.toolbarActions.length > 0) {
-                        for (let i: number = actionObject.toolbarActions.length - 1; i >= 0; i--) {
-                            const mainTileElement: HTMLElement =
+                    }
+                }
+                // Sort and rearrange for beforeDropIndex
+                if (beforeDropIndex.length > 0) {
+                    // Sort in descending order based on selectedIndexes and rearrange
+                    beforeDropIndex.sort((a, b) => a.currentPageIndex - b.currentPageIndex);
+                    for (let j: number = 0; j < beforeDropIndex.length; j++) {
+                        this.rearrangePages(beforeDropIndex[parseInt(j.toString(), 10)].selectedIndexes,
+                                            beforeDropIndex[parseInt(j.toString(), 10)].currentPageIndex,
+                                            beforeDropIndex[parseInt(j.toString(), 10)].currentPageIndex >
+                                            beforeDropIndex[parseInt(j.toString(), 10)].selectedIndexes[0]);
+                    }
+                }
+                // Sort and rearrange for afterDropIndex
+                if (afterDropIndex.length > 0) {
+                    // Sort in ascending order based on currentPageIndex and rearrange
+                    afterDropIndex.sort((a, b) => b.currentPageIndex - a.currentPageIndex);
+                    for (let j: number = 0; j < afterDropIndex.length; j++) {
+                        this.rearrangePages(afterDropIndex[parseInt(j.toString(), 10)].selectedIndexes,
+                                            afterDropIndex[parseInt(j.toString(), 10)].currentPageIndex,
+                                            afterDropIndex[parseInt(j.toString(), 10)].currentPageIndex >
+                                            afterDropIndex[parseInt(j.toString(), 10)].selectedIndexes[0]);
+                    }
+                }
+                break;
+            }
+            case 'Toolbar Rotate Right':
+                this.rotateImages(actionObject, -90);
+                break;
+            case 'Toolbar Rotate Left':
+                this.rotateImages(actionObject, 90);
+                break;
+            case 'Toolbar Copy':
+                if (actionObject.toolbarActions.length > 0) {
+                    for (let i: number = actionObject.toolbarActions.length - 1; i >= 0; i--) {
+                        const mainTileElement: HTMLElement =
                                 this.tileAreaDiv.childNodes[parseInt(actionObject.toolbarActions[parseInt(i.toString(), 10)].
                                     currentPageIndex.toString(), 10)] as HTMLElement;
-                            this.deleteTempPage(actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex, mainTileElement);
-                            this.tileAreaDiv.removeChild(mainTileElement);
+                        this.deleteTempPage(actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex, mainTileElement);
+                        this.tileAreaDiv.removeChild(mainTileElement);
+                        this.updatePageDetail();
+                    }
+                }
+                this.disableTileDeleteButton();
+                break;
+            case 'Toolbar Delete':
+                {
+                    if (actionObject.toolbarActions.length > 0) {
+                        for (let i: number = 0; i < actionObject.toolbarActions.length; i++) {
+                            const mainTileElement: HTMLElement =
+                                    this.tileAreaDiv.childNodes[parseInt(actionObject.toolbarActions[parseInt(i.toString(), 10)].
+                                        currentPageIndex.toString(), 10)] as HTMLElement;
+                            if (actionObject.toolbarActions[parseInt(i.toString(), 10)].isCopied) {
+                                this.insertRemovedPages(actionObject.toolbarActions[parseInt(i.toString(), 10)],
+                                                        actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex,
+                                                        mainTileElement);
+                                this.tileImageRender(actionObject.toolbarActions[parseInt(i.toString(), 10)].copiedPageIndex, 0,
+                                                     actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex,
+                                                     mainTileElement, true, true, false);
+                            }
+                            else if (actionObject.toolbarActions[parseInt(i.toString(), 10)].isInserted) {
+                                this.insertRemovedPages(actionObject.toolbarActions[parseInt(i.toString(), 10)],
+                                                        actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex,
+                                                        mainTileElement);
+                                this.tileImageRender(actionObject.toolbarActions[parseInt(i.toString(), 10)].copiedPageIndex, 0,
+                                                     actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex,
+                                                     mainTileElement,
+                                                     true, true, true);
+                            }
+                            else if (!actionObject.toolbarActions[parseInt(i.toString(), 10)].isCopied &&
+                                    !actionObject.toolbarActions[parseInt(i.toString(), 10)].isInserted) {
+                                this.undoDeletedPage(actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex,
+                                                     actionObject.toolbarActions[parseInt(i.toString(), 10)].pageIndex,
+                                                     actionObject.toolbarActions[parseInt(i.toString(), 10)].rotateAngle, mainTileElement);
+                                this.tileImageRender(actionObject.toolbarActions[parseInt(i.toString(), 10)].pageIndex, 0,
+                                                     actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex,
+                                                     mainTileElement, true, true, false);
+                            }
                             this.updatePageDetail();
                         }
                     }
                     this.disableTileDeleteButton();
-                    break;
-                case 'Toolbar Delete':
-                    {
-                        if (actionObject.toolbarActions.length > 0) {
-                            for (let i: number = 0; i < actionObject.toolbarActions.length; i++) {
-                                const mainTileElement: HTMLElement =
-                                    this.tileAreaDiv.childNodes[parseInt(actionObject.toolbarActions[parseInt(i.toString(), 10)].
-                                        currentPageIndex.toString(), 10)] as HTMLElement;
-                                if (actionObject.toolbarActions[parseInt(i.toString(), 10)].isCopied) {
-                                    this.insertRemovedPages(actionObject.toolbarActions[parseInt(i.toString(), 10)],
-                                        actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex,
-                                        mainTileElement);
-                                    this.tileImageRender(actionObject.toolbarActions[parseInt(i.toString(), 10)].copiedPageIndex, 0,
-                                        actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex,
-                                        mainTileElement, true, true, false);
-                                }
-                                else if (actionObject.toolbarActions[parseInt(i.toString(), 10)].isInserted) {
-                                    this.insertRemovedPages(actionObject.toolbarActions[parseInt(i.toString(), 10)],
-                                        actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex,
-                                        mainTileElement);
-                                    this.tileImageRender(actionObject.toolbarActions[parseInt(i.toString(), 10)].copiedPageIndex, 0,
-                                        actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex,
-                                        mainTileElement,
-                                        true, true, true);
-                                }
-                                else if (!actionObject.toolbarActions[parseInt(i.toString(), 10)].isCopied &&
-                                    !actionObject.toolbarActions[parseInt(i.toString(), 10)].isInserted) {
-                                    this.undoDeletedPage(actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex,
-                                        actionObject.toolbarActions[parseInt(i.toString(), 10)].pageIndex,
-                                        actionObject.toolbarActions[parseInt(i.toString(), 10)].rotateAngle, mainTileElement);
-                                    this.tileImageRender(actionObject.toolbarActions[parseInt(i.toString(), 10)].pageIndex, 0,
-                                        actionObject.toolbarActions[parseInt(i.toString(), 10)].currentPageIndex,
-                                        mainTileElement, true, true, false);
-                                }
-                                this.updatePageDetail();
-                            }
-                        }
-                        this.disableTileDeleteButton();
-                    }
-                    break;
+                }
+                break;
 
             }
         }
@@ -2151,6 +2187,7 @@ export class PageOrganizer {
                                             mainTileElement);
                     this.tileImageRender(actionObject.UndoRedoTileActions[0].copiedPageIndex, 0,
                                          actionObject.UndoRedoTileActions[0].currentPageIndex, mainTileElement, true, true, false);
+                    this.updatePageDetail();
                 }
                 break;
             case 'Delete':
@@ -2408,6 +2445,9 @@ export class PageOrganizer {
             }
             return item;
         });
+        this.tempOrganizePagesCollection.sort((a, b) => {
+            return a.currentPageIndex - b.currentPageIndex;
+        });
         if (tileDiv) {
             tileDiv.setAttribute('data-page-order', (deletedPageIndex + 1).toString());
         }
@@ -2422,17 +2462,28 @@ export class PageOrganizer {
 
     private insertRemovedPages(toolbarActions: OrganizeDetails, currentPageIndex: number, tileDiv: HTMLElement): void{
         let deleteCount: number = 0;
-        for (let i: number = 0; i < currentPageIndex; i++) {
-            if (this.tempOrganizePagesCollection[parseInt(i.toString(), 10)].isDeleted){
-                deleteCount++;
+        const index: number = this.tempOrganizePagesCollection.findIndex((item: OrganizeDetails) => {
+            return item.currentPageIndex === currentPageIndex; });
+        if (index !== -1){
+            for (let i: number = 0; i < index; i++) {
+                if (this.tempOrganizePagesCollection[parseInt(i.toString(), 10)].isDeleted) {
+                    deleteCount++;
+                }
+            }
+        }
+        else{
+            for (let i: number = 0; i < currentPageIndex; i++) {
+                if (this.tempOrganizePagesCollection[parseInt(i.toString(), 10)].isDeleted) {
+                    deleteCount++;
+                }
             }
         }
         this.tempOrganizePagesCollection = this.tempOrganizePagesCollection.slice(0, currentPageIndex + deleteCount).
             concat(toolbarActions,
                    this.tempOrganizePagesCollection.slice(currentPageIndex + deleteCount));
         this.tempOrganizePagesCollection = this.tempOrganizePagesCollection.map((item: OrganizeDetails, mapIndex: number) => {
-            if (mapIndex >= currentPageIndex) {
-                item.currentPageIndex = mapIndex;
+            if (mapIndex > currentPageIndex + deleteCount && !item.isDeleted) {
+                item.currentPageIndex += 1;
             }
             return item;
         });

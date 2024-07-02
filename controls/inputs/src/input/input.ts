@@ -646,7 +646,7 @@ export namespace Input {
         if (parentElement.classList.contains(CLASSNAMES.FLOATINPUT)) {
             if (!isNullOrUndefined(placeholder) && placeholder !== '') {
                 const floatTextContent: Element = parentElement.getElementsByClassName('e-float-text-content')[0];
-                if (floatTextContent) {
+                if (floatTextContent && floatTextContent.children[0]) {
                     floatTextContent.children[0].textContent = placeholder;
                 } else {
                     parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0].textContent = placeholder;

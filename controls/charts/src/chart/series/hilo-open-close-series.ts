@@ -7,7 +7,7 @@ import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
 import { BorderModel } from '../../common/model/base-model';
 
 /**
- * `HiloOpenCloseSeries` module is used to render the hiloOpenClose series.
+ * `HiloOpenCloseSeries` module is used to render the hilo open close series.
  */
 export class HiloOpenCloseSeries extends ColumnBase {
     public sideBySideInfo: DoubleRange[] = [];

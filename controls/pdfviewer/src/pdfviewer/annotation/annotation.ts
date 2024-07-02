@@ -1536,7 +1536,6 @@ export class Annotation {
                         }
                         return !excludeAnnotation;
                     });
-                    this.pdfViewer.annotationCollection = filteredAnnotations;
                     this.pdfViewer.renderDrawing(null, actionObject.annotation.pageIndex);
                     const removeDiv: HTMLElement = document.getElementById(actionObject.annotation.annotName);
                     if (removeDiv) {

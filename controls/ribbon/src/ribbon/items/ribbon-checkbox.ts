@@ -73,7 +73,9 @@ export class RibbonCheckBox {
         checkBoxObj.dataBind();
         checkBoxObj.change = (e: ChangeEventArgs) => {
             if (item.checkBoxSettings.change) { item.checkBoxSettings.change.call(this, e); }
-            overflowButton.toggle();
+            if (overflowButton.element.classList.contains('e-active')) {
+                overflowButton.toggle();
+            }
         };
     }
     /**

@@ -342,8 +342,8 @@ describe('Range navigator', () => {
         it('checking with remote date lightweight', () => {
             range.loaded = (args: object): void => {
                 element = document.getElementById('container_chart');
-                // expect(element.childElementCount).toEqual(0);
-                // done();
+                expect(element !== null).toBe(true);
+
             };
             range.dataSource = dataManager;
             range.xName = 'Id';
@@ -355,8 +355,7 @@ describe('Range navigator', () => {
         it('checking with remote date lightweight', () => {
             range.loaded = (args: object): void => {
                 element = document.getElementById('container_chart');
-                // expect(element.childElementCount).toEqual(1);
-                // done();
+                expect(element !== null).toBe(true);
             };
             range.series = [{
                 dataSource: dataManager, xName: 'Id', yName: 'Estimate',
@@ -368,6 +367,7 @@ describe('Range navigator', () => {
         it('checking with margin', () => {
             range.loaded = (args: Object): void => {
                 let container: Element = document.getElementById('containerSeriesGroup0');
+                expect(container !== null).toBe(true);
                 // expect(
                 //     container.getAttribute('transform') === 'translate(21.5,10)' ||
                 //     container.getAttribute('transform') === 'translate(21,10)'
@@ -380,6 +380,7 @@ describe('Range navigator', () => {
         it('checking materialdark', () => {
             range.loaded = (args: Object): void => {
                 let container: Element = document.getElementById('containerSeriesGroup0');
+                expect(container !== null).toBe(true);
                 // expect(
                 //     container.getAttribute('transform') === 'translate(21.5,10)' ||
                 //     container.getAttribute('transform') === 'translate(21,10)'
@@ -392,6 +393,7 @@ describe('Range navigator', () => {
         it('checking fabricdark', () => {
             range.loaded = (args: Object): void => {
                 let container: Element = document.getElementById('containerSeriesGroup0');
+                expect(container !== null).toBe(true);
                 // expect(
                 //     container.getAttribute('transform') === 'translate(21.5,10)' ||
                 //     container.getAttribute('transform') === 'translate(21,10)'
@@ -404,6 +406,7 @@ describe('Range navigator', () => {
         it('checking Bootstrapdark', () => {
             range.loaded = (args: Object): void => {
                 let container: Element = document.getElementById('containerSeriesGroup0');
+                expect(container !== null).toBe(true);
                 // expect(
                 //     container.getAttribute('transform') === 'translate(21.5,10)' ||
                 //     container.getAttribute('transform') === 'translate(21,10)'

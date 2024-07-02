@@ -263,7 +263,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected isDynamicDataChange: boolean = false;
     protected addedNewItem: boolean = false;
     protected isAddNewItemTemplate: boolean = false;
-    private isRequesting: boolean = false;
+    protected isRequesting: boolean = false;
     private isVirtualizationEnabled: boolean = false;
     protected isCustomDataUpdated: boolean = false;
     private isAllowFiltering: boolean = false;

@@ -31,7 +31,7 @@ import { DiagramAction, KeyModifiers, Keys, DiagramEvent, DiagramTools, Renderer
 import { BlazorAction, ScrollActions } from '../enum/enum';
 import { isPointOverConnector, findObjectType, insertObject, getObjectFromCollection, getTooltipOffset, findParentInSwimlane, findPort } from '../utility/diagram-util';
 import { getObjectType, getInOutConnectPorts, removeChildNodes, cloneBlazorObject, checkPort } from '../utility/diagram-util';
-import { canZoomPan, canDraw, canDrag, canZoomTextEdit, canVitualize, canPreventClearSelection } from './../utility/constraints-util';
+import { canZoomPan, canDraw, canDrag, canZoomTextEdit, canVitualize, canPreventClearSelection, canSingleSelect, canMultiSelect } from './../utility/constraints-util';
 import { selectionHasConnector } from '../utility/diagram-util';
 import { canMove, canEnablePointerEvents, canSelect, canEnableToolTip } from './../utility/constraints-util';
 import {
@@ -546,7 +546,9 @@ export class DiagramEventHandler {
                 const ctrlKey: boolean = this.isMetaKey(evt);
                 if (ctrlKey && evt.shiftKey && this.diagram.connectorEditingToolModule) {
                     this.action = 'SegmentEnd';
-                } else if ((ctrlKey || evt.shiftKey) && (!canZoomPan(this.diagram))) {
+                //Bug 892496: Unable to unselect selected node using CTRL+Click when zoompan is enabled.
+                //Added this condition whether single select or multi select is enabled in diagram tool.
+                } else if ((ctrlKey || evt.shiftKey) && (canSingleSelect(this.diagram) || canMultiSelect(this.diagram))) {
                     this.action = 'Select';
                 }
                 this.tool = this.diagram.getTool(this.action);

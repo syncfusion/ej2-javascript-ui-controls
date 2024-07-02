@@ -764,6 +764,9 @@ export class SfdtExport {
         let next: BlockWidget = paragraphWidget;
         while (next instanceof ParagraphWidget) {
             if (this.writeLines(next, lineIndex, start, paragraph[inlinesProperty[this.keywordIndex]])) {
+                if (this.endLine === next.lastChild && this.endOffset === this.owner.selection.getLineLength(next.lastChild as LineWidget) + 1) {
+                   blocks.push(this.createParagraph(next));
+                }
                 return undefined;
             }
             lineIndex = 0;

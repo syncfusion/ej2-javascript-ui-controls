@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.1.40 (2024-07-02)
+
+### Checkbox
+
+#### Bug Fixes
+
+- `#I602047` - The issue with "CheckBox change event triggered twice when setting label as HTML string element" has been resolved.
+
 ## 26.1.35 (2024-06-11)
 
 ### Switch

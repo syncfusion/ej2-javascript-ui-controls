@@ -1651,7 +1651,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
      * @returns {void}
      */
     private setTheme(): void {
-        /*! Set theme */
+        /** Set theme */
         this.themeStyle = get3DThemeColor(this.theme);
         if (!(document.getElementById(this.element.id + 'Keyboard_chart_focus'))) {
             const style: HTMLStyleElement = document.createElement('style');
@@ -1771,7 +1771,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
         const moveEvent: string = Browser.touchMoveEvent;
         const stopEvent: string = Browser.touchEndEvent;
         const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
-        /*! UnBind the Event handler */
+        /** UnBind the Event handler */
 
         EventHandler.remove(this.element, startEvent, this.chartOnMouseDown);
         EventHandler.remove(this.element, moveEvent, this.mouseMove);
@@ -1810,11 +1810,11 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
         if (!this.element) {
             return;
         }
-        /*! Find the Events type */
+        /** Find the Events type */
 
         const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
 
-        /*! Bind the Event handler */
+        /** Bind the Event handler */
         EventHandler.add(this.element, Browser.touchStartEvent, this.chartOnMouseDown, this);
         EventHandler.add(this.element, Browser.touchMoveEvent, this.mouseMove, this);
         EventHandler.add(this.element, Browser.touchEndEvent, this.mouseEnd, this);
@@ -1833,7 +1833,7 @@ export class Chart3D extends Component<HTMLElement> implements INotifyPropertyCh
         this.longPressBound = this.longPress.bind(this);
         this.touchObject = new Touch(this.element, { tapHold: this.longPressBound, tapHoldThreshold: 500 });
 
-        /*! Apply the style for chart */
+        /** Apply the style for chart */
         this.setStyle(<HTMLElement>this.element);
     }
 

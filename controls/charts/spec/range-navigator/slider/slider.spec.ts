@@ -102,6 +102,7 @@ describe('Range navigator', () => {
                 pageX: +element.getAttribute('x'),
                 pageY: +element.getAttribute('y')
             };
+            expect(element != null).toBe(true);
             range.rangeOnMouseClick(<PointerEvent>eventObj);
             done();
         };
@@ -141,6 +142,7 @@ describe('Range navigator', () => {
                 element = document.getElementById('container_AxisLabel_4');
                 range.rangeOnMouseDown(<PointerEvent>trigger.onTouchStart(element, 608, 189, null, null, 504, 289));
                 range.mouseEnd(<PointerEvent>trigger.onTouchEnd(element, 608, 189, null, null, 504, 289));
+                expect(element != null).toBe(true);
                 done();
             };
             range.navigatorStyleSettings.thumb.height = 20;

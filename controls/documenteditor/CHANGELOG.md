@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 26.1.40 (2024-07-02)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I599170` - Resolved the bookmarks are not added properly in Document Editor.
+- `#I599982` - Resolved the bookmark not navigation issue while clicking the hyperlink.
+- `#I600181` - Resolved the script error issue when modify the levels in table of contents.
+- `#I598250` - Resolved the before comment action event behaviour issues.
+- `#I576525` - Resolved the performance issue when editing paragraph that split into multiple pages.
+- `#I600212`, `#I429607` - Resolved the bookmark is not retrieved when selecting the table cell.
+
+#### Features
+
+- `#I559439` - Added support to apply multicolumn for selected paragraph.
+
 ## 26.1.39 (2024-06-25)
 
 ### DocumentEditor

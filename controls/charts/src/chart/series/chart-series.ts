@@ -42,7 +42,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
     public visible: boolean;
 
     /**
-     * If set true, data label for zero values in series renders.
+     * If set to true, data labels for zero values in the series render.
      *
      * @default true
      */
@@ -197,7 +197,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 export class MarkerSettings extends ChildProperty<MarkerSettings> {
 
     /**
-     * If set to true the marker for series is rendered. This is applicable only for line and area type series.
+     * If set to true the marker for the series is rendered. This is applicable only for line and area type series.
      *
      * @default false
      */
@@ -206,7 +206,7 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
     public visible: boolean;
 
     /**
-     * The different shape of a marker:
+     * The different shapes of a marker:
      * * Circle
      * * Rectangle
      * * Triangle
@@ -311,13 +311,13 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
 }
 
 /**
- *  Configures the pareto in the series.
+ *  Configures the pareto series.
  */
 
 export class ParetoOptions extends ChildProperty<ParetoOptions> {
 
     /**
-     * The fill color of the pareto line that accepts value in hex and rgba as a valid CSS color string. By default, it will take color based on theme.
+     * The fill color of the pareto line, which accepts a value in hex or rgba as a valid CSS color string. By default, it will use a color based on the theme.
      *
      * @default null
      */
@@ -335,7 +335,7 @@ export class ParetoOptions extends ChildProperty<ParetoOptions> {
     public width: number;
 
     /**
-     * Defines the pattern of dashes and gaps to stroke.
+     * Defines the pattern of dashes and gaps for the stroke.
      *
      * @default '0'
      */
@@ -458,7 +458,7 @@ export class Points {
 }
 
 /**
- * Defines the behavior of the Trendlines
+ * Defines the behavior of the trendlines.
  */
 export class Trendline extends ChildProperty<Trendline> {
     /**
@@ -707,7 +707,7 @@ export class ChartSegment extends ChildProperty<ChartSegment> {
 
 }
 /**
- * Error bar settings
+ * Configures error bar settings.
  *
  * @public
  */
@@ -738,9 +738,9 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
      * The direction of the error bar . They are
-     * * both -  Renders both direction of error bar.
-     * * minus - Renders minus direction of error bar.
-     * * plus - Renders plus direction error bar.
+     * * Both -  Renders both direction of error bar.
+     * * Minus - Renders minus direction of error bar.
+     * * Plus - Renders plus direction error bar.
      *
      * @default 'Both'
      */
@@ -749,10 +749,10 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
     public direction: ErrorBarDirection;
 
     /**
-     * The mode of the error bar . They are
+     * The mode of the error bar . They are:
      * * Vertical -  Renders a vertical error bar.
      * * Horizontal - Renders a horizontal error bar.
-     * * Both - Renders both side error bar.
+     * * Both - Renders an error bar on both sides.
      *
      * @default 'Vertical'
      */
@@ -780,7 +780,7 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
     public verticalError: number | string;
 
     /**
-     * The stroke width of the error bar..
+     * The stroke width of the error bar.
      *
      * @default 1
      */
@@ -855,12 +855,12 @@ export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 }
 
 /**
- * Defines the common behavior of Series and Technical Indicators
+ * Defines the common behavior of both series and technical indicators.
  */
 export class SeriesBase extends ChildProperty<SeriesBase> {
     /**
      * The DataSource field that contains the x value.
-     * It is applicable for series and technical indicators
+     * It is applicable for both series and technical indicators.
      *
      * @default ''
      */
@@ -869,15 +869,15 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public xName: string;
 
     /**
-     * The Data Source field that contains the color mapping value.
+     * The DataSource field that contains the color mapping value.
      * It is applicable for range color mapping properly.
      */
     @Property('')
     public colorName: string;
 
     /**
-     * The DataSource field that contains the high value of y
-     * It is applicable for series and technical indicators
+     * The DataSource field that contains the high value of y.
+     * It is applicable for both series and technical indicators.
      *
      * @default ''
      */
@@ -906,8 +906,8 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public open: string;
 
     /**
-     * The DataSource field that contains the close value of y
-     * It is applicable for series and technical indicators
+     * The DataSource field that contains the close value of y.
+     * It is applicable for both series and technical indicators
      *
      * @default ''
      */
@@ -916,8 +916,8 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public close: string;
 
     /**
-     * Defines the data source field that contains the volume value in candle charts
-     * It is applicable for financial series and technical indicators
+     * Defines the data source field that contains the volume value in candle charts.
+     * It is applicable for both financial series and technical indicators
      *
      * @default ''
      */
@@ -926,7 +926,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public volume: string;
 
     /**
-     * The DataSource field that contains the color value of point.
+     * The DataSource field that contains the color value of a point.
      * It is applicable for series.
      *
      * @default ''
@@ -1005,7 +1005,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public yAxisName: string;
 
     /**
-     * Options to customizing animation for the series.
+     * Options for customizing animation for the series.
      */
 
     @Complex<AnimationModel>(null, Animation)
@@ -1014,7 +1014,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     /**
      * The fill color for the series, which can accept values in hex or rgba as a valid CSS color string.
      * It also represents the color of the signal lines in technical indicators.
-     * For technical indicators, the default value is 'blue' and for series, it has null.
+     * For technical indicators, the default value is 'blue' and for series, it is null.
      *
      * @default null
      */
@@ -1091,7 +1091,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public segmentAxis: Segment;
 
     /**
-     * This property used to improve chart performance via data mapping for series dataSource.
+     * This property is used to improve chart performance via data mapping for series dataSource.
      *
      * @default false
      */
@@ -1717,16 +1717,16 @@ export class Series extends SeriesBase {
     public yName: string;
 
     /**
-     * Type of series to be drawn in radar or polar series. They are
-     *  'Line'
-     *  'Column'
-     *  'Area'
-     *  'Scatter'
-     *  'Spline'
-     *  'StackingColumn'
-     *  'StackingArea'
-     *  'RangeColumn'
-     *  'SplineArea'
+     * Type of series to be drawn in radar or polar series. They are:
+     * * 'Line'
+     * * 'Column'
+     * * 'Area'
+     * * 'Scatter'
+     * * 'Spline'
+     * * 'StackingColumn'
+     * * 'StackingArea'
+     * * 'RangeColumn'
+     * * 'SplineArea'
      *
      * @default 'Line'
      */
@@ -1734,7 +1734,7 @@ export class Series extends SeriesBase {
     public drawType: ChartDrawType;
 
     /**
-     * Specifies whether to join start and end point of a line/area series used in polar/radar chart to form a closed path.
+     * Specifies whether to join the start and end point of a line/area series used in polar/radar chart to form a closed path.
      *
      * @default true
      */
@@ -1771,7 +1771,7 @@ export class Series extends SeriesBase {
     public enableSolidCandles: boolean;
 
     /**
-     * The DataSource field that contains the size value of y
+     * The DataSource field that contains the size value of y.
      *
      * @default ''
      */
@@ -1780,7 +1780,7 @@ export class Series extends SeriesBase {
     public size: string;
 
     /**
-     * The bin interval of each histogram points.
+     * The bin interval of each histogram point.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -1799,9 +1799,9 @@ export class Series extends SeriesBase {
     public showNormalDistribution: boolean;
 
     /**
-     * This property allows grouping series in `stacked column / bar` charts.
+     * This property allows grouping of series in `stacked column / bar` charts.
      * Any string value can be provided to the stackingGroup property.
-     * If any two or above series have the same value, those series will be grouped together.
+     * If any two or more series have the same value, those series will be grouped together.
      *
      * @default ''
      */
@@ -1810,7 +1810,7 @@ export class Series extends SeriesBase {
     public stackingGroup: string;
 
     /**
-     * Options to customizing the border of the series. This is applicable only for `Column` and `Bar` type series.
+     * Options for customizing the border of the series. This is applicable only for `Column` and `Bar` type series.
      */
 
     @Complex<BorderModel>({ color: null, width: 0 }, Border)
@@ -1844,7 +1844,7 @@ export class Series extends SeriesBase {
 
 
     /**
-     * The type of the series are
+     * The type of the series are:
      * * Line
      * * Column
      * * Area
@@ -1880,7 +1880,7 @@ export class Series extends SeriesBase {
     public type: ChartSeriesType;
 
     /**
-     * Options for displaying and customizing error bar for individual point in a series.
+     * Options for displaying and customizing error bar for individual points in a series.
      */
     @Complex<ErrorBarSettingsModel>(null, ErrorBarSettings)
     public errorBar: ErrorBarSettingsModel;
@@ -1904,7 +1904,7 @@ export class Series extends SeriesBase {
     public dragSettings: DragSettingsModel;
 
     /**
-     * Defines the collection of trendlines that are used to predict the trend
+     * Defines the collection of trendlines that are used to predict the trend.
      */
     @Collection<TrendlineModel>([], Trendline)
     public trendlines: TrendlineModel[];
@@ -1954,7 +1954,7 @@ export class Series extends SeriesBase {
     public legendShape: LegendShape;
 
     /**
-     * The URL for the Image that is to be displayed as a Legend icon.  It requires  `legendShape` value to be an `Image`.
+     * The URL for the image that is to be displayed as a legend icon.  It requires `legendShape` value to be an `Image`.
      *
      * @default ''
      */
@@ -1987,7 +1987,7 @@ export class Series extends SeriesBase {
     public nonHighlightStyle: string;
 
     /**
-     * Minimum radius
+     * Specifies the minimum radius.
      *
      * @default 1
      */
@@ -1995,7 +1995,7 @@ export class Series extends SeriesBase {
     public minRadius: number;
 
     /**
-     * Maximum radius
+     * Specifies the maximum radius.
      *
      * @default 3
      */
@@ -2003,7 +2003,7 @@ export class Series extends SeriesBase {
     public maxRadius: number;
 
     /**
-     * Defines type of spline to be rendered.
+     * Defines the type of spline to be rendered.
      *
      * @default 'Natural'
      */
@@ -2018,13 +2018,13 @@ export class Series extends SeriesBase {
     public cardinalSplineTension: number;
 
     /**
-     * options to customize the empty points in series.
+     * Options to customize the empty points in series.
      */
     @Complex<EmptyPointSettingsModel>(null, EmptyPointSettings)
     public emptyPointSettings: EmptyPointSettingsModel;
 
     /**
-     * If set true, the mean value for box and whisker will be visible.
+     * If set to true, the mean value for box and whisker will be visible.
      *
      * @default true
      */
@@ -2065,8 +2065,8 @@ export class Series extends SeriesBase {
 
     /**
      * Defines the shape of the data in a column and bar chart.
-     * Rectangle: Displays the data in a column and bar chart in a rectangle shape.
-     * Cylinder: Displays the data in a column and bar chart in a cylinder shape.
+     * * Rectangle: Displays the data in a column and bar chart in a rectangle shape.
+     * * Cylinder: Displays the data in a column and bar chart in a cylinder shape.
      *
      * @default 'Rectangle'
      */

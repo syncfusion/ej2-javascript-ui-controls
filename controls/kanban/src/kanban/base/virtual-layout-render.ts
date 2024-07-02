@@ -35,6 +35,7 @@ export class VirtualLayoutRender extends MobileLayout {
     private isSwimlane: boolean;
     private singleIndexSwimlaneCardCount: number;
     private cardHeight: number;
+    private winResize: EventListenerOrEventListenerObject;
     constructor(parent: Kanban) {
         super(parent);
         this.parent = parent;
@@ -46,6 +47,7 @@ export class VirtualLayoutRender extends MobileLayout {
         this.columnKeys = [];
         this.scrollLeft = 0;
         this.frozenOrder = 0;
+        this.winResize = this.windowResize.bind(this);
         if (this.parent.enableVirtualization) {
             this.parent.on(events.dataReady, this.initRender, this);
             this.parent.on(events.contentReady, this.scrollUiUpdate, this);
@@ -1335,7 +1337,7 @@ export class VirtualLayoutRender extends MobileLayout {
         EventHandler.add(this.parent.element, 'click', this.parent.actionModule.clickHandler, this.parent.actionModule);
         EventHandler.add(this.parent.element, 'dblclick', this.parent.actionModule.doubleClickHandler, this.parent.actionModule);
         EventHandler.add(document, Browser.touchStartEvent, this.documentClick, this);
-        window.addEventListener('resize', this.windowResize.bind(this));
+        window.addEventListener('resize', this.winResize);
         const content: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_CLASS) as HTMLElement;
         EventHandler.add(content, 'scroll', this.onContentScroll, this);
         const cardWrapper: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CARD_WRAPPER_CLASS));
@@ -1357,7 +1359,8 @@ export class VirtualLayoutRender extends MobileLayout {
         EventHandler.remove(this.parent.element, 'click', this.parent.actionModule.clickHandler);
         EventHandler.remove(this.parent.element, 'dblclick', this.parent.actionModule.doubleClickHandler);
         EventHandler.remove(document, Browser.touchStartEvent, this.documentClick);
-        window.removeEventListener('resize', this.windowResize.bind(this));
+        window.removeEventListener('resize', this.winResize);
+        this.winResize = null;
         const content: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_CLASS) as HTMLElement;
         if (content) {
             EventHandler.remove(content, 'scroll', this.onContentScroll);

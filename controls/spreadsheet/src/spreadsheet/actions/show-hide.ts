@@ -478,6 +478,7 @@ export class ShowHide {
         const frozenRow: number = this.parent.frozenRowCount(sheet);
         const viewportLeftIdx: number = this.parent.viewport.leftIndex + frozenCol;
         let scrollable: boolean;
+        const skipColCount: number = skipHiddenIdx(sheet, sheet.colCount - 1, false, 'columns');
         for (let i: number = args.startIndex; i <= args.endIndex; i++) {
             if (args.hide ? isHiddenCol(sheet, i) : !isHiddenCol(sheet, i)) { continue; }
             const prevChartIndexes: { chart: ChartModel, chartRowIdx: number, chartColIdx: number }[] = getChartsIndexes(this.parent);
@@ -486,7 +487,8 @@ export class ShowHide {
             this.refreshChart(i, 'columns');
             this.refreshChartCellModel(prevChartIndexes, currentChartIndexes);
             if (this.parent.scrollSettings.enableVirtualization && !args.freezePane && (i < viewportLeftIdx ||
-                i > this.parent.viewport.rightIndex)) {
+                (i > this.parent.viewport.rightIndex && (!this.parent.scrollSettings.isFinite ||
+                    !(skipColCount === this.parent.viewport.rightIndex && i >= skipColCount && i < sheet.colCount))))) {
                 if (i < viewportLeftIdx) {
                     beforeViewportIdx.push(i);
                 }
@@ -600,8 +602,9 @@ export class ShowHide {
                 }
                 return;
             }
-            if (hiddenIndex.length <= this.parent.getThreshold('col') || !this.parent.scrollSettings.enableVirtualization ||
-                args.freezePane) {
+            if ((!this.parent.scrollSettings.isFinite || this.parent.viewport.rightIndex < skipColCount) &&
+                (hiddenIndex.length <= this.parent.getThreshold('col') || !this.parent.scrollSettings.enableVirtualization
+                    || args.freezePane)) {
                 this.appendCell(sheet, hiddenIndex, getRowIndexes(), table, hTable, args.freezePane);
                 if (this.parent.scrollSettings.enableVirtualization && !args.freezePane) {
                     this.parent.notify(

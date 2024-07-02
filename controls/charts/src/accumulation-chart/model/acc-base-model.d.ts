@@ -13,23 +13,23 @@ export interface AccumulationAnnotationSettingsModel {
     content?: string;
 
     /**
-     * if set coordinateUnit as `Pixel` X specifies the axis value.
-     * else is specifies pixel or percentage of coordinate.
+     * If set coordinateUnit as `Pixel` X specifies the axis value.
+     * Else is specifies pixel or percentage of coordinate.
      *
      * @default '0'
      */
     x?: string | Date | number;
 
     /**
-     * if set coordinateUnit as `Pixel` Y specifies the axis value.
-     * else is specifies pixel or percentage of coordinate.
+     * If set coordinateUnit as `Pixel` Y specifies the axis value.
+     * Else is specifies pixel or percentage of coordinate.
      *
      * @default '0'
      */
     y?: string | number;
 
     /**
-     * Specifies the coordinate units of the annotation. They are
+     * Specifies the coordinate units of the annotation. They are:
      * * Pixel - Annotation renders based on x and y pixel value.
      * * Point - Annotation renders based on x and y axis value.
      *
@@ -39,7 +39,7 @@ export interface AccumulationAnnotationSettingsModel {
     coordinateUnits?: Units;
 
     /**
-     * Specifies the regions of the annotation. They are
+    * Specifies the regions of the annotation. They are:
      * * Chart - Annotation renders based on chart coordinates.
      * * Series - Annotation renders based on series coordinates.
      *
@@ -49,7 +49,7 @@ export interface AccumulationAnnotationSettingsModel {
     region?: Regions;
 
     /**
-     * Specifies the position of the annotation. They are
+     * Specifies the position of the annotation. They are:
      * * Top - Align the annotation element as top side.
      * * Bottom - Align the annotation element as bottom side.
      * * Middle - Align the annotation element as mid point.
@@ -61,7 +61,7 @@ export interface AccumulationAnnotationSettingsModel {
     verticalAlignment?: Position;
 
     /**
-     * Specifies the alignment of the annotation. They are
+     * Specifies the alignment of the annotation. They are:
      * * Near - Align the annotation element as top side.
      * * Far - Align the annotation element as bottom side.
      * * Center - Align the annotation element as mid point.
@@ -119,7 +119,7 @@ export interface AccumulationDataLabelSettingsModel {
     fill?: string;
 
     /**
-     * Specifies the position of data label. They are.
+     * Specifies the position of data label. They are:
      * * Outside - Places label outside the point.
      * * Inside - Places label inside the point.
      *
@@ -304,7 +304,7 @@ export interface AccumulationSeriesModel {
     xName?: string;
 
     /**
-     * Specifies the series name
+     * Specifies the series name.
      *
      * @default ''
      */
@@ -347,7 +347,7 @@ export interface AccumulationSeriesModel {
     animation?: AnimationModel;
 
     /**
-     * The shape of the legend. Each series has its own legend shape. They are
+     * The shape of the legend. Each series has its own legend shape. They are:
      * * Circle - Renders a circle.
      * * Rectangle - Renders a rectangle.
      * * Triangle - Renders a triangle.
@@ -490,7 +490,7 @@ export interface AccumulationSeriesModel {
     explodeIndex?: number;
 
     /**
-     * options to customize the empty points in series.
+     * Options to customize the empty points in series.
      */
     emptyPointSettings?: EmptyPointSettingsModel;
 

@@ -124,7 +124,7 @@ export class Logarithmic extends Double {
      * @returns {void}
      */
     public calculateVisibleLabels(axis: Axis, chart: Chart | RangeNavigator): void {
-        /*! Generate axis labels */
+        /** Generate axis labels */
         let tempInterval: number = axis.visibleRange.min;
         axis.visibleLabels = [];
         let labelStyle: Font;

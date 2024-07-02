@@ -219,7 +219,7 @@ describe('Editing ->', () => {
         it('Formula reference', (done: Function) => {
             helper.invoke('selectRange', ['F4'])
             helper.invoke('startEdit');
-            helper.getInstance().editModule.editCellData.value = '=sum(';
+            helper.getInstance().notify('editOperation', { action: 'refreshEditor', value: '=sum(', refreshCurPos: true, refreshEditorElem: true });
             const td: HTMLElement = helper.invoke('getCell', [3, 6]);
             const coords: ClientRect = td.getBoundingClientRect();
             helper.triggerMouseAction('mousedown', { x: coords.left, y: coords.top }, null, td);
@@ -1045,7 +1045,7 @@ describe('Editing ->', () => {
             it('Cell reference functionality gets failed when referring in another cell using = (equal) sign', (done: Function) => {
                 helper.invoke('selectRange', ['J2'])
                 helper.invoke('startEdit');
-                helper.getInstance().editModule.editCellData.value = '=';
+                helper.getInstance().notify('editOperation', { action: 'refreshEditor', value: '=', refreshCurPos: true, refreshEditorElem: true });
                 let td: HTMLElement = helper.invoke('getCell', [1, 7]);
                 let coords: ClientRect = td.getBoundingClientRect();
                 helper.triggerMouseAction('mousedown', { x: coords.left, y: coords.top }, null, td);
@@ -1055,7 +1055,7 @@ describe('Editing ->', () => {
                 expect(JSON.stringify(helper.getInstance().sheets[0].rows[1].cells[9])).toBe('{"value":"10","formula":"=H2"}');
                 helper.invoke('selectRange', ['J3'])
                 helper.invoke('startEdit');
-                helper.getInstance().editModule.editCellData.value = '=';
+                helper.getInstance().notify('editOperation', { action: 'refreshEditor', value: '=', refreshCurPos: true, refreshEditorElem: true });
                 td = helper.invoke('getCell', [2, 7]);
                 coords = td.getBoundingClientRect();
                 helper.triggerMouseAction('mousedown', { x: coords.left, y: coords.top }, null, td);

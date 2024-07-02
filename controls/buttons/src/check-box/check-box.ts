@@ -226,7 +226,8 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
             this.clickTriggered = false;
             return;
         }
-        if ((event.target as HTMLElement).tagName === 'SPAN' || (event.target as HTMLElement).tagName === 'LABEL') {
+        if ((event.target as HTMLElement).tagName === 'SPAN' || (event.target as HTMLElement).tagName === 'LABEL' ||
+            closest(event.target as Element, '.e-label')) {
             this.clickTriggered = true;
         }
         if (this.isMouseClick) {
@@ -566,7 +567,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         }
         let label: Element = wrapper.getElementsByClassName(LABEL)[0];
         if (label) {
-            label.textContent = text;
+            label.innerHTML = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(text) : text;
         } else {
             text = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(text) : text;
             label = this.createElement('span', { className: LABEL, innerHTML: text });

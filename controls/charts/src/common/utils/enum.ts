@@ -1,20 +1,19 @@
 /**
- * Defines Coordinate units of an annotation. They are
- * * Pixel
- * * Point
+ * Defines coordinate units of an annotation. They are:
+ * * Pixel - Specifies the pixel value.
+ * * Point - Specifies the axis value.
  */
 export type Units =
-    /**  Specifies the pixel value */
+    /**  Specifies the pixel value. */
     'Pixel' |
     /**  Specifies the axis value. */
     'Point';
 
 /**
- * Defines the Alignment. They are
- * * near - Align the element to the left.
- * * center - Align the element to the center.
- * * far - Align the element to the right.
- * *
+ * Defines the alignment. They are:
+ * * Near - Align the element to the left.
+ * * Center - Align the element to the center.
+ * * Far - Align the element to the right.
  */
 
 export type Alignment =
@@ -37,9 +36,9 @@ export type SeriesCategories =
     'Pareto';
 
 /**
- * Defines regions of an annotation. They are
- * * Chart
- * * Series
+ * Defines regions of an annotation. They are:
+ * * Chart - Specifies the chart coordinates.
+ * * Series - Specifies the series coordinates.
  */
 export type Regions =
     /**  Specifies the chart coordinates */
@@ -48,11 +47,10 @@ export type Regions =
     'Series';
 
 /**
- * Defines the Position. They are
- * * top - Align the element to the top.
- * * middle - Align the element to the center.
- * * bottom - Align the element to the bottom.
- * *
+ * Defines the Position. They are:
+ * * Top - Align the element to the top.
+ * * Middle - Align the element to the center.
+ * * Bottom - Align the element to the bottom.
  */
 
 export type Position =
@@ -64,13 +62,13 @@ export type Position =
     'Bottom';
 
 /**
- * Defines the export file format.
- * * PNG - export the chart in PNG format.
- * * JPEG - export the chart in JPEG format.
- * * SVG - export the chart in SVG format.
- * * PDF - export the chart in PDF format.
- * * XLSX - export the chart data to XLSX.
- * * CSV - export the chart to CSV.
+ * Defines the export file format. They are:
+ * * PNG - Export the chart in PNG format.
+ * * JPEG - Export the chart in JPEG format.
+ * * SVG - Export the chart in SVG format.
+ * * PDF - Export the chart in PDF format.
+ * * XLSX - Export the chart data to XLSX.
+ * * CSV - Export the chart to CSV.
  * * Print – Prints the chart.
  */
 export type ExportType =
@@ -90,7 +88,7 @@ export type ExportType =
     'Print';
 
 /**
- * Defines the Text overflow.
+ * Defines the Text overflow. They are:
  * * None - Shown the chart title with overlap if exceed.
  * * Wrap - Shown the chart title with wrap if exceed.
  * * Trim - Shown the chart title with trim if exceed.
@@ -104,15 +102,15 @@ export type TextOverflow =
     'Trim';
 
 /**
- * Defines the interval type of datetime axis. They are
- * * auto - Define the interval of the axis based on data.
- * * quarter - Define the interval of the axis based on data.
- * * years - Define the interval of the axis in years.
- * * months - Define the interval of the axis in months.
- * * weeks - Define the interval of the axis in weeks
- * * days - Define the interval of the axis in days.
- * * hours - Define the interval of the axis in hours.
- * * minutes - Define the interval of the axis in minutes.
+ * Defines the interval type of datetime axis. They are:
+ * * Auto - Define the interval of the axis based on data.
+ * * Quarter - Define the interval of the axis based on data.
+ * * Years - Define the interval of the axis in years.
+ * * Months - Define the interval of the axis in months.
+ * * Weeks - Define the interval of the axis in weeks
+ * * Days - Define the interval of the axis in days.
+ * * Hours - Define the interval of the axis in hours.
+ * * Minutes - Define the interval of the axis in minutes.
  */
 export type RangeIntervalType =
     /** Define the interval of the axis based on data. */
@@ -135,9 +133,9 @@ export type RangeIntervalType =
     'Seconds';
 
 /**
- * Period selector position
- * *Top
- * *Bottom
+ * Defines the position of the period selector. They are:
+ * * Top: Places the period selector at the top.
+ * * Bottom: Places the period selector at the bottom.
  */
 export type PeriodSelectorPosition =
     /** Top position */
@@ -146,7 +144,7 @@ export type PeriodSelectorPosition =
     'Bottom';
 
 /**
- * Flag type for stock events
+ * Flag type for stock events.
  */
 export type FlagType =
     /** Circle  */
@@ -177,27 +175,27 @@ export type FlagType =
     'Text';
 
 /**
- * Highlighting or selecting patterns in Chart, They are.
- * * none -Sets none as highlighting or selecting pattern.
- * * chessboard - Sets chess board as highlighting or selecting pattern.
- * * dots - Set dots as highlighting or selecting pattern.
- * * diagonalForward - Sets diagonal forward as highlighting or selecting pattern.
- * * crosshatch -Sets crosshatch as highlighting or selecting pattern.
- * * pacman - Sets pacman highlighting or selecting pattern.
- * * diagonalbackward - Set diagonal backward as highlighting or selecting pattern.
- * * grid - Set grid as highlighting or selecting pattern.
- * * turquoise - Sets turquoise as highlighting or selecting pattern.
- * * star - Sets star as highlighting or selecting pattern.
- * * triangle - Sets triangle as highlighting or selecting pattern.
- * * circle - Sets circle as highlighting or selecting pattern.
- * * tile - Sets tile as highlighting or selecting pattern.
- * * horizontaldash - Sets horizontal dash as highlighting or selecting pattern.
- * * verticaldash - Sets vertical dash as highlighting or selecting pattern.
- * * rectangle - Sets rectangle as highlighting or selecting pattern.
- * * box - Sets box as highlighting or selecting pattern.
- * * verticalstripe - Sets vertical stripe as highlighting or selecting pattern.
- * * horizontalstripe - Sets horizontal stripe as highlighting or selecting pattern.
- * * bubble - Sets bubble as highlighting or selecting pattern.
+ * Highlighting or selecting patterns in chart. They are:
+ * * None - Sets none as highlighting or selecting pattern.
+ * * Chessboard - Sets chess board as highlighting or selecting pattern.
+ * * Dots - Set dots as highlighting or selecting pattern.
+ * * DiagonalForward - Sets diagonal forward as highlighting or selecting pattern.
+ * * Crosshatch -Sets crosshatch as highlighting or selecting pattern.
+ * * Pacman - Sets pacman highlighting or selecting pattern.
+ * * Diagonalbackward - Set diagonal backward as highlighting or selecting pattern.
+ * * Grid - Set grid as highlighting or selecting pattern.
+ * * Turquoise - Sets turquoise as highlighting or selecting pattern.
+ * * Star - Sets star as highlighting or selecting pattern.
+ * * Triangle - Sets triangle as highlighting or selecting pattern.
+ * * Circle - Sets circle as highlighting or selecting pattern.
+ * * Tile - Sets tile as highlighting or selecting pattern.
+ * * Horizontaldash - Sets horizontal dash as highlighting or selecting pattern.
+ * * Verticaldash - Sets vertical dash as highlighting or selecting pattern.
+ * * Rectangle - Sets rectangle as highlighting or selecting pattern.
+ * * Box - Sets box as highlighting or selecting pattern.
+ * * Verticalstripe - Sets vertical stripe as highlighting or selecting pattern.
+ * * Horizontalstripe - Sets horizontal stripe as highlighting or selecting pattern.
+ * * Bubble - Sets bubble as highlighting or selecting pattern.
  */
 export type SelectionPattern =
     /** Sets none as highlighting or selecting pattern. */
@@ -242,10 +240,10 @@ export type SelectionPattern =
     'Bubble';
 
 /**
- * Defines the position of the legend title. They are
- * *top - Align the title to the top.
- * *left - Align the title to the left.
- * *right - Align the title to the right.
+ * Defines the position of the legend title. They are:
+ * * Top - Align the title to the top.
+ * * Left - Align the title to the left.
+ * * Right - Align the title to the right.
  */
 export type LegendTitlePosition =
     /** Define the top position. */
@@ -256,10 +254,10 @@ export type LegendTitlePosition =
     'Right';
 
 /**
- * Specifies text wrap options when the text overflowing the container
- * *normal - Specifies to break words only at allowed break points.
- * *wrap - Specifies to break a word once it is too long to fit on a line by itself.
- * *anyWhere - Specifies to break a word at any point if there are no otherwise-acceptable break points in the line.
+ * Specifies text wrap options when the text overflowing the container. They are:
+ * * Normal - Specifies to break words only at allowed break points.
+ * * Wrap - Specifies to break a word once it is too long to fit on a line by itself.
+ * * AnyWhere - Specifies to break a word at any point if there are no otherwise-acceptable break points in the line.
  */
 export type TextWrap =
 /** Specifies to break words only at allowed break points. */
@@ -270,9 +268,9 @@ export type TextWrap =
 'AnyWhere';
 
 /**
- * Specifies text overflow options when the text overflowing the container
- * *Ellipsis - Specifies an ellipsis (“...”) to the clipped text.
- * *clip - Specifies to break a word once it is too long to fit on a line by itself.
+ * Specifies text overflow options when the text overflowing the container. They are:
+ * * Ellipsis - Specifies an ellipsis (“...”) to the clipped text.
+ * * clip - Specifies to break a word once it is too long to fit on a line by itself.
  */
 export type LabelOverflow =
  /** Specifies an ellipsis (“...”) to the clipped text. */
@@ -281,10 +279,10 @@ export type LabelOverflow =
  'Clip';
 
 /**
- * Defines the alignment of the line break axis labels. They are
- * * center - align the label with center.
- * * left - align the label with left.
- * * right - align the label with right.
+ * Defines the alignment of the line break axis labels. They are:
+ * * Center - Align the label with center.
+ * * Left - Align the label with left.
+ * * Right - Align the label with right.
  */
 export type TextAlignment =
     /** align the label with left. */
@@ -295,12 +293,12 @@ export type TextAlignment =
     'Right';
 
 /**
- * Defines the position of the title. They are
- * * top - Displays the title on the top of chart.
- * * left - Displays the title on the left of chart.
- * * bottom - Displays the title on the bottom of chart.
- * * right - Displays the title on the right of chart.
- * * custom - Displays the title based on given x and y value.
+ * Defines the position of the title. They are:
+ * * Top - Displays the title on the top of chart.
+ * * Left - Displays the title on the left of chart.
+ * * Bottom - Displays the title on the bottom of chart.
+ * * Right - Displays the title on the right of chart.
+ * * Custom - Displays the title based on given x and y value.
  */
 
 export type TitlePosition =
@@ -316,11 +314,11 @@ export type TitlePosition =
     'Custom';
 
 /**
- * Defines the SelectionMode, They are.
- * * none - Disable the selection.
- * * series - To select a series.
- * * point - To select a point.
- * * cluster - To select a cluster of point.
+ * Defines the selection mode. They are:
+ * * None - Disable the selection.
+ * * Series - To select a series.
+ * * Point - To select a point.
+ * * Cluster - To select a cluster of point.
  */
 export type HighlightMode =
     /** Disable the selection. */
@@ -333,15 +331,15 @@ export type HighlightMode =
     'Cluster';
 
 /**
- * Defines the SelectionMode, They are.
- * * none - Disable the selection.
- * * series - To select a series.
- * * point - To select a point.
- * * cluster - To select a cluster of point
- * * dragXY - To select points, by dragging with respect to both horizontal and vertical axis
- * * dragX - To select points, by dragging with respect to horizontal axis.
- * * dragY - To select points, by dragging with respect to vertical axis.
- * * lasso - To select points, by dragging with respect to free form.
+ * Defines the selection mode. They are:
+ * * None - Disable the selection.
+ * * Series - To select a series.
+ * * Point - To select a point.
+ * * Cluster - To select a cluster of point
+ * * DragXY - To select points, by dragging with respect to both horizontal and vertical axis
+ * * DragX - To select points, by dragging with respect to horizontal axis.
+ * * DragY - To select points, by dragging with respect to vertical axis.
+ * * Lasso - To select points, by dragging with respect to free form.
  */
 export type SelectionMode =
     /** Disable the selection. */
@@ -362,9 +360,9 @@ export type SelectionMode =
     'Lasso';
 
 /**
- * Defines the Label Placement for category axis. They are
- * * betweenTicks - Render the label between the ticks.
- * * onTicks - Render the label on the ticks.
+ * Defines the label placement for category axis. They are:
+ * * BetweenTicks - Render the label between the ticks.
+ * * OnTicks - Render the label on the ticks.
  */
 export type LabelPlacement =
     /**  Render the label between the ticks. */
@@ -373,9 +371,26 @@ export type LabelPlacement =
     'OnTicks';
 
 /**
- * Defines Theme of the chart. They are
+ * Defines theme of the chart. They are:
  * * Material - Render a chart with Material theme.
- * * Fabric - Render a chart with Fabric theme
+ * * Fabric - Render a chart with Fabric theme.
+ * * Bootstrap - Render a chart with Bootstrap theme.
+ * * HighContrastLight - Render a chart with HighcontrastLight theme.
+ * * MaterialDark - Render a chart with MaterialDark theme.
+ * * FabricDark - Render a chart with FabricDark theme.
+ * * HighContrast - Render a chart with HighContrast theme.
+ * * BootstrapDark - Render a chart with BootstrapDark theme.
+ * * Bootstrap4 - Render a chart with Bootstrap4 theme.
+ * * Tailwind - Render a chart with Tailwind theme.
+ * * TailwindDark - Render a chart with TailwindDark theme.
+ * * Bootstrap5 - Render a chart with Bootstrap5 theme.
+ * * Bootstrap5Dark - Render a chart with Bootstrap5Dark theme.
+ * * Fluent - Render a chart with Fluent theme.
+ * * FluentDark - Render a chart with FluentDark theme.
+ * * Fluent2 - Render a chart with Fluent2 theme.
+ * * Fluent2Dark - Render a chart with Fluent2Dark theme.
+ * * Material3 - Render a chart with Material3 theme.
+ * * Material3Dark - Render a chart with Material3Dark theme.
  */
 export type ChartTheme =
     /**  Render a chart with Material theme. */
@@ -418,13 +433,14 @@ export type ChartTheme =
     'Material3Dark';
 
 /**
- * Defines the interval type of datetime axis. They are
- * * auto - Define the interval of the axis based on data.
- * * years - Define the interval of the axis in years.
- * * months - Define the interval of the axis in months.
- * * days - Define the interval of the axis in days.
- * * hours - Define the interval of the axis in hours.
- * * minutes - Define the interval of the axis in minutes.
+ * Defines the interval type of datetime axis. They are:
+ * * Auto - Define the interval of the axis based on data.
+ * * Years - Define the interval of the axis in years.
+ * * Months - Define the interval of the axis in months.
+ * * Days - Define the interval of the axis in days.
+ * * Hours - Define the interval of the axis in hours.
+ * * Minutes - Define the interval of the axis in minutes.
+ * * Seconds - Define the interval of the axis in seconds.
  */
 export type IntervalType =
     /** Define the interval of the axis based on data. */
@@ -456,11 +472,12 @@ export type Orientation =
     'Vertical';
 
 /**
- * Defines the range padding of axis. They are
- * * none - Padding cannot be applied to the axis.
- * * normal - Padding is applied to the axis based on the range calculation.
- * * additional - Interval of the axis is added as padding to the minimum and maximum values of the range.
- * * round - Axis range is rounded to the nearest possible value divided by the interval.
+ * Defines the range padding of axis. They are:
+ * * Auto - Padding Normal is applied for orientation vertical axis and None is applied for orientation horizontal axis.
+ * * None - Padding cannot be applied to the axis.
+ * * Normal - Padding is applied to the axis based on the range calculation.
+ * * Additional - Interval of the axis is added as padding to the minimum and maximum values of the range.
+ * * Round - Axis range is rounded to the nearest possible value divided by the interval.
  */
 export type ChartRangePadding =
     /**  Padding Normal is applied for orientation vertical axis and None is applied for orientation horizontal axis */
@@ -475,10 +492,10 @@ export type ChartRangePadding =
     'Round';
 
 /**
- * Defines the skeleton type for the axis.
- * * Date - it formats date only.
- * * DateTime - it formats date and time.
- * * Time - it formats time only.
+ * Defines the skeleton type for the axis. They are:
+ * * Date - It formats date only.
+ * * DateTime - It formats date and time.
+ * * Time - It formats time only.
  */
 export type SkeletonType =
     /** Used to format date */
@@ -489,10 +506,10 @@ export type SkeletonType =
     'Time';
 
 /**
- * Defines the Edge Label Placement for an axis. They are
- * * none - No action will be perform.
- * * hide - Edge label will be hidden.
- * * shift - Shift the edge labels.
+ * Defines the edge label placement for an axis. They are:
+ * * None - No action will be perform.
+ * * Hide - Edge label will be hidden.
+ * * Shift - Shift the edge labels.
  */
 
 export type EdgeLabelPlacement =
@@ -504,7 +521,7 @@ export type EdgeLabelPlacement =
     'Shift';
 
 /**
- * Specifies the data types that the axis can handle:
+ * Specifies the data types that the axis can handle. They are:
  * * Double: This type is used for rendering a numeric axis to accommodate numeric data.
  * * DateTime: This type is utilized for rendering a date-time axis to manage date-time data.
  * * Category: This type is employed for rendering a category axis to manage categorical data.
@@ -524,12 +541,14 @@ export type ValueType =
     'DateTimeCategory';
 
 /**
- * Defines the Alignment. They are
- * * none - Shows all the labels.
- * * hide - Hide the label when it intersect.
- * * rotate45 - Rotate the label to 45 degree when it intersect.
- * * rotate90 - Rotate the label to 90 degree when it intersect.
- * *
+ * Defines the alignment. They are:
+ * * None - Shows all the labels.
+ * * Hide - Hide the label when it intersect.
+ * * Trim - Trim the label when it intersect.
+ * * Wrap - Wrap the label when it intersect.
+ * * MultipleRows - Arrange the label in multiple row when it intersect.
+ * * Rotate45 - Rotate the label to 45 degree when it intersect.
+ * * Rotate90 - Rotate the label to 90 degree when it intersect.
  */
 export type LabelIntersectAction =
     /** Shows all the labels. */
@@ -548,18 +567,18 @@ export type LabelIntersectAction =
     'Rotate90';
 
 /**
- * Defines the shape of legend. They are
- * * circle - Renders a circle.
- * * rectangle - Renders a rectangle.
- * * triangle - Renders a triangle.
- * * diamond - Renders a diamond.
- * * cross - Renders a cross.
- * * horizontalLine - Renders a horizontalLine.
- * * verticalLine - Renders a verticalLine.
- * * pentagon - Renders a pentagon.
- * * invertedTriangle - Renders a invertedTriangle.
+ * Defines the shape of legend. They are:
+ * * Circle - Renders a circle.
+ * * Rectangle - Renders a rectangle.
+ * * Triangle - Renders a triangle.
+ * * Diamond - Renders a diamond.
+ * * Cross - Renders a cross.
+ * * HorizontalLine - Renders a horizontalLine.
+ * * VerticalLine - Renders a verticalLine.
+ * * Pentagon - Renders a pentagon.
+ * * InvertedTriangle - Renders a invertedTriangle.
  * * SeriesType -Render a legend shape based on series type.
- * * image - Renders a image.
+ * * Image - Renders a image.
  */
 export type LegendShape =
     /** Render a circle. */
@@ -592,12 +611,12 @@ export type LegendShape =
     'Image';
 
 /**
- * Defines the LabelPosition, They are.
- * * outer - Position the label outside the point.
- * * top - Position the label on top of the point.
- * * bottom - Position the label on bottom of the point.
- * * middle - Position the label to middle of the point.
- * * auto - Position the label based on series.
+ * Defines the label position. They are:
+ * * Outer - Position the label outside the point.
+ * * Top - Position the label on top of the point.
+ * * Bottom - Position the label on bottom of the point.
+ * * Middle - Position the label to middle of the point.
+ * * Auto - Position the label based on series.
  */
 export type LabelPosition =
     /** Position the label outside the point. */
@@ -612,7 +631,7 @@ export type LabelPosition =
     'Auto';
 
 /**
- * Defines the empty point mode of the chart.
+ * Defines the empty point mode of the chart. They are:
  * * Gap - Used to display empty points as space.
  * * Zero - Used to display empty points as zero.
  * * Drop - Used to ignore the empty point while rendering.
@@ -629,9 +648,9 @@ export type EmptyPointMode =
     'Average';
 
 /**
- * Defines the shape of the data in columns and bars. They are
- * * rectangle - Displays the data in a column and bar chart in a rectangle shape.
- * * cylinder - Displays the data in a column and bar chart in a cylinder shape.
+ * Defines the shape of the data in columns and bars. They are:
+ * * Rectangle - Displays the data in a column and bar chart in a rectangle shape.
+ * * Cylinder - Displays the data in a column and bar chart in a cylinder shape.
  */
 export type ShapeType =
     /** Uses a rectangle shape to show data. */
@@ -640,13 +659,13 @@ export type ShapeType =
     'Cylinder';
 
 /**
- * Defines the position of the legend. They are
- * * auto - Places the legend based on area type.
- * * top - Displays the legend on the top of chart.
- * * left - Displays the legend on the left of chart.
- * * bottom - Displays the legend on the bottom of chart.
- * * right - Displays the legend on the right of chart.
- * * custom - Displays the legend  based on given x and y value.
+ * Defines the position of the legend. They are:
+ * * Auto - Places the legend based on the area type.
+ * * Top - Displays the legend on the top of the chart.
+ * * Left - Displays the legend on the left of the chart.
+ * * Bottom - Displays the legend on the bottom of the chart.
+ * * Right - Displays the legend on the right of the chart.
+ * * Custom - Displays the legend  based on the given x and y value.
  */
 export type LegendPosition =
 /** Places the legend based on area type. */

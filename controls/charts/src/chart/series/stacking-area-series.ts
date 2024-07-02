@@ -7,7 +7,7 @@ import { AnimationModel } from '../../common/model/base-model';
 import { Axis } from '../../chart/axis/axis';
 
 /**
- * `StackingAreaSeries` module used to render the Stacking Area series.
+ * `StackingAreaSeries` module used to render the stacking area series.
  */
 
 export class StackingAreaSeries extends LineBase {

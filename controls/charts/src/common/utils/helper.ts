@@ -412,7 +412,7 @@ export function getRotatedRectangleCoordinates(
 
 /**
  * Helper function to determine whether there is an intersection between the two polygons described
- * by the lists of vertices. Uses the Separating Axis Theorem
+ * by the lists of vertices. Uses the Separating Axis Theorem.
  *
  * @param {ChartLocation[]} a an array of connected points [{x:, y:}, {x:, y:},...] that form a closed polygon
  * @param {ChartLocation[]} b an array of connected points [{x:, y:}, {x:, y:},...] that form a closed polygon

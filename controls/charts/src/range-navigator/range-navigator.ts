@@ -659,7 +659,7 @@ export class RangeNavigator extends Component<HTMLElement> {
      */
 
     private setTheme(): void {
-        /*! Set theme */
+        /** Set theme */
         this.themeStyle = getRangeThemeColor(this.theme, this);
     }
 
@@ -826,12 +826,12 @@ export class RangeNavigator extends Component<HTMLElement> {
      * @returns {void}
      */
     private unWireEvents(): void {
-        /*! Find the Events type */
+        /** Find the Events type */
         const startEvent: string = Browser.touchStartEvent;
         const moveEvent: string = Browser.touchMoveEvent;
         const stopEvent: string = Browser.touchEndEvent;
         const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
-        /*! UnBind the Event handler */
+        /** UnBind the Event handler */
 
         EventHandler.remove(this.element, startEvent, this.rangeOnMouseDown);
         EventHandler.remove(this.element, moveEvent, this.mouseMove);
@@ -850,10 +850,10 @@ export class RangeNavigator extends Component<HTMLElement> {
      * @returns {void}
      */
     private wireEvents(): void {
-        /*! Find the Events type */
+        /** Find the Events type */
         const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
 
-        /*! Bind the Event handler */
+        /** Bind the Event handler */
         EventHandler.add(this.element, Browser.touchStartEvent, this.rangeOnMouseDown, this);
         EventHandler.add(this.element, Browser.touchMoveEvent, this.mouseMove, this);
         EventHandler.add(this.element, Browser.touchEndEvent, this.mouseEnd, this);

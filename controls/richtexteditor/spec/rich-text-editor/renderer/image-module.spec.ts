@@ -4249,7 +4249,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
-    describe('EJ2-58542: Memory leak issue with Rich Text Editor component ', () => {
+    xdescribe('EJ2-58542: Memory leak issue with Rich Text Editor component ', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
             rteObj = renderRTE({

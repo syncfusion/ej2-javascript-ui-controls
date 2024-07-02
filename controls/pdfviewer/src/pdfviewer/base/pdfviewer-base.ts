@@ -6458,13 +6458,6 @@ export class PdfViewerBase {
             }
         }
         this.renderElementsVirtualScroll(this.currentPageNumber);
-        if (!this.isViewerMouseDown && !this.getPinchZoomed() && !this.getPinchScrolled() &&
-        !this.getPagesPinchZoomed() || this.isViewerMouseWheel) {
-            this.pageViewScrollChanged(this.currentPageNumber);
-            this.isViewerMouseWheel = false;
-        } else {
-            this.showPageLoadingIndicator(this.currentPageNumber - 1, false);
-        }
         if (this.pdfViewer.toolbarModule) {
             if (!isBlazor()) {
                 this.pdfViewer.toolbarModule.updateCurrentPage(this.currentPageNumber);
@@ -6495,7 +6488,7 @@ export class PdfViewerBase {
         if (currentPage) {
             currentPage.style.visibility = 'visible';
         }
-        if (this.isViewerMouseDown) {
+        if (this.isViewerMouseDown || this.isViewerMouseWheel) {
             if (this.getRerenderCanvasCreated() && !this.isPanMode) {
                 this.pdfViewer.magnificationModule.clearIntervalTimer();
             }
@@ -7559,7 +7552,7 @@ export class PdfViewerBase {
                                 proxy.pageRequestHandler.url = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.renderPages;
                                 proxy.pageRequestHandler.responseType = 'json';
                                 if (!isNullOrUndefined(proxy.hashId)) {
-                                    if ((jsonObject as any).xCoordinate === 0 && (jsonObject as any).yCoordinate === 0) {
+                                    if ((jsonObject as any).xCoordinate == 0 && (jsonObject as any).yCoordinate == 0) {
                                         jsonData = JSON.parse(JSON.stringify(jsonObject));
                                         jsonData.action = 'pageRenderInitiate';
                                         if (!this.clientSideRendering) {
@@ -7612,18 +7605,22 @@ export class PdfViewerBase {
                                     const isTextNeed: boolean = proxy.pageTextDetails ? proxy.pageTextDetails[`${textDetailsId}`] ? false : true : true;
                                     let currentPage: PdfPage = this.pdfViewer.pdfRenderer.loadedDocument.getPage(pageIndex);
                                     let cropBoxRect: Rect = new Rect(0, 0, 0, 0);
+                                    let mediaBoxRect: Rect = new Rect(0, 0, 0, 0);
                                     if (currentPage && currentPage._pageDictionary && currentPage._pageDictionary._map && currentPage._pageDictionary._map.CropBox) {
                                         [cropBoxRect.x, cropBoxRect.y, cropBoxRect.width, cropBoxRect.height] = currentPage._pageDictionary._map.CropBox;
+                                    }
+                                    if (currentPage && currentPage._pageDictionary && currentPage._pageDictionary._map && currentPage._pageDictionary._map.MediaBox) {
+                                        [mediaBoxRect.x, mediaBoxRect.y, mediaBoxRect.width, mediaBoxRect.height] = currentPage._pageDictionary._map.MediaBox;
                                     }
                                     if (viewPortWidth >= pageWidth || !proxy.pdfViewer.tileRenderingSettings.enableTileRendering) {
                                         jsonData = JSON.parse(JSON.stringify(jsonObject));
                                         jsonData.action = 'pageRenderInitiate';
                                         proxy.pdfViewer.firePageRenderInitiate(jsonData);
-                                        this.pdfViewerRunner.postMessage({ pageIndex: pageIndex, message: 'renderPage', zoomFactor: zoomFactor, isTextNeed: isTextNeed, textDetailsId: textDetailsId, cropBoxRect: cropBoxRect });
+                                        this.pdfViewerRunner.postMessage({ pageIndex: pageIndex, message: 'renderPage', zoomFactor: zoomFactor, isTextNeed: isTextNeed, textDetailsId: textDetailsId, cropBoxRect: cropBoxRect, mediaBoxRect: mediaBoxRect });
                                     }
                                     else {
                                         this.showPageLoadingIndicator(pageIndex, true);
-                                        if ((jsonObject as any).xCoordinate === 0 && (jsonObject as any).yCoordinate === 0) {
+                                        if ((jsonObject as any).xCoordinate == 0 && (jsonObject as any).yCoordinate == 0) {
                                             jsonData = JSON.parse(JSON.stringify(jsonObject));
                                             jsonData.action = 'pageRenderInitiate';
                                             proxy.pdfViewer.firePageRenderInitiate(jsonData);
@@ -7637,7 +7634,9 @@ export class PdfViewerBase {
                                             tileXCount: noTileX,
                                             tileYCount: noTileY,
                                             isTextNeed: isTextNeed,
-                                            textDetailsId: textDetailsId
+                                            textDetailsId: textDetailsId,
+                                            cropBoxRect: cropBoxRect,
+                                            mediaBoxRect: mediaBoxRect
                                         });
                                     }
                                     this.pdfViewerRunner.onmessage = function (event: any): void {

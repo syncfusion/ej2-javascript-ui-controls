@@ -143,6 +143,12 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
                     templateWrite.call(this, args);
                 }
             }
+            else{
+                if(!column.visible)
+                {
+                    node.classList.add('e-hide');
+                }
+            }
         }
         if (this.parent.isFrozenGrid()) {
             addStickyColumnPosition(this.parent, column, node);

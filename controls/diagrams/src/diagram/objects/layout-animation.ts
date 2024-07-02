@@ -40,8 +40,6 @@ export class LayoutAnimation {
             20);
         if (node.isExpanded) {
             let opacity: number = .2;
-            const protect: string = 'isProtectedOnChange';
-            this.protectChange = diagram[`${protect}`];
             diagram.protectPropertyChange(false);
             //let objects: ILayout = diagram.doLayout();
             const setIntervalObjects: Object = {};

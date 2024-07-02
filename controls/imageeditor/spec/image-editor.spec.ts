@@ -8808,7 +8808,8 @@ describe('ImageEditor', () => {
                     imageEditor.straightenImage(3);
                     imageEditor.open('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg');
                     setTimeout(() => {});
-                    (document.getElementsByClassName('e-control e-btn e-lib e-flat')[0] as any).click();
+                    const flatBtn: HTMLCollectionOf<Element> = document.getElementsByClassName('e-control e-btn e-lib e-flat');
+                    if (flatBtn && flatBtn[0]) { (flatBtn[0] as HTMLElement).click(); }
                 }, 500);
                 imageEditor.drawImage('https://www.shutterstock.com/image-photo/linked-together-life-cropped-shot-600w-2149264221.jpg', 500, 100, 200, 80, false, 90, null, true);
                 done();

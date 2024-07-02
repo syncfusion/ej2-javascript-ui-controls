@@ -704,11 +704,7 @@ export class Editor {
         let lineIndex: number = position.currentWidget.indexInOwner;
         let paragraph: ParagraphWidget = position.currentWidget.paragraph;
         this.initInsertInline(commentRangeStart);
-        if (position.currentWidget.indexInOwner === -1) {
-            position.currentWidget = paragraph.childWidgets[lineIndex] as LineWidget;
-        }
-        if (isNullOrUndefined(position.paragraph) ||
-            (position.currentWidget && position.currentWidget.children.length === 0 && position.currentWidget.indexInOwner === -1)) {
+        if (isNullOrUndefined(position.paragraph) || position.currentWidget.indexInOwner === -1) {
             const endPos: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(endIndex);
             position.setPositionInternal(endPos);
         }
@@ -3050,6 +3046,7 @@ export class Editor {
                                 this.updateRevisionForSpittedTextElement(inline, splittedSpan);
                             }
                             (inline as TextElementBox).text = (inline as TextElementBox).text.slice(0, indexInInline);
+                            inline.isWidthUpdated = false;
                             if (this.owner.enableTrackChanges) {
 
                                 isRevisionCombined = this.checkToMapRevisionWithInlineText(inline, indexInInline, tempSpan, isBidi, revisionType);
@@ -3726,13 +3723,17 @@ export class Editor {
         if(revision.range.filter(range => range instanceof WCharacterFormat)) {
             index += 1;
         }
+        let j: number = 0;
         for (let i: number = 0; i < range.length; i++) {
             if (range[i] instanceof ElementBox || range[i] instanceof WCharacterFormat) {
                 let currentElement: ElementBox = (range[i] as ElementBox);
+                currentElement.revisions[currentElement.revisions.length - 1].range.splice(currentElement.revisions.length - 1, 1);
                 currentElement.revisions.splice(currentElement.revisions.length - 1, 1);
                 currentElement.revisions.push(revision);
-                revision.range.splice(isReverse ? i : index + i, 0, currentElement);
+                revision.range.splice(isReverse ? j : index + j, 0, currentElement);
                 this.owner.trackChangesPane.updateCurrentTrackChanges(revision);
+                i--;
+                j++;
             }
         }
     }
@@ -3975,6 +3976,10 @@ export class Editor {
             this.documentHelper.layout.clearListElementBox(widget);
             let isLastChild: boolean = (widget == this.getLastParaForBodywidgetCollection(widget));
             let nextParagraph: ParagraphWidget = this.selection.getNextParagraphBlock(widget);
+            let paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.start);
+            let endParagraphInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.end);
+            const startIndex: string = this.selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
+            const endIndex: string = this.selection.getHierarchicalIndex(endParagraphInfo.paragraph, endParagraphInfo.offset.toString());
             
             if (widget.isInsideTable && widget == this.selection.getLastParagraph(widget.associatedCell)) {
                 isLastChild = true;
@@ -4020,6 +4025,14 @@ export class Editor {
             this.removeEmptyLine(widget);
             if (!skipReLayout) {
                 this.documentHelper.layout.reLayoutParagraph(widget, 0, 0);
+                if (this.selection.start.currentWidget.indexInOwner === -1) {
+                    const startPos: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(startIndex);
+                    this.selection.start.setPositionInternal(startPos);
+                }
+                if (this.selection.end.currentWidget.indexInOwner === -1) {
+                    const endPos: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(endIndex);
+                    this.selection.end.setPositionInternal(endPos);
+                }
             }
         } else {
             let skipParaMark: boolean = false;
@@ -4686,6 +4699,7 @@ export class Editor {
     public insertTextInline(element: ElementBox, selection: Selection, text: string, index: number, skipReLayout?: boolean): void {
 	    if (element instanceof TextElementBox) {
             element.text = HelperMethods.insert(element.text, index, text);
+            element.isWidthUpdated = false;
             if (this.owner.enableTrackChanges) {
                 let revision = element.revisions[0];
                 if(!isNullOrUndefined(this.editorHistory) && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
@@ -6443,7 +6457,7 @@ export class Editor {
                 this.pasteImageIndex = new Dictionary();
                 let newImages = {};
                 for(let img in images) {
-                    let newIndex = this.documentHelper.images.length + parseInt(img);
+                    let newIndex = (Math.max(...this.documentHelper.images.keys) + 1) + parseInt(img);
                     newImages[newIndex] = images[img];
                     this.pasteImageIndex.add(img, newIndex.toString());
                 }
@@ -7326,6 +7340,9 @@ export class Editor {
     public applyRevisionForCurrentPara(paraWidget: ParagraphWidget, startoffset: number, endoffset: number, revisionId: string, isParaMarkIncluded: boolean): void {
         let elementInfo: ElementInfo = paraWidget.getInline(startoffset + 1, 0);
         let currentElement: ElementBox = elementInfo.element;
+        if (elementInfo.element instanceof TextElementBox && elementInfo.element.text === "" && !isNullOrUndefined(elementInfo.element.previousElement)) {
+            currentElement = elementInfo.element.previousElement;
+        }
         let skipElement: boolean = false;
         if (startoffset === paraWidget.getLength()) {
             skipElement = true;
@@ -7572,6 +7589,7 @@ export class Editor {
 
                 prevElement.text = (curInline as TextElementBox).text.substring(indexInInline);
                 (curInline as TextElementBox).text = (curInline as TextElementBox).text.slice(0, indexInInline);
+                curInline.isWidthUpdated = false;
                 if (curInline.revisions.length > 0 && !this.owner.enableTrackChanges) {
                     this.splitRevisionForSpittedElement(curInline, prevElement);
                 }
@@ -7731,6 +7749,7 @@ export class Editor {
                     this.splitRevisionForSpittedElement(element, textElement);
                 }
                 (element as TextElementBox).text = (element as TextElementBox).text.substr(0, index);
+                element.isWidthUpdated = false;
                 line.children.splice(insertIndex, 0, textElement);
                 textElement.line = element.line;
                 isRevisionCombined = true;
@@ -7760,6 +7779,7 @@ export class Editor {
         } else {
 
             (element as TextElementBox).text = (element as TextElementBox).text.substring(0, index) + (newElement as TextElementBox).text + (element as TextElementBox).text.substring(index);
+            element.isWidthUpdated = false;
         }
         newElement.line = element.line;
         if (newElement instanceof BookmarkElementBox) {
@@ -7853,7 +7873,7 @@ export class Editor {
                             isEnd = false;
                         }
                     }
-                    if (!isNullOrUndefined(index)) {
+                    if (!isNullOrUndefined(index) && revisionToInclude.range.length > 0 && revisionToInclude.range[revisionToInclude.range.length - 1] instanceof TextElementBox && (revisionToInclude.range[revisionToInclude.range.length - 1] as TextElementBox).paragraph.indexInOwner === this.selection.start.paragraph.indexInOwner) {
                         revisionToInclude.range.splice(index, 0, insertElement);
                     } else if (!isNullOrUndefined(prevElement)) {
                         let rangeIndex: number = revisionToInclude.range.indexOf(prevElement);
@@ -7869,9 +7889,12 @@ export class Editor {
                         let insertIndex: number;
                         if (!isNullOrUndefined(this.owner.editorHistory) && (this.owner.editorHistory.isUndoing || this.owner.editorHistory.isRedoing) && !(insertElement instanceof WRowFormat)) {
                             let currentElementIndex: number = this.owner.selectionModule.start.paragraph.index;
+                            if (insertElement instanceof WCharacterFormat && insertElement.ownerBase) {
+                                currentElementIndex = (insertElement.ownerBase as ParagraphWidget).index;
+                            }
                             let isInsideTable = this.owner.selectionModule.start.paragraph.isInsideTable;
                             let existingIndex: number = 0;
-                            if (!isInsideTable) {
+                            //if (!isInsideTable) {
                                 for (let j = 0; j < revisionToInclude.range.length; j++) {
                                     if (revisionToInclude.range[j] instanceof TextElementBox) {
                                         existingIndex = (revisionToInclude.range[j] as TextElementBox).paragraph.index;
@@ -7883,7 +7906,7 @@ export class Editor {
                                         break;
                                     }
                                 }
-                            }
+                            //}
                         }
                         if (isNullOrUndefined(insertIndex)) {
                             if (isEnd) {
@@ -9275,6 +9298,7 @@ export class Editor {
                 insertIndex++;
                 this.updateRevisionForMovedContent(inline, span);
                 inline.text = inline.text.slice(0, startIndex) + inline.text.slice(endIndex);
+                inline.isWidthUpdated = false;
                 inline.ischangeDetected = true;
             }
             if (endOffset <= count + endIndex - startIndex) {
@@ -10554,6 +10578,7 @@ export class Editor {
             for (let j: number = 0; j < line.children.length; isIncrease ? j++ : j--) {
                 let inlineObj: ElementBox = line.children[j] as ElementBox;
                 isStarted = false;
+                inlineObj.isWidthUpdated = false;
                 if (inlineObj instanceof ListTextElementBox) {
                     continue;
                 }
@@ -10803,6 +10828,7 @@ export class Editor {
                     this.editorHistory.currentBaseHistoryInfo.removedNodes.push(span);
                 }
                 span.text += newText;
+                span.isWidthUpdated = false;
             }
         }
     }
@@ -10814,6 +10840,7 @@ export class Editor {
         let paragraph: ParagraphWidget = inlineObj.paragraph;
         let lineIndex: number = paragraph.childWidgets.indexOf(inlineObj.line);
         let textElement: TextElementBox;
+        inlineObj.isWidthUpdated = false;
         if (startIndex > 0) {
             let textToChange: string = (inlineObj as TextElementBox).text.substr(startIndex, endIndex - startIndex);
             this.addRemovedTextNodes(inlineObj, textToChange);
@@ -11029,6 +11056,7 @@ export class Editor {
                         makeFirstLetterCapital = (element.text.substr(element.length - 2, 2) === '. ') || j === 0;
                     }
                     element.text = this.getChangeCaseText(element.text, property, isRevert, makeFirstLetterCapital);
+                    element.isWidthUpdated = false;
                 }
             }
         }
@@ -14193,8 +14221,8 @@ export class Editor {
                 return;
             }
         } else {
-            if (end.paragraph === paragraph && end.paragraph.isInsideTable && (start.currentWidget.isFirstLine() && start.offset > selection.getStartOffset(start.paragraph) || !start.currentWidget.isFirstLine()) &&
-                end.offset >= selection.getLineLength(end.paragraph.lastChild as LineWidget) && end.paragraph.nextRenderedWidget as ParagraphWidget) {
+            if ((!(this.owner.enableTrackChanges && !this.skipTracking()) && end.paragraph === paragraph && end.paragraph.isInsideTable && (start.currentWidget.isFirstLine() && start.offset > selection.getStartOffset(start.paragraph) || !start.currentWidget.isFirstLine()) &&
+                end.offset >= selection.getLineLength(end.paragraph.lastChild as LineWidget) && end.paragraph.nextRenderedWidget as ParagraphWidget)) {
                 this.combineLastBlock = true;
             }
             let newParagraph: ParagraphWidget = undefined;
@@ -14959,7 +14987,19 @@ export class Editor {
     }
     private deleteBlock(block: BlockWidget, selection: Selection, start: TextPosition, end: TextPosition, editAction: number): void {
         if (block instanceof ParagraphWidget) {
+            let paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.start);
+            let startIndex: string = this.selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
+            let endParagraphInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.end);
+            let endIndex: string = this.selection.getHierarchicalIndex(endParagraphInfo.paragraph, endParagraphInfo.offset.toString());
             this.deletePara(block as ParagraphWidget, start, end, editAction);
+            if (this.selection.start.currentWidget.indexInOwner === -1 && this.owner.enableTrackChanges && !this.skipTracking()) {
+                const startPos: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(startIndex);
+                this.selection.start.setPositionInternal(startPos);
+            }
+            if (this.selection.end.currentWidget.indexInOwner === -1 && this.owner.enableTrackChanges && !this.skipTracking()) {
+                const endPos: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(endIndex);
+                this.selection.end.setPositionInternal(endPos);
+            }
             if (this.delBlockContinue && this.delBlock) {
                 if (this.delSection) {
                     let bodyWidget: BodyWidget = block.bodyWidget instanceof BodyWidget ? block.bodyWidget : undefined;
@@ -15632,6 +15672,10 @@ export class Editor {
         let startPosition: TextPosition = this.selection.start.clone();
         let endPosition: TextPosition = this.selection.end.clone();
         let editPosition: string = this.selection.editPosition;
+        let paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.start);
+        let endParagraphInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.end);
+        const startAtIndex: string = this.selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
+        const endIndex: string = this.selection.getHierarchicalIndex(endParagraphInfo.paragraph, endParagraphInfo.offset.toString());
         for (let i: number = paragraph.childWidgets.length - 1; i >= 0; i--) {
             let lineWidget: LineWidget = paragraph.childWidgets[i] as LineWidget;
             if (startLine === lineWidget && endLine === lineWidget) {
@@ -15663,6 +15707,14 @@ export class Editor {
             paragraph.isLayouted = true;
             this.removeEmptyLine(paragraph);
             this.documentHelper.layout.reLayoutParagraph(paragraph, 0, 0);
+            if (this.selection.start.currentWidget.indexInOwner === -1 && this.owner.enableTrackChanges && !this.skipTracking()) {
+                const startPos: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(startAtIndex);
+                this.selection.start.setPositionInternal(startPos);
+            }
+            if (this.selection.end.currentWidget.indexInOwner === -1 && this.owner.enableTrackChanges && !this.skipTracking()) {
+                const endPos: TextPosition = this.selection.getTextPosBasedOnLogicalIndex(endIndex);
+                this.selection.end.setPositionInternal(endPos);
+            }
         }
     }
     private skipTracking(): boolean {
@@ -15713,6 +15765,7 @@ export class Editor {
         let lastText: any = undefined;
         for (let i: number = lineWidget.children.length - 1; i >= 0; i--) {
             let inline: ElementBox = lineWidget.children[i];
+            inline.isWidthUpdated = false;
             if (isNullOrUndefined(editAction) || (editAction !== 2 && editAction !== 1)) {
                 for (let k: number = 0; k < lineWidget.children.length; k++) {
                     let elementbox: ElementBox = lineWidget.children[k];
@@ -17720,6 +17773,7 @@ export class Editor {
     private removeCharacterInLine(inline: ElementBox, indexInInline: number, endOffset: number): TextElementBox {
         let span: TextElementBox = new TextElementBox();
         if (inline instanceof TextElementBox) {
+            inline.isWidthUpdated = false;
             span.characterFormat.copyFormat(inline.characterFormat);
             let removedCount: number = (endOffset === 1) ? 1 : (endOffset - indexInInline);
             span.text = (inline as TextElementBox).text.substr(indexInInline, removedCount);
@@ -17831,9 +17885,11 @@ export class Editor {
                                     revision.range.splice(index + 1, 0, newElement);
                                     text.revisions.splice(0, 0, revision);
                                     text.line = elementBox.line;
+                                    text.isWidthUpdated = false;
                                     revision.range.splice(index + 1, 0, text);
                                     this.owner.trackChangesPane.updateCurrentTrackChanges(revision);
                                     (elementBox as TextElementBox).text = (elementBox as TextElementBox).text.substr(0, indexInInline);
+                                    elementBox.isWidthUpdated = false;
                                     let indexInOwner: number = elementBox.indexInOwner;
                                     elementBox.line.children.splice(indexInOwner + 1, 0, newElement);
                                     elementBox.line.children.splice(indexInOwner + 1, 0, text);
@@ -18047,7 +18103,7 @@ export class Editor {
             this.owner.trackChangesPane.updateCurrentTrackChanges(revision);
         }
         this.addRemovedNodes(spittedElement.clone());
-        if (spittedElement.text === '') {
+        if (spittedElement.text === '' && !(this.owner.enableTrackChanges && !this.skipTracking())) {
             this.deleteParagraphMark(elementBox.paragraph, this.selection, 0, true);
         } else {
             this.insertTextInternal(spittedElement.text, false, 'Deletion');
@@ -21375,6 +21431,7 @@ export class Editor {
                 let pageRef: string = (this.getPageNumber(bookmark.paragraph)).toString();
                 const span: FieldTextElementBox = this.pageRefFields[key];
                 if (pageRef !== span.text) {
+                    span.isWidthUpdated = false;
                     span.text = pageRef;
                     const paragraph: ParagraphWidget = span.paragraph;
                     const lineIndex: number = paragraph.childWidgets.indexOf(span.line);
@@ -22254,6 +22311,7 @@ export class Editor {
             } else {
                 checkBoxTextElement.text = String.fromCharCode(9744);
             }
+            checkBoxTextElement.isWidthUpdated = false;
             this.owner.documentHelper.layout.reLayoutParagraph(field.line.paragraph, 0, 0);
             this.reLayout(this.selection, false);
         }
@@ -22263,7 +22321,8 @@ export class Editor {
      * @returns {void}
      */
      public toggleContentControlCheckBox(contentControl: ContentControl): void {
-        const checkBoxText: TextElementBox = contentControl.nextNode as TextElementBox
+        const checkBoxText: TextElementBox = contentControl.nextNode as TextElementBox;
+        checkBoxText.isWidthUpdated = false;
         checkBoxText.text = (checkBoxText.text === String.fromCharCode(9744)) ? String.fromCharCode(9746) : String.fromCharCode(9744);
         if(checkBoxText.text === String.fromCharCode(9744)){
             contentControl.contentControlProperties.isChecked = false;

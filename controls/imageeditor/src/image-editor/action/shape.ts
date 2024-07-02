@@ -583,6 +583,15 @@ export class Shape {
                 parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false });
                 parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: { isPenEdit: null } });
             }
+            if (text && text.indexOf('\n') > -1 && parent.isPublicMethod) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const fontSizeInd: string = String((parent.fontSizeColl as any).findIndex(
+                    (item: { text: string; }) => item.text === String(parent.activeObj.textSettings.fontSize)) + 1);
+                parent.noPushUndo = true;
+                parent.updateFontSize('5');
+                parent.updateFontSize(fontSizeInd);
+                parent.noPushUndo = false;
+            }
             if (parent.isPublicMethod && !isSelected) {
                 parent.notify('undo-redo', {prop: 'updateUndoRedo', value: {operation: 'shapeInsert'}, onPropertyChange: false});
             }
@@ -2448,7 +2457,9 @@ export class Shape {
     private pushActItemIntoObj(): void {
         const parent: ImageEditor = this.parent;
         if (parent.textArea.style.display === 'none') {
-            parent.objColl.push(parent.activeObj);
+            if (parent.activeObj.activePoint.width !== 0 || parent.activeObj.activePoint.height!== 0) {
+                parent.objColl.push(parent.activeObj);
+            }
         } else {
             const temp: SelectionPoint = extend({}, parent.activeObj, {}, true) as SelectionPoint;
             parent.notify('selection', { prop: 'setTextBoxStylesToActObj', onPropertyChange: false });

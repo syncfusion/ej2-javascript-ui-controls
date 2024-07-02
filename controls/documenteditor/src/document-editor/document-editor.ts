@@ -321,6 +321,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public parser: SfdtReader = undefined;
+    /**
+     * @private
+     */
+    public isUpdateTrackChanges: boolean = false;
     private isDocumentLoadedIn: boolean;
     private disableHistoryIn: boolean = false;
 
@@ -2716,6 +2720,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Edit Hyperlink': 'Edit Hyperlink',
         'Insert': 'Insert',
         'General': 'General',
+        'The number must be between': 'The number must be between 1 and 9',
+        'The Invalid number': 'This is not a valid number',
         'Indentation': 'Indentation',
         'Before text': 'Before text',
         'Special': 'Special',
@@ -3394,6 +3400,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             }
             if (this.trackChangesPane.toolbar) {
                 this.trackChangesPane.toolbar.refreshOverflow();
+            }
+            if (this.optionsPaneModule) {
+                this.optionsPaneModule.refreshHeadingPaneHeight();
             }
         }
         if (this.rulerHelper && this.documentEditorSettings && this.documentEditorSettings.showRuler) {

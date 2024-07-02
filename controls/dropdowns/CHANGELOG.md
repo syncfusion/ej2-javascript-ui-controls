@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 26.1.40 (2024-07-02)
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I605241` - An issue with change event in the Dropdown Tree component has been resolved.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I580914` - Fixed issue with MultiSelect CheckBox mode and large dataset causing page unresponsiveness.
+
 ## 26.1.39 (2024-06-25)
 
 ### ListBox

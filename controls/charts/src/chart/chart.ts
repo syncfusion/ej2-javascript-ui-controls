@@ -109,7 +109,7 @@ import { PrintUtils } from '../common/utils/print';
 import { IAfterExportEventArgs } from '../common/model/interface';
 
 /**
- * Configures the RangeColorSetting in the chart.
+ * Configures the range color settings in the chart.
  */
 export class RangeColorSetting extends ChildProperty<RangeColorSetting> {
     /**
@@ -323,7 +323,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
 }
 
 /**
- * Represents the Chart control.
+ * Represents the chart control.
  * ```html
  * <div id="chart"/>
  * <script>
@@ -2943,7 +2943,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         const moveEvent: string = Browser.touchMoveEvent;
         const stopEvent: string = Browser.touchEndEvent;
         const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
-        /*! UnBind the Event handler */
+        /** UnBind the Event handler */
 
         EventHandler.remove(this.element, startEvent, this.chartOnMouseDown);
         EventHandler.remove(this.element, moveEvent, this.mouseMove);
@@ -2979,11 +2979,11 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (!this.element) {
             return;
         }
-        /*! Find the Events type */
+        /** Find the Events type */
 
         const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
 
-        /*! Bind the Event handler */
+        /** Bind the Event handler */
         EventHandler.add(this.element, Browser.touchStartEvent, this.chartOnMouseDown, this);
         EventHandler.add(this.element, Browser.touchMoveEvent, this.mouseMove, this);
         EventHandler.add(this.element, Browser.touchEndEvent, this.mouseEnd, this);
@@ -3004,7 +3004,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.longPressBound = this.longPress.bind(this);
         this.touchObject = new Touch(this.element, { tapHold: this.longPressBound, tapHoldThreshold: 500 });
 
-        /*! Apply the style for chart */
+        /** Apply the style for chart */
         this.setStyle(<HTMLElement>this.element);
     }
 
@@ -3913,7 +3913,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * @returns {void}
      */
     private setTheme(): void {
-        /*! Set theme */
+        /** Set theme */
         this.themeStyle = getThemeColor(this.theme, this.enableCanvas, this);
         if (!(document.getElementById(this.element.id + 'Keyboard_chart_focus'))) {
             const style: HTMLStyleElement = document.createElement('style');

@@ -2,7 +2,17 @@
 
 ## [Unreleased]
 
-## 26.1.39 (2024-06-25)
+## 26.1.40 (2024-07-02)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I600597` - Issue with QueryBuilder validation message is not shown for date type column has been fixed.
+- `#I600637` - Issue with QueryBuilder numeric text box validation message not shown while using template has been fixed.
+- `#I604645` - Issue with Script error thrown in numeric textbox QueryBuilder while type special character like comma and dot has been fixed.
+
+## 26.1.38 (2024-06-19)
 
 ### QueryBuilder
 

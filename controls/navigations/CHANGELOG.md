@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.1.40 (2024-07-02)
+
+### TreeView
+
+#### Bug fixes
+
+- `#I604992` - The issue while rendering multiple checkboxes for the same tree node in the TreeView throws a script error has been resolved.
+
 ## 26.1.39 (2024-06-25)
 
 ### Stepper

@@ -10,7 +10,7 @@ import { Rect } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
 
 /**
- * Defines how to represent the market trend using technical indicators
+ * Defines how to represent the market trend using technical indicators.
  */
 export class TechnicalIndicator extends SeriesBase {
     /**

@@ -95,7 +95,9 @@ export class RibbonDropDown {
         dropdown.close = (e: OpenCloseMenuEventArgs) => {
             if (item.dropDownSettings.close) { item.dropDownSettings.close.call(this, e); }
             if (target && !target.closest('.e-ribbon-group-overflow-ddb')) {
-                overflowButton.toggle();
+                if (overflowButton.element.classList.contains('e-active')) {
+                    overflowButton.toggle();
+                }
             }
         };
     }

@@ -46,7 +46,7 @@ export class DateTimeCategory3D extends Category3D {
      * @returns {void}
      */
     public calculateVisibleLabels(axis: Chart3DAxis): void {
-        /*! Generate axis labels */
+        /** Generate axis labels */
         axis.visibleLabels = [];
         let labelStyle: Chart3DTextFont;
         const padding: number = 0;

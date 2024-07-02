@@ -731,12 +731,12 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      * @returns {void}
      */
     private unWireEvents(): void {
-        /*! Find the Events type */
+        /** Find the Events type */
         const startEvent: string = Browser.touchStartEvent;
         const moveEvent: string = Browser.touchMoveEvent;
         const stopEvent: string = Browser.touchEndEvent;
         const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
-        /*! UnBind the Event handler */
+        /** UnBind the Event handler */
 
         EventHandler.remove(this.element, startEvent, this.stockChartOnMouseDown);
         EventHandler.remove(this.element, moveEvent, this.stockChartOnMouseMove);
@@ -754,11 +754,11 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
 
     private wireEvents(): void {
-        /*! Find the Events type */
+        /** Find the Events type */
 
         const cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
 
-        /*! Bind the Event handler */
+        /** Bind the Event handler */
         EventHandler.add(this.element, Browser.touchStartEvent, this.stockChartOnMouseDown, this);
         EventHandler.add(this.element, Browser.touchMoveEvent, this.stockChartOnMouseMove, this);
         EventHandler.add(this.element, Browser.touchEndEvent, this.stockChartMouseEnd, this);

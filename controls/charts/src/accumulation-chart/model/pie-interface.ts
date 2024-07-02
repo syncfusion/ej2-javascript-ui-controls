@@ -151,12 +151,12 @@ export interface IAccLegendRenderEventArgs extends IChartEventArgs {
 }
 
 export interface IAccumulationChartTemplate {
-    /** accumulation point x value. */
+    /** Accumulation point x value. */
     x?: Object;
-    /** accumulation point y value. */
+    /** Accumulation point y value. */
     y?: object;
-    /** accumulation point color. */
+    /** Accumulation point color. */
     label?: string;
-    /** accumulation point percentage value. */
+    /** Accumulation point percentage value. */
     percentage?: number;
 }

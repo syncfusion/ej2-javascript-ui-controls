@@ -30,9 +30,9 @@ export type SeriesValueType =
     'BoxPlot';
 
 /**
- * Defines the segment axis. They are,
- * * X - Segment calculation rendered based on horizontal axis
- * * Y - Segment calculation rendered based on vertical axis
+ * Defines the segment axis. They are:
+ * * X - Segment calculation rendered based on the horizontal axis.
+ * * Y - Segment calculation rendered based on the vertical axis.
  */
 export type Segment =
     /** Segment calculation rendered based on horizontal axis */
@@ -41,15 +41,15 @@ export type Segment =
     'Y';
 
 /**
- * Defines the unit of Strip line Size. They are
- * * auto
- * * pixel
- * * year
- * * month
- * * day
- * * hour
- * * minutes
- * * seconds
+ * Defines the unit of strip line size. They are:
+ * * Auto - In numeric axis, it will consider a number and DateTime axis, it will consider as milliseconds.
+ * * Pixel - The stripline gets their size in pixel.
+ * * Year - The stipline size is based on year in the DateTime axis.
+ * * Month - The stipline size is based on month in the DateTime axis.
+ * * Day - The stipline size is based on day in the DateTime axis.
+ * * Hour - The stipline size is based on hour in the DateTime axis.
+ * * Minutes - The stipline size is based on minutes in the DateTime axis.
+ * * Seconds - The stipline size is based on seconds in the DateTime axis.
  */
 export type SizeType =
     /**  Auto - In numeric axis, it will consider a number and DateTime axis, it will consider as milliseconds. */
@@ -70,35 +70,39 @@ export type SizeType =
     'Seconds';
 
 /**
- * Defines the type series in chart. They are
- * * line - Renders the line series.
- * * column - Renders the column series.
- * * area - Renders the area series.
- * * pie - Renders the pie series.
- * * polar - Renders the polar series.
- * * radar - Renders the radar series.
- * * bar - Renders the stacking column series
- * * histogram - Renders the histogram series
- * * stackingColumn - Renders the stacking column series.
- * * stackingArea - Renders the stacking area series.
- * * stackingLine - Renders the stacking line series.
- * * stackingBar - Renders the stacking bar series.
+ * Defines the type of series in chart. They are:
+ * * Line - Renders the line series.
+ * * Column - Renders the column series.
+ * * Area - Renders the area series.
+ * * Pie - Renders the pie series.
+ * * Polar - Renders the polar series.
+ * * Radar - Renders the radar series.
+ * * Bar - Renders the stacking column series
+ * * Histogram - Renders the histogram series
+ * * StackingColumn - Renders the stacking column series.
+ * * StackingArea - Renders the stacking area series.
+ * * StackingLine - Renders the stacking line series.
+ * * StackingBar - Renders the stacking bar series.
  * * StackingColumn100 - Renders the stacking column series.
  * * StackingArea100 - Renders the stacking area 100 percent series
- * * stackingLine100 - Renders the stacking line 100 percent series.
+ * * StackingLine100 - Renders the stacking line 100 percent series.
  * * StackingBar100 - Renders the stacking bar 100 percent series.
- * * stepLine -  Renders the step line series.
- * * stepArea -  Renders the step area series.
- * * scatter - Renders the scatter series.
- * * spline - Renders the spline series
- * * rangeColumn - Renders the rangeColumn series.
- * * hilo - Renders the hilo series
- * * hiloOpenClose - Renders the HiloOpenClose Series
- * * Waterfall - Renders the Waterfall Series
- * * rangeArea - Renders the rangeArea series.
- * * rangeStepArea - Renders the rangeStepArea series.
- * * splineRangeArea - Renders the splineRangeArea series.
- * * Pareto-Render the Pareto series
+ * * StepLine -  Renders the step line series.
+ * * StepArea -  Renders the step area series.
+ * * Scatter - Renders the scatter series.
+ * * Spline - Renders the spline series
+ * * RangeColumn - Renders the rangeColumn series.
+ * * Hilo - Renders the hilo series
+ * * HiloOpenClose - Renders the HiloOpenClose series
+ * * Waterfall - Renders the Waterfall series
+ * * RangeArea - Renders the rangeArea series.
+ * * RangeStepArea - Renders the rangeStepArea series.
+ * * Candle - Renders the candle series.
+ * * SplineRangeArea - Renders the splineRangeArea series.
+ * * BoxAndWhisker - Renders the Box and whisker series.
+ * * MultiColoredLine - Renders the multi color line series.
+ * * MultiColoredArea - Renders the multi color area series.
+ * * Pareto- Renders the pareto series.
  */
 export type ChartSeriesType =
     /**  Define the line series. */
@@ -171,16 +175,16 @@ export type ChartSeriesType =
     'Pareto';
 
 /**
- * * Type of series to be drawn in radar or polar series. They are
- * * line - Renders the line series.
- * * column - Renders the column series.
- * * area - Renders the area series.
- * * scatter - Renders the scatter series.
- * * spline - Renders the spline series.
- * * stackingColumn - Renders the stacking column series.
- * * stackingArea - Renders the stacking area series.
- * * rangeColumn - Renders the range column series.
- * * splineArea - Renders the spline area series.
+ * Type of series to be drawn in radar or polar series. They are:
+ * * Line - Renders the line series.
+ * * Column - Renders the column series.
+ * * Area - Renders the area series.
+ * * Scatter - Renders the scatter series.
+ * * Spline - Renders the spline series.
+ * * StackingColumn - Renders the stacking column series.
+ * * StackingArea - Renders the stacking area series.
+ * * RangeColumn - Renders the range column series.
+ * * SplineArea - Renders the spline area series.
  */
 export type ChartDrawType =
     /**  Define the line series. */
@@ -205,18 +209,18 @@ export type ChartDrawType =
     'StackingLine';
 
 /**
- * Defines the shape of marker. They are
- * * circle - Renders a circle.
- * * rectangle - Renders a rectangle.
- * * triangle - Renders a triangle.
- * * diamond - Renders a diamond.
- * * cross - Renders a cross.
+ * Defines the shape of marker. They are:
+ * * Circle - Renders a circle.
+ * * Rectangle - Renders a rectangle.
+ * * Triangle - Renders a triangle.
+ * * Diamond - Renders a diamond.
+ * * Cross - Renders a cross.
  * * Plus - Renders a Plus.
- * * horizontalLine - Renders a horizontalLine.
- * * verticalLine - Renders a verticalLine.
- * * pentagon- Renders a pentagon.
- * * invertedTriangle - Renders a invertedTriangle.
- * * image - Renders a image.
+ * * HorizontalLine - Renders a horizontalLine.
+ * * VerticalLine - Renders a verticalLine.
+ * * Pentagon- Renders a pentagon.
+ * * InvertedTriangle - Renders a invertedTriangle.
+ * * Image - Renders a image.
  */
 export type ChartShape =
     /** Specifies the shape of the marker as a circle symbol. */
@@ -245,12 +249,12 @@ export type ChartShape =
     'None';
 
 /**
- * Defines the type of error bar. They are
- * * fixed -  Renders a fixed type error bar.
- * * percentage - Renders a percentage type error bar.
- * * standardDeviation - Renders a standard deviation type error bar.
- * * standardError -Renders a standard error type error bar.
- * * custom -Renders a custom type error bar.
+ * Defines the type of the error bar. They are:
+ * * Fixed -  Renders a fixed type error bar.
+ * * Percentage - Renders a percentage type error bar.
+ * * StandardDeviation - Renders a standard deviation type error bar.
+ * * StandardError -Renders a standard error type error bar.
+ * * Custom -Renders a custom type error bar.
  */
 export type ErrorBarType =
     /** Define the Fixed type. */
@@ -265,10 +269,10 @@ export type ErrorBarType =
     'Custom';
 
 /**
- * Defines the direction of error bar. They are
- * * both -  Renders both direction of error bar.
- * * minus - Renders minus direction of error bar.
- * * plus - Renders plus direction error bar.
+ * Defines the direction of error bar. They are:
+ * * Both - Renders the error bar in both directions.
+ * * Minus - Renders the error bar in the negative direction.
+ * * Plus - Renders the error bar in the positive direction.
  */
 export type ErrorBarDirection =
     /** Define the Both direction. */
@@ -279,10 +283,10 @@ export type ErrorBarDirection =
     'Plus';
 
 /**
- * Defines the modes of error bar. They are
- * * vertical -  Renders a vertical error bar.
- * * horizontal - Renders a horizontal error bar.
- * * both - Renders both side error bar.
+ * Defines the modes of error bar. They are:
+ * * Vertical -  Renders a vertical error bar.
+ * * Horizontal - Renders a horizontal error bar.
+ * * Both - Renders error bars on both sides.
  */
 export type ErrorBarMode =
     /** Define the Vertical mode. */
@@ -293,11 +297,11 @@ export type ErrorBarMode =
     'Both';
 
 /**
- * Defines the mode of line in crosshair. They are
- * * none - Hides both vertical and horizontal crosshair line.
- * * both - Shows both vertical and horizontal crosshair line.
- * * vertical - Shows the vertical line.
- * * horizontal - Shows the horizontal line.
+ * Defines the mode of line in crosshair. They are:
+ * * None - Hides both the vertical and horizontal crosshair lines.
+ * * Both - Shows both the vertical and horizontal crosshair lines.
+ * * Vertical - Shows the vertical line.
+ * * Horizontal - Shows the horizontal line.
  */
 
 export type LineType =
@@ -318,10 +322,10 @@ export type MacdType =
     'Both';
 
 /**
- * Defines the zooming mode, They are.
- * * x,y - Chart will be zoomed with respect to both vertical and horizontal axis.
- * * x - Chart will be zoomed with respect to horizontal axis.
- * * y - Chart will be zoomed with respect to vertical axis.
+ * Defines the zooming mode. They are:
+ * * X,Y - Chart will be zoomed with respect to both the vertical and horizontal axis.
+ * * X - Chart will be zoomed with respect to the horizontal axis.
+ * * Y - Chart will be zoomed with respect to the vertical axis.
  */
 export type ZoomMode =
     /** Chart will be zoomed with respect to both vertical and horizontal axis. */
@@ -332,12 +336,12 @@ export type ZoomMode =
     'Y';
 
 /**
- * Defines the ZoomingToolkit, They are.
- * * zoom - Renders the zoom button.
- * * zoomIn - Renders the zoomIn button.
- * * zoomOut - Renders the zoomOut button.
- * * pan - Renders the pan button.
- * * reset - Renders the reset button.
+ * Defines the zooming toolkit. They are:
+ * * Zoom - Renders the zoom button.
+ * * ZoomIn - Renders the zoomIn button.
+ * * ZoomOut - Renders the zoomOut button.
+ * * Pan - Renders the pan button.
+ * * Reset - Renders the reset button.
  */
 
 export type ToolbarItems =
@@ -353,10 +357,10 @@ export type ToolbarItems =
     'Reset';
 
 /**
- * Defines the Alignment. They are
- * * none - Shows all the labels.
- * * hide - Hide the label when it intersect.
- * *
+ * Defines the Alignment. They are:
+ * * None - Shows all the labels.
+ * * Hide - Hide the label when it intersect.
+ * * Rotate90 - Rotate the label to 90 degree when it intersect.
  */
 export type DataLabelIntersectAction =
     /** Shows all the labels. */
@@ -367,10 +371,9 @@ export type DataLabelIntersectAction =
     'Rotate90';
 
 /**
- * Defines the Position. They are
- * * inside - Place the ticks or labels inside to the axis line.
- * * outside - Place the ticks or labels outside to the axis line.
- * *
+ * Defines the position of the axis tick and labels. They are:
+ * * Inside - Place the ticks or labels inside to the axis line.
+ * * Outside - Place the ticks or labels outside to the axis line.
  */
 export type AxisPosition =
     /** Place the ticks or labels inside to the axis line. */
@@ -389,7 +392,7 @@ export type ZIndex =
     /** Places the strip line behind the series elements. */
     'Behind';
 /**
- * Defines the strip line text position.
+ * Defines the strip line text position. They are:
  * * Start - Places the strip line text at the start.
  * * Middle - Places the strip line text in the middle.
  * * End - Places the strip line text at the end.
@@ -403,7 +406,7 @@ export type Anchor =
     'End';
 
 /**
- * Defines the tooltip fade out mode of the chart.
+ * Defines the tooltip fade out mode of the chart. They are:
  * * Click - Used to remove the tooltip on click.
  * * Move - Used to remove the tooltip with some delay.
  */
@@ -414,10 +417,9 @@ export type FadeOutMode =
     'Move';
 
 /**
- * Defines the tooltip position. They are
- * * fixed - Place the tooltip in the fixed position.
- * * nearest- Tooltip moves along with the mouse.
- * *
+ * Defines the tooltip position. They are:
+ * * Fixed - Place the tooltip in the fixed position.
+ * * Nearest- Tooltip moves along with the mouse.
  */
 export type TooltipPosition =
     /** Place the tooltip in the fixed position. */
@@ -426,17 +428,17 @@ export type TooltipPosition =
     'Nearest';
 
 /**
- * Defines the type of technical indicators. They are
- * * Sma - Predicts the trend using Simple Moving Average approach
- * * Ema - Predicts the trend using Exponential Moving Average approach
- * * Tma - Predicts the trend using Triangle Moving Average approach
- * * Atr - Predicts the trend using Average True Range approach
- * * AccumulationDistribution - Predicts the trend using Accumulation Distribution approach
- * * Momentum - Predicts the trend using Momentum approach
- * * Rsi - Predicts the trend using RSI approach
- * * Macd - Predicts the trend using Moving Average Convergence Divergence approach
- * * Stochastic - Predicts the trend using Stochastic approach
- * * BollingerBands - Predicts the trend using Bollinger approach
+ * Defines the type of technical indicators. They are:
+ * * Sma - Predicts the trend using simple moving average approach.
+ * * Ema - Predicts the trend using exponential moving average approach.
+ * * Tma - Predicts the trend using triangle moving average approach.
+ * * Atr - Predicts the trend using average true range approach.
+ * * AccumulationDistribution - Predicts the trend using accumulation distribution approach.
+ * * Momentum - Predicts the trend using momentum approach.
+ * * Rsi - Predicts the trend using RSI approach.
+ * * Macd - Predicts the trend using moving average convergence divergence approach.
+ * * Stochastic - Predicts the trend using stochastic approach.
+ * * BollingerBands - Predicts the trend using bollinger approach.
  */
 export type TechnicalIndicators =
     /** Predicts the trend using Simple Moving Average approach */
@@ -461,13 +463,13 @@ export type TechnicalIndicators =
     'Rsi';
 
 /**
- * Defines the type of trendlines. They are
- * * Linear - Defines the linear trendline
- * * Exponential - Defines the exponential trendline
- * * Polynomial - Defines the polynomial trendline
- * * Power - Defines the power trendline
- * * Logarithmic - Defines the logarithmic trendline
- * * MovingAverage - Defines the moving average trendline
+ * Defines the type of trendlines. They are:
+ * * Linear - Defines the linear trendline.
+ * * Exponential - Defines the exponential trendline.
+ * * Polynomial - Defines the polynomial trendline.
+ * * Power - Defines the power trendline.
+ * * Logarithmic - Defines the logarithmic trendline.
+ * * MovingAverage - Defines the moving average trendline.
  */
 export type TrendlineTypes =
     /** Defines the linear trendline */
@@ -484,11 +486,11 @@ export type TrendlineTypes =
     'MovingAverage';
 
 /**
- * Defines the financial data fields
- * * High - Represents the highest price in the stocks over time
- * * Low - Represents the lowest price in the stocks over time
- * * Open - Represents the opening price in the stocks over time
- * * Close - Represents the closing price in the stocks over time
+ * Defines the financial data fields. They are:
+ * * High - Represents the highest price in the stocks over time.
+ * * Low - Represents the lowest price in the stocks over time.
+ * * Open - Represents the opening price in the stocks over time.
+ * * Close - Represents the closing price in the stocks over time.
  */
 export type FinancialDataFields =
     /** Represents the highest price in the stocks over time */
@@ -501,11 +503,11 @@ export type FinancialDataFields =
     'Close';
 
 /**
- * It defines type of spline.
- * Natural - Used to render Natural spline.
- * Cardinal - Used to render cardinal spline.
- * Clamped - Used to render Clamped spline
- * Monotonic - Used to render monotonic spline
+ * It defines type of spline. They are:
+ * * Natural - Used to render a natural spline.
+ * * Cardinal - Used to render a cardinal spline.
+ * * Clamped - Used to render a clamped spline.
+ * * Monotonic - Used to render a monotonic spline.
  */
 export type SplineType =
     /** Used to render natural spline type */
@@ -517,10 +519,10 @@ export type SplineType =
     /** Used to render Clamped */
     'Clamped';
 /**
- * Defines the BoxPlotMode for box and whisker chart series, They are.
- * * exclusive - Series render based on exclusive mode.
- * * inclusive - Series render based on inclusive mode.
- * * normal - Series render based on normal mode.
+ * Defines the box plot mode for box and whisker chart series. They are:
+ * * Exclusive - Series render based on exclusive mode.
+ * * Inclusive - Series render based on inclusive mode.
+ * * Normal - Series render based on normal mode.
  */
 export type BoxPlotMode =
     /** Defines the Exclusive mode. */
@@ -531,13 +533,13 @@ export type BoxPlotMode =
     'Normal';
 
 /**
- * Defines border type for multi level labels.
- *  * Rectangle
- *  * Brace
- *  * WithoutBorder
- *  * Without top Border
- *  * Without top and bottom border
- *  * Curly brace
+ * Defines the border type for multi level labels. They are:
+ * * Rectangle - A rectangular border around the labels.
+ * * Brace - A brace-style border around the labels.
+ * * WithoutBorder - No border around the labels.
+ * * WithoutTopBorder - No top border around the labels.
+ * * WithoutTopandBottomBorder - No top and bottom borders around the labels.
+ * * CurlyBrace - A curly brace-style border around the labels.
  */
 export type BorderType =
     /** Rectangle */
@@ -565,7 +567,7 @@ export type LegendMode =
     'Gradient';
 
 /**
- * Defines the position for the steps in the step line, step area, and step range area chart types.
+ * Defines the position for the steps in the step line, step area, and step range area chart types. They are:
  * * Left: Steps start from the left side of the 2nd point.
  * * Center: Steps start between the data points.
  * * Right: Steps start from the right side of the 1st point.

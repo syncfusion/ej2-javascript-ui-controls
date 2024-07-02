@@ -512,5 +512,30 @@ describe('Hide & Show ->', () => {
                 });
             });
         });
+        describe('EJ2-887562->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ colCount: 8, ranges: [{ dataSource: defaultData }] }], scrollSettings: { isFinite: true }
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Last Column gets deleted after unhiding the hidden column in Spreadsheet with finite mode ->', (done: Function) => {
+                helper.invoke('hideColumn', [2, 3]);
+                setTimeout(() => {
+                    helper.click('#spreadsheet_undo');
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [0, 7]).textContent).toBe('Profit');
+                        expect(helper.invoke('getCell', [1, 7]).textContent).toBe('10');
+                        expect(helper.invoke('getCell', [2, 7]).textContent).toBe('50');
+                        expect(helper.invoke('getCell', [3, 7]).textContent).toBe('27');
+                        expect(helper.invoke('getCell', [4, 7]).textContent).toBe('67');
+                        expect(helper.invoke('getCell', [5, 7]).textContent).toBe('70');
+                        done();
+                    });
+                });
+            });
+        });
     });
 });

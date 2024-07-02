@@ -1161,7 +1161,7 @@ export class Selection {
                 value: {shapeSettings: shapeResizingArgs.currentShapeSettings}});
         } else {
             parent.trigger('shapeChanging', shapeMovingArgs);
-            this.isPreventShaping = shapeResizingArgs.cancel;
+            this.isPreventShaping = shapeMovingArgs.cancel;
             parent.notify('shape', { prop: 'updateShapeChangeEventArgs', onPropertyChange: false,
                 value: {shapeSettings: shapeMovingArgs.currentShapeSettings}});
         }

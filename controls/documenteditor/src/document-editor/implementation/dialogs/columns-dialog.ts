@@ -2,7 +2,8 @@ import { L10n, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DocumentHelper } from '../viewer';
 import { CheckBox, ChangeEventArgs as CheckBoxChangeArgs, classNames } from '@syncfusion/ej2-buttons';
 import { NumericTextBox, ChangeEventArgs as NumericChangeEventArgs, TextBox, ChangedEventArgs } from '@syncfusion/ej2-inputs';
-import { SelectionSectionFormat, WSectionFormat, WColumnFormat, HelperMethods } from '../index';
+import { SelectionSectionFormat, WSectionFormat, WColumnFormat, HelperMethods, ParagraphInfo } from '../index';
+import { SectionBreakType } from '../../base/types';
 
 
 /**
@@ -1009,7 +1010,19 @@ export class ColumnsDialog {
      * @returns {void}
      */
     public applyColumnDialog = (): void => {
-
+        if (!this.documentHelper.selection.isEmpty) {
+            if (this.documentHelper.owner.editorHistory) {
+                this.documentHelper.owner.editor.initComplexHistory('InsertSectionBreak');
+            }
+            const startParagraphInfo: ParagraphInfo = this.documentHelper.selection.getParagraphInfo(this.documentHelper.selection.start);
+            const endParagraphInfo: ParagraphInfo = this.documentHelper.selection.getParagraphInfo(this.documentHelper.selection.end);
+            const startIndex: string = this.documentHelper.selection.getHierarchicalIndex(startParagraphInfo.paragraph, startParagraphInfo.offset.toString());
+            const endIndex: string = this.documentHelper.selection.getHierarchicalIndex(endParagraphInfo.paragraph, endParagraphInfo.offset.toString());
+            this.documentHelper.selection.select(endIndex, endIndex);
+            this.documentHelper.owner.editorModule.insertSectionBreak(SectionBreakType.Continuous);
+            this.documentHelper.selection.select(startIndex, startIndex);
+            this.documentHelper.owner.editorModule.insertSectionBreak(SectionBreakType.Continuous);
+        }
         const sectionFormat: WSectionFormat = new WSectionFormat();
         const currentSectionFormat: SelectionSectionFormat = this.documentHelper.selection.sectionFormat;
         sectionFormat.bottomMargin = currentSectionFormat.bottomMargin;
@@ -1036,6 +1049,9 @@ export class ColumnsDialog {
         sectionFormat.columns = cols;
         sectionFormat.breakCode = currentSectionFormat.breakCode;
         this.documentHelper.owner.editorModule.onApplySectionFormat(undefined, sectionFormat);
+        if(this.documentHelper.owner.editorHistory){
+            this.documentHelper.owner.editorHistory.updateComplexHistory();
+        }
         this.documentHelper.hideDialog();
     };
     /**

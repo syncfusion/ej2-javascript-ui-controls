@@ -2,7 +2,20 @@
 
 ## [Unreleased]
 
-## 26.1.39 (2024-06-25)
+## 26.1.40 (2024-07-02)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I598320` - The exception is no longer thrown when adding a node at runtime in the unit test case.
+- `#I597330` - Expanding and collapsing nodes multiple times now works properly.
+- `#I596153` - Unselecting a selected node using CTRL+Click now works properly when zoom pan is enabled.
+- `#I595572` - The Exception is no longer thrown when drag and drop shapes on top of each other repeatedly with Line Routing.
+- `#F188009` - The Exception is no longer thrown When Loading Data Without Defining Node Template at Application Level.
+- `#F188626` - Position of BPMN activity loop node is now properly rendered while save and load.
+
+## 26.1.35 (2024-06-11)
 
 ### Diagram
 

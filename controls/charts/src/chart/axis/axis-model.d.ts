@@ -6,7 +6,7 @@ import { Property, Complex, ChildProperty, Collection, extend, Browser } from '@
 export interface RowModel {
 
     /**
-     * The height of the row as a string accept input both as '100px' and '100%'.
+     * The height of the row as a string accepts input both as '100px' and '100%'.
      * If specified as '100%, row renders to the full height of its chart.
      *
      * @default '100%'
@@ -28,8 +28,8 @@ export interface RowModel {
 export interface ColumnModel {
 
     /**
-     * The width of the column as a string accepts input both as like '100px' or '100%'.
-     * If specified as '100%, column renders to the full width of its chart.
+     * The width of the column as a string accepts input in both '100px' and '100%' formats.
+     * If specified as '100%, the column renders to the full width of its chart.
      *
      * @default '100%'
      */
@@ -112,7 +112,7 @@ export interface MinorGridLinesModel {
 export interface AxisLineModel {
 
     /**
-     * The width of the line in pixels.
+     * The width of the axis line in pixels.
      *
      * @default 1
      */
@@ -128,7 +128,7 @@ export interface AxisLineModel {
     dashArray?: string;
 
     /**
-     * The color of the axis line that accepts value in hex and rgba as a valid CSS color string.
+     * Specifies the color of the axis line. Accepts values in hex and rgba formats as valid CSS color strings.
      *
      * @default null
      */
@@ -524,7 +524,7 @@ export interface AxisModel {
     labelPlacement?: LabelPlacement;
 
     /**
-     * Specifies the placement of a ticks to the axis line. They are,
+     * Specifies the placement of the ticks to the axis line. They are,
      * * inside: Renders the ticks inside to the axis line.
      * * outside: Renders the ticks outside to the axis line.
      *
@@ -732,7 +732,7 @@ export interface AxisModel {
     startAngle?: number;
 
     /**
-     * It specifies whether the axis to be start from zero.
+     * It specifies whether the axis should start from zero.
      *
      * @default true
      */

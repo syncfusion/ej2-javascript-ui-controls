@@ -119,7 +119,7 @@ export class Logarithmic3D extends Double3D {
      * @private
      */
     public calculateVisibleLabels(axis: Chart3DAxis, chart: Chart3D): void {
-        /*! Generate axis labels */
+        /** Generate axis labels */
         let tempInterval: number = axis.visibleRange.min;
         axis.visibleLabels = [];
         let labelStyle: Chart3DTextFont;

@@ -6,7 +6,7 @@ import { TechnicalIndicator } from './technical-indicator';
 import { Chart } from '../chart';
 import { BaseAttibutes, Rect, SvgRenderer } from '@syncfusion/ej2-svg-base';
 /**
- * Technical Analysis module helps to predict the market trend
+ * `TechnicalAnalysis` is module helps to predict the market trend.
  */
 export class TechnicalAnalysis extends LineBase {
     /**

@@ -4732,10 +4732,11 @@ export class DateRangePicker extends CalendarBase {
      */
     public onPropertyChanged(newProp: DateRangePickerModel, oldProp: DateRangePickerModel): void {
         const format: Object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+        let isDynamicValueChange: boolean = false;
         for (const prop of Object.keys(newProp)) {
-            const openPopup: string[] = ['maxDays', 'minDays', 'value'];
-            if (openPopup.indexOf(prop) < 0) {
-                this.hide(null);
+            const openPopup: string[] = ['blur', 'change', 'cleared', 'close', 'created', 'destroyed', 'focus', 'navigated', 'open', 'renderDayCell', 'select'];
+            if (openPopup.indexOf(prop) > 0 && this.isReact) {
+                isDynamicValueChange = true;
             }
             switch (prop) {
             case 'width':
@@ -4827,6 +4828,7 @@ export class DateRangePicker extends CalendarBase {
                 }
                 break;
             case 'value':
+                isDynamicValueChange = true;
                 this.invalidValueString = null;
                 this.checkInvalidRange(newProp.value);
                 if (typeof (newProp.value) === 'string') {
@@ -4895,11 +4897,13 @@ export class DateRangePicker extends CalendarBase {
                 this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
                 break;
             case 'minDays':
+                isDynamicValueChange = true;
                 this.setProperties({ minDays: newProp.minDays }, true);
                 this.refreshChange();
                 this.setMinMaxDays();
                 break;
             case 'maxDays':
+                isDynamicValueChange = true;
                 this.setProperties({ maxDays: newProp.maxDays }, true);
                 this.refreshChange();
                 this.setMinMaxDays();
@@ -4940,6 +4944,9 @@ export class DateRangePicker extends CalendarBase {
                 this.setProperties({ depth: newProp.depth }, true);
                 this.refreshChange();
                 break;
+            }
+            if (!isDynamicValueChange) {
+                this.hide(null);
             }
         }
     }

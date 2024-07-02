@@ -554,7 +554,7 @@ export class AnnotationRenderer {
     /**
      * @private
      * @param {any} details - details
-     * @param {PdfPage} page - page
+     * @param {PdfPage} page - page.
      * @returns {void}
      */
     public saveInkSignature(details: any, page: PdfPage): PdfInkAnnotation {
@@ -751,6 +751,7 @@ export class AnnotationRenderer {
         }
         inkAnnotation.border.width = thickness;
         inkAnnotation.opacity = opacity;
+        inkAnnotation._isEnableControlPoints = false;
         inkAnnotation._dictionary.set('NM', inkSignatureAnnotation.annotName.toString());
         inkAnnotation.rotationAngle = this.getRotateAngle(inkSignatureAnnotation.rotationAngle);
         if (!isNullOrUndefined(inkSignatureAnnotation.customData)) {

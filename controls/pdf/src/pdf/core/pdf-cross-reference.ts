@@ -678,156 +678,149 @@ export class _PdfCrossReference {
         this._writeString(`${this._version}${this._newLine}`, buffer);
         buffer.push(0x25, 0x83, 0x92, 0xfa, 0xfe);
         this._writeString(this._newLine, buffer);
-        let updatedCount: number = 0;
-        let uncompressedCount: number = 0;
         if (this._document._fileStructure._crossReferenceType === PdfCrossReferenceType.stream) {
-            const data: Array<number> = [];
-            const updatedStream: Array<number> = [];
-            let archiveXRef: string = '';
-            const indexes: Array<number> = [];
-            indexes.push(0, 1);
-            const collection: Array<number> = [];
-            const uncompressedOffsets: Array<number> = [];
-            this._cacheMap.forEach((value: any, key: _PdfReference) => { // eslint-disable-line
-                let dictionary: _PdfDictionary;
-                if (value instanceof _PdfBaseStream) {
-                    dictionary = value.dictionary;
-                }
-                if (dictionary && dictionary._updated && (!dictionary.isCatalog || this._allowCatalog)) {
-                    indexes.push(key.objectNumber, 1);
-                    uncompressedOffsets.push(currentLength + buffer.length);
-                    let cipher: _CipherTransform;
-                    if (this._encrypt) {
-                        cipher = this._encrypt._createCipherTransform(key.objectNumber, key.generationNumber);
-                    }
-                    this._writeObject(value, buffer, key, cipher);
-                    uncompressedCount++;
-                    dictionary._updated = false;
-                }
-            });
-            this._cacheMap.forEach((value: _PdfDictionary | _PdfBaseStream, key: _PdfReference) => {
-                if (value instanceof _PdfDictionary) {
-                    if (value._updated && (!value.isCatalog || this._allowCatalog)) {
-                        archiveXRef += `${key.objectNumber} ${updatedStream.length}${this._newLine}`;
-                        collection.push(key.objectNumber, 1);
-                        updatedCount++;
-                        this._writeObject(value, updatedStream);
-                    }
-                } else if (value instanceof _PdfBaseStream) {
-                    const dictionary: _PdfDictionary = value.dictionary;
-                    if (dictionary && dictionary._updated && (!dictionary.isCatalog || this._allowCatalog)) {
-                        indexes.push(key.objectNumber, 1);
-                        uncompressedOffsets.push(currentLength + buffer.length);
-                        this._writeObject(value, buffer, key);
-                        uncompressedCount++;
-                        dictionary._updated = false;
-                    }
-                }
-            });
-            for (let i: number = 0; i < collection.length; i++ ) {
-                indexes.push(collection[parseInt(i.toString(), 10)]);
-            }
-            let archiveOffset: number;
-            let archiveRef: _PdfReference;
-            if (updatedCount > 0) {
-                archiveRef = this._getNextReference();
-                indexes.push(archiveRef.objectNumber, 2);
-                this._writeString(archiveXRef, data);
-                this._writeBytes(updatedStream, data);
-                const newDict: _PdfDictionary = new _PdfDictionary(this);
-                newDict.set('Type', _PdfName.get('ObjStm'));
-                newDict.set('N', updatedCount);
-                newDict.set('First', archiveXRef.length);
-                newDict.set('Length', data.length);
-                const archiveStream: _PdfStream = new _PdfStream(data, newDict, 0, data.length);
-                archiveOffset = currentLength + buffer.length;
-                let cipher: _CipherTransform;
-                if (this._encrypt) {
-                    cipher = this._encrypt._createCipherTransform(archiveRef.objectNumber, archiveRef.generationNumber);
-                }
-                this._writeObject(archiveStream, buffer, archiveRef, cipher);
-            }
-            const formatValue: number = Math.max(_getSize(this._stream.bytes.length + buffer.length), _getSize(this._nextReferenceNumber));
-            const newRef: _PdfReference = this._getNextReference();
-            const newStartXref: number = currentLength + buffer.length;
-            const newXref: _PdfDictionary = new _PdfDictionary(this);
-            newXref.set('Type', _PdfName.get('XRef'));
-            newXref.set('Index', indexes);
-            newXref.set('W', [1, formatValue, 1]);
-            this._copyTrailer(newXref);
-            if (this._ids && this._ids.length > 0) {
-                newXref.update('ID', [this._ids[0], this._computeMessageDigest(newStartXref)]);
-            }
-            const newXrefData: Array<number> = [];
-            this._writeLong(0, 1, newXrefData);
-            this._writeLong(1, formatValue, newXrefData);
-            this._writeLong(-1, 1, newXrefData);
-            if (uncompressedCount > 0) {
-                for (let index: number = 0; index < uncompressedCount; index++) {
-                    this._writeLong(1, 1, newXrefData);
-                    this._writeLong(uncompressedOffsets[index], formatValue, newXrefData); // eslint-disable-line
-                    this._writeLong(0, 1, newXrefData);
-                }
-            }
-            if (updatedCount > 0) {
-                for (let index: number = 0; index < updatedCount; index++) {
-                    this._writeLong(2, 1, newXrefData);
-                    this._writeLong(archiveRef.objectNumber, formatValue, newXrefData);
-                    this._writeLong(index, 1, newXrefData);
-                }
-                this._writeLong(1, 1, newXrefData);
-                this._writeLong(archiveOffset, formatValue, newXrefData);
-                this._writeLong(0, 1, newXrefData);
-            }
-            this._writeLong(1, 1, newXrefData);
-            this._writeLong(newStartXref, formatValue, newXrefData);
-            this._writeLong(0, 1, newXrefData);
-            newXref.set('Length', newXrefData.length);
-            const newXrefStream: _PdfStream = new _PdfStream(newXrefData, newXref, 0, newXrefData.length);
-            let cipher: _CipherTransform;
-            if (this._encrypt) {
-                cipher = this._encrypt._createCipherTransform(newRef.objectNumber, newRef.generationNumber);
-            }
-            this._writeObject(newXrefStream, buffer, newRef, cipher, true);
-            this._writeString(`startxref${this._newLine}${newStartXref}${this._newLine}%%EOF${this._newLine}`, buffer);
+            this._saveAsStream(currentLength, buffer);
         } else {
-            let tempBuffer: string = '';
-            this._cacheMap.forEach((value: any, key: _PdfReference) => { // eslint-disable-line
-                let dictionary: _PdfDictionary;
-                if (value instanceof _PdfDictionary) {
-                    dictionary = value;
-                } else if (value instanceof _PdfBaseStream) {
-                    dictionary = value.dictionary;
-                }
-                if (dictionary && dictionary._updated && (!dictionary.isCatalog || this._allowCatalog)) {
-                    let offsetString: string = (currentLength + buffer.length).toString();
-                    while (offsetString.length < 10) {
-                        offsetString = '0' + offsetString;
-                    }
-                    let genString: string = key.generationNumber.toString();
-                    while (genString.length < 5) {
-                        genString = '0' + genString;
-                    }
-                    tempBuffer += `${key.objectNumber} 1${this._newLine}${offsetString} ${genString} n${this._newLine}`;
-                    updatedCount++;
-                    this._writeObject(value, buffer, key);
-                }
-            });
-            const newStartXref: number = buffer.length + currentLength;
-            this._writeString(`xref${this._newLine}0 1${this._newLine}0000000000 65535 f${this._newLine}`, buffer);
-            if (updatedCount > 0) {
-                this._writeString(tempBuffer, buffer);
-            }
-            this._writeString(`trailer${this._newLine}`, buffer);
-            const newXref: _PdfDictionary = new _PdfDictionary(this);
-            this._copyTrailer(newXref);
-            this._writeDictionary(newXref, buffer, this._newLine);
-            this._writeString(`startxref${this._newLine}${newStartXref}${this._newLine}%%EOF${this._newLine}`, buffer);
+            this._saveAsTable(currentLength, buffer);
         }
         const array: Uint8Array = new Uint8Array(this._stream.length + buffer.length);
         array.set(this._stream.bytes);
         array.set(buffer, this._stream.length);
         return array;
+    }
+    _saveAsStream(currentLength: number, buffer: number[]): void {
+        let uncompressedCount: number = 0;
+        const indexes: Array<number> = [];
+        indexes.push(0, 1);
+        const uncompressedOffsets: Array<number> = [];
+        const objectStreamCollection: Map<_PdfReference, _PdfArchievedStream> = new Map<_PdfReference, _PdfArchievedStream>();
+        this._cacheMap.forEach((value: any, key: _PdfReference) => { // eslint-disable-line
+            let dictionary: _PdfDictionary;
+            if (value instanceof _PdfBaseStream) {
+                dictionary = value.dictionary;
+            }
+            if (dictionary && dictionary._updated && (!dictionary.isCatalog || this._allowCatalog)) {
+                indexes.push(key.objectNumber, 1);
+                uncompressedOffsets.push(currentLength + buffer.length);
+                let cipher: _CipherTransform;
+                if (this._encrypt) {
+                    cipher = this._encrypt._createCipherTransform(key.objectNumber, key.generationNumber);
+                }
+                this._writeObject(value, buffer, key, cipher);
+                uncompressedCount++;
+                dictionary._updated = false;
+            }
+        });
+        let objectStream: _PdfArchievedStream;
+        this._cacheMap.forEach((value: _PdfDictionary | _PdfBaseStream, key: _PdfReference) => {
+            if (value instanceof _PdfDictionary) {
+                if (value._updated && (!value.isCatalog || this._allowCatalog)) {
+                    if (typeof objectStream === 'undefined' || objectStream._length === 100) {
+                        const archiveObj: _PdfArchievedStream = new _PdfArchievedStream(this);
+                        objectStreamCollection.set(archiveObj._reference, archiveObj);
+                        objectStream = archiveObj;
+                    }
+                    objectStream._writeObject(key, value);
+                }
+            } else if (value instanceof _PdfBaseStream) {
+                const dictionary: _PdfDictionary = value.dictionary;
+                if (dictionary && dictionary._updated && (!dictionary.isCatalog || this._allowCatalog)) {
+                    indexes.push(key.objectNumber, 1);
+                    uncompressedOffsets.push(currentLength + buffer.length);
+                    this._writeObject(value, buffer, key);
+                    uncompressedCount++;
+                    dictionary._updated = false;
+                }
+            }
+        });
+        objectStreamCollection.forEach((value: _PdfArchievedStream, key: _PdfReference) => {
+            value._save(buffer, currentLength);
+            for (let i: number = 0; i < value._collection.length; i++ ) {
+                indexes.push(value._collection[parseInt(i.toString(), 10)]);
+            }
+            indexes.push(key.objectNumber, 1);
+        });
+        const formatValue: number = Math.max(_getSize(this._stream.bytes.length + buffer.length), _getSize(this._nextReferenceNumber));
+        const newRef: _PdfReference = this._getNextReference();
+        indexes.push(newRef.objectNumber, 1);
+        const newStartXref: number = currentLength + buffer.length;
+        const newXref: _PdfDictionary = new _PdfDictionary(this);
+        newXref.set('Type', _PdfName.get('XRef'));
+        newXref.set('Index', indexes);
+        newXref.set('W', [1, formatValue, 1]);
+        this._copyTrailer(newXref);
+        if (this._ids && this._ids.length > 0) {
+            newXref.update('ID', [this._ids[0], this._computeMessageDigest(newStartXref)]);
+        }
+        const newXrefData: Array<number> = [];
+        this._writeLong(0, 1, newXrefData);
+        this._writeLong(1, formatValue, newXrefData);
+        this._writeLong(-1, 1, newXrefData);
+        if (uncompressedCount > 0) {
+            for (let index: number = 0; index < uncompressedCount; index++) {
+                this._writeLong(1, 1, newXrefData);
+                this._writeLong(uncompressedOffsets[index], formatValue, newXrefData); // eslint-disable-line
+                this._writeLong(0, 1, newXrefData);
+            }
+        }
+        if (objectStreamCollection.size > 0) {
+            objectStreamCollection.forEach((value: _PdfArchievedStream, key: _PdfReference) => {
+                for (let index: number = 0; index < value._length; index++) {
+                    this._writeLong(2, 1, newXrefData);
+                    this._writeLong(key.objectNumber, formatValue, newXrefData);
+                    this._writeLong(index, 1, newXrefData);
+                }
+                this._writeLong(1, 1, newXrefData);
+                this._writeLong(value._archiveOffset, formatValue, newXrefData);
+                this._writeLong(0, 1, newXrefData);
+            });
+        }
+        this._writeLong(1, 1, newXrefData);
+        this._writeLong(newStartXref, formatValue, newXrefData);
+        this._writeLong(0, 1, newXrefData);
+        newXref.set('Length', newXrefData.length);
+        const newXrefStream: _PdfStream = new _PdfStream(newXrefData, newXref, 0, newXrefData.length);
+        let cipher: _CipherTransform;
+        if (this._encrypt) {
+            cipher = this._encrypt._createCipherTransform(newRef.objectNumber, newRef.generationNumber);
+        }
+        this._writeObject(newXrefStream, buffer, newRef, cipher, true);
+        this._writeString(`startxref${this._newLine}${newStartXref}${this._newLine}%%EOF${this._newLine}`, buffer);
+    }
+    _saveAsTable(currentLength: number, buffer: number[]): void {
+        let updatedCount: number = 0;
+        let tempBuffer: string = '';
+        this._cacheMap.forEach((value: any, key: _PdfReference) => { // eslint-disable-line
+            let dictionary: _PdfDictionary;
+            if (value instanceof _PdfDictionary) {
+                dictionary = value;
+            } else if (value instanceof _PdfBaseStream) {
+                dictionary = value.dictionary;
+            }
+            if (dictionary && dictionary._updated && (!dictionary.isCatalog || this._allowCatalog)) {
+                let offsetString: string = (currentLength + buffer.length).toString();
+                while (offsetString.length < 10) {
+                    offsetString = '0' + offsetString;
+                }
+                let genString: string = key.generationNumber.toString();
+                while (genString.length < 5) {
+                    genString = '0' + genString;
+                }
+                tempBuffer += `${key.objectNumber} 1${this._newLine}${offsetString} ${genString} n${this._newLine}`;
+                updatedCount++;
+                this._writeObject(value, buffer, key);
+            }
+        });
+        const newStartXref: number = buffer.length + currentLength;
+        this._writeString(`xref${this._newLine}0 1${this._newLine}0000000000 65535 f${this._newLine}`, buffer);
+        if (updatedCount > 0) {
+            this._writeString(tempBuffer, buffer);
+        }
+        this._writeString(`trailer${this._newLine}`, buffer);
+        const newXref: _PdfDictionary = new _PdfDictionary(this);
+        this._copyTrailer(newXref);
+        this._writeDictionary(newXref, buffer, this._newLine);
+        this._writeString(`startxref${this._newLine}${newStartXref}${this._newLine}%%EOF${this._newLine}`, buffer);
     }
     _copyTrailer(newXref: _PdfDictionary): void {
         const reference: _PdfReference = this._getNextReference();
@@ -1102,4 +1095,44 @@ class _PdfStreamState {
     byteWidths: number[];
     entryNum: number;
     streamPos: number;
+}
+class _PdfArchievedStream {
+    _indexes: string = '';
+    _length: number = 0;
+    _updatedStream: number[];
+    _crossReference: _PdfCrossReference;
+    _reference: _PdfReference;
+    _archiveXRef: string;
+    _collection: number[];
+    _archiveOffset: number;
+    constructor(crossReference: _PdfCrossReference) {
+        this._crossReference = crossReference;
+        this._reference = crossReference._getNextReference();
+        this._archiveXRef = '';
+        this._updatedStream = [];
+        this._collection = [];
+    }
+    _writeObject(key: _PdfReference, value: _PdfDictionary): void {
+        this._archiveXRef += `${key.objectNumber} ${this._updatedStream.length}${this._crossReference._newLine}`;
+        this._collection.push(key.objectNumber, 1);
+        this._crossReference._writeObject(value, this._updatedStream);
+        this._length++;
+    }
+    _save(buffer: number[], currentLength: number): void {
+        const data: Array<number> = [];
+        this._crossReference._writeString(this._archiveXRef, data);
+        this._crossReference._writeBytes(this._updatedStream, data);
+        const newDict: _PdfDictionary = new _PdfDictionary(this._crossReference);
+        newDict.set('Type', _PdfName.get('ObjStm'));
+        newDict.set('N', this._length);
+        newDict.set('First', this._archiveXRef.length);
+        newDict.set('Length', data.length);
+        const archiveStream: _PdfStream = new _PdfStream(data, newDict, 0, data.length);
+        this._archiveOffset = currentLength + buffer.length;
+        let cipher: _CipherTransform;
+        if (this._crossReference._encrypt) {
+            cipher = this._crossReference._encrypt._createCipherTransform(this._reference.objectNumber, this._reference.generationNumber);
+        }
+        this._crossReference._writeObject(archiveStream, buffer, this._reference, cipher);
+    }
 }

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.1.40 (2024-07-02)
+
+### PivotTable
+
+#### Bug fixes
+
+- `#I594323` - In the pivot field list UI, date group fields are now properly displayed under their parent field name.
+
 ## 26.1.39 (2024-06-25)
 
 ### PivotTable
@@ -15,7 +23,6 @@
 - `#I597092` - When you double-click on the row headers, the pivot table will now be rendered properly.
 - `#I598656` - When exporting a pivot table as an excel document, the localization text is now properly applied to the column grand total.
 - `#I593440` - When using number grouping in the pivot table, grouped headers will now be properly sorted.
-- `#I594323` - In the pivot field list UI, date group fields are now properly displayed under their parent field name.
 
 ## 26.1.35 (2024-06-11)
 

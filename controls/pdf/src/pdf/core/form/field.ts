@@ -1594,6 +1594,7 @@ export abstract class PdfField {
         if (font instanceof PdfTrueTypeFont) {
             if (this._font._pdfFontInternals) {
                 this._crossReference._cacheMap.set(reference, this._font._pdfFontInternals);
+                this._font._reference = reference;
             }
         } else if (this._font._dictionary) {
             this._crossReference._cacheMap.set(reference, this._font._dictionary);

@@ -50,6 +50,11 @@ describe('Timeline', () => {
             timeline.dataBind();
             expect(timelineElement.classList.contains('.e-vertical') != null).toEqual(true);
             expect(timelineElement.classList.contains('.e-horizontal')).toEqual(false);
+            // null reference check
+            timeline.orientation = '';
+            timeline.dataBind();
+            expect(timelineElement.classList.contains('.e-vertical') != null).toEqual(true);
+            expect(timelineElement.classList.contains('.e-horizontal')).toEqual(false);
         });
 
         it('Horizontal timeline testing', () => {
@@ -113,6 +118,11 @@ describe('Timeline', () => {
             timeline.dataBind();
             expect((liElementArray[0] as HTMLElement).classList.contains('e-people')).toEqual(false);
             expect((liElementArray[0] as HTMLElement).classList.contains('e-copy')).toEqual(true);
+            // null reference check
+            timeline.items[0].dotCss = '';
+            timeline.dataBind();
+            expect((liElementArray[0] as HTMLElement).classList.contains('e-dot')).toEqual(true);
+            expect((liElementArray[0] as HTMLElement).classList.length).toBe(1);
         });
 
         it('Get component name testing', () => {
@@ -178,6 +188,10 @@ describe('Timeline', () => {
             timeline.dataBind();
             expect(timelineElement.classList.contains('newClass')).toBe(true);
             expect(timelineElement.classList.contains('testClass')).toBe(false);
+            // null reference check
+            timeline.cssClass = '';
+            timeline.dataBind();
+            expect(timelineElement.classList.contains('newClass')).toBe(false);
         });
 
         it('Item with cssClass', () => {
@@ -199,6 +213,10 @@ describe('Timeline', () => {
             timeline.dataBind();
             expect(timelineElement.querySelector('.e-timeline-item').classList.contains('testClass')).toBe(false);
             expect(timelineElement.querySelector('.e-timeline-item').classList.contains('newClass')).toBe(true);
+            // null reference check
+            timeline.items[0].cssClass = '';
+            timeline.dataBind();
+            expect(timelineElement.querySelector('.e-timeline-item').classList.contains('newClass')).toBe(false);
         });
 
         it('Item with disabled', () => {
@@ -267,6 +285,10 @@ describe('Timeline', () => {
             timeline.items[0].content = 'New Ordered';
             timeline.dataBind();
             expect((liElementArray[0] as HTMLElement).innerText).toEqual('New Ordered');
+            // null reference check
+            timeline.items[0].content = '';
+            timeline.dataBind();
+            expect((liElementArray[0] as HTMLElement).innerText).toEqual('');
         });
 
         it('text content with reverse feature', () => {
@@ -422,6 +444,10 @@ describe('Timeline', () => {
             timeline.items[0].oppositeContent = '09:00 am';
             timeline.dataBind();
             expect((liIconElementArray[0] as HTMLElement).innerText).toEqual('09:00 am');
+            // null reference check
+            timeline.items[0].oppositeContent = '';
+            timeline.dataBind();
+            expect((liIconElementArray[0] as HTMLElement).innerText).toEqual('');
         });
 
         it('timeline content as js renderer ', () => {
@@ -579,6 +605,10 @@ describe('Timeline', () => {
             timeline.dataBind();
             expect(timelineElement.classList.contains('e-align-after')).toEqual(true);
             expect(timelineElement.classList.contains('e-align-alternatereverse')).toEqual(false);
+            // null reference check
+            timeline.align = '';
+            timeline.dataBind();
+            expect(timelineElement.classList.contains('e-align-after')).toEqual(true);
         });
 
         it('text content', () => {

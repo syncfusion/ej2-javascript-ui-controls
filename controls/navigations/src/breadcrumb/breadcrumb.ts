@@ -739,7 +739,7 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
                 }
                 this.endIndex = idx;
             }
-            const itemClickArgs: BreadcrumbClickEventArgs = { element: li as HTMLElement, 
+            const itemClickArgs: BreadcrumbClickEventArgs = { element: li as HTMLElement,
                 item: this.items[idx as number], event: e, cancel: false };
             this.trigger('itemClick', itemClickArgs);
             if (itemClickArgs.cancel) { return; }

@@ -6,13 +6,14 @@ import { markerShapes } from './marker';
 import { getSeriesColor } from '../../common/model/theme';
 
 /**
- * `Pareto series` module used to render the Pareto series.
+ * `Pareto series` module used to render the pareto series.
  */
 
 export class ParetoSeries extends ColumnBase {
     public paretoAxes: Axis[] = [];
     /**
      * Defines the Line initialization.
+     * 
      */
 
     public initSeries(targetSeries: Series, chart: Chart): void {
@@ -38,6 +39,7 @@ export class ParetoSeries extends ColumnBase {
     }
     /**
      * Defines the Axis initialization for Line.
+     * 
      */
 
     public initAxis(paretoSeries: Series, targetSeries: Series, chart: Chart): void {

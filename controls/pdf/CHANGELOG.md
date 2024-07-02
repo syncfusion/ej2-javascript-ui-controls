@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 26.1.40 (2024-07-02)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved the ink annotation preservation issue when saving the PDF document multiple times.
+- Resolved the text box field preservation issue when adding Unicode text with a true type font.
+- Resolved the form field preservation issue when filling data and saving with a cross reference stream type.
+
 ## 26.1.39 (2024-06-25)
 
 ### PDF Parser

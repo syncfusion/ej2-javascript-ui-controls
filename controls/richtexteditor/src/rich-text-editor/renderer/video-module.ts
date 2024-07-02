@@ -1434,6 +1434,14 @@ export class Video {
         if (!isNullOrUndefined(proxy.uploadUrl) && proxy.uploadUrl.url !== '') {
             proxy.uploadUrl.cssClass = (proxy.parent.insertVideoSettings.layoutOption === 'Inline' ?
                 classes.CLS_VIDEOINLINE : classes.CLS_VIDEOBREAK);
+            proxy.uploadUrl.width = {
+                width: proxy.parent.insertVideoSettings.width, minWidth: proxy.parent.insertVideoSettings.minWidth,
+                maxWidth: proxy.parent.getInsertImgMaxWidth()
+            };
+            proxy.uploadUrl.height = {
+                height: proxy.parent.insertVideoSettings.height, minHeight: proxy.parent.insertVideoSettings.minHeight,
+                maxHeight: proxy.parent.insertVideoSettings.maxHeight
+            };
             proxy.dialogObj.hide({ returnValue: false } as Event);
             proxy.parent.formatter.process(
                 proxy.parent, (this as IImageNotifyArgs).args,

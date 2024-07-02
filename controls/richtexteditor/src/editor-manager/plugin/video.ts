@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined as isNOU, detach, addClass, Browser, formatUnit } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined as isNOU, detach, addClass, Browser, formatUnit, removeClass } from '@syncfusion/ej2-base';
 import { EditorManager } from './../base/editor-manager';
 import * as CONSTANT from './../base/constant';
 import * as classes from './../base/classes';
@@ -125,6 +125,7 @@ export class VideoCommand {
             clickElement.appendChild((temp as HTMLTemplateElement).content);
             this.vidElement = sourceElement = clickElement.firstElementChild as HTMLElement;
             this.setStyle((sourceElement as HTMLSourceElement), e, this.vidElement);
+            wrapElement.style.display = (e.item.cssClass === classes.CLASS_VIDEO_INLINE) ? 'inline-block' : 'block';
             wrapElement.appendChild(clickElement);
         }
         else {
@@ -250,6 +251,16 @@ export class VideoCommand {
         }
         if (!isNOU(e.item.height) && !isNOU(e.item.height.maxHeight)) {
             videoEle.style.maxHeight = formatUnit(e.item.height.maxHeight);
+        }
+        if (!isNOU(e.item.cssClass)) {
+            if (e.item.cssClass === classes.CLASS_VIDEO_BREAK) {
+                addClass([videoEle], [classes.CLASS_VIDEO_BREAK]);
+                removeClass([videoEle], [classes.CLASS_VIDEO_INLINE]);
+            }
+            else {
+                addClass([videoEle], [classes.CLASS_VIDEO_INLINE]);
+                removeClass([videoEle], [classes.CLASS_VIDEO_BREAK]);
+            }
         }
     }
 

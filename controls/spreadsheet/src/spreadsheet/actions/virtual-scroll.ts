@@ -736,6 +736,12 @@ export class VirtualScroll {
 
     private destroy(): void {
         this.removeEventListener();
+        const noteIndicatorElement: NodeListOf<Element> = document.querySelectorAll('.e-addNoteIndicator');
+        if (noteIndicatorElement) {
+            noteIndicatorElement.forEach(function (element) {
+                element.remove();
+            });
+        }
         if (this.rowHeader) { removeAllChildren(this.rowHeader); this.rowHeader.remove(); }
         if (this.colHeader) { removeAllChildren(this.colHeader); this.colHeader.remove(); }
         if (this.content) { removeAllChildren(this.content); this.content.remove(); }

@@ -11,7 +11,7 @@ import { IRangeSelectorRenderEventArgs } from '../../chart/model/chart-interface
 import { StockChart } from '../../stock-chart/stock-chart';
 
 /**
- * Period selector class
+ * Configures the period selector class.
  */
 export class PeriodSelector {
 
@@ -117,7 +117,7 @@ export class PeriodSelector {
     }
 
     /**
-     * renderSelector elements.
+     * Renders the selector elements.
      *
      * @returns {void}
      */
@@ -461,7 +461,7 @@ export class PeriodSelector {
         }
     }
     /**
-     * To find the start value
+     * To find the start value.
      *
      * @param startValue
      * @param endValue

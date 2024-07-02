@@ -279,7 +279,7 @@ export class HyperlinkDialog {
             return;
         }
         if (screenTipText !== ''){
-            address = address + '\' \\o \'' + screenTipText;
+            address = address + '\"\\o \"' + screenTipText;
         }
         if (displayText === '' && address !== '') {
             displayText = address;

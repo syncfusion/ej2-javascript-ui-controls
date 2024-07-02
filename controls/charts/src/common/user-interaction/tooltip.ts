@@ -18,7 +18,7 @@ import { Chart3DSeries, Chart3DPoint } from '../../chart3d/series/chart-series';
 import {Point3D} from '../../common/utils/helper';
 
 /**
- * Tooltip Module used to render the tooltip for series.
+ * `Tooltip` module is used to render the tooltip for series.
  */
 export class BaseTooltip extends ChartData {
     //Internal variables

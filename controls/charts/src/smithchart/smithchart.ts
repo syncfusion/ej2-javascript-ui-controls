@@ -514,7 +514,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
      * @returns {void}
      */
     private setTheme(): void {
-        /*! Set theme */
+        /** Set theme */
         this.themeStyle = getThemeColor(this.theme);
         this.seriesColors = getSeriesColor(this.theme);
         if (!(document.getElementById(this.element.id + 'Keyboard_smith_chart_focus'))) {

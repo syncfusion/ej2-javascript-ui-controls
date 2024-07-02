@@ -271,22 +271,27 @@ export class LineRouting {
             // eslint-disable-next-line no-labels
             renderPathElement: while (this.startArray.length > 0) {
                 let startGridNode: VirtualBoundaries = this.startArray.pop();
-                for (let i: number = 0; i < this.targetGridCollection.length; i++) {
-                    const target: VirtualBoundaries = this.targetGridCollection[parseInt(i.toString(), 10)];
-                    if (startGridNode.gridX === target.gridX && startGridNode.gridY === target.gridY) {
-                        this.getIntermediatePoints(startGridNode);
-                        isBreak = this.updateConnectorSegments(diagram, this.intermediatePoints, this.gridCollection, connector, isUpdate);
-                        if (!isBreak) {
-                            this.targetGridCollection.splice(this.targetGridCollection.indexOf(target), 1);
-                            startGridNode = this.startArray.pop();
-                        } else {
-                            this.considerWalkable = [];
-                            // eslint-disable-next-line no-labels
-                            break renderPathElement;
+                //890444:Exception thrown while drag and drop shapes on top of each other repeatedly with Line Routing
+                if (startGridNode) {
+                    for (let i: number = 0; i < this.targetGridCollection.length; i++) {
+                        const target: VirtualBoundaries = this.targetGridCollection[parseInt(i.toString(), 10)];
+                        if (startGridNode.gridX === target.gridX && startGridNode.gridY === target.gridY) {
+                            this.getIntermediatePoints(startGridNode);
+                            isBreak = this.updateConnectorSegments(diagram, this.intermediatePoints, this.gridCollection, connector, isUpdate);
+                            if (!isBreak) {
+                                this.targetGridCollection.splice(this.targetGridCollection.indexOf(target), 1);
+                                startGridNode = this.startArray.pop();
+                            } else {
+                                this.considerWalkable = [];
+                                // eslint-disable-next-line no-labels
+                                break renderPathElement;
+                            }
                         }
                     }
+                    if (startGridNode) {
+                        this.findPath(startGridNode);
+                    }
                 }
-                this.findPath(startGridNode);
             }
         }
     }
@@ -494,7 +499,9 @@ export class LineRouting {
             target = target.parent;
         }
         this.intermediatePoints.reverse();
-        if (this.intermediatePoints.length >= 1) {
+        //890444: Exception thrown while drag and drop shapes on top of each other repeatedly with Line Routing
+        if (this.intermediatePoints.length >= 1 && this.intermediatePoints[0] !== undefined
+            && this.intermediatePoints[1] !== undefined) {
             if (this.intermediatePoints[0].x === this.intermediatePoints[1].x) {
                 if (this.intermediatePoints[0].y < this.intermediatePoints[1].y) {
                     distance = this.neigbour(this.startGrid, 'bottom', undefined, true);

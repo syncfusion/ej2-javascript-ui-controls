@@ -7,7 +7,7 @@ import { Axis } from '../../chart/axis/axis';
 import { StepPosition } from '../utils/enum';
 
 /**
- * `StackingStepAreaSeries` module used to render the Stacking Step Area series.
+ * `StackingStepAreaSeries` module used to render the stacking step area series.
  */
 
 export class StackingStepAreaSeries extends LineBase {

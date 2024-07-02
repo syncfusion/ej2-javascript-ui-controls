@@ -1504,6 +1504,146 @@ describe('Ribbon', () => {
             expect(document.querySelectorAll('.e-ribbon-item')[2].id).toBe('pasteItem_container');
         });
     });
+    describe('Programmatically click the Ribbon overflow items', () => {
+        let ribbon: Ribbon;
+        let ribbonEle: HTMLElement;
+        let containerEle: HTMLElement;
+        beforeEach(() => {
+            ribbonEle = createElement('div', { id: 'ribbon' });
+            containerEle = createElement('div', { id: 'container', styles: 'width:600px' });
+            containerEle.appendChild(ribbonEle);
+            document.body.appendChild(containerEle);
+        })
+        afterEach(() => {
+            if (ribbon) {
+                ribbon.destroy();
+                ribbon = undefined;
+            }
+            remove(ribbonEle);
+            remove(containerEle);
+        });
+        it('without opening the popup', () => {
+            let fontSize: string[] = ['8', '9', '10', '11', '12', '14', '16', '18', '20', '22', '24', '26', '28', '36', '48', '72', '96'];
+            ribbon = new Ribbon({
+                activeLayout: 'Simplified',
+                tabs: [{
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1HeaderVal",
+                        collections: [{
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Button,
+                                displayOptions: DisplayMode.Overflow,
+                                allowedSizes: RibbonItemSize.Medium,
+                                buttonSettings: {
+                                    cssClass: 'extended-btn',
+                                    isToggle: true,
+                                    content: '<div style="width:100px;">button1</div>'
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: "group2HeaderVal",
+                        collections: [{
+                            items: [{
+                                id: "item2",
+                                type: RibbonItemType.DropDown,
+                                displayOptions: DisplayMode.Overflow,
+                                dropDownSettings: {
+                                    content: 'Shapes',
+                                    iconCss: 'e-icons e-shapes',
+                                    items: [{ text: 'Lines' }, { text: 'Rectangles' }, { text: 'Basic Arrows' }, { text: 'Basic Shapes' }, { text: 'FlowChart' }]
+                                }
+                            }]
+                        }]
+                    }, 
+                    {
+                        header: "group3HeaderVal",
+                        collections: [{
+                            items: [{
+                                id: "item3",
+                                type: RibbonItemType.SplitButton,
+                                displayOptions: DisplayMode.Overflow,
+                                splitButtonSettings: {
+                                    content: 'Paste',
+                                    iconCss: 'e-icons e-paste',
+                                    items: [{ text: 'Keep Source Format' }, { text: 'Merge format' }, { text: 'Keep text only' }]
+                                }
+                            }, {
+                                id: "item4",
+                                type: RibbonItemType.GroupButton,
+                                displayOptions: DisplayMode.Overflow,
+                                groupButtonSettings: {
+                                    items: [{
+                                        iconCss: 'e-icons e-table',
+                                        content: 'table',
+                                        keyTip: 'T1',
+                                        selected: true
+                                    },
+                                    {
+                                        iconCss: 'e-icons e-image',
+                                        content: 'picture',
+                                        keyTip: 'P1'
+                                    },
+                                    {
+                                        iconCss: 'e-icons e-menu',
+                                        content: 'menu',
+                                        keyTip: 'M1'
+                                    }]
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: "group4HeaderVal",
+                        collections: [{
+                            items: [{
+                                id: "item5",
+                                type: RibbonItemType.CheckBox,
+                                displayOptions: DisplayMode.Overflow,
+                                checkBoxSettings: {
+                                    label: 'Ruler',
+                                    checked: false
+                                }
+                            }, {
+                                id: "item6",
+                                type: RibbonItemType.ColorPicker,
+                                displayOptions: DisplayMode.Overflow,
+                                colorPickerSettings: {
+                                    value: '#123456'
+                                }
+                            }, {
+                                id: "item7",
+                                type: RibbonItemType.ComboBox,
+                                displayOptions: DisplayMode.Overflow,
+                                comboBoxSettings: {
+                                    dataSource: fontSize,
+                                    index: 4,
+                                    width: '65px'
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            (document.querySelector('#item1') as HTMLElement).click();
+            expect(document.querySelector('#item1').classList.contains('e-active')).toBe(true);
+            expect(document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-close')).toBe(true);
+            (document.querySelector('#item2') as HTMLElement).click();
+            expect(document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-close')).toBe(true);
+            (document.querySelector('#item3') as HTMLElement).click();
+            expect(document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-close')).toBe(true);
+            (document.querySelector('#item4') as HTMLElement).click();
+            expect(document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-close')).toBe(true);
+            (document.querySelector('#item5') as HTMLElement).click();
+            expect(document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-close')).toBe(true);
+            (document.querySelector('#item6') as HTMLElement).click();
+            expect(document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-close')).toBe(true);
+            (document.querySelector('#item7') as HTMLElement).click();
+            expect(document.querySelector('#ribbon_tab_sim_ovrl_overflow-popup').classList.contains('e-popup-close')).toBe(true);
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         const average: any = inMB(profile.averageChange);

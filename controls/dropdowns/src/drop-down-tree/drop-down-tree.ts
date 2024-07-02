@@ -2803,6 +2803,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 this.isReverseUpdate = false;
             }
         }
+        if (this.isValueChange && !this.changeOnBlur) {
+            this.triggerChangeEvent(this.keyEventArgs);
+            this.isValueChange = false;
+        }
     }
 
     private beforeCheck(args: NodeCheckEventArgs): void {

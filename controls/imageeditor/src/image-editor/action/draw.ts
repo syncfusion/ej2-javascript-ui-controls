@@ -3441,7 +3441,10 @@ export class Draw {
     }
 
     private open(data: string | ImageData): void {
-        document.getElementById(this.parent.element.id + '_dropArea').style.display = 'none';
+        const dropArea: HTMLElement = document.getElementById(this.parent.element.id + '_dropArea');
+        if (dropArea) {
+            dropArea.style.display = 'none';
+        }
         if (!this.parent.disabled) {
             this.openURL = data; this.restoreOldImage();
         }
@@ -3463,7 +3466,10 @@ export class Draw {
 
     private fileSelect(inputElement: HTMLInputElement, args: Event): void {
         const parent: ImageEditor = this.parent;
-        document.getElementById(parent.element.id + '_dropArea').style.display = 'none';
+        const dropArea: HTMLElement = document.getElementById(parent.element.id + '_dropArea');
+        if (dropArea) {
+            dropArea.style.display = 'none';
+        }
         if (!parent.disabled) {
             let filesData: FileList;
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */

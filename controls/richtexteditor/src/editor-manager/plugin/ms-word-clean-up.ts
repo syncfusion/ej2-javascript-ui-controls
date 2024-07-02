@@ -684,7 +684,7 @@ export class MsWordPaste {
             if (content && content.indexOf('mso-list:') !== -1) {
                 let msoListValue: string[];
                 if (content.match(/mso-list:[^;]+;?/)) {
-                    const changedContent: string = content.replace('\n', '').split(' ').join('');
+                    const changedContent: string = content.replace(new RegExp('\n', 'g'), '').split(' ').join('');
                     msoListValue = changedContent.match(/mso-list:[^;]+;?/)[0].split(':l');
                     listFormatOverride = isNOU(msoListValue) ? null : parseInt(msoListValue[1].split('level')[0], 10);
                 } else {

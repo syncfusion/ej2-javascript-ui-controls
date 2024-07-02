@@ -351,8 +351,8 @@ export class QuickPopups {
                 let templateElement: HTMLElement[];
                 if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
                     const tempId: string = this.parent.element.id + '_' + this.parent.activeViewOptions.eventTemplateName + 'eventTemplate';
-                    templateElement = this.parent.getAppointmentTemplate()
-                        (eventData, this.parent, 'eventTemplate', tempId, false, undefined, undefined, this.parent.root);
+                    templateElement = this.parent.getAppointmentTemplate()(eventData, this.parent, 'eventTemplate', tempId, false,
+                                                                           undefined, undefined, this.parent.root);
                     append(templateElement, appointmentElement);
                 } else {
                     appointmentElement.appendChild(createElement('div', { className: cls.SUBJECT_CLASS }));

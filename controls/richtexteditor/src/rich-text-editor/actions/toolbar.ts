@@ -280,9 +280,9 @@ export class Toolbar {
      */
     public updateItem(args: IUpdateItemsModel): void {
         const item: IToolsItems = this.tools[args.updateItem.toLocaleLowerCase() as ToolbarItems];
-        if (this.parent.locale !== 'en-US'){
+        if ((getTooltipText(args.updateItem.toLocaleLowerCase(), this.locator) !== 'Code View' && getTooltipText(args.updateItem.toLocaleLowerCase(), this.locator) !== 'Preview') || this.parent.locale !== 'en-US') {
             item.tooltip = getTooltipText(args.updateItem.toLocaleLowerCase(), this.locator);
-        }
+        };
         const trgItem: IToolsItems = this.tools[args.targetItem.toLocaleLowerCase() as ToolbarItems];
         const index: number = getTBarItemsIndex(getCollection(trgItem.subCommand), args.baseToolbar.toolbarObj.items)[0];
         if (!isNOU(index)) {

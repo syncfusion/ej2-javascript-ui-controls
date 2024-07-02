@@ -554,7 +554,7 @@ export class Scroll implements IAction {
                 const groupHeaderEle: HTMLElement = this.parent.element.querySelector('.e-groupdroparea') as HTMLElement;
                 const height: number = headerEle.offsetHeight + (toolbarEle ? toolbarEle.offsetHeight : 0) +
                     (groupHeaderEle ? groupHeaderEle.offsetHeight : 0);
-                const parentTop: number = this.parentElement.getClientRects()[0].top;
+                const parentTop: number = this.parent.element.getClientRects()[0].top;
                 const top: number = contentRect.top - (parentTop < 0 ? 0 : parentTop);
                 const left: number = contentRect.left;
                 const colMenuEle: HTMLElement = document.body.querySelector('#' + this.parent.element.id + '_columnmenu');

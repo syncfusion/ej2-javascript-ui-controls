@@ -6,7 +6,7 @@ import { Property, ChildProperty, Complex, Collection, Browser } from '@syncfusi
 export interface ConnectorModel {
 
     /**
-     * specifies the type of the connector line. They are
+     * Specifies the type of the connector line. They are
      * * Smooth
      * * Line
      *
@@ -40,7 +40,7 @@ export interface ConnectorModel {
     length?: string;
 
     /**
-     * dashArray of the connector line.
+     * DashArray of the connector line.
      *
      * @default ''
      */
@@ -71,7 +71,7 @@ export interface titleBorderModel {
     width?: number;
 
     /**
-     * corder radius for the border.
+     * Corner radius for the border.
      *
      * @default 0.8
      */
@@ -118,7 +118,7 @@ export interface titleSettingsModel {
     color?: string;
 
     /**
-     * text alignment.
+     * Specifies the alignment of the text.
      *
      * @default 'Center'
      */
@@ -319,7 +319,7 @@ export interface BorderModel {
 export interface OffsetModel {
 
     /**
-     * x value of the marker position.
+     * Specifies the x value of the marker position.
      *
      * @default 0
      */
@@ -327,7 +327,7 @@ export interface OffsetModel {
     x?: number;
 
     /**
-     * y value of the marker position.
+     * Specifies the y value of the marker position.
      *
      * @default 0
      */
@@ -348,7 +348,7 @@ export interface ChartAreaModel {
     border?: BorderModel;
 
     /**
-     * The background of the chart area that accepts value in hex and rgba as a valid CSS color string..
+     * The background of the chart area that accepts value in hex and rgba as a valid CSS color string.
      *
      * @default 'transparent'
      */
@@ -595,7 +595,7 @@ export interface EmptyPointSettingsModel {
 export interface DragSettingsModel {
 
     /**
-     * To enable the drag the points.
+     * To enable dragging the points.
      *
      * @default false
      */
@@ -789,7 +789,7 @@ export interface TooltipSettingsModel {
 
     /**
      * Specifies the location of the tooltip, relative to the chart.
-     * If x is 20, tooltip moves by 20 pixels to the right of the chart
+     * If x is 20, tooltip moves by 20 pixels to the right of the chart.
      * ```html
      * <div id='Chart'></div>
      * ```
@@ -941,7 +941,7 @@ export interface StockTooltipSettingsModel {
     border?: BorderModel;
 
     /**
-     * Specifies the tooltip position. They are,
+     * Specifies the tooltip position. They are:
      * * fixed - Place the tooltip in the fixed position.
      * * nearest- Tooltip moves along with the mouse.
      *
@@ -1005,7 +1005,7 @@ export interface PeriodSelectorSettingsModel {
     height?: number;
 
     /**
-     * vertical position of the period selector.
+     * Vertical position of the period selector.
      *
      * @default 'Bottom'
      */
@@ -1013,7 +1013,7 @@ export interface PeriodSelectorSettingsModel {
     position?: PeriodSelectorPosition;
 
     /**
-     * Buttons
+     * Specify the attributes of each period.
      */
 
     periods?: PeriodsModel[];

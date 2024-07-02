@@ -63,7 +63,7 @@ export class KeyboardNavigation {
                     updateCell(
                         this.parent, this.parent.getActiveSheet(), { rowIdx: cellIndexes[0], colIdx: cellIndexes[1], preventEvt: true,
                             cell: { notes: textarea.value, isNoteEditable: false }});
-                    const eventArgs : NoteSaveEventArgs =  { notes: textarea.value, address: address, element: targetElement};
+                    const eventArgs : NoteSaveEventArgs =  { notes: textarea.value, address: address};
                     this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'addNote' });
                 }
                 this.parent.spreadsheetNoteModule.isShowNote = null;

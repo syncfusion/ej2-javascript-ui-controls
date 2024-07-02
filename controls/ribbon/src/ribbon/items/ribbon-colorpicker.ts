@@ -128,7 +128,9 @@ export class RibbonColorPicker {
         };
         splitBtn.close = () => {
             if (target && !target.closest('.e-ribbon-group-overflow-ddb')) {
-                overflowButton.toggle();
+                if (overflowButton.element.classList.contains('e-active')) {
+                    overflowButton.toggle();
+                }
             }
         };
     }

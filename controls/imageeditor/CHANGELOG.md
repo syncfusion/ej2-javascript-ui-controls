@@ -2,7 +2,24 @@
 
 ## [Unreleased]
 
-## 26.1.39 (2024-06-25)
+## 26.1.40 (2024-07-02)
+
+### Image Editor
+
+#### Bug Fixes
+
+- `#I603404` - The issue with "ImageEditor drawText method text selection issue with multiline" has been resolved.
+- `#I603806` - The issue with "ImageEditor Undo/Redo collection was not working properly for pen drawing annotation" has been resolved.
+
+## 26.1.38 (2024-06-19)
+
+### Image Editor
+
+#### Bug Fixes
+
+- The issue with "image not loading in react ug sample" has been resolved.
+
+## 26.1.35 (2024-06-11)
 
 ### Image Editor
 

@@ -360,7 +360,9 @@ export class BpmnDiagrams {
         taskLoopNode.data = childNode2data; taskLoopNode.style.fill = 'black';
         if (loopType !== 'None') { taskLoopNode.visible = true; } else { taskLoopNode.visible = false; }
         if (childCount === 1) { x = area + 9; }
-        taskLoopNode.margin.left = x; if (taskLoopNode.visible === true) { x += 12 + 8; }
+        //891296: Position of BPMN activity loop node is not proper while save and load
+        taskLoopNode.margin.left = x - 3;
+        if (taskLoopNode.visible === true) { x += 12 + 8; }
         taskLoopNode.width = 12; taskLoopNode.height = 12;
         taskLoopNode.margin.bottom = 5; taskLoopNode.id = node.id + '_2_loop';
         taskLoopNode.horizontalAlignment = 'Left'; taskLoopNode.verticalAlignment = 'Bottom';

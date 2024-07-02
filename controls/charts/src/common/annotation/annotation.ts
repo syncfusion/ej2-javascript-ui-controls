@@ -16,7 +16,7 @@ import { StockChart } from '../../stock-chart';
 
 
 /**
- * Annotation Module handles the Annotation for chart and accumulation series.
+ * Annotation module handles the annotation for chart and accumulation series.
  */
 export class AnnotationBase {
 

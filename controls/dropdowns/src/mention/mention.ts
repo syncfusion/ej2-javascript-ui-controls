@@ -692,7 +692,7 @@ export class Mention extends DropDownBase {
         }
         this.isTyped = e.code !== 'Enter' && e.code !== 'Space' && e.code !== 'ArrowDown' && e.code !== 'ArrowUp' ? true : false;
         const isRteImage: boolean = document.activeElement.parentElement && document.activeElement.parentElement.querySelector('.e-rte-image') ? true : false;
-        if (document.activeElement != this.inputElement && isRteImage) {
+        if (document.activeElement != this.inputElement && !isRteImage) {
             this.inputElement.focus(); }
         if (this.isContentEditable(this.inputElement)) {
             this.range = this.getCurrentRange();

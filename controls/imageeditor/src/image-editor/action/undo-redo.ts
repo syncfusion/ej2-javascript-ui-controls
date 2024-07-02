@@ -327,6 +327,7 @@ export class UndoRedo {
                 case 'freehanddraw':
                 case 'freehand-draw':
                     this.updateFreehandDraw(obj.previousPointColl, obj.previousSelPointColl);
+                    parent.notify('freehand-draw', {prop: 'setCurrentFreehandDrawIndex', value: {value: parent.pointColl.length}});
                     break;
                 case 'freehanddrawCustomized':
                     this.updateFreehandDrawCustomized(obj.previousObjColl, obj.previousPointColl);
@@ -453,6 +454,7 @@ export class UndoRedo {
                 case 'freehanddraw':
                 case 'freehand-draw':
                     this.updateFreehandDraw(obj.currentPointColl, obj.currentSelPointColl);
+                    parent.notify('freehand-draw', {prop: 'setCurrentFreehandDrawIndex', value: {value: parent.pointColl.length}});
                     break;
                 case 'freehanddrawCustomized':
                     this.updateFreehandDrawCustomized(obj.currentObjColl, obj.currentPointColl);

@@ -2754,3 +2754,26 @@ describe('EJ2-33345', () => {
         formObj.destroy();
     });
 });
+
+describe('Min and Max validation', () => {
+    beforeAll(() => {
+        formObj = new FormValidator(formElement, { rules: { 'input1': { date: 'dd/MMM/yy', min: '25/May/24', max: '28/May/24' } } });
+    });
+
+    it('date format support', () => {
+        formObj.element[0].setAttribute('value', '22/May/24');
+        formObj.validate('input1');
+        let errorElement: HTMLElement = <HTMLElement>formObj.element[0].nextSibling;
+        expect(errorElement.innerText).toEqual('Please enter a value greater than or equal to 25/May/24.')
+        formObj.element[0].setAttribute('value', '29/May/24');
+        formObj.validate('input1');
+        expect(errorElement.innerText).toEqual('Please enter a value less than or equal to 28/May/24.')
+        formObj.element[0].setAttribute('value', '');
+        formObj.validate('input1');
+        expect(errorElement.style.display).toEqual('none')
+    });
+
+    afterAll(function () {
+        formObj.destroy();
+    });
+});

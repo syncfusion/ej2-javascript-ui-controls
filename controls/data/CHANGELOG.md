@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 26.1.39 (2024-06-25)
+## 26.1.40 (2024-07-02)
+
+### DataManager
+
+#### Bug fixes
+
+- `#I583324` - Resolved the date filter issue in the `WebMethod` adaptor.
+
+## 26.1.35 (2024-06-11)
 
 ### DataManager
 

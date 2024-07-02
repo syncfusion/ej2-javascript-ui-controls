@@ -148,7 +148,7 @@ export interface MultiLevelCategoriesModel {
     start?: number | Date | string;
 
     /**
-     * End value of the multi level labels.
+     * End value of the multi-level labels.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -156,14 +156,14 @@ export interface MultiLevelCategoriesModel {
     end?: number | Date | string;
 
     /**
-     * multi level labels text.
+     * Multi level labels text.
      *
      * @default ''
      */
     text?: string;
 
     /**
-     * Maximum width of the text for multi level labels.
+     * Maximum width of the text for multi-level labels.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -171,7 +171,7 @@ export interface MultiLevelCategoriesModel {
     maximumTextWidth?: number;
 
     /**
-     * multi level labels custom data.
+     * Custom data for multi-level labels.
      *
      * @default null
      */
@@ -181,10 +181,10 @@ export interface MultiLevelCategoriesModel {
      * Border type for labels
      * * Rectangle
      * * Without Top Border
-     * * Without Top and BottomBorder
+     * * Without Top and Bottom Border
      * * Without Border
      * * Brace
-     * * CurlyBrace
+     * * Curly Brace
      *
      * @default 'Rectangle'
      * @aspDefaultValueIgnore
@@ -238,14 +238,14 @@ export interface StripLineSettingsModel {
     size?: number;
 
     /**
-     * Color of the strip line.
+     * Specifies the color of the strip line.
      *
      * @default '#808080'
      */
     color?: string;
 
     /**
-     * Dash Array of the strip line.
+     * Dash array of the strip line.
      *
      * @default null
      * @aspDefaultValueIgnore
@@ -260,7 +260,7 @@ export interface StripLineSettingsModel {
     sizeType?: SizeType;
 
     /**
-     * isRepeat value of the strip line.
+     * Specifies whether the strip line is repeated.
      *
      * @default false
      * @aspDefaultValueIgnore
@@ -284,7 +284,7 @@ export interface StripLineSettingsModel {
     repeatUntil?: Object | number | Date;
 
     /**
-     * isSegmented value of the strip line.
+     * Specifies whether the strip line is segmented.
      *
      * @default false
      * @aspDefaultValueIgnore
@@ -391,10 +391,10 @@ export interface StripLineSettingsModel {
 export interface MultiLevelLabelsModel {
 
     /**
-     * Defines the position of the multi level labels. They are,
-     * * Near: Places the multi level labels at Near.
-     * * Center: Places the multi level labels at Center.
-     * * Far: Places the multi level labels at Far.
+     * Defines the position of the multi level labels. The available options are,
+     * * Near: Places the multi-level labels near.
+     * * Center: Places the multi-level label in the center.
+     * * Far: Places the multi-level labels far.
      *
      * @default 'Center'
      */
@@ -411,17 +411,17 @@ export interface MultiLevelLabelsModel {
     overflow?: TextOverflow;
 
     /**
-     * Options to customize the multi level labels.
+     * Options to customize the multi-level labels.
      */
     textStyle?: FontModel;
 
     /**
-     * Border of the multi level labels.
+     * Border of the multi-level labels.
      */
     border?: LabelBorderModel;
 
     /**
-     * multi level categories for multi level labels.
+     * Multi level categories for multi-level labels.
      */
     categories?: MultiLevelCategoriesModel[];
 
@@ -433,7 +433,7 @@ export interface MultiLevelLabelsModel {
 export interface ScrollbarSettingsRangeModel {
 
     /**
-     * Specifies the minimum range of an scrollbar.
+     * Specifies the minimum range of a scrollbar.
      *
      * @default null
      */
@@ -517,7 +517,7 @@ export interface ScrollbarSettingsModel {
     height?: number;
 
     /**
-     * Defines enable or disable of zoom by scroll bar.
+     * Specifies whether zooming by scroll bar is enabled or disabled.
      *
      * @default true
      */

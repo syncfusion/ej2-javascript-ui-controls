@@ -350,9 +350,18 @@ export class PdfRenderer {
         }
         else {
             const annotationRenderer: AnnotationRenderer = new AnnotationRenderer(this.pdfViewer, this.pdfViewerBase);
+            const formfields: FormFieldsBase = new FormFieldsBase(this.pdfViewer, this.pdfViewerBase);
             // create object for form fields signature
             annotationRenderer.removeSignatureTypeAnnot(jsonObject, this.loadedDocument);
             this.orderAnnotations(jsonObject);
+            if (Object.prototype.hasOwnProperty.call(jsonObject, 'isFormFieldAnnotationsExist') && jsonObject.isFormFieldAnnotationsExist) {
+                if (Object.prototype.hasOwnProperty.call(jsonObject, 'formDesigner')) {
+                    formfields.saveFormFieldsDesignerData(jsonObject);
+                }
+                else if (Object.prototype.hasOwnProperty.call(jsonObject, 'fieldsData')) {
+                    formfields.saveFormFieldsData(jsonObject);
+                }
+            }
             if (Object.prototype.hasOwnProperty.call(jsonObject, 'organizePages')) {
                 const savedBase64String: string = _encode(this.loadedDocument.save());
                 clonedDocument = new PdfDocument(savedBase64String, this.password);
@@ -370,9 +379,6 @@ export class PdfRenderer {
                 }
                 clonedDocument = null;
             }
-            if(!isNullOrUndefined(this.loadedDocument.form)) {
-                this.loadedDocument.form._dictionary.update('NeedAppearances', true);
-            }      
             return 'data:application/pdf;base64,' + _encode(this.loadedDocument.save());
         }
     }
@@ -645,7 +651,6 @@ export class PdfRenderer {
 
     private orderAnnotations(jsonObject: { [key: string]: string }): void {
         const annotationRenderer: AnnotationRenderer = new AnnotationRenderer(this.pdfViewer, this.pdfViewerBase);
-        const formfields: FormFieldsBase = new FormFieldsBase(this.pdfViewer, this.pdfViewerBase);
         const signatureModule: SignatureBase = new SignatureBase(this.pdfViewer, this.pdfViewerBase);
         if (Object.prototype.hasOwnProperty.call(jsonObject, 'isAnnotationsExist') && jsonObject.isAnnotationsExist) {
             if (Object.prototype.hasOwnProperty.call(jsonObject, 'annotationCollection')) {
@@ -775,14 +780,6 @@ export class PdfRenderer {
                         signatureModule.saveSignatureData(jsonObject, this.loadedDocument);
                     }
                 }
-            }
-        }
-        if (Object.prototype.hasOwnProperty.call(jsonObject, 'isFormFieldAnnotationsExist') && jsonObject.isFormFieldAnnotationsExist) {
-            if (Object.prototype.hasOwnProperty.call(jsonObject, 'formDesigner')) {
-                formfields.saveFormFieldsDesignerData(jsonObject);
-            }
-            else if (Object.prototype.hasOwnProperty.call(jsonObject, 'fieldsData')) {
-                formfields.saveFormFieldsData(jsonObject);
             }
         }
     }

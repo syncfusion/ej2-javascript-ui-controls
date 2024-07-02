@@ -6,11 +6,11 @@ import { Alignment, EmptyPointMode, TextOverflow, TitlePosition} from '../utils/
 import { RangeIntervalType, PeriodSelectorPosition } from '../utils/enum';
 
 /**
- * Defines the appearance of the connectors
+ * Defines the appearance of the connectors.
  */
 export class Connector extends ChildProperty<Connector> {
     /**
-     * specifies the type of the connector line. They are
+     * Specifies the type of the connector line. They are
      * * Smooth
      * * Line
      *
@@ -48,7 +48,7 @@ export class Connector extends ChildProperty<Connector> {
     public length: string;
 
     /**
-     * dashArray of the connector line.
+     * DashArray of the connector line.
      *
      * @default ''
      */
@@ -82,7 +82,7 @@ export class titleBorder extends ChildProperty<titleBorder> {
     public width: number;
 
     /**
-     * corder radius for the border.
+     * Corner radius for the border.
      *
      * @default 0.8
      */
@@ -134,7 +134,7 @@ export class titleSettings extends ChildProperty<titleSettings> {
     public color: string;
 
     /**
-     * text alignment.
+     * Specifies the alignment of the text.
      *
      * @default 'Center'
      */
@@ -352,7 +352,7 @@ export class Border extends ChildProperty<Border> {
 export class Offset extends ChildProperty<Offset> {
 
     /**
-     * x value of the marker position.
+     * Specifies the x value of the marker position.
      *
      * @default 0
      */
@@ -361,7 +361,7 @@ export class Offset extends ChildProperty<Offset> {
     public x: number;
 
     /**
-     * y value of the marker position.
+     * Specifies the y value of the marker position.
      *
      * @default 0
      */
@@ -383,7 +383,7 @@ export class ChartArea extends ChildProperty<ChartArea> {
     public border: BorderModel;
 
     /**
-     * The background of the chart area that accepts value in hex and rgba as a valid CSS color string..
+     * The background of the chart area that accepts value in hex and rgba as a valid CSS color string.
      *
      * @default 'transparent'
      */
@@ -461,7 +461,7 @@ export class Margin extends ChildProperty<Margin> {
     public bottom: number;
 }
 /**
- * Configures the chart Legend Container Padding.
+ * Configures the chart legend container padding.
  */
 export class ContainerPadding extends ChildProperty<ContainerPadding> {
 
@@ -531,7 +531,7 @@ export class Animation extends ChildProperty<Animation> {
     public delay: number;
 }
 /**
- * Series and point index
+ * Specifies the indexes of the series and the point.
  *
  * @public
  */
@@ -559,7 +559,7 @@ export class Indexes extends ChildProperty<Indexes> {
 
 }
 /**
- * Column series rounded corner options
+ * Column series rounded corner options.
  */
 export class CornerRadius extends ChildProperty<CornerRadius> {
     /**
@@ -608,7 +608,7 @@ export class Index {
     }
 }
 /**
- * Configures the Empty Points of series
+ * Configures the empty Points of series
  */
 
 export class EmptyPointSettings extends ChildProperty<EmptyPointSettings> {
@@ -642,13 +642,13 @@ export class EmptyPointSettings extends ChildProperty<EmptyPointSettings> {
 }
 
 /**
- * Configures the drag settings of series
+ * Configures the drag settings of series.
  */
 
 export class DragSettings extends ChildProperty<DragSettings> {
 
     /**
-     * To enable the drag the points.
+     * To enable dragging the points.
      *
      * @default false
      */
@@ -719,7 +719,7 @@ export class CenterLabel extends ChildProperty<CenterLabel> {
     public hoverTextFormat: string;
 }
 /**
- * Configures the ToolTips in the chart.
+ * Configures the tooltips in the chart.
  *
  * @public
  */
@@ -868,7 +868,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
     /**
      * Specifies the location of the tooltip, relative to the chart.
-     * If x is 20, tooltip moves by 20 pixels to the right of the chart
+     * If x is 20, tooltip moves by 20 pixels to the right of the chart.
      * ```html
      * <div id='Chart'></div>
      * ```
@@ -1033,7 +1033,7 @@ export class StockTooltipSettings extends ChildProperty<StockTooltipSettings> {
     public border: BorderModel;
 
     /**
-     * Specifies the tooltip position. They are,
+     * Specifies the tooltip position. They are:
      * * fixed - Place the tooltip in the fixed position.
      * * nearest- Tooltip moves along with the mouse.
      *
@@ -1046,7 +1046,7 @@ export class StockTooltipSettings extends ChildProperty<StockTooltipSettings> {
 }
 
 /**
- * button settings in period selector
+ * Configures the button settings in period selector.
  */
 export class Periods extends ChildProperty<Periods> {
     /**
@@ -1087,7 +1087,7 @@ export class Periods extends ChildProperty<Periods> {
 }
 
 /**
- * Period Selector Settings
+ * Configures the period selector settings.
  */
 export class PeriodSelectorSettings extends ChildProperty<PeriodSelectorSettings> {
 
@@ -1101,7 +1101,7 @@ export class PeriodSelectorSettings extends ChildProperty<PeriodSelectorSettings
     public height: number;
 
     /**
-     * vertical position of the period selector.
+     * Vertical position of the period selector.
      *
      * @default 'Bottom'
      */
@@ -1110,7 +1110,7 @@ export class PeriodSelectorSettings extends ChildProperty<PeriodSelectorSettings
     public position: PeriodSelectorPosition;
 
     /**
-     * Buttons
+     * Specify the attributes of each period.
      */
 
     @Collection<PeriodsModel>([], Periods)

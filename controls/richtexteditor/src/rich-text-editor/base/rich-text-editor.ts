@@ -2242,13 +2242,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 detach(tooltipEle);
             }
         }
-        if (this.element.offsetParent === null) {
-            if (!isNOU(this.toolbarModule)) { this.toolbarModule.destroy(); }
-            this.notify(events.moduleDestroy, {});
-            super.destroy();
-            this.isRendered = false;
-            return;
-        }
         this.notify(events.destroy, {});
         this.destroyDependentModules();
         this.unWireEvents();

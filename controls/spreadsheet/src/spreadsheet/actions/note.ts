@@ -94,7 +94,7 @@ export class SpreadsheetNote {
                 delete cell.notes;
             }
             if (!isNullOrUndefined(args) && args.isDeleteFromMenu) {
-                const eventArgs : NoteSaveEventArgs =  { notes: cell.notes, address: address, element: targetElement};
+                const eventArgs : NoteSaveEventArgs =  { notes: cell.notes, address: address};
                 this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'addNote' });
                 this.isShowNote = null;
             }
@@ -142,8 +142,10 @@ export class SpreadsheetNote {
 
     private mouseOut(): void {
         if (this.isNoteVisible && (!this.isNoteVisibleOnTouch && !isNullOrUndefined(document.getElementsByClassName('e-addNoteContainer')[0] as HTMLTextAreaElement))) {
-            this.removeNoteContainer();
-            this.isNoteVisible = false;
+            if (document.activeElement.className.indexOf("e-addNoteContainer") === -1) {
+                this.removeNoteContainer();
+                this.isNoteVisible = false;
+            }
         }
     }
 
@@ -254,7 +256,7 @@ export class SpreadsheetNote {
             updateCell(
                 this.parent, this.parent.getActiveSheet(), { rowIdx: cellIdxs[0], colIdx: cellIdxs[1], preventEvt: true,
                     cell: { notes: noteContainer.value, isNoteEditable: true }});
-            const eventArgs : NoteSaveEventArgs =  { notes: noteContainer.value, address: address, element: targetElement};
+            const eventArgs : NoteSaveEventArgs =  { notes: noteContainer.value, address: address};
             this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'addNote' });
             this.isShowNote = null;
         }

@@ -110,7 +110,9 @@ export class RibbonComboBox {
             const target: HTMLElement = (e.event as MouseEvent) ? (e.event as MouseEvent).target as HTMLElement : null;
             if (item.comboBoxSettings.close) { item.comboBoxSettings.close.call(this, e); }
             if (target && !target.closest('.e-ribbon-group-overflow-ddb')) {
-                overflowButton.toggle();
+                if (overflowButton.element.classList.contains('e-active')) {
+                    overflowButton.toggle();
+                }
             }
         };
     }

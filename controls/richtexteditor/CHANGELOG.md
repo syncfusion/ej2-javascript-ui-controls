@@ -2,13 +2,31 @@
 
 ## [Unreleased]
 
-## 26.1.38 (2024-06-19)
+## 26.1.40 (2024-07-02)
 
 ### RichTextEditor
 
 #### Bug Fixes
 
+- `#I595611` - Now, localization texts work properly for the source code and preview tooltips in the Rich Text Editor.
+
 - `#I595571` - Now, inserting the table into the RichTextEditor works properly while using the quick toolbar settings in the editor.
+
+- `#I534515` - Now, the cursor position is maintained properly when inserting image caption text in the Rich Text Editor.
+
+- `#I598541` - Now, the quick toolbar in the Rich Text Editor works properly and does not get hidden behind the dialog.
+
+- `#F188888` - Now, when setting the `layoutOption` to 'Break' in the `insertVideoSettings`, the break is applied to the embedded video element in the Rich Text Editor.
+
+- `#I596139` - Now, the `afterPasteCleanup` event returns the proper values in the `Value`argument when pasting the image into the Rich Text Editor.
+
+- `#I597774` - Now, enabling and disabling the toolbar on the `focus` and `blur` events, respectively, doesn't bind the drop event multiple times, and it works properly.
+
+## 26.1.38 (2024-06-19)
+
+### RichTextEditor
+
+#### Bug Fixes
 
 - `#I593447` - Now, when the Rich Text Editor value is set to null, injecting the count module works properly.
 
@@ -16,13 +34,11 @@
 
 - `#I595789` - Now, applying the quotation in the Rich Text Editor `markdown` mode works properly.
 
-- `#I597774` - Now, enabling and disabling the toolbar on the `focus` and `blur` events, respectively, doesn't bind the drop event multiple times, and it works properly.
-
 - `#F188533` - Now, new lines between the text are deleted properly in the Rich Text Editor.
 
-- `#I596139` - Now, the `afterPasteCleanup` event returns the proper values in the `Value`argument when pasting the image into the Rich Text Editor.
-
 - Now, fixed the issue with font color and the background color popup not opening in rare cases.
+
+- Now, the issue with the Editor instance not being properly destroyed inside the Scheduler Edit Template has been fixed.
 
 ## 26.1.35 (2024-06-11)
 

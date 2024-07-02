@@ -59,6 +59,10 @@ export class Image {
     private removingImgName: string;
     private currentResizeHandler: string;
     private aspectRatio: number;
+    private drop: EventListenerOrEventListenerObject;
+    private drag: EventListenerOrEventListenerObject;
+    private enter: EventListenerOrEventListenerObject;
+    private start: EventListenerOrEventListenerObject;
     private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.rteID = parent.element.id;
@@ -66,10 +70,10 @@ export class Image {
         this.rendererFactory = serviceLocator.getService<RendererFactory>('rendererFactory');
         this.dialogRenderObj = serviceLocator.getService<DialogRenderer>('dialogRenderObject');
         this.addEventListener();
-        this.dragDrop = this.dragDrop.bind(this);
-        this.dragOver = this.dragOver.bind(this);
-        this.dragEnter = this.dragEnter.bind(this);
-        this.dragStart = this.dragStart.bind(this);
+        this.drop = this.dragDrop.bind(this);
+        this.drag = this.dragOver.bind(this);
+        this.enter = this.dragEnter.bind(this);
+        this.start = this.dragStart.bind(this);
     }
 
     protected addEventListener(): void {
@@ -130,10 +134,14 @@ export class Image {
         this.parent.off(events.moduleDestroy, this.moduleDestroy);
         const dropElement: HTMLElement | Document = this.parent.iframeSettings.enable ? this.parent.inputElement.ownerDocument
             : this.parent.inputElement;
-        dropElement.removeEventListener('drop', this.dragDrop, true);
-        dropElement.removeEventListener('dragstart', this.dragStart, true);
-        dropElement.removeEventListener('dragenter', this.dragEnter, true);
-        dropElement.removeEventListener('dragover', this.dragOver, true);
+        dropElement.removeEventListener('drop', this.drop, true);
+        dropElement.removeEventListener('dragstart', this.drag, true);
+        dropElement.removeEventListener('dragenter', this.enter, true);
+        dropElement.removeEventListener('dragover', this.start, true);
+        this.drop = null;
+        this.drag = null;
+        this.enter = null;
+        this.start = null;
         if (!isNOU(this.contentModule)) {
             EventHandler.remove(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.imageClick);
             this.parent.formatter.editorManager.observer.off(events.checkUndo, this.undoStack);
@@ -187,10 +195,10 @@ export class Image {
         }
         const dropElement: HTMLElement | Document = this.parent.iframeSettings.enable ? this.parent.inputElement.ownerDocument :
             this.parent.inputElement;
-        dropElement.addEventListener('drop', this.dragDrop, true);
-        dropElement.addEventListener('dragstart', this.dragStart, true);
-        dropElement.addEventListener('dragenter', this.dragEnter, true);
-        dropElement.addEventListener('dragover', this.dragOver, true);
+        dropElement.addEventListener('drop', this.drop, true);
+        dropElement.addEventListener('dragstart', this.drag, true);
+        dropElement.addEventListener('dragenter', this.enter, true);
+        dropElement.addEventListener('dragover', this.start, true);
     }
 
     private undoStack(args?: { [key: string]: string }): void {

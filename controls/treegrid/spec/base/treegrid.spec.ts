@@ -1652,128 +1652,130 @@ describe('EJ2-53010-Expand At level method', () => {
     });
 });
 
-// describe('EJ2-54516-expandByKey method testing', () => {
-//     let gridObj: TreeGrid;
-//     beforeAll((done: Function) => {
-//         gridObj = createGrid(
-//             {
-//                 dataSource: sampleData,
-//                 childMapping: 'subtasks',
-//                 treeColumnIndex: 1,
-//                 columns: [
-//                     { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 90, textAlign: 'Right' },
-//                     { field: 'taskName', headerText: 'Task Name', width: 180 },
-//                     {
-//                         field: 'startDate',
-//                         headerText: 'Start Date',
-//                         width: 90,
-//                         textAlign: 'Right',
-//                         type: 'date',
-//                         format: 'yMd'
-//                     },
-//                     {
-//                         field: 'endDate',
-//                         headerText: 'End Date',
-//                         width: 90,
-//                         textAlign: 'Right',
-//                         type: 'date',
-//                         format: 'yMd'
-//                     },
-//                     {
-//                         field: 'duration',
-//                         headerText: 'Duration',
-//                         width: 80,
-//                         textAlign: 'Right'
-//                     },
-//                     {
-//                         field: 'progress',
-//                         headerText: 'Progress',
-//                         width: 80,
-//                         textAlign: 'Right'
-//                     },
-//                     { field: 'priority', headerText: 'Priority', width: 90 }
-//                 ]
-//             },
-//             done
-//         );
-//     });
+describe('EJ2-54516-expandByKey method testing', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 90, textAlign: 'Right' },
+                    { field: 'taskName', headerText: 'Task Name', width: 180 },
+                    {
+                        field: 'startDate',
+                        headerText: 'Start Date',
+                        width: 90,
+                        textAlign: 'Right',
+                        type: 'date',
+                        format: 'yMd'
+                    },
+                    {
+                        field: 'endDate',
+                        headerText: 'End Date',
+                        width: 90,
+                        textAlign: 'Right',
+                        type: 'date',
+                        format: 'yMd'
+                    },
+                    {
+                        field: 'duration',
+                        headerText: 'Duration',
+                        width: 80,
+                        textAlign: 'Right'
+                    },
+                    {
+                        field: 'progress',
+                        headerText: 'Progress',
+                        width: 80,
+                        textAlign: 'Right'
+                    },
+                    { field: 'priority', headerText: 'Priority', width: 90 }
+                ]
+            },
+            done
+        );
+    });
 
-//     it('Expand/Collapse By Key', () => {
-//         gridObj.collapseByKey(6);
-//         expect(document.querySelectorAll('.e-treegridcollapse').length).toBe(1);
-//         gridObj.expandByKey(6);
-//         expect(document.querySelectorAll('.e-treegridcollapse').length).toBe(0);
-//     });
+    it('Expand/Collapse By Key', (done: Function) => {
+        gridObj.collapseByKey(6);
+        expect(gridObj.getRows()[5].querySelector('.e-treegridcollapse').classList.contains('e-treegridcollapse')).toBe(true);
+        gridObj.expandByKey(6);
+        expect(gridObj.getRows()[5].querySelector('.e-treegridexpand').classList.contains('e-treegridexpand')).toBe(true);
+        done();
+    });
 
-//     afterAll(() => {
-//         destroy(gridObj);
-//     });
-// });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
 
-// describe('EJ2-54516-expand/collapse level method test with params', () => {
-//     let gridObj: TreeGrid;
-//     beforeAll((done: Function) => {
-//         gridObj = createGrid(
-//             {
-//                 dataSource: sampleData,
-//                 childMapping: 'subtasks',
-//                 treeColumnIndex: 1,
-//                 enableCollapseAll: true,
-//                 columns: [
-//                     { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 90, textAlign: 'Right' },
-//                     { field: 'taskName', headerText: 'Task Name', width: 180 },
-//                     {
-//                         field: 'startDate',
-//                         headerText: 'Start Date',
-//                         width: 90,
-//                         textAlign: 'Right',
-//                         type: 'date',
-//                         format: 'yMd'
-//                     },
-//                     {
-//                         field: 'endDate',
-//                         headerText: 'End Date',
-//                         width: 90,
-//                         textAlign: 'Right',
-//                         type: 'date',
-//                         format: 'yMd'
-//                     },
-//                     {
-//                         field: 'duration',
-//                         headerText: 'Duration',
-//                         width: 80,
-//                         textAlign: 'Right'
-//                     },
-//                     {
-//                         field: 'progress',
-//                         headerText: 'Progress',
-//                         width: 80,
-//                         textAlign: 'Right'
-//                     },
-//                     { field: 'priority', headerText: 'Priority', width: 90 }
-//                 ],
-//                 expanding: function(args: RowExpandingEventArgs) {
-//                     args.expandAll = true;
-//                 },
-//                 collapsing: function(args: RowCollapsingEventArgs) {
-//                     args.collapseAll = true;
-//                 }
-//             },
-//             done
-//         );
-//     });
+describe('EJ2-54516-expand/collapse level method test with params', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                enableCollapseAll: true,
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 90, textAlign: 'Right' },
+                    { field: 'taskName', headerText: 'Task Name', width: 180 },
+                    {
+                        field: 'startDate',
+                        headerText: 'Start Date',
+                        width: 90,
+                        textAlign: 'Right',
+                        type: 'date',
+                        format: 'yMd'
+                    },
+                    {
+                        field: 'endDate',
+                        headerText: 'End Date',
+                        width: 90,
+                        textAlign: 'Right',
+                        type: 'date',
+                        format: 'yMd'
+                    },
+                    {
+                        field: 'duration',
+                        headerText: 'Duration',
+                        width: 80,
+                        textAlign: 'Right'
+                    },
+                    {
+                        field: 'progress',
+                        headerText: 'Progress',
+                        width: 80,
+                        textAlign: 'Right'
+                    },
+                    { field: 'priority', headerText: 'Priority', width: 90 }
+                ],
+                expanding: function(args: RowExpandingEventArgs) {
+                    args.expandAll = true;
+                },
+                collapsing: function(args: RowCollapsingEventArgs) {
+                    args.collapseAll = true;
+                }
+            },
+            done
+        );
+    });
 
-//     it('ExpandAtLevel with params', () => {
-//         gridObj.expandAtLevel(1);
-//         expect(document.querySelectorAll('.e-treegridcollapse').length).toBe(2);
-//         gridObj.collapseAtLevel(1);
-//         expect(document.querySelectorAll('.e-treegridcollapse').length).toBe(8);
-//     });
+    it('ExpandAtLevel with params', (done: Function) => {
+        gridObj.expandAtLevel(1);
+        expect(gridObj.element.querySelectorAll('.e-treegridcollapse').length).toBe(2);
+        gridObj.collapseAtLevel(1);
+        expect(gridObj.element.querySelectorAll('.e-treegridcollapse').length).toBe(8);
+        done();
+    });
 
-//     afterAll(() => {
-//         destroy(gridObj);
-//     });
-// });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
 
 describe('EJ2-57180 - Last grid Line missing after collapsing all records while using setRowData method', () => {
     let gridObj: TreeGrid;
@@ -2736,14 +2738,14 @@ describe('Null or undefined check', () => {
         gridObj.dataBind();
         expect(gridObj.columnQueryMode).toBe(undefined);
     });
-    // it("columns", () => {
-    //     gridObj.columns = null;
-    //     gridObj.dataBind();
-    //     expect(gridObj.columns).toBe(null);
-    //     gridObj.columns = undefined;
-    //     gridObj.dataBind();
-    //     expect(gridObj.columns).toBe(undefined);
-    // });
+    it("columns", () => {
+        gridObj.columns = null;
+        gridObj.dataBind();
+        expect(gridObj.columns).toBe(null);
+        gridObj.columns = undefined;
+        gridObj.dataBind();
+        expect(gridObj.columns).toBe(undefined);
+    });
     it("contextMenuItems", () => {
         gridObj.contextMenuItems = null;
         gridObj.dataBind();
@@ -3477,8 +3479,7 @@ describe('Checking template position in react', () => {
         );
     });
     it('Checking template position when the template column is marked as treeColumnIndex ', () => {
-        const cell = document.getElementsByClassName('e-templatecell')[0];
-        expect((cell.getElementsByClassName('e-treecell')[0] as any).innerText == 'Button').toBe(true);
+        expect((gridObj.element.querySelector('.e-templatecell').querySelector('.e-treecell') as any).innerText == 'Button').toBe(true);
     });
     afterAll(() => {
         destroy(gridObj);

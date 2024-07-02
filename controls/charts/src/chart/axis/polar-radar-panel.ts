@@ -12,7 +12,7 @@ import { LabelIntersectAction } from '../../common/utils/enum';
 import { VisibleRangeModel } from '../../common/model/interface';
 
 /**
- * Specifies the Polar Axis Layout.
+ * Specifies the polar axis layout.
  */
 
 export class PolarRadarPanel extends LineBase {
@@ -138,7 +138,7 @@ export class PolarRadarPanel extends LineBase {
      */
 
     private calculateRowSize(rect: Rect): void {
-        /*! Calculate row size */
+        /** Calculate row size */
         const chart: Chart = this.chart;
         const row: Row = <Row>chart.rows[0];
         row.computedHeight = rect.height / 2;
@@ -153,7 +153,7 @@ export class PolarRadarPanel extends LineBase {
      */
 
     private calculateColumnSize(rect: Rect): void {
-        /*! Calculate column size */
+        /** Calculate column size */
         const chart: Chart = this.chart;
         const column: Column = <Column>chart.columns[0];
         column.computedLeft = rect.x;

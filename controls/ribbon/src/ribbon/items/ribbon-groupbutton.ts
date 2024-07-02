@@ -443,7 +443,9 @@ export class RibbonGroupButton {
         targetEle.onclick = () => {
             if (this.parent.activeLayout === 'Simplified' && targetEle.closest('.e-ribbon-dropdown-group-button').classList.contains(constants.RIBBON_GROUP_BUTTON_OVERFLOW_POPUP)) {
                 dropdown.toggle();
-                overflowButton.toggle();
+                if (overflowButton.element.classList.contains('e-active')) {
+                    overflowButton.toggle();
+                }
             }
         };
     }

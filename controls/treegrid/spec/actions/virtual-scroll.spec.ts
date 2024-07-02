@@ -3264,4 +3264,66 @@ describe("Virtual Scroll Current view data check", () => {
   afterAll(() => {
     destroy(treegrid);
   });
+});
+describe("Checking For Selected Record", () => {
+  if (!addVirtualData.length) {
+    dataSource1();
+  }
+  let treegrid: TreeGrid;
+  beforeAll((done: Function) => {
+    treegrid = createGrid(
+      {
+        dataSource: addVirtualData,
+        childMapping: "Crew",
+        enableVirtualization: true,
+        height: 250,
+        treeColumnIndex: 1,
+        rowHeight:40,
+        allowFiltering: true,
+        allowSorting: true,
+        editSettings: {
+          allowEditing: true,
+          allowAdding: true,
+          allowDeleting: true,
+          mode: "Cell",
+          newRowPosition: "Below",
+        },
+        toolbar: ["Add", "Delete", "Update", "Cancel"],
+        allowPaging: true,
+        columns: [
+          {
+            field: "TaskID",
+            headerText: "Task ID",
+            isPrimaryKey: true,
+            width: 70,
+            textAlign: "Right",
+          },
+          { field: "FIELD1", headerText: "Task Name", width: 200, textAlign: "Left" },
+          {
+            field: "FIELD2",
+            headerText: "Start Date",
+            width: 90,
+            textAlign: "Right",
+          },
+          { field: "FIELD3", headerText: "End Date", width: 90, textAlign: "Right" },
+          { field: "FIELD4", headerText: "Duration", width: 80, textAlign: "Right" },
+          { field: "FIELD5", headerText: "Progress", width: 80, textAlign: "Right" },
+          { field: "FIELD6", headerText: "Priority", width: 90 },
+        ],
+      },
+      done
+    );
+  });
+  it("Select Record Check", (done: Function) => {
+    treegrid.selectedRowIndex = 100
+    done();
+  });
+  it("Select Record Check", (done: Function) => {
+    treegrid.selectedRowIndex = 6
+    expect(treegrid.getCurrentViewRecords()[0]['TaskID']).toBe(1)
+    done();
+  });
+  afterAll(() => {
+    destroy(treegrid);
+  });
 }); 

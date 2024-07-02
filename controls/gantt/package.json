@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-gantt",
-	"version": "26.1.38",
+	"version": "26.1.39",
 	"description": "Essential JS 2 Gantt Component",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -58,7 +58,19 @@
 		"TypeScript",
 		"gantt",
 		"gantt-chart",
-		"project-management"
+		"project-management",
+		"project-planning",
+		"task-scheduling",
+		"timeline-chart",
+		"project-tracking",
+		"project-timeline",
+		"resource-management",
+		"task-management",
+		"schedule-management",
+		"timeline-management",
+		"gantt-view",
+		"gantt-chart-component",
+		"gantt-chart-control"
 	],
 	"repository": {
 		"type": "git",

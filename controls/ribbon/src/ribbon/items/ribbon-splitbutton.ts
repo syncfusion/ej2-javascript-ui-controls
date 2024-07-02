@@ -122,13 +122,17 @@ export class RibbonSplitButton {
         };
         splitbutton.click = (e: ClickEventArgs) => {
             if (item.splitButtonSettings.click) { item.splitButtonSettings.click.call(this, e); }
-            overflowButton.toggle();
+            if (overflowButton.element.classList.contains('e-active')) {
+                overflowButton.toggle();
+            }
         };
         splitbutton.close = (e: OpenCloseMenuEventArgs) => {
             if (item.splitButtonSettings.close) { item.splitButtonSettings.close.call(this, e); }
             (splitbutton['wrapper'] as HTMLElement).classList.remove(RIBBON_POPUP_OPEN);
             if (target && !target.closest('.e-ribbon-group-overflow-ddb')) {
-                overflowButton.toggle();
+                if (overflowButton.element.classList.contains('e-active')) {
+                    overflowButton.toggle();
+                }
             }
         };
     }

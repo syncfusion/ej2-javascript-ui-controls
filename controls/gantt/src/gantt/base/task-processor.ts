@@ -1920,7 +1920,7 @@ export class TaskProcessor extends DateProcessor {
                 this.setRecordDate(ganttData, ganttProperties.endDate, dataMapping.endDate);
             }
             if (dataMapping.duration) {
-                if (!isNullOrUndefined(dataMapping.milestone) && !ganttData.taskData[dataMapping.milestone]) {
+                if (isNullOrUndefined(dataMapping.milestone) || (!isNullOrUndefined(dataMapping.milestone) && !ganttData.taskData[dataMapping.milestone])) {
                     this.setRecordDuration(ganttData, dataMapping.duration);
                 }
             }

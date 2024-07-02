@@ -138,7 +138,7 @@ export class Double3D {
      * @private
      */
     protected calculateRange(axis: Chart3DAxis): void {
-        /*! Generate axis range */
+        /** Generate axis range */
         this.min = null; this.max = null;
         if (!setRange(axis)) {
             for (const series of axis.series) {
@@ -364,7 +364,7 @@ export class Double3D {
      * @private
      */
     public calculateVisibleLabels(axis: Chart3DAxis, chart: Chart3D): void {
-        /*! Generate axis labels */
+        /** Generate axis labels */
         axis.visibleLabels = [];
         let tempInterval: number = axis.visibleRange.min;
         let labelStyle: Chart3DTextFont;

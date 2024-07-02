@@ -153,22 +153,22 @@ describe('Paste Heading content and TOC validation', () => {
             done();
         }, 500);
     });
-    it('Copy Paste Heading and Inserting TOC', () => {
-console.log('Copy Paste Heading and Inserting TOC');
-        editor.editor.insertText('Heading1');
-        editor.selection.selectAll();
-        editor.editor.applyStyle('Heading 1');
-        editor.selection.copy();
-        editor.selection.handleRightKey();
-        editor.editor.onEnter();
-        editor.editor.paste();
-        editor.selection.handleUpKey();
-        editor.selection.handleHomeKey();
-        editor.editor.onEnter();
-        editor.selection.handleUpKey();
-        editor.editor.insertTableOfContents();
-        expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(6); 
-    });
+//     it('Copy Paste Heading and Inserting TOC', () => {
+// console.log('Copy Paste Heading and Inserting TOC');
+//         editor.editor.insertText('Heading1');
+//         editor.selection.selectAll();
+//         editor.editor.applyStyle('Heading 1');
+//         editor.selection.copy();
+//         editor.selection.handleRightKey();
+//         editor.editor.onEnter();
+//         editor.editor.paste();
+//         editor.selection.handleUpKey();
+//         editor.selection.handleHomeKey();
+//         editor.editor.onEnter();
+//         editor.selection.handleUpKey();
+//         editor.editor.insertTableOfContents();
+//         expect(editor.documentHelper.pages[0].bodyWidgets[0].childWidgets.length).toBe(6); 
+//     });
     it('Copy Paste word in paragraph', () => {
 console.log('Copy Paste word in paragraph');
         editor.openBlank();

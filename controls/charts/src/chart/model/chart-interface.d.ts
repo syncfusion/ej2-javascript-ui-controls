@@ -78,13 +78,13 @@ export interface ISharedTooltipRenderEventArgs extends IChartEventArgs {
     point: Points[];
     /** Defines the header text for the tooltip. */
     headerText?: string;
-    /** point informations. */
+    /** Point informations. */
     data?: IPointInformation[];
     /** Defines the tooltip template. */
     template?: string[];
 }
 /**
- * Defines the scroll events
+ * Defines the scroll events.
  */
 export interface IScrollEventArgs {
     /** Defines the event cancel status. */
@@ -111,49 +111,49 @@ export interface IScrollEventArgs {
     currentRange?: ScrollbarSettingsRangeModel;
 }
 export interface IZoomCompleteEventArgs extends IChartEventArgs {
-    /** Defines the zoomed axis */
+    /** Defines the zoomed axis. */
     axis: AxisModel;
-    /** Defines the previous zoom factor */
+    /** Defines the previous zoom factor. */
     previousZoomFactor: number;
-    /** Defines the previous zoom position */
+    /** Defines the previous zoom position. */
     previousZoomPosition: number;
-    /** Defines the current zoom factor */
+    /** Defines the current zoom factor. */
     currentZoomFactor: number;
-    /** Defines the current zoom position */
+    /** Defines the current zoom position. */
     currentZoomPosition: number;
-    /** Defines the current axis visible range */
+    /** Defines the current axis visible range. */
     currentVisibleRange: VisibleRangeModel;
-    /** Defines the previous axis visible range */
+    /** Defines the previous axis visible range. */
     previousVisibleRange: VisibleRangeModel;
 }
 export interface ITooltipRenderEventArgs extends IChartEventArgs {
-    /** Defines tooltip text collections */
+    /** Defines tooltip text collections. */
     text?: string;
-    /** Defines tooltip text style */
+    /** Defines tooltip text style. */
     textStyle?: FontModel;
-    /** Defines current tooltip series */
+    /** Defines current tooltip series. */
     series: Series | AccumulationSeries;
-    /** Defines current tooltip point */
+    /** Defines current tooltip point. */
     point: Points | AccPoints;
-    /** Defines the header text for the tooltip */
+    /** Defines the header text for the tooltip. */
     headerText?: string;
-    /** point informations */
+    /** Point informations. */
     data?: IPointInformation;
-    /** Defines the tooltip template */
+    /** Defines the tooltip template. */
     template?: string;
 }
 export interface IPointInformation {
-    /** point xValue. */
+    /** Point xValue. */
     pointX: object;
-    /** point yValue. */
+    /** Point yValue. */
     pointY: object;
-    /** point index. */
+    /** Point index. */
     pointIndex: number;
-    /** series index. */
+    /** Series index. */
     seriesIndex: number;
-    /** series name. */
+    /** Series name. */
     seriesName: string;
-    /** point text. */
+    /** Point text. */
     pointText: string;
 }
 export interface IAxisLabelRenderEventArgs extends IChartEventArgs {
@@ -381,9 +381,9 @@ export interface IThemeStyle {
 export interface IRangeSelectorRenderEventArgs extends IChartEventArgs {
     /** Defines selector collections. */
     selector: ItemModel[];
-    /** enable custom format for calendar. */
+    /** Enable custom format for calendar. */
     enableCustomFormat: boolean;
-    /** content fro calendar format. */
+    /** Content for calendar format. */
     content: string;
 }
 /** @private */
@@ -416,31 +416,31 @@ export interface IBeforeResizeEventArgs {
     cancelResizedEvent: boolean;
 }
 /**
- * Interface for point drag and drop
+ * Interface for point drag and drop.
  */
 export interface IDataEditingEventArgs {
     /**
-     * current series index
+     * Current series index.
      */
     seriesIndex: number;
     /**
-     * Current point index
+     * Current point index.
      */
     pointIndex: number;
     /**
-     * current point old value
+     * Current point old value.
      */
     oldValue: number;
     /**
-     * current point new value
+     * Current point new value.
      */
     newValue: number;
     /**
-     * current series
+     * Current series.
      */
     series: Series;
     /**
-     * current point
+     * Current point.
      */
     point: Points;
 }

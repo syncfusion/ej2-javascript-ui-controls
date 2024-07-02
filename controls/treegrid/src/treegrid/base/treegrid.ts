@@ -3059,7 +3059,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public onPropertyChanged(newProp: TreeGridModel): void {
         const properties: string[] = Object.keys(newProp);
         let requireRefresh: boolean = false;
-        if (properties.indexOf('columns') > -1) {
+        if (properties.indexOf('columns') > -1 && !isNullOrUndefined(newProp.columns)) {
             this.grid.columns = this.getGridColumns(newProp.columns as Column[]);
             this.grid['updateColumnObject']();
             requireRefresh = true;
@@ -4184,6 +4184,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public expandRow(row: HTMLTableRowElement, record?: Object, key?: Object, level?: number): void {
+        this.isCollapseAll = false;
         if (isNullOrUndefined(row) && isNullOrUndefined(record) && isNullOrUndefined(key) && isNullOrUndefined(level)) {
             const error: string = 'The provided value for the row is undefined. Please ensure the row contains row element.';
             this.trigger(events.actionFailure, { error: error });
@@ -4305,6 +4306,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public collapseRow(row: HTMLTableRowElement, record?: Object, key?: Object): void {
+        this.isExpandAll = false;
         if (isNullOrUndefined(row) && isNullOrUndefined(record) && isNullOrUndefined(key)) {
             const error: string = 'The provided value for the row is undefined. Please ensure the row contains row element.';
             this.trigger(events.actionFailure, { error: error });
@@ -4577,6 +4579,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             rows = this.getRows().filter((e: HTMLTableRowElement) => {
                 return e.querySelector('.e-treegrid' + (action === 'expand' ? 'collapse' : 'expand'));
             });
+        }
+        if (!rows.length && this.getRows().length) {
+            rows.push(this.getRows()[0]);
         }
         this.isExpandAll = true;
         this.isCollapseAll = true;

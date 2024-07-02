@@ -5,7 +5,7 @@ import { ConnectorModel, BpmnFlowModel } from '../../../src/diagram/objects/conn
 import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { SelectorModel } from '../../../src/diagram/objects/node-model';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
-import { NodeConstraints, SnapConstraints } from '../../../src/diagram/enum/enum';
+import { DiagramTools, NodeConstraints, SnapConstraints } from '../../../src/diagram/enum/enum';
 import { IDraggingEventArgs } from '../../../src/diagram/objects/interface/IElement'
 
 /**
@@ -1142,6 +1142,76 @@ describe('Custom style for Multiple Selection of nodes and connectors', () => {
     it('Checking multiple selection for nodes and connectors', (done: Function) => {
         let elements= document.getElementsByClassName("e-diagram-selection-indicator");
         expect(elements.length === 3).toBe(true);
+        done();
+    });
+});
+describe('892496 - Unable to unselect selected node using CTRL+Click when zoompan is enabled', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagramctrlUnselect' });
+        document.body.appendChild(ele);
+
+        let connector: ConnectorModel = {
+            id: 'connector1', sourcePoint: { x: 300, y: 400 }, targetPoint: { x: 500, y: 500 }, annotations: [ {content: 'Connector'}]
+        };
+        let node: NodeModel = {
+            id: 'node1', width: 150, height: 100, offsetX: 100, offsetY: 100, annotations: [ { content: 'Node1'}]
+        };
+        let node2: NodeModel = {
+            id: 'node2', width: 80, height: 130, offsetX: 200, offsetY: 200, annotations: [ { content: 'Node2'}]
+        };
+        let node3: NodeModel = {
+            id: 'node3', width: 100, height: 75, offsetX: 300, offsetY: 350, annotations: [ { content: 'Node3'}]
+        };
+        diagram = new Diagram({
+            width: '1000px', height: '500px', nodes: [node, node2, node3], connectors: [connector],
+            tool:DiagramTools.ZoomPan|DiagramTools.MultipleSelect
+        });
+        diagram.appendTo('#diagramctrlUnselect');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking multiple selection of nodes using control plus click', (done: Function) => {
+        let node1 = diagram.nameTable['node1'];
+        let node2 = diagram.nameTable['node2'];
+        let node3 = diagram.nameTable['node3'];
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, node1.offsetX, node1.offsetY);
+        mouseEvents.clickEvent(diagramCanvas, node1.offsetX, node1.offsetY,true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, node2.offsetX, node2.offsetY);
+        mouseEvents.clickEvent(diagramCanvas, node2.offsetX, node2.offsetY,true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, node3.offsetX, node3.offsetY);
+        mouseEvents.clickEvent(diagramCanvas, node3.offsetX, node3.offsetY,true);
+        //To unselect the node1
+        mouseEvents.mouseMoveEvent(diagramCanvas, node1.offsetX, node1.offsetY);
+        mouseEvents.clickEvent(diagramCanvas, node1.offsetX, node1.offsetY,true);
+        expect(diagram.selectedItems.nodes.length === 2).toBe(true);
+        done();
+    });
+    it('Checking multiple selection with zoomPan tool alone', (done: Function) => {
+        diagram.clearSelection();
+        diagram.tool = DiagramTools.ZoomPan;
+        diagram.dataBind();
+        let node1 = diagram.nameTable['node1'];
+        let node2 = diagram.nameTable['node2'];
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, node1.offsetX, node1.offsetY);    
+        mouseEvents.clickEvent(diagramCanvas, node1.offsetX, node1.offsetY,true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, node2.offsetX, node2.offsetY);
+        mouseEvents.clickEvent(diagramCanvas, node2.offsetX, node2.offsetY,true);
+        //No node should be selected with zoompan tool alone enabled.
+        expect(diagram.selectedItems.nodes.length === 0).toBe(true);
         done();
     });
 });

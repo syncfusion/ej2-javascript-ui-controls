@@ -316,7 +316,7 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
                 this.checkCollision(showPopupData, 'document', ((this.parent.inlineMode.enable) ? 'inline' : (type === 'text') ? 'text' : ''));
                 this.popupObj.element.classList.remove('e-popup-open');
                 removeClass([this.element], [classes.CLS_HIDE]);
-                this.popupObj.show({ name: 'ZoomIn', duration: (Browser.isIE ? 250 : 400) });
+                this.popupObj.show({ name: 'ZoomIn', duration: (Browser.isIE ? 250 : 400) }, (target as HTMLElement));
                 if (this.popupObj && this.parent.cssClass) {
                     removeClass([this.popupObj.element], this.parent.cssClass.replace(/\s+/g, ' ').trim().split(' '));
                     addClass([this.popupObj.element], this.parent.cssClass.replace(/\s+/g, ' ').trim().split(' '));

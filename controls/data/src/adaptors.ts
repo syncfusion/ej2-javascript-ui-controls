@@ -2297,7 +2297,7 @@ export class WebMethodAdaptor extends UrlAdaptor {
         const pvtData: string = 'pvtData';
         const url: string = 'url';
         return {
-            data: JSON.stringify(result),
+            data: JSON.stringify(result, DataUtil.parse.jsonDateReplacer),
             url: obj[url],
             pvtData: obj[pvtData],
             type: 'POST',

@@ -12427,8 +12427,8 @@ describe('Spreadsheet formula module ->', () => {
         it('Clicking down arrow and up arrow and tab key in formula dropdown->', (done: Function) => {
             helper.invoke('selectRange', ['J3']);
             helper.triggerKeyNativeEvent(113);
+            helper.getInstance().notify('editOperation', { action: 'refreshEditor', value: '=SU', refreshCurPos: true, refreshEditorElem: true });
             const editElem: HTMLElement = helper.getCellEditorElement();
-            editElem.textContent = '=SU';
             helper.triggerKeyEvent('keyup', 83, null, null, null, editElem);
             setTimeout(() => {
                 helper.triggerKeyNativeEvent(40);
@@ -15012,8 +15012,7 @@ describe('Spreadsheet formula module ->', () => {
                 helper.invoke('startEdit');
                 setTimeout((): void => {
                     const editor: HTMLElement = helper.getElement('#' +helper.id + '_edit');
-                    editor.textContent = '=SUM(';
-                    (spreadsheet as any).editModule.editCellData.value = '=SUM(';
+                    spreadsheet.notify('editOperation', { action: 'refreshEditor', value: '=SUM(', refreshCurPos: true, refreshEditorElem: true });
                     let cell: HTMLElement = helper.invoke('getCell', [0, 1]);
                     helper.triggerMouseAction(
                         'mousedown', { x: cell.getBoundingClientRect().left + 1, y: cell.getBoundingClientRect().top + 1 }, null,
@@ -15023,8 +15022,7 @@ describe('Spreadsheet formula module ->', () => {
                         cell);
                     setTimeout((): void => {
                         expect(editor.textContent).toEqual('=SUM(B1');
-                        editor.textContent = '=SUM(A3';
-                        editor.focus();
+                        spreadsheet.notify('editOperation', { action: 'refreshEditor', value: '=SUM(A3', refreshCurPos: true, refreshEditorElem: true });
                         helper.triggerKeyEvent('keydown', 51, null, null, null, editor);
                         helper.triggerKeyEvent('keyup', 51, null, null, null, editor);
                         cell = helper.invoke('getCell', [2, 0]);

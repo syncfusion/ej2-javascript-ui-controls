@@ -51,7 +51,7 @@ const DISABLE: string = 'e-disable';
 const DROPCOUNT: string = 'e-drop-count';
 const CHECK: string = 'e-check';
 const INDETERMINATE: string = 'e-stop';
-const CHECKBOXWRAP: string = 'e-checkbox-wrapper';
+const CHECKBOXWRAP: string = 'e-treeview-checkbox';
 const CHECKBOXFRAME: string = 'e-frame';
 const CHECKBOXRIPPLE: string = 'e-ripple-container';
 const RIPPLE: string = 'e-ripple';
@@ -1746,6 +1746,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private beforeNodeCreate(e: ItemCreatedArgs): void {
         if (this.showCheckBox) {
             const checkboxEle: Element = createCheckBox(this.createElement, true, { cssClass: this.touchClass });
+            checkboxEle.classList.add(CHECKBOXWRAP);
             const icon: Element = select('div.' + ICON, e.item);
             const id: string = e.item.getAttribute('data-uid');
             e.item.childNodes[0].insertBefore(checkboxEle, e.item.childNodes[0].childNodes[isNOU(icon) ? 0 : 1]);

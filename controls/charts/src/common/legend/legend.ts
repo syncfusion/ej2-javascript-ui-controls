@@ -259,7 +259,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public titleStyle: FontModel;
 
     /**
-     * legend title position.
+     * Legend title position.
      *
      * @default 'Top'
      */
@@ -268,7 +268,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public titlePosition: LegendTitlePosition;
 
     /**
-     * Defines the text wrap behavior to employ when the individual legend text overflows
+     * Defines the text wrap behavior to employ when the individual legend text overflows.
      * * `Normal` -  Specifies to break words only at allowed break points.
      * * `Wrap` - Specifies to break a word once it is too long to fit on a line by itself.
      * * `AnyWhere` - Specifies to break a word at any point if there are no otherwise-acceptable break points in the line.
@@ -280,7 +280,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public textWrap : TextWrap;
 
     /**
-     * Defines the text overflow behavior to employ when the individual legend text overflows
+     * Defines the text overflow behavior to employ when the individual legend text overflows.
      * * `Clip` -  Specifies the text is clipped and not accessible.
      * * `Ellipsis` -  Specifies an ellipsis (“...”) to the clipped text.
      *
@@ -291,7 +291,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public textOverflow  : LabelOverflow;
 
     /**
-     * maximum width for the legend title.
+     * Maximum width for the legend title.
      *
      * @default 100
      */

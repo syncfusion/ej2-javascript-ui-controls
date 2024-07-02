@@ -4448,6 +4448,39 @@ describe('RTE CR issues ', () => {
             }, 100);
         });
     });
+    describe('892829 - Setting layoutOption Break and width 100 percent in insertVideoSettings not working properly in RichTextEditor', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Video', 'Bold']
+                },
+                insertVideoSettings: {
+                    layoutOption: 'Break',
+                    width: '100%',
+                    height: 'auto',
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll((done) => {
+            destroy(rteObj);
+            done();
+        });
+        it('Check the iframe video element that has applied the styles and classes.', (done: Function) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).value = `<iframe width="560" height="315" src="https://www.youtube.com/embed/4U2ZxO7b8iM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+            (dialogEle.querySelector('.e-embed-video-url') as HTMLInputElement).dispatchEvent(new Event("keyup"));
+            (document.querySelector('.e-insertVideo.e-primary') as HTMLElement).click();
+            expect((<any>rteObj).element.querySelector('iframe')).not.toBe(null);
+            expect((rteObj.element.querySelector('.e-embed-video-wrap') as HTMLElement).style.display === 'block').toBe(true);
+            expect(rteObj.element.querySelector('iframe').classList.contains("e-video-break")).toBe(true);
+            done();
+        });
+    });
     describe('890154: Plain text in pasteCleanupSettings adding unwanted styles in the RichTextEditor', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
@@ -4471,4 +4504,38 @@ describe('RTE CR issues ', () => {
             destroy(rteObj);
         });
      });
+    describe('888656 - Script error throws when we insert table into the RichTextEditor', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                placeholder: 'Insert table here',
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+        it('table using quick toolbar ', (done: DoneFn) => {
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[1] as HTMLElement).click();
+            let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("click", false, true);
+            target.dispatchEvent(clickEvent);
+            rteEle.querySelector('.e-table-row').dispatchEvent(new Event("change"));
+            (rteEle.querySelector('.e-table-row') as HTMLInputElement).blur();
+            target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
+            target.dispatchEvent(clickEvent);
+            setTimeout(() => {
+                let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+                expect(table.querySelectorAll('tr').length === 3).toBe(true);
+                done();
+            }, 200);
+        });
+    });
 });

@@ -82,7 +82,9 @@ export class RibbonButton {
         buttonObj.setProperties({ cssClass: buttonObj.cssClass + SPACE + RIBBON_POPUP_CONTROL });
         buttonEle.onclick = (e: Event) => {
             if (item.buttonSettings.clicked) { item.buttonSettings.clicked.call(this, e); }
-            overflowButton.toggle();
+            if (overflowButton.element.classList.contains('e-active')) {
+                overflowButton.toggle();
+            }
         };
     }
     /**

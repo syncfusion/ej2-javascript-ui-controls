@@ -4289,7 +4289,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             this.diagramActions = this.diagramActions | DiagramAction.PublicMethod;
             obj.id = obj.id || randomId(); const layers: LayerModel = this.activeLayer;
-            if (!args.cancel && !layers.lock) {
+            // Bug 890792: Exception thrown when adding a node at runtime in the unit test case.
+            // The issue arises only when the diagram is not appended to the DOM. In such cases, the diagram will not be rendered, and the activeLayer property is undefined.
+            // Check if activeLayer is defined. If activeLayer is defined, then proceed with the operation.
+            if (!args.cancel && layers && !layers.lock) {
                 if (layers.objects.indexOf(obj.id) < 0 && !layers.lock) {
                     if (!layers.visible) { layers.visible = true; this.dataBind(); }
                     layers.objects.push(obj.id);
@@ -4394,9 +4397,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         this.protectPropertyChange(propertyChangeValue); this.resetDiagramActions(DiagramAction.PublicMethod);
         if (newObj && this.layers.length > 1) { this.moveNode(newObj); }
-        for (const temp of this.views) {
-            const view: View = this.views[`${temp}`];
-            if (!(view instanceof Diagram)) { this.refreshCanvasDiagramLayer(view); }
+        // Bug 890792: Exception thrown when adding a node at runtime in the unit test case.
+        // The issue arises only when the diagram is not appended to the DOM. In such cases, the diagram will not be rendered, and the views property is undefined.
+        // Check if views is defined before iterating. If views is defined, then refresh the canvas for each view.
+        if(this.views){
+            for (const temp of this.views) {
+                const view: View = this.views[`${temp}`];
+                if (!(view instanceof Diagram)) { this.refreshCanvasDiagramLayer(view); }
+            }
         }
         this.renderReactTemplates();
         return newObj;
@@ -4404,7 +4412,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * AddElements method allows us to add diagram elements such as nodes and connectors as a collection into the diagram canvas.
      * @returns {void} -AddElements method.
-     * @param { NodeModel[] | ConnectorModel[]} obj -Specifies the colelction object to be added to the diagram.
+     * @param { NodeModel[] | ConnectorModel[]} obj -Specifies the collection object to be added to the diagram.
      * @public method
      **/
     public addElements(obj: NodeModel[] | ConnectorModel[]): void {

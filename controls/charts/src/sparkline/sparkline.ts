@@ -592,7 +592,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
      * @returns {void}
      */
     private setTheme(): void {
-        /*! Set theme */
+        /** Set theme */
         this.sparkTheme = getThemeColor(this.theme);
         if (!(document.getElementById(this.element.id + 'Keyboard_sparkline_focus'))) {
             const style: HTMLStyleElement = document.createElement('style');
@@ -628,7 +628,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
      */
     private unWireEvents(): void {
         const cancel: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
-        /*! UnBind the Event handler */
+        /** UnBind the Event handler */
 
         EventHandler.remove(this.element, Browser.touchMoveEvent, this.sparklineMove);
         EventHandler.remove(this.element, cancel, this.sparklineMouseLeave);
@@ -649,7 +649,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     private wireEvents(): void {
         const cancel: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
 
-        /*! Bind the Event handler */
+        /** Bind the Event handler */
         EventHandler.add(this.element, Browser.touchMoveEvent, this.sparklineMove, this);
         EventHandler.add(this.element, 'click', this.sparklineClick, this);
         EventHandler.add(this.element, cancel, this.sparklineMouseLeave, this);

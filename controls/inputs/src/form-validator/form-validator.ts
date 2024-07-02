@@ -762,7 +762,8 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
         const params: Object = this.rules[`${name}`][`${rule}`];
         const param: Object = (params instanceof Array && typeof params[1] === 'string') ? params[0] : params;
         const currentRule: { [key: string]: Object } = <IKeyValue>this.rules[`${name}`][`${rule}`];
-        const args: ValidArgs = { value: this.inputElement.value, param: param, element: this.inputElement, formElement: this.element };
+        const dateFormat: string = ((rule === 'min' || rule === 'max') && this.rules["" + name].date && typeof (this.rules["" + name].date) === 'string') ? this.rules["" + name].date as string : null;
+        const args: ValidArgs = { value: this.inputElement.value, param: param, element: this.inputElement, formElement: this.element, format: dateFormat };
         this.trigger('validationBegin', args);
         if (!args.param && rule === 'required') {
             return true;
@@ -957,7 +958,15 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
                 return +option.value <= +option.param;
             }
             // Maximum rule validation for date
-            return new Date(option.value).getTime() <= new Date(JSON.parse(JSON.stringify(option.param))).getTime();
+            if (option.format && option.format !== '') {
+                const globalize: Internationalization = new Internationalization;
+                const dateOptions: { format: string, type: string, skeleton: string } = { format: option.format.toString(), type: 'dateTime', skeleton: 'yMd' };
+                const dateValue: Date = globalize.parseDate(option.value, dateOptions);
+                const maxValue: Date = globalize.parseDate(JSON.parse(JSON.stringify(option.param)), dateOptions);
+                return new Date(dateValue).getTime() <= new Date(maxValue).getTime();
+            } else {
+                return new Date(option.value).getTime() <= new Date(JSON.parse(JSON.stringify(option.param))).getTime();
+            }
         },
         min: (option: ValidArgs): boolean => {
             if (!isNaN(Number(option.value))) {
@@ -968,7 +977,15 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
                 return parseFloat(uNum) >= Number(option.param); // Convert option.param to a number
             } else {
                 // Minimum rule validation for date
-                return new Date(option.value).getTime() >= new Date(JSON.parse(JSON.stringify(option.param))).getTime();
+                if (option.format && option.format !== '') {
+                    const globalize: Internationalization = new Internationalization;
+                    const dateOptions: { format: string, type: string, skeleton: string } = { format: option.format.toString(), type: 'dateTime', skeleton: 'yMd' };
+                    const dateValue: Date = globalize.parseDate(option.value, dateOptions);
+                    const minValue: Date = globalize.parseDate(JSON.parse(JSON.stringify(option.param)), dateOptions);
+                    return new Date(dateValue).getTime() >= new Date(minValue).getTime();
+                } else {
+                    return new Date(option.value).getTime() >= new Date(JSON.parse(JSON.stringify(option.param))).getTime();
+                }
             }
         },
         regex: (option: ValidArgs): boolean => {
@@ -1010,6 +1027,10 @@ export interface ValidArgs {
      * Returns the current form element.
      */
     formElement?: HTMLFormElement
+    /**
+     * Returns the date format mapped for the input.
+     */
+    format? : string,
 }
 
 interface ErrorRule {

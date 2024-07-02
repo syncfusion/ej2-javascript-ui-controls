@@ -92,12 +92,12 @@ export class CellRenderer implements ICellRenderer {
             args.colIdx, needHeightCheck: false, row: args.row };
         this.parent.trigger('beforeCellRender', evtArgs);
         if (!sheet.rows[args.rowIdx] || !sheet.rows[args.rowIdx].customHeight) {
-            if ((evtArgs.element && evtArgs.element.children.length) || evtArgs.needHeightCheck) {
+            if (evtArgs.needHeightCheck || (evtArgs.element && evtArgs.element.children.length)) {
                 const clonedCell: HTMLElement = evtArgs.element.cloneNode(true) as HTMLElement;
                 clonedCell.style.width = getColumnWidth(sheet, args.colIdx, true) + 'px';
                 this.tableRow.appendChild(clonedCell);
             }
-            if ((args.lastCell && this.tableRow.childElementCount) || evtArgs.needHeightCheck) {
+            if (args.lastCell && this.tableRow.childElementCount) {
                 const tableRow: HTMLElement = args.row || this.parent.getRow(args.rowIdx);
                 const previouseHeight: number = getRowHeight(sheet, args.rowIdx);
                 const rowHeight: number = this.getRowHeightOnInit();

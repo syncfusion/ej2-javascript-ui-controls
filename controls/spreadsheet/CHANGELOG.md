@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.1.38 (2024-06-19)
+
+### Spreadsheet
+
+#### Bug fixes
+
+- Now, the notes can be edited using the `SHIFT` + `F2` keyboard shortcut.
+
 ## 26.1.35 (2024-06-11)
 
 ### Spreadsheet

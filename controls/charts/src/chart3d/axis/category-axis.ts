@@ -83,7 +83,7 @@ export class Category3D extends NiceIntervals {
      * @private
      */
     public calculateVisibleLabels(axis: Chart3DAxis): void {
-        /*! Generate axis labels */
+        /** Generate axis labels */
         axis.visibleLabels = [];
         axis.visibleRange.interval = axis.visibleRange.interval < 1 ? 1 : axis.visibleRange.interval;
         let tempInterval: number = Math.ceil(axis.visibleRange.min);

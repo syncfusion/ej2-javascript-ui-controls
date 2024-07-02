@@ -6,7 +6,7 @@ import { AnimationModel } from '../../common/model/base-model';
 import { Axis } from '../axis/axis';
 
 /**
- * `StackingLineSeries` module used to render the Stacking Line series.
+ * `StackingLineSeries` module used to render the stacking line series.
  */
 
 export class StackingLineSeries extends LineBase {

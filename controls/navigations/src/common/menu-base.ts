@@ -958,7 +958,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         this.closeMenu(null, e);
                     } else if (isOpen && isNullOrUndefined(ulIndex) && this.navIdx.length) {
                         this.closeMenu(null, e);
-                    } else if (isOpen && !this.isMenu && !ulIndex && this.navIdx.length === 0 && !this.isMenusClosed && !this.isCmenuHover) {
+                    } else if (isOpen && !this.isMenu && !ulIndex && this.navIdx.length === 0 &&
+                        !this.isMenusClosed && !this.isCmenuHover) {
                         this.isMenusClosed = true;
                         this.closeMenu(0, e);
                     } else if (isOpen && this.isMenu && e && e.target &&
@@ -1684,15 +1685,15 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                             }
                             this.isClosed = true;
                             this.keyType = 'click';
-                            if (this.showItemOnClick) { 
-                                this.setLISelected(cli); 
+                            if (this.showItemOnClick) {
+                                this.setLISelected(cli);
                                 if (!this.isMenu) {
                                     this.isCmenuHover = true;
                                 }
                             }
                             this.closeMenu(culIdx + 1, e);
-                            if (this.showItemOnClick) { 
-                                this.setLISelected(cli); 
+                            if (this.showItemOnClick) {
+                                this.setLISelected(cli);
                                 if (!this.isMenu) {
                                     this.isCmenuHover = false;
                                 }
