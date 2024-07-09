@@ -662,7 +662,7 @@ export class ChartRows extends DateProcessor {
         } else {
             checkClickState = this.parent.nonWorkingDayIndex.indexOf(splitDate.getDay());
         }
-        const increment: number = checkClickState === -1 ? 0 : checkClickState === 0 ? 1 : 2;
+        const increment: number = checkClickState === -1 ? 0 : checkClickState === 0 ? 1 : checkClickState === 1 ? 1 : 2;
         startDate = this.parent.dataOperation.checkStartDate(startDate, ganttProp, false);
         let segmentEndDate: Date = new Date(splitDate.getTime());
         segmentEndDate = this.parent.dataOperation.checkEndDate(segmentEndDate, ganttProp, false);
@@ -712,7 +712,6 @@ export class ChartRows extends DateProcessor {
                     startDate.setDate(startDate.getDate() + 1);
                 }
                 segmentEndDate = new Date(endDate.getTime());
-                segmentEndDate.setDate(segmentEndDate.getDate() + 1);
                 if (this.isOnHolidayOrWeekEnd(segmentEndDate, true)) {
                     do {
                         segmentEndDate.setDate(segmentEndDate.getDate() + 1);

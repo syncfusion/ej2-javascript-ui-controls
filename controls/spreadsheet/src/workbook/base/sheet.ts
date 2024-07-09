@@ -363,6 +363,16 @@ export class Sheet extends ChildProperty<WorkbookModel> {
      */
     @Property('')
     public password: string;
+
+    /**
+     * Represents the standard height of the sheet.
+     *
+     * @default null
+     * @asptype double
+     * @aspDefaultValue null
+     */
+    @Property(null)
+    public standardHeight: number;
 }
 
 /**

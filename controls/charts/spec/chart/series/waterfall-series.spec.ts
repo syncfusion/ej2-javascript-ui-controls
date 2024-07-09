@@ -1091,12 +1091,31 @@ describe('Waterfall Series', () => {
             loaded = (args: Object): void => {
                 let series: HTMLElement = document.getElementById('container_Series_0_Connector_');
                 let d: string = series.getAttribute('d');
-                expect(
-                    (d === 'M 8.318750000000009 371.5 L 324.43125 371.5 M 174.69374999999997 371.5 L 490.80625000000003 371.5 M 341.06874999999997 148.6 L 657.18125 148.6 ') ||
-                    (d === 'M 8.318750000000009 372.5 L 324.43125 372.5 M 174.69374999999997 372.5 L 490.80625000000003 372.5 '+
-                    'M 341.06874999999997 149 L 657.18125 149 ')).toBe(true);
+                expect(d).toBe('M 18.31875000000001 371.5 L 314.43125 371.5 M 184.69374999999997 371.5 L 341.06874999999997 371.5 M 490.80625000000003 148.6 L 507.44374999999997 148.6 ');
                 done();
             };
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Checking connector line with start point value 0 with marker', (done: Function) => {
+            loaded = (args: Object): void => {
+                let series: HTMLElement = document.getElementById('container_Series_0_Connector_');
+                let d: string = series.getAttribute('d');
+                expect(d).toBe('M 18.31875000000001 371.5 L 314.43125 371.5 M 184.69374999999997 371.5 L 341.06874999999997 371.5 M 490.80625000000003 148.6 L 507.44374999999997 148.6 ');
+                done();
+            };
+            chart.series[0].marker.visible=true;
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Checking XAxis Isinversed', (done: Function) => {
+            loaded = (args: Object): void => {
+                let series: HTMLElement = document.getElementById('container_Series_0_Connector_');
+                let d: string = series.getAttribute('d');
+                expect(d).toBe('M 507.44374999999997 371.5 L 490.80625000000003 371.5 M 341.06874999999997 371.5 L 324.43125000000003 371.5 M 174.69374999999997 148.6 L 158.05625000000003 148.6 ');
+                done();
+            };
+            chart.primaryXAxis.isInversed=true;
             chart.loaded = loaded;
             chart.refresh();
         });
@@ -1104,16 +1123,25 @@ describe('Waterfall Series', () => {
             loaded = (args: Object): void => {
                 let series: HTMLElement = document.getElementById('container_Series_0_Connector_');
                 let d: string = series.getAttribute('d');
-                expect(
-                    (d === 'M 0 306.61875 L 0 159.13125 M 0 228.99375 L 0 81.50624999999998 M 410.09999999999997 151.36875 L 410.09999999999997 3.8812499999999863 ') ||
-                    (d === 'M 0 307.60625000000005 L 0 159.64374999999998 M 0 229.73125000000002 L 0 81.76874999999998 '+
-                    'M 410.09999999999997 151.85625000000002 L 410.09999999999997 3.893749999999986 ')).toBe(true);
+                expect(d).toBe('M 0 296.61875 L 0 169.13125 M 0 218.99375 L 0 151.36875 M 410.09999999999997 81.50624999999998 L 410.09999999999997 73.74375000000002 ');
                 done();
             };
-            chart.loaded = loaded;
+            chart.primaryXAxis.isInversed=false;
             chart.isTransposed = true;
+            chart.loaded = loaded;
             chart.refresh();
         });
+        it('Checking Istransposed with XAxis Isinversed', (done: Function) => {
+            loaded = (args: Object): void => {
+                let series: HTMLElement = document.getElementById('container_Series_0_Connector_');
+                let d: string = series.getAttribute('d');
+                expect(d).toBe('M 0 73.74375000000002 L 0 81.50625 M 0 151.36875 L 0 159.13125 M 410.09999999999997 228.99375 L 410.09999999999997 236.75625 ');
+                done();
+            };
+            chart.primaryXAxis.isInversed=true;
+            chart.loaded = loaded;
+            chart.refresh();
+        });   
     });
     it('memory leak', () => {
         profile.sample();

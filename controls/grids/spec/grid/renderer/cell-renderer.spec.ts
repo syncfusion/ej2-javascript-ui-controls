@@ -230,4 +230,31 @@ describe('Custom Atrributes and html encode module', () => {
         });
     });
 
+    describe('892211: Number options format of N2 with string type data for number type defined column triggers the action failure event with the grids warning log.', () => {
+        let rows: HTMLTableRowElement;
+        let grid: Grid;
+        beforeAll((done: EmitType<Object>) => {
+            grid = createGrid({
+                columns: [
+                    { field: 'OrderDate', format: { type: 'date', format:'dd/MM/yyyy' }},
+                    { field: 'Freight',  format: {  type: 'number', format: 'N2' }},                     
+                    { field: 'ShippedDate', format: 'yMd' }
+                ],
+                dataSource: [{ OrderDate: '1996-07-08T07:50:00.000Z', Freight: 3.55, ShippedDate: '1996-07-15T15:50:00.000Z', }],
+            }, done);
+        });
+
+        it('Check if the row contains inputs and format them for testing', () => {
+            rows = ((grid.getContentTable() as any).tBodies[0]).rows[0] as HTMLTableRowElement;
+            expect(rows.cells[0].innerHTML).toBe('08/07/1996');
+            expect(rows.cells[1].innerHTML).toBe('3.55');
+            expect(rows.cells[2].innerHTML).toBe('7/15/1996');
+        });
+
+        afterAll(() => {
+            destroy(grid);
+            grid = rows = null;
+        });
+    });
+
 });

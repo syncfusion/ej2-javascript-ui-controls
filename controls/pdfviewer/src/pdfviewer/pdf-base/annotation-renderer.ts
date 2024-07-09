@@ -1048,6 +1048,9 @@ export class AnnotationRenderer {
             }
             const reviewDetails: any = stampAnnotation.review;
             rubberStampAnnotation.reviewHistory.add(this.addReviewCollections(reviewDetails, rubberStampAnnotation.bounds));
+            if (!isNullOrUndefined(stampAnnotation.author) && stampAnnotation.author) {
+                rubberStampAnnotation.author = stampAnnotation.author.toString();
+            }
             if (!isNullOrUndefined(stampAnnotation.subject) && stampAnnotation.subject) {
                 rubberStampAnnotation.subject = stampAnnotation.subject.toString();
             }
@@ -1104,7 +1107,9 @@ export class AnnotationRenderer {
             }
             const rubberStampAnnotation: PdfRubberStampAnnotation = new PdfRubberStampAnnotation;
             rubberStampAnnotation.bounds = rectangle;
-            rubberStampAnnotation.subject = stampAnnotation.icon.toString();
+            if (!isNullOrUndefined(stampAnnotation.subject) && stampAnnotation.subject) {
+                rubberStampAnnotation.subject = stampAnnotation.subject.toString();
+            }
             if (!isNullOrUndefined(stampAnnotation.note)) {
                 rubberStampAnnotation.text = stampAnnotation.note.toString();
             }

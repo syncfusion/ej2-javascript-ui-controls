@@ -438,6 +438,11 @@
             color: $calendar-today-focused-font-color;
           }
         }
+        #{if(&, '&', '*')}.e-month td.e-disabled.e-today span.e-day {
+          @if ($skin-name == 'FluentUI' or $skin-name == 'fluent2') {
+            color: $calendar-today-disabled-color;
+          }
+        }
         #{if(&, '&', '*')}.e-year td.e-selected > span.e-day,
         #{if(&, '&', '*')}.e-decade td.e-selected > span.e-day,
         #{if(&, '&', '*')}.e-year td.e-selected:hover > span.e-day,

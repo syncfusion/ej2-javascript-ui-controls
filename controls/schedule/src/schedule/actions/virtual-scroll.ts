@@ -22,6 +22,7 @@ export class VirtualScroll {
     public isHorizontalScroll: boolean;
     public isRemoteRefresh: boolean;
     private startIndex: number = 0;
+    public existingDataCollection: TdData[] = [];
 
     constructor(parent: Schedule) {
         this.parent = parent;
@@ -99,9 +100,10 @@ export class VirtualScroll {
 
     public setItemSize(): void {
         if (this.isHorizontalScroll) {
-            this.itemSize = util.getElementWidthFromClass(this.parent.activeView.element, cls.WORK_CELLS_CLASS) || this.itemSize;
+            this.itemSize = util.getElementWidthFromClass(this.parent.activeView.element, cls.WORK_CELLS_CLASS,
+                this.parent.uiStateValues.isTransformed) || this.itemSize;
         } else {
-            this.itemSize = util.getElementHeightFromClass(this.parent.activeView.element, cls.WORK_CELLS_CLASS) || this.itemSize;
+            this.itemSize = this.parent.getElementHeightFromClass(this.parent.activeView.element, cls.WORK_CELLS_CLASS) || this.itemSize;
         }
     }
 
@@ -393,41 +395,101 @@ export class VirtualScroll {
     }
 
     private updateHorizontalContent(conWrap: HTMLElement, resCollection: TdData[]): void {
+        this.existingDataCollection = this.parent.resourceBase.expandedResources;
         this.parent.resourceBase.expandedResources = resCollection;
         const selectedEle: Element[] = this.parent.getSelectedCells();
         this.focusedEle = selectedEle[selectedEle.length - 1] || this.focusedEle;
-        const renderedLength: number = conWrap.querySelectorAll('tbody tr').length;
+
+        const tbody: Element = conWrap.querySelector('tbody');
+        const renderedRows: HTMLTableRowElement[] = Array.from(tbody.querySelectorAll('tr'));
+
+        if (this.parent.currentView === 'Month') {
+            this.updateMonthViewContent(conWrap, resCollection);
+        } else {
+            this.updateOtherViewContent(conWrap, resCollection, renderedRows);
+        }
+    }
+
+    private updateMonthViewContent(conWrap: HTMLElement, resCollection: TdData[]): void {
+        const renderedLength: number = conWrap.querySelectorAll(' tr').length;
         for (let i: number = 0; i < renderedLength; i++) {
             remove(conWrap.querySelector('tbody tr'));
         }
-        if (this.parent.currentView === 'Month') {
-            if (this.parent.activeViewOptions.group.byDate) {
-                this.parent.activeView.colLevels[0] = resCollection;
-            } else {
-                this.parent.activeView.colLevels[this.parent.activeView.colLevels.length - 2] = resCollection;
-            }
-            const contentRows: Element[] = this.parent.activeView.getContentRows();
-            append(contentRows, conWrap.querySelector('tbody'));
+
+        if (this.parent.activeViewOptions.group.byDate) {
+            this.parent.activeView.colLevels[0] = resCollection;
         } else {
-            const col: Element[] = [].slice.call(conWrap.querySelector('colgroup').children);
-            for (let i: number = 0; i < col.length; i++) {
-                remove(col[parseInt(i.toString(), 10)]);
-            }
-            this.parent.activeView.colLevels[this.parent.activeView.colLevels.length - 1] = resCollection;
-            const contentRows: Element[] = this.parent.activeView.getContentRows();
-            const table: Element = conWrap.querySelector('table');
-            const thead: Element = conWrap.querySelector('thead');
-            const colGroupEle: Element = conWrap.querySelector('colgroup');
-            resCollection.forEach(() => {
-                colGroupEle.appendChild(createElement('col'));
-            });
-            thead.appendChild(this.parent.eventBase.createEventWrapper('', this.startIndex > 0 ? this.startIndex : 0));
-            if (this.parent.activeViewOptions.timeScale.enable) {
-                thead.appendChild(this.parent.eventBase.createEventWrapper('timeIndicator'));
-            }
-            prepend([thead], table);
-            append(contentRows, conWrap.querySelector('tbody'));
+            this.parent.activeView.colLevels[this.parent.activeView.colLevels.length - 2] = resCollection;
         }
+
+        const contentRows: Element[] = this.parent.activeView.getContentRows();
+        append(contentRows, conWrap.querySelector('tbody'));
+    }
+
+    private updateOtherViewContent(conWrap: HTMLElement, resCollection: TdData[], renderedRows: Element[]): void {
+        const tbody: Element = conWrap.querySelector('tbody');
+        const colGroup: Element = conWrap.querySelector('colgroup');
+        const thead: Element = conWrap.querySelector('thead');
+        const table: Element = conWrap.querySelector('table');
+        this.parent.activeView.colLevels[this.parent.activeView.colLevels.length - 1] = resCollection;
+        const newGroupIndices: Set<number> = new Set(resCollection.map((data: TdData) => data.groupIndex));
+        renderedRows.forEach((row: Element) => {
+            const tdElements: NodeListOf<HTMLTableCellElement> = row.querySelectorAll('td');
+            tdElements.forEach((td: HTMLTableCellElement) => {
+                const groupIndex: number = parseInt(td.getAttribute('data-group-index'), 10);
+                if (!newGroupIndices.has(groupIndex)) {
+                    td.remove();
+                }
+            });
+        });
+        const col: Element[] = [].slice.call(conWrap.querySelector('colgroup').children);
+        for (let i: number = 0; i < col.length; i++) {
+            remove(col[parseInt(i.toString(), 10)]);
+        }
+        resCollection.forEach(() => colGroup.appendChild(createElement('col')));
+        const tHead: Element[] = [].slice.call(conWrap.querySelector('thead').children);
+        for (let i: number = 0; i < tHead.length; i++) {
+            remove(tHead[parseInt(i.toString(), 10)]);
+        }
+
+        thead.appendChild(this.parent.eventBase.createEventWrapper('', this.startIndex > 0 ? this.startIndex : 0));
+        if (this.parent.activeViewOptions.timeScale.enable) {
+            thead.appendChild(this.parent.eventBase.createEventWrapper('timeIndicator'));
+        }
+        prepend([thead], table);
+        const contentRows: Element[] = this.parent.activeView.getContentRows();
+        this.mergeNewTdData(tbody, contentRows);
+    }
+
+    private mergeNewTdData(tbody: Element, contentRows: Element[]): void {
+        const existingRows: HTMLTableRowElement[] = Array.from(tbody.querySelectorAll<HTMLTableRowElement>('tr'));
+
+        existingRows.forEach((existingRow: HTMLTableRowElement, rowIndex: number) => {
+            if (rowIndex < contentRows.length) {
+                const newRow: Element = contentRows[parseInt(rowIndex.toString(), 10)];
+                const existingTds: HTMLTableCellElement[] = Array.from(existingRow.querySelectorAll<HTMLTableCellElement>('td'));
+                const newTds: HTMLTableCellElement[] = Array.from(newRow.querySelectorAll<HTMLTableCellElement>('td'));
+
+                newTds.forEach((newTd: HTMLTableCellElement) => {
+                    const newGroupIndex: number = parseInt(newTd.getAttribute('data-group-index').toString(), 10);
+                    let inserted: boolean = false;
+
+                    for (const existingTd of existingTds) {
+                        const existingGroupIndex: number = parseInt(existingTd.getAttribute('data-group-index').toString(), 10);
+
+                        if (newGroupIndex < existingGroupIndex) {
+                            existingRow.insertBefore(newTd, existingTd);
+                            inserted = true;
+                            break;
+                        }
+                    }
+
+                    if (!inserted) {
+                        existingRow.appendChild(newTd);
+                    }
+                });
+            }
+        });
     }
 
     private getBufferCollection(startIndex: number, endIndex: number): TdData[] {

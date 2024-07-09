@@ -17,6 +17,7 @@ export class UndoRedoManager {
     public undoRedoStack: IHtmlUndoRedoData[] = [];
     public undoRedoSteps: number;
     public undoRedoTimer: number;
+    private debounceListener: Function;
     public constructor(parent?: EditorManager, options?: { [key: string]: number }) {
         this.parent = parent;
         this.undoRedoSteps = !isNullOrUndefined(options) ? options.undoRedoSteps : 30;
@@ -24,11 +25,12 @@ export class UndoRedoManager {
         this.addEventListener();
     }
     protected addEventListener(): void {
-        const debounceListener: Function = debounce(this.keyUp, this.undoRedoTimer);
-        this.parent.observer.on(EVENTS.KEY_UP_HANDLER, debounceListener, this);
+        this.debounceListener = debounce(this.keyUp, this.undoRedoTimer);
+        this.parent.observer.on(EVENTS.KEY_UP_HANDLER, this.debounceListener, this);
         this.parent.observer.on(EVENTS.KEY_DOWN_HANDLER, this.keyDown, this);
         this.parent.observer.on(EVENTS.ACTION, this.onAction, this);
         this.parent.observer.on(EVENTS.MODEL_CHANGED_PLUGIN, this.onPropertyChanged, this);
+        this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
     }
     private onPropertyChanged(props: { [key: string]: Object }): void {
         for (const prop of Object.keys(props.newProp)) {
@@ -46,6 +48,9 @@ export class UndoRedoManager {
         this.parent.observer.off(EVENTS.KEY_UP_HANDLER, this.keyUp);
         this.parent.observer.off(EVENTS.KEY_DOWN_HANDLER, this.keyDown);
         this.parent.observer.off(EVENTS.ACTION, this.onAction);
+        this.parent.observer.off(EVENTS.MODEL_CHANGED_PLUGIN, this.onPropertyChanged);
+        this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
+        this.debounceListener = null;
     }
 
     /**
@@ -73,6 +78,11 @@ export class UndoRedoManager {
      */
     public destroy(): void {
         this.removeEventListener();
+        this.element = null;
+        this.steps = null;
+        this.undoRedoStack = [];
+        this.undoRedoSteps = null;
+        this.undoRedoTimer = null;
     }
     private keyDown(e: IHtmlKeyboardEvent): void {
         const event: KeyboardEvent = e.event as KeyboardEvent;
@@ -139,6 +149,9 @@ export class UndoRedoManager {
      * @deprecated
      */
     public saveData(e?: KeyboardEvent | MouseEvent | IUndoCallBack): void {
+        if (!this.parent.currentDocument) {
+            return;
+        }
         let range: Range = new NodeSelection().getRange(this.parent.currentDocument);
         const currentContainer: Node = this.parent.editableElement === range.startContainer.parentElement ?
             range.startContainer.parentElement : range.startContainer;

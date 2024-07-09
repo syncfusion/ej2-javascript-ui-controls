@@ -388,12 +388,7 @@ export class Selection {
      * @private
      */
     public get isinFootnote(): boolean {
-        const container: Widget = this.getContainerWidget(this.start.paragraph);
-        if (container instanceof FootNoteWidget && container.footNoteType === 'Footnote') {
-            return true;
-        } else {
-            return false;
-        }
+        return this.isFootNoteParagraph(this.start.paragraph);
     }
     /**
      * Determines whether the selection is in endnote or not.
@@ -403,12 +398,7 @@ export class Selection {
      * @private
      */
     public get isinEndnote(): boolean {
-        const container: Widget = this.getContainerWidget(this.start.paragraph);
-        if (container instanceof FootNoteWidget && container.footNoteType === 'Endnote') {
-            return true;
-        } else {
-            return false;
-        }
+        return this.isEndNoteParagraph(this.start.paragraph);
     }
     /**
      * Determines whether the start and end positions are same or not.
@@ -554,6 +544,35 @@ export class Selection {
         this.contentControleditRegionHighlighters = new Dictionary<ContentControl, Dictionary<LineWidget, SelectionWidgetInfo[]>>();
         this.formFieldHighlighters = new Dictionary<LineWidget, SelectionWidgetInfo[]>();
         this.contentControleditRegionHighlighters = new Dictionary<ContentControl, Dictionary<LineWidget, SelectionWidgetInfo[]>>();
+    }
+    private isFootNoteParagraph(paragraph: ParagraphWidget): boolean {
+        const container: Widget = this.getContainerWidget(paragraph);
+        if (container instanceof FootNoteWidget && container.footNoteType === 'Footnote') {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    private isEndNoteParagraph(paragraph: ParagraphWidget): boolean {
+        const container: Widget = this.getContainerWidget(paragraph);
+        if (container instanceof FootNoteWidget && container.footNoteType === 'Endnote') {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    /**
+     * @param documentEditor
+     * @private
+     */
+    public isFootEndNoteParagraph(paragraph: ParagraphWidget): boolean {
+        if (this.isFootNoteParagraph(paragraph)) {
+            return true;
+        } else if (this.isEndNoteParagraph(paragraph)) {
+            return true;
+        } else {
+            return false;
+        }
     }
     private getSelBookmarks(includeHidden: boolean): string[] {
         const bookmarkCln: string[] = [];
@@ -2544,7 +2563,7 @@ export class Selection {
         if (isNullOrUndefined(start)) {
             return;
         }
-        if (start.offset === 0 && start.paragraph.paragraphFormat.listFormat.listId == -1) {
+        if ((start.offset === 0 || (!this.isForward && this.end.offset === 0)) && start.paragraph.paragraphFormat.listFormat.listId == -1) {
             if (start.currentWidget.isFirstLine()) {
                 isCursorAtParaStart = true;
             }
@@ -9810,7 +9829,10 @@ export class Selection {
                     document.body.focus();
                 }
                 await new Promise(resolve => window.requestAnimationFrame(resolve));
-                await navigator.clipboard.write([new ClipboardItem({ 'text/html': blob })]);
+                await navigator.clipboard.write([new ClipboardItem({ 'text/html': blob })])
+                .catch(() => {
+                    return this.copyExecCommand(htmlContent);
+                });
                 return true;
             } catch (e) {
                 return false;
@@ -11018,7 +11040,7 @@ export class Selection {
                     let line: LineWidget = firstElement.line as LineWidget;
                     if (line.isFirstLine()) {
                         for (let i = 0; i < line.children.length; i++) {
-                            if (firstElement === line.children[i] && line.children[i] instanceof TextElementBox) {
+                            if (firstElement === line.children[i] && line.children[i] instanceof TextElementBox && !(line.children[i] instanceof FootnoteElementBox)) {
                                 offset = 0;
                                 break;
                             } else if (line.children[i] instanceof TextElementBox) {

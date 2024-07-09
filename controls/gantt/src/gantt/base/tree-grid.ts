@@ -213,6 +213,11 @@ export class GanttTreeGrid {
                 this.parent.hideMaskRow();
             }
             this.parent.isVirtualScroll = false;
+            if (this.parent.selectionModule.getSelectedRecords().length === 0) {
+                if (!isNullOrUndefined(this.parent.toolbarModule)) {
+                    this.parent.toolbarModule.refreshToolbarItems();
+                }
+            }
         }
         this.prevCurrentView = extend([], [], this.parent.currentViewData, true);
     }
@@ -321,6 +326,7 @@ export class GanttTreeGrid {
         } else {
             this.parent.hideSpinner();
         }
+        this.parent.isCollapseAll = false;
         this.parent.trigger('expanded', args);
     }
     private actionBegin(args: FilterEventArgs | SortEventArgs): void {

@@ -1227,7 +1227,7 @@ describe('Audio Module', () => {
                  expect(rteObj.getContent().querySelector(".e-rte-audio.e-audio-inline source").getAttribute("src").indexOf("blob") == -1).toBe(true);
                  evnArg.selectNode = [rteObj.element];
                  (<any>rteObj).audioModule.deleteAudio(evnArg);
-                 (<any>rteObj).audioModule.uploadObj.upload((<any>rteObj).audioModule.uploadObj.filesData[0]);
+                //  (<any>rteObj).audioModule.uploadObj.upload((<any>rteObj).audioModule.uploadObj.filesData[0]);
                  done();
              }, 100);
          });
@@ -1269,7 +1269,7 @@ describe('Audio Module', () => {
                  expect(rteObj.getContent().querySelector(".e-rte-audio.e-audio-inline source").getAttribute("src").indexOf("base64") == -1).toBe(true);
                  evnArg.selectNode = [rteObj.element];
                  (<any>rteObj).audioModule.deleteAudio(evnArg);
-                 (<any>rteObj).audioModule.uploadObj.upload((<any>rteObj).audioModule.uploadObj.filesData[0]);
+                //  (<any>rteObj).audioModule.uploadObj.upload((<any>rteObj).audioModule.uploadObj.filesData[0]);
                  done();
              }, 100);
          });

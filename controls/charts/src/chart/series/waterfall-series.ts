@@ -91,15 +91,15 @@ export class WaterfallSeries extends ColumnBase {
                         if (point.yValue === 0) {
                             currentYValue = ((currentRegion.y + currentRegion.height / 2) - (rect.height / 2));
                         }
-                        direction = direction.concat('M' + ' ' + y + ' ' + (prevRegion.y + prevRegion.height) + ' ' +
-                            'L' + ' ' + y + ' ' + currentYValue + ' ');
+                        direction = direction.concat('M' + ' ' + y + ' ' + (series.xAxis.isInversed ? (prevRegion.y + prevRegion.height) : prevRegion.y) + ' ' +
+                            'L' + ' ' + y + ' ' + (series.xAxis.isInversed ? currentYValue : (currentYValue + currentRegion.height)) + ' ');
                     } else {
                         if (beforePoint.yValue === 0) {
                             prevRegion.x = ((prevRegion.x + prevRegion.width / 2) - (rect.width / 2));
                             currentXValue = ((currentRegion.x + currentRegion.width / 2) + (rect.width / 2)) - currentRegion.width;
                         }
-                        direction = direction.concat('M' + ' ' + prevRegion.x + ' ' + y + ' ' +
-                            'L' + ' ' + (currentXValue + currentRegion.width) + ' ' + y + ' ');
+                        direction = direction.concat('M' + ' ' + (series.xAxis.isInversed ? prevRegion.x : (prevRegion.x + prevRegion.width)) + ' ' + y + ' ' +
+                            'L' + ' ' + (series.xAxis.isInversed ? (currentXValue + currentRegion.width) : currentXValue) + ' ' + y + ' ');
                     }
                 }
                 prevRegion = point.regions[0];

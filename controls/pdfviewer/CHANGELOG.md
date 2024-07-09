@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 26.1.41 (2024-07-09)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I605035` - Now, the script error does not occurs when using display mode as type alone in signature field.
+- `#I605293` - Now, the script error does not occurs when updating the PDF Viewer height value programmatically on mobile devices.
+- `#I601076` - Now, the annotation with author and subject are not missing in downloaded PDF.
+- `#I602512` - Now, the comment `div` is no longer created when an annotation is pasted onto a different page.
+
+#### Features
+
+- Implemented the `exportAsImage` API in our Stand-alone PDF viewer, which allows users to export pages as images. This enhancement provides users with a powerful tool to effortlessly convert PDF pages into image files.
+
 ## 26.1.40 (2024-07-02)
 
 ### PDF Viewer

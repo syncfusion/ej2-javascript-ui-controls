@@ -1360,9 +1360,20 @@ export function resetColspanGroupCaption(gObj: IGrid, idx: number): number {
  */
 export function groupCaptionRowLeftRightPos(tr: Element, gObj: IGrid): void {
     let width: number = 0;
+    let idx: number = 0;
+    const frozenCount: number = gObj.getVisibleFrozenLeftCount();
     for (let j: number = 0; j < tr.childNodes.length; j++) {
         const td: HTMLElement = tr.childNodes[parseInt(j.toString(), 10)] as HTMLElement;
+        if (frozenCount === idx) {
+            break;
+        }
+        if (td.classList.contains('e-groupcaption') || td.classList.contains('e-summarycell')) {
+            idx += parseInt(td.getAttribute('colspan'), 10);
+        }
         td.classList.add('e-leftfreeze');
+        if (td.classList.contains('e-groupcaption') && parseInt(td.getAttribute('colspan'), 10) === 1) {
+            td.classList.add('e-freezeleftborder');
+        }
         applyStickyLeftRightPosition(td, width, gObj.enableRtl, 'Left');
         if (td.classList.contains('e-indentcell') || td.classList.contains('e-recordplusexpand') ||
             td.classList.contains('e-recordpluscollapse')) {

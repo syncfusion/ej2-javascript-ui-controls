@@ -1672,6 +1672,11 @@
       .e-gridheader {
         .e-headercell {
           height: $fe-big-grid-header-height;
+          @if $fm-skin-name == 'fluent2' {
+            .e-headercelldiv.e-headerchkcelldiv {
+              margin-left: -6px;
+            }
+          }
         }
         .e-headertext {
           font-size: $fe-big-grid-header-font-size;

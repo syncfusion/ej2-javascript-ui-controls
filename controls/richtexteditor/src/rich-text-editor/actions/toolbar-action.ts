@@ -1,8 +1,6 @@
 import { isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
 import { IRichTextEditor, IColorPickerEventArgs, IDropDownClickArgs } from '../base/interface';
-import { ServiceLocator } from '../services/service-locator';
-import { RendererFactory } from '../services/renderer-factory';
 import { IAdvanceListItem } from '../../common';
 
 /**
@@ -15,12 +13,9 @@ export class ToolbarAction {
      * @private
      */
     public parent: IRichTextEditor;
-    private serviceLocator: ServiceLocator;
     public constructor(parent?: IRichTextEditor) {
         this.parent = parent;
         this.addEventListener();
-        this.serviceLocator = new ServiceLocator;
-        this.serviceLocator.register('rendererFactory', new RendererFactory);
     }
 
     private addEventListener(): void {

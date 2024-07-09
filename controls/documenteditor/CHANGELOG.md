@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 26.1.41 (2024-07-09)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I596607` - Resolved the bookmark marker rendering issue.
+- `#I604485` - Resolved the shape rendering issue.
+- `#I595112` - Resolved the copy pasting issue while pasting the content as destination format.
+- `#I595816` - Resolved the hanging issue occurred while opening the attached sfdt.
+- `#I601514` - Resolved the table overlapping issue when editing inside the table.
+- `#I602853` - Resolved the lines disappear issue when pressing tab from backward and undoing.
+- `#I595604` - Resolved the form field highlight issue while switching web to page layout.
+- `#I598645` - Resolved the document loading issue with custom header.
+
 ## 26.1.40 (2024-07-02)
 
 ### DocumentEditor

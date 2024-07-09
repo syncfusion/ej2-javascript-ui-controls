@@ -16,11 +16,13 @@ import { DropDownButtons } from './dropdown-buttons';
 import { IToolbarStatus } from '../../common/interface';
 import { ColorPickerInput } from './color-picker';
 import { RichTextEditorModel } from '../base/rich-text-editor-model';
+import { PopupRenderer } from '../renderer';
 
 /**
  * `Quick toolbar` module is used to handle Quick toolbar actions.
  */
 export class BaseQuickToolbar implements IBaseQuickToolbar {
+    public isDestroyed: boolean;
     public popupObj: Popup;
     public element: HTMLElement;
     public isRendered: boolean;
@@ -40,6 +42,7 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
         this.parent = parent;
         this.locator = locator;
         this.isRendered = false;
+        this.isDestroyed = false;
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
         this.contentRenderer = this.renderFactory.getRenderer(RenderType.Content);
         this.popupRenderer = this.renderFactory.getRenderer(RenderType.Popup);
@@ -266,6 +269,7 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
                     this.tooltip  = new Tooltip({
                         target: '#' + this.element.id + ' [title]',
                         openDelay: 400,
+                        container: this.parent.rootContainer,
                         showTipPointer: true,
                         beforeRender: this.tooltipBeforeRender.bind(this),
                         windowCollision: true,
@@ -448,11 +452,25 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
      * @deprecated
      */
     public destroy(): void {
-        if (this.popupObj && !this.popupObj.isDestroyed) {
-            this.popupObj.destroy();
-            this.removeEleFromDOM();
+        if (this.isDestroyed) { return; }
+        if (this.tooltip && !this.tooltip.isDestroyed) {
+            this.tooltip.destroy();
+            this.tooltip = null;
         }
         this.removeEventListener();
+        this.quickTBarObj.destroy();
+        this.quickTBarObj = null;
+        if (this.popupObj && !this.popupObj.isDestroyed) {
+            this.removeEleFromDOM();
+            this.popupObj.destroy();
+        }
+        this.colorPickerObj = null;
+        this.dropDownButtons = null;
+        this.stringItems = null;
+        this.dropDownButtons = null;
+        this.colorPickerObj = null;
+        this.toolbarElement = null;
+        this.isDestroyed = true;
     }
     /**
      * addEventListener method

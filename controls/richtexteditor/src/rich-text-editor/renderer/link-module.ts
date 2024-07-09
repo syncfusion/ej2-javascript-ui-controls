@@ -29,6 +29,9 @@ export class Link {
     private rendererFactory: RendererFactory;
     private quickToolObj: IRenderer;
     private dialogRenderObj: DialogRenderer;
+    private isDestroyed: boolean;
+    private mouseDown: EventListenerOrEventListenerObject;
+
     private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.rteID = parent.element.id;
@@ -37,6 +40,8 @@ export class Link {
         this.serviceLocator = serviceLocator;
         this.rendererFactory = serviceLocator.getService<RendererFactory>('rendererFactory');
         this.dialogRenderObj = serviceLocator.getService<DialogRenderer>('dialogRenderObject');
+        this.isDestroyed = false;
+        this.mouseDown = this.onDocumentClick.bind(this);
     }
     protected addEventListener(): void {
         if (this.parent.isDestroyed) {
@@ -56,7 +61,6 @@ export class Link {
         this.parent.on(events.editAreaClick, this.editAreaClickHandler, this);
         this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.destroy, this.destroy, this);
-        this.parent.on(events.moduleDestroy, this.moduleDestroy, this);
     }
     private onToolbarAction(args: NotifyArgs): void {
         const item: IToolbarItemModel = (args.args as ClickEventArgs).item as IToolbarItemModel;
@@ -90,7 +94,6 @@ export class Link {
         this.parent.off(events.editAreaClick, this.editAreaClickHandler);
         this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.destroy, this.destroy);
-        this.parent.off(events.moduleDestroy, this.moduleDestroy);
     }
     private onIframeMouseDown(): void {
         if (this.dialogObj) {
@@ -379,7 +382,7 @@ export class Link {
             e.selection.range.endOffset)) || e.module === 'Markdown') {
             linkText.value = selectText;
         }
-        EventHandler.add(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick, this);
+        (this.parent.element.ownerDocument as Document).addEventListener('mousedown', this.mouseDown, true);
         if (this.quickToolObj) {
             this.hideLinkQuickToolbar();
             if (this.quickToolObj.inlineQTBar && document.body.contains(this.quickToolObj.inlineQTBar.element)) {
@@ -568,7 +571,8 @@ export class Link {
         ) {
             this.parent.notify(events.documentClickClosedBy, { closedBy: 'outside click' });
             this.dialogObj.hide({ returnValue: true } as Event);
-            EventHandler.remove(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick);
+            (this.parent.element.ownerDocument as Document).removeEventListener('mousedown', this.mouseDown, true);
+            this.mouseDown = null;
             this.parent.isBlur = true;
             dispatchEvent(this.parent.element, 'focusout');
         }
@@ -582,12 +586,11 @@ export class Link {
      * @deprecated
      */
     public destroy(): void {
-        if (isNOU(this.parent)) { return; }
+        if (this.isDestroyed) { return; }
+        (this.parent.element.ownerDocument as Document).removeEventListener('mousedown', this.mouseDown, true);
+        this.mouseDown = null;
         this.removeEventListener();
-    }
-
-    private moduleDestroy(): void {
-        this.parent = null;
+        this.isDestroyed = true;
     }
 
     /**

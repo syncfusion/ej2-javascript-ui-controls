@@ -585,8 +585,8 @@ describe("paste cleanup testing", () => {
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       let pastedElm: any =(rteObj as any).inputElement.firstElementChild;
-      expect(pastedElm.children[0].childNodes[0].tagName.toLowerCase()  === 'a').toBe(true);
-      expect(pastedElm.children[0].childNodes[0].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
+      expect(pastedElm.children[0].tagName.toLowerCase()  === 'a').toBe(true);
+      expect(pastedElm.children[0].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
       done();
     }, 100);
   });
@@ -612,8 +612,8 @@ describe("paste cleanup testing", () => {
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       let pastedElm: any = (rteObj as any).inputElement.firstElementChild;
-      expect(pastedElm.children[0].children[0].tagName.toLowerCase() === 'a').toBe(true);
-      expect(pastedElm.children[0].children[0].getAttribute('href') === 'www.ej2.syncfusion.com').toBe(true);
+      expect(pastedElm.children[0].tagName.toLowerCase() === 'a').toBe(true);
+      expect(pastedElm.children[0].getAttribute('href') === 'www.ej2.syncfusion.com').toBe(true);
       done();
     }, 100);
   });
@@ -740,7 +740,7 @@ third line`;
     setTimeout(() => {
       let pastedElm: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = false;
-      let expectedElem: string = `<p><span><a class="e-rte-anchor" href="http://www.google.com?first=a&amp;parameters=foo" title="http://www.google.com?first=a&amp;parameters=foo" target="_blank" aria-label="Open in new window">http://www.google.com?first=a&amp;parameters=foo </a></span>160</p>`;
+      let expectedElem: string = `<p><a class="e-rte-anchor" href="http://www.google.com?first=a&amp;parameters=foo" title="http://www.google.com?first=a&amp;parameters=foo" target="_blank" aria-label="Open in new window">http://www.google.com?first=a&amp;parameters=foo </a>160</p>`;
       if (pastedElm === expectedElem) {
         expected = true;
       }

@@ -533,7 +533,6 @@ export class Renderer {
         let isZeroShapeHeight: boolean = (shape.height === 0) ? true : false;
         let shapeType: any = shape.autoShapeType;
         let blocks: BlockWidget[] = shape.textFrame.childWidgets as BlockWidget[];
-        shapeTop += shape.margin.top;
         this.pageContext.beginPath();
         if (shape.fillFormat && shape.fillFormat.color && shape.fillFormat.fill && shapeType !== 'StraightConnector') {
             this.pageContext.fillStyle = shape.fillFormat.color;
@@ -1488,8 +1487,9 @@ export class Renderer {
                 this.renderImageElementBox(elementBox, left, top, underlineY);
             } else if (elementBox instanceof ShapeElementBox) {
                 let shapeLeftMargin: number = elementBox.margin.left;
+                let shapeTopMargin: number = elementBox.margin.top;
                 let shapeLeft: number = this.getScaledValue(left + shapeLeftMargin, 1);
-                let shapeTop: number = this.getScaledValue(top, 2);
+                let shapeTop: number = this.getScaledValue(top + shapeTopMargin, 2);
                 this.renderShapeElementBox(elementBox, shapeLeft, shapeTop, page);
             } else {
                 elementBox.isVisible = true;

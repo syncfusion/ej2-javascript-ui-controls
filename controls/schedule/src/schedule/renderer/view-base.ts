@@ -533,7 +533,7 @@ export class ViewBase {
         if (this.isTimelineView()) {
             const colElements: HTMLElement[] = this.getColElements();
             const contentBody: HTMLElement = this.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody') as HTMLElement;
-            const colWidth: number = (util.getElementWidth(contentBody) / (colElements.length / 2));
+            const colWidth: number = (this.parent.getElementWidth(contentBody) / (colElements.length / 2));
             if (content.offsetHeight !== content.clientHeight) {
                 const resourceColumn: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS);
                 if (!isNullOrUndefined(resourceColumn) && resourceColumn.offsetHeight !== content.clientHeight) {

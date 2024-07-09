@@ -278,6 +278,7 @@ export class RestrictEditing {
      * @returns {void}
      */
     private closePane = (): void => {
+        this.isShowRestrictPane = false;
         this.restrictPane.style.display = 'none';
         this.documentHelper.owner.showHideRulers();
         this.documentHelper.owner.triggerResize();

@@ -11,10 +11,12 @@ export class Resize {
     protected touchStartEvent: string;
     protected touchMoveEvent: string;
     protected touchEndEvent: string;
+    private isDestroyed: boolean
 
     private constructor(parent?: IRichTextEditor) {
         this.parent = parent;
         this.addEventListener();
+        this.isDestroyed = false;
     }
 
     private addEventListener(): void {
@@ -122,13 +124,16 @@ export class Resize {
     }
 
     private destroy(): void {
+        if (this.isDestroyed) { return; }
         this.removeEventListener();
+        if (this.resizer) {
+            detach(this.resizer);
+            this.resizer = null;
+        }
+        this.isDestroyed = true;
     }
 
     private removeEventListener(): void {
-        if (this.parent.isDestroyed) {
-            return;
-        }
         this.parent.off(events.initialEnd, this.renderResizable);
         this.parent.element.classList.remove(classes.CLS_RTE_RES_CNT);
         if (this.parent && this.parent.rootContainer && this.parent.rootContainer.classList.contains('e-resize-enabled')) {

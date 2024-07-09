@@ -105,6 +105,7 @@ export class Gantt extends Component<HTMLElement>
     public scrollLeftValue: number;
     public isToolBarClick: boolean;
     public isLocaleChanged: boolean = false;
+    public dataMap: Map<string, IGanttData>;
     public initialLoadData: Object;
     public previousGanttColumns: ColumnModel[];
     public previousZoomingLevel: Object;
@@ -133,6 +134,8 @@ export class Gantt extends Component<HTMLElement>
     public splitterModule: Splitter;
     /** @hidden */
     public isCancelled: boolean = false;
+     /** @hidden */
+    public isCollapseAll : boolean = false;
     /** @hidden */
     public treeGrid: TreeGrid;
     /** @hidden */
@@ -3300,7 +3303,9 @@ export class Gantt extends Component<HTMLElement>
         if (!this.loadChildOnDemand && this.taskFields.hasChildMapping) {
             this.autoCalculateDateScheduling = true;
         }
-        this.previousFlatData = extend([], this.flatData, [], true) as IGanttData[];
+        if (this.undoRedoModule) {
+            this.previousFlatData = extend([], this.flatData, [], true) as IGanttData[];
+        }
         this.trigger('dataBound', args);
     }
     /**
@@ -4214,21 +4219,23 @@ export class Gantt extends Component<HTMLElement>
      * @returns {IGanttData} .
      * @hidden
      */
-    public getParentTask(cloneParent: IParent): IGanttData {
-        if (!isNullOrUndefined(cloneParent)) {
-            const parent: IGanttData[] = this.flatData.filter((val: IGanttData) => {
-                return cloneParent.uniqueID === val.uniqueID;
-            });
-            if (parent.length > 0) {
-                return parent[0];
-            } else {
-                return null;
-            }
-        } else {
+    public getParentTask(cloneParent: IParent): IGanttData | null {
+        if (isNullOrUndefined(cloneParent)) {
             return null;
         }
+        if (!this.autoCalculateDateScheduling && this.dataMap && this.dataMap.size > 0) {
+            const parent = this.dataMap.get(cloneParent.uniqueID);
+            if (parent) {
+                return parent;
+            }
+        } else {
+            const parent = this.flatData.find((val: IGanttData) => cloneParent.uniqueID === val.uniqueID);
+            if (parent) {
+                return parent;
+            }
+        }
+        return null;
     }
-
     /**
      * Get parent task by clone parent item.
      *

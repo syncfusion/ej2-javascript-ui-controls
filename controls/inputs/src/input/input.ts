@@ -161,7 +161,7 @@ export namespace Input {
     function checkInputValue(floatLabelType: string, inputElement: HTMLInputElement): void {
         const inputValue: string = inputElement.value;
         const inputParent: HTMLElement = inputElement.parentElement;
-        const grandParent: HTMLElement = inputParent.parentElement;
+        const grandParent: HTMLElement = inputParent && inputParent.parentElement;
         if (inputValue !== '' && !isNullOrUndefined(inputValue)) {
             if (inputParent && inputParent.classList.contains('e-input-group')) {
                 inputParent.classList.add('e-valid-input');
@@ -603,7 +603,7 @@ export namespace Input {
             return;
         }
         const elementWidth : number | Element = moduleName === 'multiselect' ? element : element.clientWidth - parseInt(getComputedStyle(element, null).getPropertyValue('padding-left'), 10);
-        if (!isNullOrUndefined(container.getElementsByClassName('e-float-text-content')[0])) {
+        if (!isNullOrUndefined(container) && !isNullOrUndefined(container.getElementsByClassName('e-float-text-content')[0])) {
             if (container.getElementsByClassName('e-float-text-content')[0].classList.contains('e-float-text-overflow')) {
                 container.getElementsByClassName('e-float-text-content')[0].classList.remove('e-float-text-overflow');
             }

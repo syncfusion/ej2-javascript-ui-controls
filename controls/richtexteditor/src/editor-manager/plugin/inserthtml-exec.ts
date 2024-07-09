@@ -2,6 +2,8 @@ import { EditorManager } from './../base/editor-manager';
 import * as CONSTANT from './../base/constant';
 import { InsertHtml } from './inserthtml';
 import { IHtmlSubCommands } from './../base/interface';
+import * as EVENTS from './../../common/constant';
+
 /**
  * Selection EXEC internal component
  *
@@ -23,6 +25,12 @@ export class InsertHtmlExec {
     }
     private addEventListener(): void {
         this.parent.observer.on(CONSTANT.INSERTHTML_TYPE, this.applyHtml, this);
+        this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
+    }
+
+    private removeEventListener(): void {
+        this.parent.observer.off(CONSTANT.INSERTHTML_TYPE, this.applyHtml);
+        this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
     }
     private applyHtml(e: IHtmlSubCommands): void {
         InsertHtml.Insert(
@@ -50,5 +58,9 @@ export class InsertHtmlExec {
                 });
             }
         }
+    }
+
+    public destroy(): void {
+        this.removeEventListener();
     }
 }

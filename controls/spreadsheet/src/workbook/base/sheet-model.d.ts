@@ -268,4 +268,13 @@ export interface SheetModel {
      */
     password?: string;
 
+    /**
+     * Represents the standard height of the sheet.
+     *
+     * @default null
+     * @asptype double
+     * @aspDefaultValue null
+     */
+    standardHeight?: number;
+
 }

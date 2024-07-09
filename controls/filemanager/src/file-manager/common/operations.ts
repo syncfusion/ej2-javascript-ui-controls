@@ -582,17 +582,17 @@ function createAjax(
             if (isFileSystemData(parent)) {
                 const filePath: string = event === 'node-expand' || event === 'finalize-end' ? getValue('path', data) : parent.path;
                 const pathArray: string[] = filePath.replace(/^\/|\/$/g, '').split('/');
-                const idValue: string = event === 'rename-end-parent' || (event === 'path-changed' && getValue('data', data).length != 0)
+                const idValue: string = event === 'rename-end-parent' || (event === 'path-changed' && getValue('data', data).length !== 0)
                     || (event === 'paste-end' && (parent.targetModule === 'largeiconsview' || parent.targetModule === 'detailsview'))
                     ? getValue('data', data)[0].id : pathArray[pathArray.length - 1];
                 const action: string = getValue('action', data);
                 const isFileOperation: boolean = (action === 'move' || action === 'rename' || action === 'copy' || action === 'delete' || action === 'search') && event !== 'rename-end';
                 if (action === 'read' || action === 'create' || event === 'rename-end') {
                     parent.responseData = {
-                        cwd: filterById(parent, parent.path === '/' && event !== 'node-expand' && event != 'rename-end-parent' ? 0 : idValue),
+                        cwd: filterById(parent, parent.path === '/' && event !== 'node-expand' && event !== 'rename-end-parent' ? 0 : idValue),
                         details: null,
                         error: null,
-                        files: filterByParent(parent, parent.path === '/' && event !== 'node-expand' && event != 'rename-end-parent' ? 0 : idValue)
+                        files: filterByParent(parent, parent.path === '/' && event !== 'node-expand' && event !== 'rename-end-parent' ? 0 : idValue)
                     };
                     if (isNOU(parent.responseData.cwd)) {
                         const message: string = 'Cannot load empty data within the File Manager.';

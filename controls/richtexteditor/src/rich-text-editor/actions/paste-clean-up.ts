@@ -51,6 +51,12 @@ export class PasteCleanup {
     private isNotFromHtml: boolean = false;
     private containsHtml: boolean = false;
     private cropImageData: { [key: string]: string | boolean | number }[] = [];
+    private fireFoxUploadTime: number;
+    private refreshPopupTime: number;
+    private popupCloseTime: number;
+    private failureTime: number;
+    private iframeUploadTime: number;
+    private isDestroyed: boolean;
     public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.locator = serviceLocator;
@@ -58,6 +64,7 @@ export class PasteCleanup {
         this.i10n = serviceLocator.getService<L10n>('rteLocale');
         this.dialogRenderObj = serviceLocator.getService<DialogRenderer>('dialogRenderObject');
         this.addEventListener();
+        this.isDestroyed = false;
     }
 
     private addEventListener(): void {
@@ -72,12 +79,36 @@ export class PasteCleanup {
     }
 
     private destroy(): void {
+        if (this.isDestroyed) { return; }
+        if (this.fireFoxUploadTime) { clearTimeout(this.fireFoxUploadTime); this.fireFoxUploadTime = null; }
+        if (this.refreshPopupTime) { clearTimeout(this.refreshPopupTime); this.refreshPopupTime = null; }
+        if (this.popupCloseTime) { clearTimeout(this.popupCloseTime); this.popupCloseTime = null; }
+        if (this.failureTime) { clearTimeout(this.failureTime); this.failureTime = null; }
+        if (this.iframeUploadTime) { clearTimeout(this.iframeUploadTime); this.iframeUploadTime = null; }
         this.removeEventListener();
+        if (this.popupObj && !this.popupObj.isDestroyed) {
+            this.popupObj.destroy();
+            this.popupObj = null;
+        }
+        if (this.uploadObj && !this.uploadObj.isDestroyed){
+            this.uploadObj.destroy();
+            this.uploadObj = null;
+        }
+        if (this.keepRadioButton && !this.keepRadioButton.isDestroyed){
+            this.keepRadioButton.destroy();
+            this.keepRadioButton = null;
+        }
+        if (this.cleanRadioButton && !this.cleanRadioButton.isDestroyed){
+            this.cleanRadioButton.destroy();
+            this.cleanRadioButton = null;
+        }
+        if (this.plainTextRadioButton && !this.plainTextRadioButton.isDestroyed){
+            this.plainTextRadioButton.destroy();
+            this.plainTextRadioButton = null;
+        }
+        this.isDestroyed = true;
     }
     private removeEventListener(): void {
-        if (this.parent.isDestroyed) {
-            return;
-        }
         this.parent.off(events.pasteClean, this.pasteClean);
         this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.destroy, this.destroy);
@@ -193,7 +224,7 @@ export class PasteCleanup {
         }
     }
     private fireFoxImageUpload(): void {
-        setTimeout(() => {
+        this.fireFoxUploadTime = setTimeout(() => {
             if (Browser.userAgent.indexOf('Firefox') !== -1) {
                 let currentFocusNode: Node = this.nodeSelectionObj.getRange(this.contentRenderer.getDocument()).startContainer;
                 if (currentFocusNode.nodeName !== '#text') {
@@ -334,7 +365,7 @@ export class PasteCleanup {
             addClass([this.popupObj.element], this.parent.cssClass.replace(/\s+/g, ' ').trim().split(' '));
         }
         const timeOut: number = file.size > 1000000 ? 300 : 100;
-        setTimeout(() => {
+        this.refreshPopupTime = setTimeout(() => {
             this.refreshPopup(imgElem as HTMLElement, this.popupObj);
         }, timeOut);
         this.uploadObj = new Uploader({
@@ -346,7 +377,7 @@ export class PasteCleanup {
             dropArea: this.parent.inputElement,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             success: (e: ImageSuccessEventArgs) => {
-                setTimeout(() => {
+                this.popupCloseTime = setTimeout(() => {
                     this.popupClose(this.popupObj, this.uploadObj, imgElem, e);
                 }, 900);
             },
@@ -370,9 +401,8 @@ export class PasteCleanup {
                 this.parent.trigger(events.beforeImageUpload, args);
                 this.toolbarEnableDisable(true);
             },
-            // eslint-disable-next-line
-                failure: (e: Object) => {
-                setTimeout(() => {
+            failure: (e: Object) => {
+                this.failureTime = setTimeout(() => {
                     this.uploadFailure(imgElem, this.uploadObj, this.popupObj, e);
                 }, 900);
             },
@@ -412,6 +442,9 @@ export class PasteCleanup {
         detach(this.popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap') as HTMLElement);
     }
     private uploadFailure(imgElem: Element, uploadObj: Uploader, popupObj: Popup, e: Object): void {
+        if (this.parent && this.parent.isDestroyed) {
+            return;
+        }
         this.parent.inputElement.contentEditable = 'true';
         detach(imgElem);
         if (popupObj) {
@@ -800,7 +833,7 @@ export class PasteCleanup {
             if (!isNOU(this.parent.insertImageSettings.saveUrl) && !isNOU(this.parent.insertImageSettings.path) &&
             this.parent.inputElement.querySelectorAll('img').length > 0 && this.parent.inputElement.querySelectorAll('img')[0].src.startsWith('blob')) {
                 this.convertBlobToBase64(this.parent.inputElement);
-                setTimeout(() => {
+                this.iframeUploadTime = setTimeout(() => {
                     this.imgUploading(this.parent.inputElement);
                     if (this.parent.iframeSettings.enable) {
                         this.parent.updateValue();

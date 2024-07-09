@@ -452,4 +452,52 @@ describe('Gantt Selection support', () => {
             }
         });
     });
+    describe('Gantt selection removal from treegrid side', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData1,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        dependency: 'Predecessor',
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                    },
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+                    projectStartDate: new Date('02/01/2017'),
+                    projectEndDate: new Date('12/30/2017'),
+                    rowHeight: 40,
+                    taskbarHeight: 30,
+                    allowSelection: true,
+                    selectionSettings: {
+                        mode: 'Both',
+                        type: 'Single'
+                    }
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('DeSelect a row by clicking on treegrid side', () => {
+            ganttObj.selectionSettings.enableToggle = true;
+            ganttObj.selectionSettings.persistSelection = true;
+            ganttObj.dataBind();
+            let cell: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(cell, 'click', 10, 10);
+            triggerMouseEvent(cell, 'click', 10, 10);
+            expect(ganttObj.selectionModule.getSelectedRecords().length).toBe(0);
+        });
+    });
 });

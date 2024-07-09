@@ -184,6 +184,20 @@ export interface ExpandCollapseEventArgs extends BaseEventArgs {
 }
 
 /**
+ * Event triggers when the ribbon layout is switched.
+ */
+export interface LayoutSwitchedEventArgs extends BaseEventArgs {
+    /**
+     *  Specifies the active layout of the ribbon.
+     */
+    activeLayout: string;
+    /**
+     *  Provides the actual native event.
+     */
+    event: Event;
+}
+
+/**
  * Event Triggers when the launcher icon is clicked.
  */
 export interface LauncherClickEventArgs extends BaseEventArgs {

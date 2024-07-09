@@ -116,9 +116,19 @@ export class JsonAdaptor extends Adaptor {
             lazyLoad[query.lazyLoad[i].key] = query.lazyLoad[i].value;
         }
         const agg: { [key: string]: Object } = {};
+        let isGroupByFormat: boolean = false;
+        if(query.lazyLoad.length) {
+            for (let i: number = 0; i < query.queries.length; i++) {
+                key = query.queries[i];
+                if(key.fn === 'onGroup' && !isNullOrUndefined(key.e.format)) {
+                    isGroupByFormat = true;
+                    break;
+                }
+            }
+        }
         for (let i: number = 0; i < query.queries.length; i++) {
             key = query.queries[i];
-            if ((key.fn === 'onPage' || key.fn === 'onGroup' || key.fn === 'onSortBy') && query.lazyLoad.length) {
+            if ((key.fn === 'onPage' || key.fn === 'onGroup' || (key.fn === 'onSortBy' && !isGroupByFormat)) && query.lazyLoad.length) {
                 if (key.fn === 'onGroup') {
                     group.push(key.e);
                 }
@@ -179,8 +189,10 @@ export class JsonAdaptor extends Adaptor {
             }
             if (args.group.length !== req.level) {
                 const field: string = (<{ fieldName?: string }>args.group[req.level]).fieldName;
-                result = DataUtil.group(result, field, agg, null, null, (<{ comparer?: Function }>args.group[0]).comparer, true);
-                result = this.onSortBy(result, args.sort[parseInt(req.level.toString(), 10)], args.query, true);
+                result = DataUtil.group(result, field, agg, null, null, (<{ comparer?: Function }>args.group[req.level]).comparer, true);
+                if(args.sort.length) {
+                    result = this.onSortBy(result, args.sort[parseInt(req.level.toString(), 10)], args.query, true);
+                }
             } else {
                 for (let i: number = args.sort.length - 1; i >= req.level; i--) {
                     result = this.onSortBy(result, args.sort[parseInt(i.toString(), 10)], args.query, false);

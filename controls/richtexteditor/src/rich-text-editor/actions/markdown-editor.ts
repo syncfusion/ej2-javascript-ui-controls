@@ -23,12 +23,14 @@ export class MarkdownEditor {
     private toolbarUpdate: MarkdownToolbarStatus;
     private saveSelection: MarkdownSelection;
     private mdSelection: MarkdownSelection;
+    private isDestroyed: boolean;
 
     public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.locator = serviceLocator;
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
         this.addEventListener();
+        this.isDestroyed = false;
     }
     /**
      * Destroys the Markdown.
@@ -39,13 +41,9 @@ export class MarkdownEditor {
      * @deprecated
      */
     public destroy(): void {
-        if (isNullOrUndefined(this.parent)) { return; }
+        if (this.isDestroyed) { return; }
         this.removeEventListener();
-    }
-
-    private moduleDestroy(): void {
-        this.parent = null;
-        this.toolbarUpdate.parent = null;
+        this.isDestroyed = true;
     }
 
     private addEventListener(): void {
@@ -63,7 +61,6 @@ export class MarkdownEditor {
         this.parent.on(events.selectionSave, this.onSelectionSave, this);
         this.parent.on(events.selectionRestore, this.onSelectionRestore, this);
         this.parent.on(events.readOnlyMode, this.updateReadOnly, this);
-        this.parent.on(events.moduleDestroy, this.moduleDestroy, this);
     }
     private updateReadOnly(): void {
         if (this.parent.readonly) {
@@ -125,9 +122,6 @@ export class MarkdownEditor {
         this.renderFactory.addRenderer(RenderType.Content, new MarkdownRender(this.parent));
     }
     private removeEventListener(): void {
-        if (this.parent.isDestroyed) {
-            return;
-        }
         this.parent.off(events.initialEnd, this.render);
         this.parent.off(events.modelChanged, this.onPropertyChanged);
         this.parent.off(events.destroy, this.destroy);
@@ -138,7 +132,6 @@ export class MarkdownEditor {
         this.parent.off(events.selectionSave, this.onSelectionSave);
         this.parent.off(events.selectionRestore, this.onSelectionRestore);
         this.parent.off(events.readOnlyMode, this.updateReadOnly);
-        this.parent.off(events.moduleDestroy, this.moduleDestroy);
     }
 
     private render(): void {

@@ -158,3 +158,49 @@ describe('Shift Enter key support - When image is rendered', () => {
         destroy(rteObj);
     });
 });
+
+describe('890906 - Clicking shift and Enter after inserting link causes the page to collapse in RichTextEditor', () => {
+    let rteObj: RichTextEditor;
+    keyboardEventArgs.shiftKey = true;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            height: '200px',
+            value: `<p><span><a class="e-rte-anchor" href="https://www.syncfusion.com/" title="https://www.syncfusion.com/" target="_blank" aria-label="Open in new window">https://www.syncfusion.com/ </a></span><br></p>`
+        });
+        done();
+    });
+    let keyBoardEvent: any = {
+        preventDefault: () => { },
+        type: "keydown",
+        stopPropagation: () => { },
+        ctrlKey: false,
+        shiftKey: false,
+        action: null,
+        which: 64,
+        key: ""
+    };
+    it("Press the Shift+Enter after the link", (done) => {
+        const nodetext: any = rteObj.inputElement.querySelector("A");
+        const sel: void = new NodeSelection().setCursorPoint(
+            document, nodetext.childNodes[0], nodetext.textContent.length);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        keyBoardEvent.clipboardData = {
+            getData: () => { return `<span><a class="e-rte-anchor" id="anchorEle2" href="https://www.syncfusion.com/" title="https://www.syncfusion.com/" target="_blank" aria-label="Open in new window">https://www.syncfusion.com/ </a></span>`; },
+            items: []
+        };
+        expect(nodetext.querySelector("BR")).toBe(null);
+        (<any>rteObj).onPaste(keyBoardEvent);
+        setTimeout(() => {
+            const anchorText: any = rteObj.inputElement.querySelector("#anchorEle2");
+            const sel2: void = new NodeSelection().setCursorPoint(
+                document, anchorText.childNodes[0], anchorText.textContent.length);
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            expect(anchorText.querySelector("BR")).toBe(null);
+            done();
+        }, 100);
+    });
+    afterAll((done) => {
+        destroy(rteObj);
+        done();
+    });
+});

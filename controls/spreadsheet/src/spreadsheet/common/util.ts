@@ -2325,3 +2325,30 @@ export function isReadOnlyCells(parent: Spreadsheet, rangeIndexes?: number[]): b
     }
     return hasReadOnlyCell;
 }
+
+
+/**
+ * Sets the standard height for a specified sheet in a spreadsheet.
+ *
+ * @param {Spreadsheet} context - The spreadsheet instance.
+ * @param {number} sheetIndex - The index of the sheet to set the standard height.
+ * @param {number} standardHeight - The standard height to set for the sheet.
+ * @returns {void}
+ * @hidden
+ */
+export function setStandardHeight(context: Spreadsheet, sheetIndex: number, standardHeight: number): void {
+    const sheet: SheetModel = context.sheets[sheetIndex as number];
+    if (sheet) { sheet.standardHeight = standardHeight; context.dataBind(); }
+}
+
+/**
+ * Retrieves the standard height of a specific sheet in the spreadsheet.
+ *
+ * @param {Spreadsheet} context - The spreadsheet instance.
+ * @param {number} sheetIndex - The index of the sheet to retrieve the standard height.
+ * @returns {number} - The standard height of the specified sheet.
+ * @hidden
+ */
+export function getStandardHeight(context: Spreadsheet, sheetIndex: number): number {
+    return context.sheets[sheetIndex as number].standardHeight;
+}

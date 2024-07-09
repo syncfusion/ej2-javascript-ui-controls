@@ -263,6 +263,8 @@ export interface DragEventArgs extends BaseEventArgs {
     scroll?: ScrollOptions;
     /** Defines the date range navigation action while dragging. */
     navigation?: NavigateOptions;
+    /** Allows to drag the events outside the currently rendered date range */
+    dragWithinRange?: boolean;
 }
 
 /** An interface that holds options of virtual scroll action. */
@@ -568,6 +570,7 @@ export interface UIStateArgs {
     scheduleHeight?: number;
     isTapHold?: boolean;
     isTouchScroll?: boolean;
+    isTransformed?: boolean;
 }
 
 /**

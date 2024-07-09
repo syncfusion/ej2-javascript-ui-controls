@@ -43,4 +43,8 @@ export class ServiceLocator {
 
         return <T>this.services[`${name}`];
     }
+
+    public destroy(): void {
+        this.services = {};
+    }
 }

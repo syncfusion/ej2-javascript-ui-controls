@@ -13,6 +13,9 @@ describe('RendererFactory module', () => {
             rteObj = renderRTE({
                 toolbarSettings: {
                     enable: false
+                },
+                quickToolbarSettings: {
+                    enable: false
                 }
             });
         });

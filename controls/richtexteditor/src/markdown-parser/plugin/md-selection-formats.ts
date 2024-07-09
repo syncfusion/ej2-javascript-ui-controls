@@ -24,7 +24,15 @@ export class MDSelectionFormats {
     private addEventListener(): void {
         this.parent.observer.on(CONSTANT.selectionCommand, this.applyCommands, this);
         this.parent.observer.on(EVENTS.KEY_DOWN_HANDLER, this.keyDownHandler, this);
+        this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
     }
+
+    private removeEventListener(): void {
+        this.parent.observer.off(CONSTANT.selectionCommand, this.applyCommands);
+        this.parent.observer.off(EVENTS.KEY_DOWN_HANDLER, this.keyDownHandler);
+        this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
+    }
+
     private keyDownHandler(e: IMDKeyboardEvent): void {
         switch ((e.event as KeyboardEventArgs).action) {
         case 'bold':
@@ -336,5 +344,9 @@ export class MDSelectionFormats {
         case 'InlineCode':
             return regx.test(line.text as string);
         }
+    }
+
+    public destroy(): void {
+        this.removeEventListener();
     }
 }

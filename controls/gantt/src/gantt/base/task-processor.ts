@@ -234,6 +234,12 @@ export class TaskProcessor extends DateProcessor {
     private prepareDataSource(data: Object[]): void {
         this.prepareRecordCollection(data, 0);
         this.parent.initialLoadData = extend({}, {}, this.parent.flatData, true);
+        if (!this.parent.autoCalculateDateScheduling) {
+            this.parent.dataMap = this.parent.flatData.reduce((map, val) => {
+                map.set(val.uniqueID, val);
+                return map;
+            }, new Map<string, IGanttData>());
+        }
         // Method to maintain the shared task uniqueIds
         if (this.parent.viewType === 'ResourceView') {
             this.calculateSharedTaskUniqueIds();

@@ -26,6 +26,12 @@ export class SelectionBasedExec {
     private addEventListener(): void {
         this.parent.observer.on(CONSTANT.SELECTION_TYPE, this.applySelection, this);
         this.parent.observer.on(EVENTS.KEY_DOWN_HANDLER, this.keyDownHandler, this);
+        this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
+    }
+    private removeEventListener(): void {
+        this.parent.observer.off(CONSTANT.SELECTION_TYPE, this.applySelection);
+        this.parent.observer.off(EVENTS.KEY_DOWN_HANDLER, this.keyDownHandler);
+        this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
     }
     private keyDownHandler(e: IHtmlKeyboardEvent): void {
         const validFormats: string[] = ['bold', 'italic', 'underline', 'strikethrough', 'superscript',
@@ -66,5 +72,9 @@ export class SelectionBasedExec {
                 elements: this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument) as Element[]
             });
         }
+    }
+
+    public destroy(): void {
+        this.removeEventListener();
     }
 }

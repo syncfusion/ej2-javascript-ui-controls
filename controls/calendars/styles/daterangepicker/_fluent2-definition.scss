@@ -37,7 +37,7 @@ $range-indicator-label-width: 100% !default;
 $range-device-indicator-margin: 8px 0 0 !default;
 $range-device-indicator-height: 24px !default;
 $range-separator-height: 1px !default;
-$range-border-value: 1px solid $content-bg-color-alt1 !default;
+$range-border-value: 1px solid $flyout-border !default;
 $range-container-border-value: none !default;
 $range-separator-margin: 0 !default;
 $range-footer-height: 47px !default;
@@ -290,11 +290,11 @@ $modal-range-tablet-font-size: 18px !default;
 
 $range-header-font-size: 16px !default;
 
-$footer-top-border-color :1px solid $border-light !default;
+$footer-top-border-color :1px solid $flyout-border !default;
 
 /* stylelint-disable */
 .e-daterangepicker.e-popup .e-footer{
-  border-top: 1px solid $footer-top-border-color !important;
+  border-top: $footer-top-border-color !important;
 }
 
 $range-icon-mouse-border-radius: 16px !default;

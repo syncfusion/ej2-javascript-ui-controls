@@ -1202,7 +1202,6 @@ export class Toolbar {
         this.createTooltip(this.zoomDropdownItem, this.pdfViewer.localeObj.getConstant('Zoom'));
         this.zoomDropdownItem.setAttribute('aria-label', this.pdfViewer.localeObj.getConstant('Zoom'));
         this.addPropertiesToolItemContainer(this.zoomDropdownItem.parentElement.parentElement, null, '_zoomDropDownContainer');
-        this.pdfViewerBase.getElement('_zoomDropDownContainer').style.minWidth = '';
         this.createTooltip(this.currentPageBoxElement, this.pdfViewer.localeObj.getConstant('Page Number') + (isMac ? ' (⌘+G)' : ' (Ctrl+G)'));
         this.currentPageBoxElement.setAttribute('aria-label', this.pdfViewer.localeObj.getConstant('Page Number'));
         this.submitItem = this.pdfViewerBase.getElement('_submitForm');

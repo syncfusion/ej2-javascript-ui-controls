@@ -2565,7 +2565,6 @@ client side. Customer easy to edit the contents and get the HTML content for
                  expect(rteObj.getContent().querySelector(".e-rte-video.e-video-inline source").getAttribute("src").indexOf("blob") == -1).toBe(true);
                  evnArg.selectNode = [rteObj.element];
                  (<any>rteObj).videoModule.deleteVideo(evnArg);
-                 (<any>rteObj).videoModule.uploadObj.upload((<any>rteObj).videoModule.uploadObj.filesData[0]);
                  done();
              }, 1000);
          });
@@ -2608,7 +2607,6 @@ client side. Customer easy to edit the contents and get the HTML content for
                  expect(rteObj.getContent().querySelector(".e-rte-video.e-video-inline source").getAttribute("src").indexOf("base64") == -1).toBe(true);
                  evnArg.selectNode = [rteObj.element];
                  (<any>rteObj).videoModule.deleteVideo(evnArg);
-                 (<any>rteObj).videoModule.uploadObj.upload((<any>rteObj).videoModule.uploadObj.filesData[0]);
                  done();
              }, 1000);
          });

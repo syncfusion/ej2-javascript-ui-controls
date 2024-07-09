@@ -2,6 +2,8 @@ import { MarkdownParser } from './../base/markdown-parser';
 import { MarkdownSelection } from './../plugin/markdown-selection';
 import * as CONSTANT from './../base/constant';
 import { IMarkdownSubCommands } from './../base/interface';
+import * as EVENTS from './../../common/constant';
+
 /**
  * Link internal component
  *
@@ -26,8 +28,12 @@ export class ClearFormat {
     }
     private addEventListener(): void {
         this.parent.observer.on(CONSTANT.CLEAR_COMMAND, this.clear, this);
+        this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
     }
-
+    private removeEventListener(): void {
+        this.parent.observer.off(CONSTANT.CLEAR_COMMAND, this.clear);
+        this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
+    }
     private replaceRegex(data: string): string {
         /* eslint-disable */
         return data.replace(/\*/ig, '\\*').replace(/\&/ig, '\\&')
@@ -121,5 +127,9 @@ export class ClearFormat {
                 event: event.event
             });
         }
+    }
+
+    public destroy(): void {
+        this.removeEventListener();
     }
 }

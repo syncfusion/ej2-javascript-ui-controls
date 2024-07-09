@@ -17,7 +17,7 @@ export class ValueFormatter implements IValueFormatter {
     }
 
     public getFormatFunction(format: NumberFormatOptions | DateFormatOptions): Function {
-        if ((<DateFormatOptions>format).type) {
+        if (!isNullOrUndefined(<DateFormatOptions>format) && ((<DateFormatOptions>format).type === 'dateTime' || (<DateFormatOptions>format).type === 'datetime' || (<DateFormatOptions>format).type === 'date' || (<DateFormatOptions>format).type === 'time')) {
             return this.intl.getDateFormat(<DateFormatOptions>format);
         } else {
             return this.intl.getNumberFormat(<DateFormatOptions>format);

@@ -598,8 +598,12 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             this.clearTemplate(['content']);
         }
         this.clear();
-        this.trigger('afterClose', this.tooltipEventArgs);
-        this.tooltipEventArgs = null;
+        let tooltipAfterCloseEventArgs: TooltipEventArgs = {
+            type: this.tooltipEventArgs.event ? this.tooltipEventArgs.event.type : null, cancel: false, target: this.tooltipEventArgs.target, event: this.tooltipEventArgs.event ? this.tooltipEventArgs.event : null,
+            element: this.tooltipEle, isInteracted: !isNullOrUndefined(this.tooltipEventArgs.event)
+        };
+        this.trigger('afterClose', tooltipAfterCloseEventArgs);
+        tooltipAfterCloseEventArgs = null;
     }
     private calculateTooltipOffset(position: Position, xScalingFactor: number = 1, yScalingFactor: number = 1): OffsetPosition {
         const pos: OffsetPosition = { top: 0, left: 0 };
@@ -1174,7 +1178,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 this.isHidden = false;
             }
         });
-        this.tooltipEventArgs = null;
     }
     private popupHide(hideAnimation: TooltipAnimationSettings, target: HTMLElement, e?: Event): void {
         if (target && e) { this.restoreElement(target); }

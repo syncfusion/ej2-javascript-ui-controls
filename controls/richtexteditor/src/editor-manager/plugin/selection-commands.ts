@@ -214,6 +214,13 @@ export class SelectionCommands {
             if (cursorFormat.firstChild.textContent.charCodeAt(0) === 8203 && cursorFormat.firstChild.nodeType === 3) {
                 const regEx: RegExp = new RegExp('\u200B', 'g');
                 let emptySpaceNode: Node;
+                if (cursorNode.nodeName !== '#text') {
+                    for (let i: number = 0; i < cursorNodes.length; i++) {
+                        if (cursorNodes[i as number].nodeType === Node.TEXT_NODE) {
+                            cursorNode = cursorNodes[i as number];
+                        }
+                    }
+                }
                 if (cursorFormat.firstChild === cursorNode) {
                     cursorNode.textContent = (cursorFormat.parentElement && (domNode.isBlockNode(cursorFormat.parentElement) &&
                     cursorFormat.parentElement.textContent.length <= 1 ? cursorFormat.parentElement.childElementCount > 1 :

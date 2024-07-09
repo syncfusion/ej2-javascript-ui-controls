@@ -112,11 +112,11 @@ export class InlineEdit {
             const allDayElements: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.ALLDAY_APPOINTMENT_CLASS));
             let allDayLevel: number = 0;
             if (allDayElements.length > 0) {
-                allDayLevel = Math.floor(util.getElementHeight(this.parent.element.querySelector('.' + cls.ALLDAY_ROW_CLASS)) /
+                allDayLevel = Math.floor(this.parent.getElementHeight(this.parent.element.querySelector('.' + cls.ALLDAY_ROW_CLASS)) /
                     allDayElements[0].offsetHeight) - 1;
             }
             verticalEvent.allDayLevel = allDayLevel;
-            const appHeight: number = util.getElementHeightFromClass(
+            const appHeight: number = this.parent.getElementHeightFromClass(
                 this.parent.element.querySelector('.' + cls.ALLDAY_APPOINTMENT_WRAPPER_CLASS), cls.APPOINTMENT_CLASS);
             const cellTop: number = verticalEvent.allDayElement.length > 0 ? verticalEvent.allDayElement[0].offsetTop : 0;
             verticalEvent.renderAllDayEvents(saveObj, index, resIndex, daysCount, this.parent.allowInline, cellTop, appHeight);
@@ -145,7 +145,7 @@ export class InlineEdit {
         monthEvent.cellWidth = monthEvent.workCells[0].offsetWidth;
         monthEvent.cellHeight = monthEvent.workCells[0].offsetHeight;
         monthEvent.eventHeight =
-            util.getElementHeightFromClass(this.parent.monthModule.element || monthEvent.element, cls.APPOINTMENT_CLASS);
+            this.parent.getElementHeightFromClass(this.parent.monthModule.element || monthEvent.element, cls.APPOINTMENT_CLASS);
         monthEvent.getSlotDates(workDays);
         const filteredDates: Date[] = monthEvent.getRenderedDates(renderDates);
         const spannedEvents: Record<string, any>[] = monthEvent.splitEvent(saveObject, filteredDates || renderDates);
@@ -169,7 +169,7 @@ export class InlineEdit {
         const dayLength: number = this.parent.element.querySelectorAll('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr').length === 0 ?
             0 : this.parent.element.querySelectorAll('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr')[0].children.length;
         timelineView.slotsPerDay = dayLength / timelineView.dateRender.length;
-        timelineView.eventHeight = util.getElementHeightFromClass(timelineView.element, cls.APPOINTMENT_CLASS);
+        timelineView.eventHeight = this.parent.getElementHeightFromClass(timelineView.element, cls.APPOINTMENT_CLASS);
         timelineView.renderEvents(saveObject, resIndex);
     }
 

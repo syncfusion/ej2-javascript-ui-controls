@@ -342,6 +342,7 @@ describe('Count module', () => {
             });
         });
         afterAll(() => {
+            rteObj.countModule.destroy();
             destroy(rteObj);
         });
         it(' ensuring getText() works fine with value as null', () => {

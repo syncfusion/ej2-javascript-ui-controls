@@ -4,6 +4,8 @@ import * as CONSTANT from './../base/constant';
 import { IHtmlItem } from './../base/interface';
 import { InsertHtml } from './inserthtml';
 import { removeClassWithAttr } from '../../common/util';
+import * as EVENTS from '../../common/constant';
+
 /**
  * Link internal component
  *
@@ -38,6 +40,23 @@ export class TableCommand {
         this.parent.observer.on(CONSTANT.TABLE_HORIZONTAL_SPLIT, this.HorizontalSplit, this);
         this.parent.observer.on(CONSTANT.TABLE_VERTICAL_SPLIT, this.VerticalSplit, this);
         this.parent.observer.on(CONSTANT.TABLE_MOVE, this.tableMove, this);
+        this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
+    }
+
+    private removeEventListener(): void {
+        this.parent.observer.off(CONSTANT.TABLE, this.createTable);
+        this.parent.observer.off(CONSTANT.INSERT_ROW, this.insertRow);
+        this.parent.observer.off(CONSTANT.INSERT_COLUMN, this.insertColumn);
+        this.parent.observer.off(CONSTANT.DELETEROW, this.deleteRow);
+        this.parent.observer.off(CONSTANT.DELETECOLUMN, this.deleteColumn);
+        this.parent.observer.off(CONSTANT.REMOVETABLE, this.removeTable);
+        this.parent.observer.off(CONSTANT.TABLEHEADER, this.tableHeader);
+        this.parent.observer.off(CONSTANT.TABLE_VERTICAL_ALIGN, this.tableVerticalAlign);
+        this.parent.observer.off(CONSTANT.TABLE_MERGE, this.cellMerge);
+        this.parent.observer.off(CONSTANT.TABLE_HORIZONTAL_SPLIT, this.HorizontalSplit);
+        this.parent.observer.off(CONSTANT.TABLE_VERTICAL_SPLIT, this.VerticalSplit);
+        this.parent.observer.off(CONSTANT.TABLE_MOVE, this.tableMove);
+        this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
     }
 
     private createTable(e: IHtmlItem): HTMLElement {
@@ -1057,6 +1076,10 @@ export class TableCommand {
             e.event.preventDefault();
         }
         this.restoreRange(target);
+    }
+
+    public destroy(): void {
+        this.removeEventListener();
     }
 }
 

@@ -153,12 +153,13 @@ export class PdfTreeGridCell {
             }
             /* eslint-disable */
             const slr: PdfStringLayoutResult = layouter.layout(currentValue, font, this.style.format, new SizeF(width, 0), false, new SizeF(0, 0));
+            const value: number = Math.max(slr.lineHeight, slr.actualSize.height)
             if (currentValue.length > 80) {
-                height += slr.actualSize.height + 20;
+                height += value + 20;
             }
             else {
-                height += slr.actualSize.height;
-            }     
+                height += value + (slr.size.height / 2);
+            }         
             height += (this.style.borders.top.width + this.style.borders.bottom.width) * 2;
         }
         height += this.row.treegrid.style.cellPadding.top + this.row.treegrid.style.cellPadding.bottom;

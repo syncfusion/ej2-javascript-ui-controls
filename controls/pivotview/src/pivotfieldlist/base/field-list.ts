@@ -1128,6 +1128,13 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 super.refresh();
                 break;
             case 'dataSourceSettings':
+                if (newProp.dataSourceSettings && ((!isNullOrUndefined(newProp.dataSourceSettings.dataSource) &&
+                    this.clonedDataSet !== newProp.dataSourceSettings.dataSource && newProp.dataSourceSettings.groupSettings) ||
+                    (Object.keys(newProp.dataSourceSettings).length === 1 && Object.keys(newProp.dataSourceSettings)[0] === 'dataSource'
+                        && this.dataSourceSettings.groupSettings.length > 0))) {
+                    this.clonedDataSet = newProp.dataSourceSettings.dataSource as IDataSet[];
+                    this.engineModule.groupingFields = {};
+                }
                 if ((!isNullOrUndefined(newProp.dataSourceSettings.dataSource) && !(newProp.dataSourceSettings.groupSettings
                 && newProp.dataSourceSettings.groupSettings.length > 0)) || (this.dataType === 'olap' && !isNullOrUndefined(newProp.dataSourceSettings.url))) {
                     if (this.dataType !== 'olap') {
@@ -1151,6 +1158,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                         this.engineModule.fieldList = null;
                         this.engineModule.isEmptyData = true;
                         this.engineModule.data = [];
+                        this.engineModule.groupingFieldsInfo = {};
                     } else if (this.dataType === 'olap') {
                         this.olapEngineModule.fieldList = {};
                         this.olapEngineModule.fieldListData = undefined;

@@ -79,10 +79,10 @@ export class YearEvent extends TimelineEvent {
 
     private timelineYearViewEvents(): void {
         const workCell: HTMLElement = this.parent.element.querySelector('.' + cls.WORK_CELLS_CLASS + ':not(.' + cls.OTHERMONTH_CLASS + ')');
-        this.cellWidth = util.getElementWidth(workCell);
+        this.cellWidth = this.parent.getElementWidth(workCell);
         this.cellHeader = util.getOuterHeight(workCell.querySelector('.' + cls.DATE_HEADER_CLASS));
         const eventTable: Element = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS);
-        this.eventHeight = util.getElementHeightFromClass(eventTable, cls.APPOINTMENT_CLASS);
+        this.eventHeight = this.parent.getElementHeightFromClass(eventTable, cls.APPOINTMENT_CLASS);
         const selector: string =
             `.${cls.MONTH_HEADER_WRAPPER} tbody tr,.${cls.RESOURCE_COLUMN_TABLE_CLASS} tbody tr,.${cls.CONTENT_TABLE_CLASS} tbody tr`;
         this.addCellHeight(selector, this.eventHeight, EVENT_GAP, this.cellHeader, this.moreIndicatorHeight);
@@ -229,10 +229,10 @@ export class YearEvent extends TimelineEvent {
         const contentTable: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
         const isVerticalScrollbarAvail: boolean = contentTable.offsetWidth > contentTable.clientWidth;
         const workCell: HTMLElement = this.parent.element.querySelector('.' + cls.WORK_CELLS_CLASS);
-        this.cellWidth = util.getElementWidth(workCell);
+        this.cellWidth = this.parent.getElementWidth(workCell);
         this.cellHeader = 0;
         const eventTable: Element = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS);
-        this.eventHeight = util.getElementHeightFromClass(eventTable, cls.APPOINTMENT_CLASS);
+        this.eventHeight = this.parent.getElementHeightFromClass(eventTable, cls.APPOINTMENT_CLASS);
         const selector: string =
             `.${cls.MONTH_HEADER_WRAPPER} tbody tr,.${cls.RESOURCE_COLUMN_TABLE_CLASS} tbody tr,.${cls.CONTENT_TABLE_CLASS} tbody tr`;
         this.addCellHeight(selector, this.eventHeight, EVENT_GAP, this.cellHeader, this.moreIndicatorHeight);
@@ -276,7 +276,7 @@ export class YearEvent extends TimelineEvent {
                 appWrapper.forEach((appWrap: HTMLElement, cellIndex: number) => {
                     const td: HTMLElement = row.querySelector(`td:nth-child(${cellIndex + 1})`);
                     const app: HTMLElement[] = [].slice.call(appWrap.children);
-                    const width: number = util.getElementWidth(td);
+                    const width: number = this.parent.getElementWidth(td);
                     const left: number = td.offsetLeft;
                     if (this.parent.enableRtl) {
                         const right: number = conTable.offsetWidth - left - td.offsetWidth;

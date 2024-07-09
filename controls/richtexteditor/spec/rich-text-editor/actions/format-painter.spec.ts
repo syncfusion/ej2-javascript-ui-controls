@@ -2057,7 +2057,7 @@ describe('Format Painter Module', () => {
             rteObject.focusIn();
             rteObject.destroy();
             setTimeout(() => {
-                expect(rteObject.formatPainterModule.previousAction).toBeUndefined();
+                expect(rteObject.formatPainterModule.previousAction).toBeNull();
                 done();
             }, 50);
         });

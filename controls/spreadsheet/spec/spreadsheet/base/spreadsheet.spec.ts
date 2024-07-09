@@ -1,11 +1,12 @@
 /**
  *  Spreadsheet base spec
  */
-import { SpreadsheetModel, Spreadsheet, CellSaveEventArgs, onContentScroll } from '../../../src/spreadsheet/index';
+import { SpreadsheetModel, Spreadsheet, CellSaveEventArgs, onContentScroll, setStandardHeight, getStandardHeight } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, productData, filterData, ScrollingData } from '../util/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { CellModel, getModel, SheetModel, RowModel, BeforeCellUpdateArgs, getRangeIndexes, getCell, ImageModel } from '../../../src/workbook/index';
+import { getRowHeight } from '../../../src/index';
 import { EmitType, setCurrencyCode, L10n, createElement, Browser } from '@syncfusion/ej2-base';
 
 describe('Spreadsheet base module ->', () => {
@@ -1586,6 +1587,79 @@ describe('Spreadsheet base module ->', () => {
         });
     });
 
+    describe('EJ2-882379 - Update row height calculations with standard height property ->', () => {
+        beforeEach((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }], standardHeight: 19 }, { standardHeight: 26 }, {}]
+            }, done);
+        });
+        afterEach(() => {
+            helper.invoke('destroy');
+        });
+        it('Testing standard height property in cell data binding->', (done: Function) => {
+            const sheetModel: SheetModel = helper.getInstance().sheets[0];
+            const sheetModel1: SheetModel = helper.getInstance().sheets[1];
+            const sheetModel2: SheetModel = helper.getInstance().sheets[2];
+            expect(sheetModel.standardHeight).toBe(19);
+            expect(sheetModel1.standardHeight).toBe(26);
+            expect(sheetModel2.standardHeight).toBeNull();
+            done();
+        });
+        it('Testing standard height property in cell data binding with rows->', (done: Function) => {
+            const sheetModel: SheetModel = helper.getInstance().sheets[0];
+            expect(sheetModel.standardHeight).toBe(19);
+            expect(getRowHeight(sheetModel, 1)).toBe(19);
+            done();
+        });
+        it('Testing standard height property in cell data binding without rows->', (done: Function) => {
+            const sheetModel: SheetModel = helper.getInstance().sheets[1];
+            expect(sheetModel.standardHeight).toBe(26);
+            expect(getRowHeight(sheetModel, 1)).toBe(26);
+            done();
+        });
+        it('Checking standard height property While loading JSON data without rows data with the openFromJson method ->', (done: Function) => {
+            const json: object = { Workbook: { sheets: [{ standardHeight: 22 }], selectedRange: 'A1' } };
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.openFromJson({ file: json });
+            setTimeout(() => {
+                const sheetModel: SheetModel = helper.getInstance().sheets[0];
+                expect(sheetModel.standardHeight).toBe(22);
+                done();
+            });
+        });
+        it('Checking standard height property While loading JSON data with rows data with the openFromJson method->', (done: Function) => {
+            const json: object = {
+                Workbook: {
+                    sheets: [{
+                        columns: [{ width: 100 }, { width: 200 }, { width: 120 },
+                        { width: 120 }, { width: 120 }, { width: 120 }, { width: 120 },], ranges: [{ dataSource: defaultData }], standardHeight: 23
+                    }], selectedRange: 'A1'
+                }
+            };
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.openFromJson({ file: json });
+            setTimeout(() => {
+                const sheetModel: SheetModel = helper.getInstance().sheets[0];
+                expect(sheetModel.standardHeight).toBe(23);
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
+                done();
+            });
+        });
+        it('Testing setStandardHeight method ->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            setStandardHeight(spreadsheet, 2, 26);
+            const sheetModel: SheetModel = helper.getInstance().sheets[2];
+            expect(sheetModel.standardHeight).toBe(26);
+            done();
+        });
+        it('Testing getStandardHeight method ->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            setStandardHeight(spreadsheet, 2, 23);
+            expect(getStandardHeight(spreadsheet, 2)).toBe(23);
+            done();
+        });
+    });
+
     describe('CR-Issues ->', () => {
         describe('I266607 ->', () => {
             beforeEach((done: Function) => {
@@ -2513,6 +2587,33 @@ describe('Spreadsheet base module ->', () => {
                 spreadsheet.setRowHeight(70, 2, 0, undefined, false);
                 expect(spreadsheet.sheets[0].rows[2].height).toBe(70);
                 done();
+            });
+        });
+        describe('EJ2-890164 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Rows are not rendered properly and appear hidden when calling the refresh() method after scrolling. ', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.goTo('Sheet1!A125');
+                setTimeout((): void => {
+                    expect(spreadsheet.sheets[0].paneTopLeftCell).toBe('A125');
+                    expect(helper.invoke('getMainContent').querySelector('.e-virtualable').style.transform).toBe('translate(0px, 2180px)');
+                    spreadsheet.goTo('Sheet1!A60');
+                    setTimeout((): void => {
+                        expect(spreadsheet.sheets[0].paneTopLeftCell).toBe('A60');
+                        expect(helper.invoke('getMainContent').querySelector('.e-virtualable').style.transform).toBe('translate(0px, 880px)');
+                        spreadsheet.refresh();
+                        setTimeout((): void => {
+                            expect(spreadsheet.sheets[0].paneTopLeftCell).toBe('A60');
+                            expect(helper.invoke('getMainContent').querySelector('.e-virtualable').style.transform).toBe('translate(0px, 880px)');
+                            done();
+                        });
+                    });
+                });
             });
         });
     });

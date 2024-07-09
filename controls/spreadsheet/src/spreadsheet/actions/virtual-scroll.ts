@@ -738,7 +738,7 @@ export class VirtualScroll {
         this.removeEventListener();
         const noteIndicatorElement: NodeListOf<Element> = document.querySelectorAll('.e-addNoteIndicator');
         if (noteIndicatorElement) {
-            noteIndicatorElement.forEach(function (element) {
+            noteIndicatorElement.forEach((element: Element): void => {
                 element.remove();
             });
         }

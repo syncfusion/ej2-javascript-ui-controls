@@ -179,7 +179,7 @@ export class FocusStrategy {
         isContent = isContent && isHeader ? !isContent : isContent;
         if (!isContent && isNullOrUndefined(closest(<HTMLElement>e.target, '.' + literals.gridHeader)) ||
             (<Element>e.target).classList.contains(literals.content) ||
-            !isNullOrUndefined(closest(<HTMLElement>e.target, '.e-unboundcell'))) { return; }
+            (!isNullOrUndefined(closest(<HTMLElement>e.target, '.e-unboundcell')) && !force)) { return; }
         this.setActive(isContent);
         const beforeArgs: CellFocusArgs = { cancel: false, byKey: false, byClick: !isNullOrUndefined(e.target), clickArgs: <Event>e };
         this.parent.notify(event.beforeCellFocused, beforeArgs);
@@ -579,7 +579,7 @@ export class FocusStrategy {
 
     private skipOn(e: KeyboardEventArgs): boolean {
         const target: HTMLElement = <HTMLElement>e.target; if (!target) { return false; }
-        if (target && target.closest('.e-unboundcell') && this.currentInfo.skipAction && ((e.action === 'shiftTab' &&
+        if (!this.parent.isEdit && target && target.closest('.e-unboundcell') && this.currentInfo.skipAction && ((e.action === 'shiftTab' &&
             this.commandColumnFocusElement(target.closest('.e-unboundcell') as HTMLElement, false) === target) ||
             (e.action === 'tab' &&
                 this.commandColumnFocusElement(target.closest('.e-unboundcell') as HTMLElement, true) === target))) {

@@ -22,6 +22,8 @@ export class HtmlToolbarStatus {
         this.parent.on(events.destroy, this.removeEventListener, this);
     }
     private removeEventListener(): void {
+        this.toolbarStatus = null;
+        this.prevToolbarStatus = null;
         this.parent.off(events.toolbarRefresh, this.onRefreshHandler);
         this.parent.off(events.destroy, this.removeEventListener);
     }

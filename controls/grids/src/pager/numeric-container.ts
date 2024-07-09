@@ -225,6 +225,7 @@ export class NumericContainer implements IRender {
         pagerObj.previousPageNo = pagerObj.currentPage;
         if (!this.target.classList.contains('e-disable') && !isNullOrUndefined(this.target.getAttribute('index'))) {
             pagerObj.currentPage = parseInt(this.target.getAttribute('index'), 10);
+            this.pagerModule.isInteracted = true;
             pagerObj.dataBind();
         }
         return false;

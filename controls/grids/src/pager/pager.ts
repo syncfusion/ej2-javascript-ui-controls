@@ -62,6 +62,8 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     private firstPagerFocus: boolean = false;
     /** @hidden */
     public isCancel: boolean = false;
+    /** @hidden */
+    public isInteracted: boolean = false;
 
     //Module declarations
     /*** @hidden */
@@ -905,6 +907,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     public goToPage(pageNo: number): void {
         if (this.checkGoToPage(pageNo)) {
             this.currentPage = pageNo;
+            this.isInteracted = false;
             this.dataBind();
         }
     }
@@ -944,9 +947,9 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
             this.updateQueryString(this.currentPage);
         }
         if (newProp.currentPage !== oldProp.currentPage || newProp.pageSize !== oldProp.pageSize) {
-            const args: { currentPage: number, newProp: PagerModel, oldProp: PagerModel, cancel: boolean } = {
+            const args: { currentPage: number, newProp: PagerModel, oldProp: PagerModel, cancel: boolean, isInteracted: boolean } = {
                 currentPage: this.currentPage,
-                newProp: newProp, oldProp: oldProp, cancel: false
+                newProp: newProp, oldProp: oldProp, cancel: false, isInteracted: this.isInteracted
             };
             this.trigger('click', args);
             if (!args.cancel) {

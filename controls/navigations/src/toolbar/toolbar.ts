@@ -342,6 +342,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     private isVertical: boolean;
     private tempId: string[];
     private isExtendedOpen: boolean;
+    private clickEvent: EventListenerOrEventListenerObject;
+    private scrollEvent: EventListenerOrEventListenerObject;
     private resizeContext: EventListenerObject = this.resize.bind(this);
     private orientationChangeContext: EventListenerObject = this.orientationChange.bind(this);
 
@@ -598,8 +600,10 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         this.unwireKeyboardEvent();
         window.removeEventListener('resize', this.resizeContext);
         window.removeEventListener('orientationchange', this.orientationChangeContext);
-        EventHandler.remove(document, 'scroll', this.docEvent);
-        EventHandler.remove(document, 'click', this.docEvent);
+        document.removeEventListener('scroll', this.clickEvent);
+        document.removeEventListener('click', this.scrollEvent);
+        this.scrollEvent = null;
+        this.clickEvent = null;
     }
     private clearProperty(): void {
         this.tbarEle = [];
@@ -975,6 +979,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         this.initialize();
         this.renderControl();
         this.wireEvents();
+        this.clickEvent = this.docEvent.bind(this);
+        this.scrollEvent = this.docEvent.bind(this);
         this.renderComplete();
         if ((this as any).isReact && (this as Record<string, any>).portals && (this as Record<string, any>).portals.length > 0) {
             this.renderReactTemplates(() => {
@@ -1346,8 +1352,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 popup.offsetX = 0;
             }
             popup.appendTo(ele);
-            EventHandler.add(document, 'scroll', this.docEvent.bind(this));
-            EventHandler.add(document, 'click ', this.docEvent.bind(this));
+            document.addEventListener('scroll', this.clickEvent);
+            document.addEventListener('click', this.scrollEvent);
             if (this.overflowMode !== 'Extended') {
                 popup.element.style.maxHeight = popup.element.offsetHeight + 'px';
             }

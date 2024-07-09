@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 26.1.41 (2024-07-09)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I601660` -  Infinite scrolling now works properly on both the horizontal and vertical axes.
+- `#I600305` - Now, Fill color applied for BPMN activity shapes inside the symbol palette for smaller size.
+
 ## 26.1.40 (2024-07-02)
 
 ### Diagram

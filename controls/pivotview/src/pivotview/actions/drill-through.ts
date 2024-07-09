@@ -55,13 +55,13 @@ export class DrillThrough {
     private mouseClickHandler(e: MouseEvent): void {
         const target: Element = (e.target as Element);
         let ele: Element = null;
-        if (target.classList.contains('e-stackedheadercelldiv') || target.classList.contains('e-cellvalue') ||
-            target.classList.contains('e-headercelldiv')) {
+        if (target.classList.contains('e-stackedheadercelldiv') || target.classList.contains('e-headercelldiv') ||
+            target.classList.contains('e-stackedheadertext') || target.classList.contains('e-headertext')) {
             ele = closest(target.parentElement, 'th');
+        } else if (target.classList.contains('e-cellvalue')) {
+            ele = target.parentElement;
         } else if (target.classList.contains('e-headercell') || target.classList.contains('e-rowcell')) {
             ele = target;
-        } else if (target.classList.contains('e-headertext')) {
-            ele = closest(target.parentElement, 'th');
         }
         if (ele) {
             if (this.parent.allowDrillThrough && ele.classList.contains('e-valuescontent') || this.parent.editSettings.allowEditing) {

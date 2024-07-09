@@ -131,12 +131,12 @@ export class Crosshair {
             }
         }
         this.stopAnimation();
-        if (chart.isCrosshair && chart.tooltip.enable && !withInBounds(chart.tooltipModule.valueX, chart.tooltipModule.valueY, chartRect)) {
+        if (chart.isCrosshair && chart.tooltip.enable && chart.tooltipModule && !withInBounds(chart.tooltipModule.valueX, chart.tooltipModule.valueY, chartRect)) {
             return null;
         }
 
-        this.valueX = chart.tooltip.enable && chart.tooltipModule.valueX ? chart.tooltipModule.valueX : chart.mouseX;
-        this.valueY = chart.tooltip.enable && chart.tooltipModule.valueY ? chart.tooltipModule.valueY : chart.mouseY;
+        this.valueX = chart.tooltip.enable && chart.tooltipModule && chart.tooltipModule.valueX ? chart.tooltipModule.valueX : chart.mouseX;
+        this.valueY = chart.tooltip.enable && chart.tooltipModule && chart.tooltipModule.valueY ? chart.tooltipModule.valueY : chart.mouseY;
         if (!chart.enableCanvas) {
             crossGroup.setAttribute('opacity', '1');
         }

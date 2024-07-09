@@ -5298,7 +5298,7 @@ export class Layout {
                 cellWidget.height = HelperMethods.convertPointToPixel(paragraphWidget.associatedCell.ownerRow.rowFormat.height);
             } else {
                 if ([cellWidget].length <= 1 && paragraphWidget.associatedCell.ownerRow.rowFormat.heightType === 'AtLeast') {
-                    cellWidget.height = Math.max(HelperMethods.convertPointToPixel(paragraphWidget.associatedCell.ownerRow.rowFormat.height), this.getCellContentHeight(cellWidget));
+                    cellWidget.height = Math.max(HelperMethods.convertPointToPixel(paragraphWidget.associatedCell.ownerRow.rowFormat.height), this.getCellContentHeight(cellWidget, false, paragraphWidget.indexInOwner));
                 } else {
                         cellWidget.height = cellWidget.height + paragraphWidget.height;
                 }
@@ -7091,6 +7091,10 @@ export class Layout {
             }
             if (!isNullOrUndefined(splittedCell)) {
                 if (splittedCell === cellWidget) {
+                    // if the previous cell Widget is already splitted, in that case need to combine the splitted row widgets to single row widget.
+                    if (rowCollection.length > 1) {
+                        this.combineSplittedRowWidgets(rowCollection, previousHeight);
+                    }
                     //Returns if the whole content of the row does not fit in current page.
                     return tableRowWidget;
                 }
@@ -7150,14 +7154,77 @@ export class Layout {
         }
         return splittedWidget;
     }
+
+    private combineSplittedRowWidgets(rowCollection: TableRowWidget[], previousRowHeight: number): void {
+        let existingRow: TableRowWidget = rowCollection[0];
+        for (let i: number = 1; i < rowCollection.length; i++) {
+            let row: TableRowWidget = rowCollection[i];
+            for (let j: number = 0; j < row.childWidgets.length; j++) {
+                let existingCell: TableCellWidget = existingRow.childWidgets[j] as TableCellWidget;
+                let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
+                if (cell.childWidgets.length > 0) {
+                    for (let k: number = 0; k < cell.childWidgets.length; k++) {
+                        let block: BlockWidget = cell.childWidgets[k] as BlockWidget;
+                        if (block instanceof ParagraphWidget) {
+                            let existingPara = existingCell.childWidgets[k] as ParagraphWidget;
+                            if (existingPara.index === block.index) {
+                                let paragraph: ParagraphWidget = block as ParagraphWidget;
+                                if (paragraph.childWidgets.length > 0) {
+                                    for (let l: number = 0; l < paragraph.childWidgets.length; l++) {
+                                        let line: LineWidget = paragraph.childWidgets[l] as LineWidget;
+                                        existingPara.childWidgets.push(line);
+                                        line.paragraph = existingPara;
+                                        existingPara.height += line.height;
+                                    }
+                                }
+                            } else {
+                                existingCell.childWidgets.push(block);
+                                block.containerWidget = existingCell;
+                            }
+                            existingCell.height += block.height;
+                        } else if (block instanceof TableWidget) {
+                            existingCell.childWidgets.push(block);
+                            block.containerWidget = existingCell;
+                            existingCell.height += block.height;
+                        }
+                    }
+                }
+            }
+            rowCollection.splice(i, 1);
+        }
+        existingRow.height = previousRowHeight;
+    }
+
     private getSplittedWidgetForSpannedRow(bottom: number, tableRowWidget: TableRowWidget, tableCollection: TableWidget[], rowCollection: TableRowWidget[], footNoteCollection: FootnoteElementBox[]): TableRowWidget {
         let splittedWidget: TableRowWidget = undefined;
         let splittedCell: TableCellWidget = undefined;
         let issplit: boolean = false;
+        let isNeedToInsertNextCell: boolean = false;
         for (let i: number = 0; i < this.documentHelper.splittedCellWidgets.length; i++) {
             splittedCell = this.documentHelper.splittedCellWidgets[i];
-            if (tableRowWidget.childWidgets.length < splittedCell.index) {
+            let nextSplittedCell: TableCellWidget = this.documentHelper.splittedCellWidgets[i + 1];
+            let nextSplittedCellColumnIndex: number = !isNullOrUndefined(nextSplittedCell) ? nextSplittedCell.columnIndex : 0;
+            if ((tableRowWidget.childWidgets[tableRowWidget.childWidgets.length - 1] as TableCellWidget).columnIndex < splittedCell.columnIndex) {
                 break;
+            }
+            // splitted cell widget column index
+            let previousColumnIndex: number = this.documentHelper.splittedCellWidgets[i].columnIndex;
+            let splitCell: TableCellWidget = this.documentHelper.splittedCellWidgets[i];
+            // previousColumnIndex value is updated based on the previous row spanned cell widgets.
+            while (splitCell && splitCell.cellFormat.rowSpan === this.documentHelper.splittedCellWidgets[i].cellFormat.rowSpan && previousColumnIndex > 0 && !issplit) {
+                previousColumnIndex = splitCell.columnIndex;
+                let row: TableRowWidget = splitCell.containerWidget as TableRowWidget;
+                splitCell = row.getCell(row.rowIndex, previousColumnIndex - 1);
+            }
+
+            // splitted cell widget column index
+            let nextColumnIndex: number = this.documentHelper.splittedCellWidgets[i].columnIndex;
+            splitCell = this.documentHelper.splittedCellWidgets[i];
+            // nextColumnIndex value is updated based on the next row spanned cell widgets.
+            while (splitCell && splitCell.cellFormat.rowSpan === this.documentHelper.splittedCellWidgets[i].cellFormat.rowSpan && nextColumnIndex < splitCell.containerWidget.childWidgets.length - 1 && (!issplit || isNeedToInsertNextCell)) {
+                nextColumnIndex = splitCell.columnIndex;
+                let row: TableRowWidget = splitCell.containerWidget as TableRowWidget;
+                splitCell = row.getCell(row.rowIndex, nextColumnIndex + 1);
             }
             if (isNullOrUndefined(splittedWidget)) {
                 splittedWidget = new TableRowWidget();
@@ -7171,13 +7238,37 @@ export class Layout {
             splittedWidget.childWidgets.push(splittedCell);
             splittedCell.containerWidget = splittedWidget;
             this.isRelayoutneed = true;
-            let count: number = (this.documentHelper.splittedCellWidgets[i] as TableCellWidget).index;
-            while (count > 0 && !issplit) {
-                let cellWidget: TableCellWidget = tableRowWidget.childWidgets[count - 1] as TableCellWidget;
+
+            // insert cell widgets to left of the splitted cell widget.
+            while (previousColumnIndex > 0 && !issplit) {
+                let cellWidget: TableCellWidget = tableRowWidget.getCell(tableRowWidget.rowIndex, previousColumnIndex - 1);
+                if (isNullOrUndefined(cellWidget)) {
+                    previousColumnIndex--;
+                    continue;
+                }
                 splittedCell = this.getSplittedWidget(bottom, true, tableCollection, rowCollection, cellWidget, footNoteCollection);
                 splittedWidget.childWidgets.splice(0, 0, splittedCell);
                 splittedCell.containerWidget = splittedWidget;
-                count--;
+                previousColumnIndex--;
+            }
+
+            // insert cell widgets to right of the splitted cell widget.
+            while (nextColumnIndex < (tableRowWidget.childWidgets[tableRowWidget.childWidgets.length - 1] as TableCellWidget).columnIndex && (!issplit || isNeedToInsertNextCell)) {
+                let cellWidget: TableCellWidget = tableRowWidget.getCell(tableRowWidget.rowIndex, nextColumnIndex + 1);
+                if (isNullOrUndefined(cellWidget)) {
+                    nextColumnIndex++;
+                    continue;
+                }
+                // check whether the cellWidget column index is greater than the next splitted cell widget column index.
+                // if so, then break the loop and insert the splitted cell widget and remaining cell widgets.
+                if (nextSplittedCell && cellWidget.columnIndex > nextSplittedCellColumnIndex) {
+                    isNeedToInsertNextCell = true;
+                    break;
+                }
+                splittedCell = this.getSplittedWidget(bottom, true, tableCollection, rowCollection, cellWidget, footNoteCollection);
+                splittedWidget.childWidgets.push(splittedCell);
+                splittedCell.containerWidget = splittedWidget;
+                nextColumnIndex++;
             }
             issplit = true;
         }
@@ -7488,7 +7579,7 @@ export class Layout {
 
                     if (insertHeaderRow && rowToMove.ownerTable.header && !keepNext) {
                         if (viewer instanceof PageLayoutViewer) {
-                            tableRowWidget.bodyWidget.page.repeatHeaderRowTableWidget = true;
+                            bodyWidget.page.repeatHeaderRowTableWidget = true;
                             isRepeatRowHeader = true;
                         }
                         //Updates table widgets location.
@@ -7932,7 +8023,7 @@ export class Layout {
                     rowSpan = (isNullOrUndefined(cellWidget) || isNullOrUndefined(cellWidget.cellFormat)) ? rowSpan :
                         cellWidget.cellFormat.rowSpan;
                     if (rowSpan > 1 && ((rowWidget.firstChild as TableCellWidget).columnIndex === 0)) {
-                        if (this.isVerticalMergedCellContinue(currentRow) && !isNullOrUndefined(currentRow.previousRenderedWidget) && currentRow.previousRenderedWidget instanceof TableRowWidget && this.isVerticalMergedCellContinue(currentRow.previousRenderedWidget) && currentRow.previousRenderedWidget.y + currentRow.previousRenderedWidget.height < cellWidget.y + cellWidget.height) {
+                        if (this.isVerticalMergedCellContinue(currentRow) && currentRow.rowFormat.heightType !== "Exactly" && !isNullOrUndefined(currentRow.previousRenderedWidget) && currentRow.previousRenderedWidget instanceof TableRowWidget && currentRow.previousRenderedWidget.y + currentRow.previousRenderedWidget.height < cellWidget.y + cellWidget.height) {
                             let splittedCell: TableCellWidget = this.getSplittedWidget(currentRow.previousRenderedWidget.y + currentRow.previousRenderedWidget.height, true, tableCollection, undefined, cellWidget, undefined, undefined, undefined, undefined, true);
                             currentRow.childWidgets.splice(index, 0, splittedCell);
                             splittedCell.containerWidget = currentRow;
@@ -7993,10 +8084,6 @@ export class Layout {
                     if (!isNullOrUndefined(splittedPara)) {
                         isCellSplit = true;
                         if (i === 0 && splittedPara === paragraphWidget && !splitSpannedCellWidget) {
-                            if (splitMinimalWidget && this.isRelayoutneed) {
-                                splittedWidget = this.createCellWidget(cellWidget);
-                                return splittedWidget;
-                            }
                             //Returns if the whole content of the cell does not fit in current page.
                             return cellWidget;
                         }
@@ -8155,7 +8242,7 @@ export class Layout {
                     i = 0;
                     lineWidget = paragraphWidget.childWidgets[0] as LineWidget;
                 } else if (paragraphWidget.paragraphFormat.widowControl) {
-                    if (!isNullOrUndefined(paragraphWidget.associatedCell) && i === 1 && bottom < paragraphWidget.height && !isSplitParagraph) {
+                    if (!isNullOrUndefined(paragraphWidget.associatedCell) && i === 1 && bottom < lineBottom + paragraphWidget.height && !isSplitParagraph) {
                         const rowWidget: TableRowWidget = paragraphWidget.associatedCell.ownerRow;
                         const table: TableWidget = rowWidget.containerWidget as TableWidget;
                         const isFirstitemInPage: boolean = isNullOrUndefined(table.previousWidget) ? true : false;
@@ -8513,7 +8600,7 @@ export class Layout {
         return displacement;
     }
 
-    private getCellContentHeight(cellWidget: TableCellWidget, isDisplacement?: boolean): number {
+    private getCellContentHeight(cellWidget: TableCellWidget, isDisplacement: boolean, paraIndex?: number): number {
         if (isNullOrUndefined(cellWidget.childWidgets)) {
             return 0;
         }
@@ -8527,7 +8614,7 @@ export class Layout {
             if (cellWidget.childWidgets[i] instanceof ParagraphWidget) {
                 const para: ParagraphWidget = cellWidget.childWidgets[i] as ParagraphWidget;
                 contentHeight += (cellWidget.childWidgets[i] as ParagraphWidget).height;
-                if (!isDisplacement) {
+                if (!isDisplacement && para.floatingElements.length > 0 && paraIndex === para.indexInOwner) {
                     let totalShapeHeight: number = this.getFloatingItemsHeight(para, cellWidget);
                     contentHeight += totalShapeHeight;
                 }
@@ -9188,7 +9275,7 @@ export class Layout {
                     }
                 }
                 let footnote=bodyWidget as BodyWidget;
-                if(bodyWidget.containerWidget == undefined && footnote.page.footnoteWidget!=undefined){
+                if(bodyWidget.containerWidget == undefined && !(bodyWidget instanceof TextFrame) && footnote.page!=undefined && footnote.page.footnoteWidget!=undefined){
                     if(footnote.page.footnoteWidget.footNoteType === 'Footnote'){
                         this.layoutfootNote(footnote.page.footnoteWidget);
                     }

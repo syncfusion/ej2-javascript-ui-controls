@@ -480,8 +480,18 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
             if (this.stepperItemList && this.progressbar && this.element.classList.contains(HORIZSTEP)) {
                 this.setProgressPosition(this.element, true);
             }
+            this.navigateToStep(this.activeStep, null, null, false);
         }, this);
         EventHandler.add(<HTMLElement & Window><unknown>window, 'click', () => { this.updateStepFocus(); }, this);
+    }
+
+    private unWireEvents(): void {
+        EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', () => {
+            if (this.stepperItemList && this.progressbar && this.element.classList.contains(HORIZSTEP)) {
+                this.setProgressPosition(this.element, true);
+            }
+        });
+        EventHandler.remove(<HTMLElement & Window><unknown>window, 'click', () => { this.updateStepFocus(); });
     }
 
     private updateStepFocus(): void {
@@ -1064,14 +1074,29 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
         this.stepperItemElements = [];
     }
 
+    /**
+     * Move to next step from current step in Stepper.
+     *
+     * @returns {void}
+     */
     public nextStep(): void {
         if (this.activeStep !== this.steps.length - 1) { this.navigateToStep(this.activeStep + 1, null, null, false); }
     }
 
+    /**
+     * Move to previous step from current step in Stepper.
+     *
+     * @returns {void}
+     */
     public previousStep(): void {
         if (this.activeStep > 0) { this.navigateToStep(this.activeStep - 1, null, null, false); }
     }
 
+    /**
+     * Reset the state of the Stepper and move to the first step.
+     *
+     * @returns {void}
+     */
     public reset(): void {
         if (this.activeStep === 0) {
             this.updateStepInteractions();
@@ -1082,16 +1107,30 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
         }
     }
 
+    /**
+     * Refreshes the position of the progress bar programmatically when the dimensions of the parent container are changed.
+     *
+     * @returns {void}
+     */
+    public refreshProgressbar(): void {
+        if (this.stepperItemList && this.progressbar) { this.setProgressPosition(this.element); }
+        this.navigateToStep(this.activeStep, null, null, false);
+    }
+
     private updateElementClassArray(): void {
         const classArray: string[] = [RTL, READONLY, 'e-steps-focus', LABELAFTER, LABELBEFORE, 'e-label-top',
             'e-label-bottom', 'e-label-start', 'e-label-end', STEPINDICATOR, LABELINDICATOR, VERTICALSTEP, HORIZSTEP, LINEARSTEP];
         removeClass([this.element], classArray);
     }
 
+    /**
+     * Destroy the stepper control.
+     *
+     * @returns {void}
+     */
     public destroy(): void {
         super.destroy();
-        EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', () => { if (this.stepperItemList && this.progressbar) { this.setProgressPosition(this.element, true); } });
-        EventHandler.remove(<HTMLElement & Window><unknown>window, 'click', () => { this.updateStepFocus(); });
+        this.unWireEvents();
         // unwires the events and detach the li elements
         this.removeItemElements();
         this.clearTemplate();

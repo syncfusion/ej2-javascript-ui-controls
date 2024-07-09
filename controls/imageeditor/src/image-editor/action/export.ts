@@ -33,7 +33,7 @@ export class Export {
         this.updatePvtVar();
         switch (args.prop) {
         case 'export':
-            this.exportImg(args.value['type'], args.value['fileName']);
+            this.exportImg(args.value['type'], args.value['fileName'], args.value['imgQuality']);
             break;
         case 'exportToCanvas':
             this.exportToCanvas(args.value['object']);
@@ -57,7 +57,7 @@ export class Export {
         }
     }
 
-    private exportImg(type?: string, fileName?: string): void {
+    private exportImg(type?: string, fileName?: string, imgQuality?: number): void {
         const parent: ImageEditor = this.parent;
         const obj: Object = { fileName: '' };
         parent.notify('draw', { prop: 'getFileName', onPropertyChange: false, value: {obj: obj }});
@@ -83,13 +83,14 @@ export class Export {
             parent.notify('shape', { prop: 'redrawActObj', onPropertyChange: false,
                 value: {x: null, y: null, isMouseDown: null}});
             const beforeSave: BeforeSaveEventArgs = { cancel: false, fileName: fileName ? fileName : imageName,
-                fileType: type as FileType};
+                fileType: type as FileType, imageQuality: imgQuality};
             parent.trigger('beforeSave', beforeSave);
-            this.beforeSaveEvent(beforeSave, type, fileName, imageName);
+            this.beforeSaveEvent(beforeSave, type, fileName, imageName, imgQuality);
         }
     }
 
-    private beforeSaveEvent(observableSaveArgs: BeforeSaveEventArgs, type: string, fileName: string, imageName: string): void {
+    private beforeSaveEvent(observableSaveArgs: BeforeSaveEventArgs, type: string, fileName: string, imageName: string,
+                            imgQuality?: number): void {
         const parent: ImageEditor = this.parent;
         if (!observableSaveArgs.cancel) {
             parent.currObjType.isSave = true;
@@ -99,7 +100,7 @@ export class Export {
             if (lowerCaseType === 'svg') {
                 this.toSVGImg(fileName);
             } else {
-                this.toBlobFn(fileName, lowerCaseType);
+                this.toBlobFn(fileName, lowerCaseType, imgQuality);
             }
             const saved: SaveEventArgs = { fileName: fileName ? fileName : imageName, fileType: type as FileType};
             parent.trigger('saved', saved);
@@ -138,12 +139,16 @@ export class Export {
         }
     }
 
-    private toBlobFn(fileName: string, type: string): void {
+    private toBlobFn(fileName: string, type: string, imgQuality?: number): void {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const proxy: this = this;
         const parent: ImageEditor = this.parent;
         showSpinner(parent.element);
         parent.element.style.opacity = '0.5';
+        if (!isNullOrUndefined(imgQuality)) {
+            imgQuality = imgQuality > 1 ? 1 : (imgQuality <= 0 ? 0.01 : imgQuality);
+            this.imageQuality = imgQuality ? imgQuality : null;
+        }
         const tempCanvas: HTMLCanvasElement = this.exportToCanvas();
         const imagetype: string = type !== 'jpeg' ? 'image/png' : 'image/jpeg';
         // eslint-disable-next-line @typescript-eslint/tslint/config

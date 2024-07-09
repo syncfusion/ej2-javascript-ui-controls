@@ -2088,13 +2088,13 @@ export class DatePicker extends Calendar implements IInput {
                 case 'min':
                     if ((+this.min === +new Date(1900, 0, 1)) || dynamic) {
                         const min: string = this.inputElement.getAttribute(prop);
-                        this.setProperties(setValue(prop, this.globalize.parseDate(min), {}), !dynamic);
+                        this.setProperties(setValue(prop, this.globalize.parseDate(min, options), {}), !dynamic);
                     }
                     break;
                 case 'max':
                     if ((+this.max === +new Date(2099, 11, 31)) || dynamic) {
                         const max: string = this.inputElement.getAttribute(prop);
-                        this.setProperties(setValue(prop, this.globalize.parseDate(max), {}), !dynamic);
+                        this.setProperties(setValue(prop, this.globalize.parseDate(max, options), {}), !dynamic);
                     }
                     break;
                 case 'type':

@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 26.1.41 (2024-07-09)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I606422` - The split task split line extends when performing the `zoomToFit` action and affecting the task end date issue has been fixed.
+- `#I594804` - Performance issue occurs when `autoCalculateDateScheduling` is set to false issue has been fixed.
+- `#I603710` - Export properties not working properly issue has been fixed.
+- `#I603923` - Row selection toggling not working properly while `persistSelection` is enabled issue has been fixed.
+- `#I603502` - Toolbar item is not working properly with virtualization issue has been fixed.
+- `#I594182` - White space issue occurred  when using remote data with virtualization issue has been fixed.
+
 ## 26.1.40 (2024-07-02)
 
 ### GanttChart

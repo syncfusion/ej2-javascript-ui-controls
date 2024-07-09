@@ -29,6 +29,12 @@ export class MDFormats {
 
     private addEventListener(): void {
         this.parent.observer.on(EVENTS.FORMAT_TYPE, this.applyFormats, this);
+        this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
+    }
+
+    private removeEventListener(): void {
+        this.parent.observer.off(EVENTS.FORMAT_TYPE, this.applyFormats);
+        this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
     }
 
     private applyFormats(e: IMarkdownSubCommands): void {
@@ -237,5 +243,9 @@ export class MDFormats {
             }
         }
         return format;
+    }
+
+    public destroy(): void {
+        this.removeEventListener();
     }
 }

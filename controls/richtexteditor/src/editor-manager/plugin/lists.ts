@@ -42,6 +42,15 @@ export class Lists {
         this.parent.observer.on(EVENTS.KEY_UP_HANDLER, this.onKeyUp, this);
         this.parent.observer.on(EVENTS.KEY_DOWN_HANDLER, this.keyDownHandler, this);
         this.parent.observer.on(EVENTS.SPACE_ACTION, this.spaceKeyAction, this);
+        this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
+    }
+
+    private removeEventListener(): void {
+        this.parent.observer.off(EVENTS.LIST_TYPE, this.applyListsHandler);
+        this.parent.observer.off(EVENTS.KEY_UP_HANDLER, this.onKeyUp);
+        this.parent.observer.off(EVENTS.KEY_DOWN_HANDLER, this.keyDownHandler);
+        this.parent.observer.off(EVENTS.SPACE_ACTION, this.spaceKeyAction);
+        this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
     }
     private testList(elem: Element): boolean {
         const olListRegex: RegExp[] = [/^[\d]+[.]+$/,
@@ -894,7 +903,7 @@ export class Lists {
                 }
             }
             if (element.parentNode.insertBefore(this.closeTag(parentNode.tagName) as Element, element),
-                'LI' === (parentNode.parentNode as Element).tagName || 'OL' === (parentNode.parentNode as Element).tagName ||
+            'LI' === (parentNode.parentNode as Element).tagName || 'OL' === (parentNode.parentNode as Element).tagName ||
                 'UL' === (parentNode.parentNode as Element).tagName) {
                 element.parentNode.insertBefore(this.closeTag('LI') as Element, element);
             } else {
@@ -991,5 +1000,11 @@ export class Lists {
 
     private closeTag(type: string): Element {
         return this.domNode.parseHTMLFragment('<span class="e-rte-list-close-' + type.toLowerCase() + '"></span>');
+    }
+    public destroy(): void {
+        this.removeEventListener();
+        if (this.domNode) {
+            this.domNode = null;
+        }
     }
 }

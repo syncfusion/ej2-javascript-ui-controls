@@ -611,6 +611,7 @@ export interface IEditorModel {
     domNode?: DOMNode
     nodeCutter?: NodeCutter
     formatPainterEditor?: IFormatPainterEditor
+    destroy?(): void
 }
 
 /**
@@ -645,6 +646,7 @@ export interface IToolbarOptions {
     enablePersistence: boolean
     overflowMode?: OverflowMode
     cssClass?: string
+    type?: string
 }
 
 /**

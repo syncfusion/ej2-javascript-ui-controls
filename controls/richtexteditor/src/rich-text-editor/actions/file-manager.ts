@@ -27,6 +27,7 @@ export class FileManager {
     private dlgButtons: ButtonPropsModel[];
     private dialogRenderObj: DialogRenderer;
     private rendererFactory: RendererFactory;
+    private isDestroyed: boolean;
 
     private constructor(parent?: IRichTextEditor, locator?: ServiceLocator) {
         EJ2FileManager.Inject(ContextMenu, DetailsView, NavigationPane, Toolbar);
@@ -35,6 +36,7 @@ export class FileManager {
         this.dialogRenderObj = locator.getService<DialogRenderer>('dialogRenderObject');
         this.rendererFactory = locator.getService<RendererFactory>('rendererFactory');
         this.addEventListener();
+        this.isDestroyed = false;
     }
 
     private initialize(): void {
@@ -263,11 +265,10 @@ export class FileManager {
     }
 
     private destroy(): void {
-        if (this.parent.isDestroyed) {
-            return;
-        }
+        if (this.isDestroyed) { return; }
         this.destroyComponents();
         this.removeEventListener();
+        this.isDestroyed = true;
     }
 
     /**

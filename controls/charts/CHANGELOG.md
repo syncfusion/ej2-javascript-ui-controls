@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 26.1.41 (2024-07-09)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I604359` - The y-axis label is now proper when setting the minimum value on a date-time axis.
+- `#I607015` - The marker will not get cut off when enabling the scrollbar.
+
+#### Features
+
+- `#I546800` - Enhanced the appearance of connector lines in the waterfall chart for better visual clarity.
+
 ## 26.1.40 (2024-07-02)
 
 ### Chart
@@ -21,9 +34,13 @@
 
 ### Accumulation Chart
 
+#### Bug Fixes
+
 - `#I595618` - User interaction now works properly in the nested doughnut chart.
 
 ### Sparkline
+
+#### Bug Fixes
 
 - `#I601193` - The fill property in Sparkline now works properly.
 

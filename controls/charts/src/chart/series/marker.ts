@@ -176,10 +176,9 @@ export class Marker extends MarkerExplode {
             const markerHeight: number = (marker.height + explodeValue) / 2;
             const markerWidth: number = (marker.width + explodeValue) / 2;
             if (series.chart.chartAreaType === 'Cartesian') {
-                const isZoomed: boolean = series.xAxis.zoomFactor < 1 || series.xAxis.zoomPosition > 0;
                 options = new RectOption(this.elementId + '_ChartMarkerClipRect_' + index, 'transparent', { width: 1, color: 'Gray' }, 1, {
-                    x: isZoomed ? 0 : -markerWidth, y: -markerHeight,
-                    width: series.clipRect.width + (isZoomed ? 0 : markerWidth * 2),
+                    x: -markerWidth, y: -markerHeight,
+                    width: series.clipRect.width + (markerWidth * 2),
                     height: series.clipRect.height + markerHeight * 2
                 }, 0, 0, '', series.marker.border.dashArray);
                 markerClipRect = appendClipElement(redraw, options, render as SvgRenderer);

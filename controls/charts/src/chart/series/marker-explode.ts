@@ -236,7 +236,7 @@ export class MarkerExplode extends ChartData {
                 i ? (marker.fill || point.color || (explodeSeries ? series.interior : '#ffffff')) : 'transparent',
                 borderWidth + (i ? 0 : 8),
                 i ? borderColor : markerShadow,
-                (marker.opacity || seriesMarker.opacity), series.marker.border.dashArray, null
+                (marker.opacity || seriesMarker.opacity), series.marker.border.dashArray, ''
             );
             const symbol: Element = drawSymbol(location, shape, size, marker.imageUrl, options, '',
                                                this.chart.svgRenderer, series.clipRect);

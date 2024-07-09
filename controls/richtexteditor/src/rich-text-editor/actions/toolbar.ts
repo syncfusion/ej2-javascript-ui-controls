@@ -12,16 +12,17 @@ import { IRichTextEditor, IRenderer, IToolbarRenderOptions, IColorPickerRenderAr
 import { IToolbarItemModel, IToolsItems, IUpdateItemsModel, IDropDownRenderArgs, ISetToolbarStatusArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
-import { ToolbarRenderer } from '../renderer/toolbar-renderer';
 import { BaseToolbar } from './base-toolbar';
 import { DropDownButtons } from './dropdown-buttons';
 import { ToolbarAction } from './toolbar-action';
 import { IToolbarStatus } from '../../common/interface';
 import { RichTextEditorModel } from '../base/rich-text-editor-model';
+import { ColorPickerInput } from './color-picker';
 /**
  * `Toolbar` module is used to handle Toolbar actions.
  */
 export class Toolbar {
+    public isDestroyed: boolean;
     public toolbarObj: tool;
     private editPanel: Element;
     private isToolbar: boolean;
@@ -34,8 +35,8 @@ export class Toolbar {
     protected locator: ServiceLocator;
     private isTransformChild: boolean;
     private contentRenderer: IRenderer;
-    protected toolbarRenderer: IRenderer;
     public dropDownModule: DropDownButtons;
+    private colorPickerModule: ColorPickerInput;
     private toolbarActionModule: ToolbarAction;
     protected renderFactory: RendererFactory;
     private keyBoardModule: KeyboardEvents;
@@ -43,14 +44,13 @@ export class Toolbar {
 
     public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
+        this.isDestroyed = false;
         this.isToolbar = false;
         this.locator = serviceLocator;
         this.isTransformChild = false;
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
         model.updateDropDownLocale(this.parent);
         updateDropDownFontFormatLocale(this.parent);
-        this.renderFactory.addRenderer(RenderType.Toolbar, new ToolbarRenderer(this.parent, this.locator));
-        this.toolbarRenderer = this.renderFactory.getRenderer(RenderType.Toolbar);
         this.baseToolbar = new BaseToolbar(this.parent, this.locator);
         this.addEventListener();
         if (this.parent.toolbarSettings && Object.keys(this.parent.toolbarSettings.itemConfigs).length > 0) {
@@ -151,11 +151,8 @@ export class Toolbar {
             containerType: ((this.parent.inlineMode.enable) ? 'quick' : 'toolbar'),
             items: this.parent.toolbarSettings.items
         } as IDropDownRenderArgs);
-        this.parent.notify(events.renderColorPicker, {
-            container: this.tbElement,
-            containerType: ((this.parent.inlineMode.enable) ? 'quick' : 'toolbar'),
-            items: this.parent.toolbarSettings.items
-        } as IColorPickerRenderArgs);
+        this.renderColorPicker({container: this.tbElement, containerType: ((this.parent.inlineMode.enable) ? 'quick' : 'toolbar'), items:
+            this.parent.toolbarSettings.items} as IColorPickerRenderArgs);
         return true;
     }
 
@@ -220,11 +217,7 @@ export class Toolbar {
                 containerType: 'toolbar',
                 items: this.parent.toolbarSettings.items
             } as IDropDownRenderArgs);
-            this.parent.notify(events.renderColorPicker, {
-                container: this.tbElement,
-                containerType: 'toolbar',
-                items: this.parent.toolbarSettings.items
-            } as IColorPickerRenderArgs);
+            this.renderColorPicker({container: this.tbElement, containerType: 'toolbar', items: this.parent.toolbarSettings.items} as IColorPickerRenderArgs);
             this.refreshToolbarOverflow();
         }
         if (this.parent.rootContainer && this.parent.rootContainer.classList.contains('e-source-code-enabled')) {
@@ -431,7 +424,7 @@ export class Toolbar {
      * @deprecated
      */
     public getToolbarElement(): Element {
-        return select('.' + classes.CLS_TOOLBAR, this.parent.element);
+        return this.parent && this.parent.element ? select('.' + classes.CLS_TOOLBAR, this.parent.element) : null;
     }
 
     /**
@@ -450,16 +443,25 @@ export class Toolbar {
     }
 
     private isToolbarDestroyed(): boolean {
-        return this.baseToolbar.toolbarObj && !this.baseToolbar.toolbarObj.isDestroyed;
+        return this.baseToolbar && this.baseToolbar.toolbarObj && this.baseToolbar.toolbarObj.isDestroyed ? true : false;
     }
 
     private destroyToolbar(): void {
-        if (this.isToolbarDestroyed()) {
+        if (!this.isToolbarDestroyed()) {
             this.parent.unWireScrollElementsEvents();
             this.unWireEvents();
-            this.parent.notify(events.destroyColorPicker, {});
-            this.dropDownModule.destroyDropDowns();
-            this.baseToolbar.toolbarObj.destroy();
+            this.dropDownModule.destroy();
+            if (this.parent.emojiPickerModule && !this.parent.emojiPickerModule.isPopupDestroyed) {
+                this.parent.emojiPickerModule.childDestroy();
+            }
+            this.dropDownModule = null;
+            this.colorPickerModule.destroy();
+            this.colorPickerModule = null;
+            if (this.keyBoardModule) {
+                this.keyBoardModule.destroy();
+                this.keyBoardModule = null;
+            }
+            this.baseToolbar.destroy();
             this.removeEventListener();
             removeClass([this.parent.element], [classes.CLS_RTE_TB_ENABLED]);
             removeClass([this.parent.element], [classes.CLS_RTE_EXPAND_TB]);
@@ -467,7 +469,8 @@ export class Toolbar {
             const tbElement: HTMLElement = <HTMLElement>select('.' + classes.CLS_TOOLBAR, this.parent.element);
             if (!isNullOrUndefined(tbWrapper)) {
                 detach(tbWrapper);
-            } else if (!isNullOrUndefined(tbElement)) {
+            }
+            if (!isNullOrUndefined(tbElement)) {
                 detach(tbElement);
             }
         }
@@ -482,13 +485,27 @@ export class Toolbar {
      * @deprecated
      */
     public destroy(): void {
-        if (isNOU(this.parent)) { return; }
-        if (this.isToolbarDestroyed()) {
+        if (this.isDestroyed) { return; }
+        if (!this.isToolbarDestroyed()) {
             this.destroyToolbar();
-            if (this.keyBoardModule) {
-                this.keyBoardModule.destroy();
-            }
         }
+        this.toolbarObj = null;
+        this.editPanel = null;
+        this.isToolbar = null;
+        this.editableElement = null;
+        this.tbItems = null;
+        this.baseToolbar = null;
+        this.tbElement = null;
+        this.tbWrapper = null;
+        this.isTransformChild = null;
+        this.contentRenderer = null;
+        this.dropDownModule = null;
+        this.colorPickerModule = null;
+        this.toolbarActionModule = null;
+        this.tools = null;
+        this.locator = null;
+        this.renderFactory = null;
+        this.isDestroyed = true;
     }
 
     private moduleDestroy(): void {
@@ -548,6 +565,7 @@ export class Toolbar {
         }
         this.dropDownModule = new DropDownButtons(this.parent, this.locator);
         this.toolbarActionModule = new ToolbarAction(this.parent);
+        this.colorPickerModule = new ColorPickerInput(this.parent, this.locator);
         this.parent.on(events.initialEnd, this.renderToolbar, this);
         this.parent.on(events.bindOnEnd, this.toolbarBindEvent, this);
         this.parent.on(events.toolbarUpdated, this.updateToolbarStatus, this);
@@ -642,10 +660,14 @@ export class Toolbar {
             this.destroyToolbar();
         }
         if (this.parent.toolbarSettings.enable) {
+            if (this.baseToolbar && this.baseToolbar.toolbarObj && !this.baseToolbar.toolbarObj.isDestroyed) {
+                this.baseToolbar.destroy();
+            }
+            this.baseToolbar = new BaseToolbar(this.parent, this.locator);
             this.addEventListener();
             this.renderToolbar();
             this.parent.wireScrollElementsEvents();
-            if (!select('.' + classes.CLS_RTE_SOURCE_CODE_TXTAREA , this.parent.element)) {
+            if (!select('.' + classes.CLS_RTE_SOURCE_CODE_TXTAREA , this.parent.element) && !this.parent.inlineMode.enable) {
                 updateUndoRedoStatus(this.baseToolbar, this.parent.formatter.editorManager.undoRedoManager.getUndoStatus());
             }
             this.parent.notify(events.dynamicModule, {});
@@ -660,5 +682,9 @@ export class Toolbar {
      */
     private getModuleName(): string {
         return 'toolbar';
+    }
+
+    private renderColorPicker(args: IColorPickerRenderArgs): void {
+        this.colorPickerModule.renderColorPickerInput(args);
     }
 }

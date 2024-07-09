@@ -406,12 +406,18 @@ export class Selection {
         if (typeof(records) == 'number') {
             records = [records];
         }
+        const selectedRecords: any = this.parent.treeGrid.grid.getSelectedRecords();
+        const flatRecords: any = this.parent.enableVirtualization && ((this.parent.sortSettings.columns.length !== 0 || this.parent.filterSettings.columns.length !== 0) || this.parent.isCollapseAll) ?
+            this.parent.currentViewData : this.parent.flatData;
+        let indexes: any = this.parent.selectionSettings.persistSelection ? selectedRecords.map((record: any) => flatRecords.indexOf(record)) : this.getSelectedRowIndexes();
+        indexes = this.parent.enableVirtualization && (this.parent.sortSettings.columns.length !== 0 || this.parent.filterSettings.columns.length !== 0)
+            ? this.getSelectedRowIndexes() : indexes; 
         const ganttRow: HTMLElement[] = [].slice.call(this.parent.ganttChartModule.chartBodyContent.querySelector('tbody').children);
         for (let i: number = 0; i < records.length; i++) {
             const selectedRow: HTMLElement = ganttRow.filter((e: HTMLElement) =>
                 parseInt(e.getAttribute('data-rowindex'), 10) === records[parseInt(i.toString(), 10)])[0];
             if (!isNullOrUndefined(selectedRow)) {
-                if (this.getSelectedRowIndexes().indexOf(records[parseInt(i.toString(), 10)]) > -1) {
+                if (indexes.indexOf(records[parseInt(i.toString(), 10)]) > -1) {
                     this.addClass(selectedRow);
                 }
                 else {

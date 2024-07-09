@@ -30,6 +30,7 @@ export class UndoRedoCommands {
         this.parent.observer.on(EVENTS.KEY_DOWN_HANDLER, this.keyDown, this);
         this.parent.observer.on(EVENTS.ACTION, this.onAction, this);
         this.parent.observer.on(EVENTS.MODEL_CHANGED_PLUGIN, this.onPropertyChanged, this);
+        this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
     }
     private onPropertyChanged(props: { [key: string]: Object }): void {
         for (const prop of Object.keys(props.newProp)) {
@@ -49,6 +50,7 @@ export class UndoRedoCommands {
         this.parent.observer.off(EVENTS.KEY_DOWN_HANDLER, this.keyDown);
         this.parent.observer.off(EVENTS.ACTION, this.onAction);
         this.parent.observer.off(EVENTS.MODEL_CHANGED_PLUGIN, this.onPropertyChanged);
+        this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
     }
     /**
      * Destroys the ToolBar.

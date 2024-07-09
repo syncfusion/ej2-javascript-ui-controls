@@ -2561,6 +2561,7 @@ export class Splitter extends Component<HTMLElement> {
         if (!this.isDestroyed) {
             super.destroy();
             EventHandler.remove(document, 'touchstart click', this.onDocumentClick);
+            EventHandler.remove(this.element, 'keydown', this.onMove);
             this.element.ownerDocument.defaultView.removeEventListener('resize', this.onReportWindowSize, true);
             while (this.element.attributes.length > 0) {
                 this.element.removeAttribute(this.element.attributes[0].name);

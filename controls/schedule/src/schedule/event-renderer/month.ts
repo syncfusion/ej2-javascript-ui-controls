@@ -96,7 +96,7 @@ export class MonthEvent extends EventBase {
             this.monthHeaderHeight = wrapper.offsetTop - cellTd.offsetTop;
             cellTd.removeChild(wrapper);
         }
-        this.eventHeight = util.getElementHeightFromClass(this.element, cls.APPOINTMENT_CLASS);
+        this.eventHeight = this.parent.getElementHeightFromClass(this.element, cls.APPOINTMENT_CLASS);
         const selector: string = '.' + cls.CONTENT_TABLE_CLASS + ' tbody tr';
         this.addCellHeight(selector, this.eventHeight, (this.parent.currentView === 'Month' ? EVENT_GAP : 2), this.monthHeaderHeight, this.moreIndicatorHeight);
         const scrollTop: number = conWrap.scrollTop;
@@ -174,8 +174,8 @@ export class MonthEvent extends EventBase {
             });
         }
         const cellDetail: HTMLElement = this.workCells[this.parent.activeView.isTimelineView() ? 0 : this.workCells.length - 1];
-        this.cellWidth = util.getElementWidth(cellDetail);
-        this.cellHeight = util.getElementHeight(cellDetail);
+        this.cellWidth = this.parent.getElementWidth(cellDetail);
+        this.cellHeight = this.parent.getElementHeight(cellDetail);
         this.dateRender = dateRender;
         const filteredDates: Date[] = this.getRenderedDates(dateRender);
         this.getSlotDates(workDays || this.parent.activeViewOptions.workDays);

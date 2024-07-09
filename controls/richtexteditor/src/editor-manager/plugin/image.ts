@@ -4,6 +4,8 @@ import * as CONSTANT from './../base/constant';
 import * as classes from './../base/classes';
 import { IHtmlItem } from './../base/interface';
 import { InsertHtml } from './inserthtml';
+import * as EVENTS from './../../common/constant';
+
 /**
  * Link internal component
  *
@@ -25,6 +27,12 @@ export class ImageCommand {
     }
     private addEventListener(): void {
         this.parent.observer.on(CONSTANT.IMAGE, this.imageCommand, this);
+        this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
+    }
+
+    private removeEventListener(): void {
+        this.parent.observer.off(CONSTANT.IMAGE, this.imageCommand);
+        this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
     }
     /**
      * imageCommand method
@@ -96,12 +104,14 @@ export class ImageCommand {
                 e.item.selection.restore();
             }
             if (!isNOU(e.selector) && e.selector === 'pasteCleanupModule') {
-                e.callBack({ requestType: 'Images',
-                    editorMode: 'HTML',
-                    event: e.event,
-                    range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
-                    elements: [imgElement]
-                });
+                if (!isNOU(this.parent.currentDocument)) {
+                    e.callBack({ requestType: 'Images',
+                        editorMode: 'HTML',
+                        event: e.event,
+                        range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
+                        elements: [imgElement]
+                    });
+                }
             } else {
                 InsertHtml.Insert(this.parent.currentDocument, imgElement, this.parent.editableElement);
             }
@@ -111,13 +121,15 @@ export class ImageCommand {
             const imgElm: Element = (e.value === 'Replace' || isReplaced) ? (e.item.selectParent[0] as Element) :
                 (Browser.isIE ? (selectedNode.previousSibling as Element) : (selectedNode as Element).previousElementSibling);
             const onImageLoadEvent: () => void = () => {
-                e.callBack({
-                    requestType: (e.value === 'Replace') ? (e.item.subCommand = 'Replace', 'Replace') : 'Images',
-                    editorMode: 'HTML',
-                    event: e.event,
-                    range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
-                    elements: [imgElm]
-                });
+                if (!isNOU(this.parent.currentDocument)) {
+                    e.callBack({
+                        requestType: (e.value === 'Replace') ? (e.item.subCommand = 'Replace', 'Replace') : 'Images',
+                        editorMode: 'HTML',
+                        event: e.event,
+                        range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
+                        elements: [imgElm]
+                    });
+                }
                 imgElm.removeEventListener('load', onImageLoadEvent);
             };
             imgElm.addEventListener('load', onImageLoadEvent);
@@ -371,5 +383,9 @@ export class ImageCommand {
                 elements: this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument) as Element[]
             });
         }
+    }
+
+    public destroy(): void {
+        this.removeEventListener();
     }
 }

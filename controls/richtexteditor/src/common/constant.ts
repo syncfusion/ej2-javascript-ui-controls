@@ -121,3 +121,16 @@ export const EMOJI_PICKER_ACTIONS: string = 'emoji_picker_actions';
  * @hidden
  */
 export const MOUSE_DOWN: string = 'mouseDown';
+
+/**
+ * destroy event constant
+ *
+ * @hidden
+ */
+export const DESTROY: string = 'destroy';
+/**
+ * internal_destroy event constant
+ *
+ * @hidden
+ */
+export const INTERNAL_DESTROY: string = 'internal_destroy';

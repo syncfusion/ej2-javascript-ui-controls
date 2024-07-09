@@ -2021,6 +2021,11 @@ export class TableWidget extends BlockWidget {
     public combineRows(viewer: LayoutViewer): void {
         for (let i: number = 0; i < this.childWidgets.length; i++) {
             let row: TableRowWidget = this.childWidgets[i] as TableRowWidget;
+            if (!isNullOrUndefined(row.firstChild) && (row.firstChild as TableCellWidget).index !== 0 && row.getSplitWidgets().length === 1) {
+                for (let j: number = 0; j < row.childWidgets.length; j++) {
+                    (row.childWidgets[j] as TableCellWidget).index--;
+                }
+            }
             if (row.childWidgets.length === 0) {
                 row.destroy();
                 i--;
@@ -2460,8 +2465,7 @@ export class TableWidget extends BlockWidget {
             this.isDefaultFormatUpdated = true;
         }
         this.tableHolder.validateColumnWidths();
-        const isNeedToAutoFit: boolean = HelperMethods.round(this.tableHolder.getTotalWidth(0), 2) !== HelperMethods.round(tableWidth, 2) || isAutoWidth || this.wrapTextAround || this.isInsideTable;
-        if (isAutoFit && isNeedToAutoFit) {
+        if (isAutoFit) {
             // Fits the column width automatically based on contents.
             this.tableHolder.autoFitColumn(containerWidth, tableWidth, isAutoWidth, this.isInsideTable, isAutoFit, hasSpannedCells, this.leftIndent + this.rightIndent, pageContainerWidth);
         } else {
@@ -9569,13 +9573,20 @@ export class WTableHolder {
                         minWidthExceedCellWidth -= (containerWidth - (totalPreferredWidth));
                     }
                     if (columnIndexCollection.length > 0 && minWidthExceedCellWidth > 0) {
-                        let averageWidth: number = minWidthExceedCellWidth / columnIndexCollection.length;
+                        let averageWidth: number = minWidthExceedCellWidth / this.columns.length;
                         for (let i: number = 0; i < this.columns.length; i++) {
                             let column: WColumn = this.columns[i];
                             if (columnIndexCollection.indexOf(i) === -1) {
-                                column.preferredWidth = column.minimumWordWidth;
+                                // Bug 891720: If minimum word width is greater than total preferred width, then set preferred width to resolve the layout issue.
+                                if (totalPreferredWidth > column.minimumWordWidth) {
+                                    column.preferredWidth = column.minimumWordWidth;
+                                }
                             } else {
                                 column.preferredWidth = (column.preferredWidth - averageWidth);
+                                // Bug 890447: If the preferred width is less than minimum word width, then set minimum word width as preferred width.
+                                if (column.preferredWidth < column.minimumWordWidth) {
+                                    column.preferredWidth = column.minimumWordWidth;
+                                }
                             }
                         }
                         totalPreferredWidth = this.getTotalWidth(0);
@@ -9944,6 +9955,33 @@ export class FootnoteEndnoteMarkerElementBox extends TextElementBox {
      * @private
      */
     public clone(): FootnoteEndnoteMarkerElementBox {
-        return super.clone();
+        // return super.clone();
+        let footEndEle: FootnoteEndnoteMarkerElementBox = new FootnoteEndnoteMarkerElementBox();
+        footEndEle.characterFormat.copyFormat(this.characterFormat);
+        footEndEle.text = this.text;
+        if (this.margin) {
+            footEndEle.margin = this.margin.clone();
+        }
+        footEndEle.baselineOffset = this.baselineOffset;
+        if (!isNullOrUndefined(this.paragraph) && this.paragraph.isInHeaderFooter) {
+            if (this.revisions.length > 0) {
+                for (let i: number = 0; i < this.revisions.length; i++) {
+                    let revision: Revision = this.revisions[i];
+                    footEndEle.revisions.push(revision.clone());
+                }
+            }
+        } else {
+            if (this.revisions.length > 0) {
+                footEndEle.removedIds = Revision.cloneRevisions(this.revisions);
+            } else {
+                footEndEle.removedIds = this.removedIds.slice();
+            }
+        }
+        footEndEle.width = this.width;
+        footEndEle.height = this.height;
+        if (this.contentControlProperties) {
+            footEndEle.contentControlProperties = this.contentControlProperties;
+        }
+        return footEndEle;
     }
 }

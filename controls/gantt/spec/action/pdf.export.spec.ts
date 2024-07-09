@@ -2,7 +2,7 @@
  * Gantt toolbar spec
  */
 import { Gantt, Edit, Toolbar, Selection, ZoomTimelineSettings, Filter, PdfQueryCellInfoEventArgs, PdfExport, CriticalPath, DayMarkers, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, ContextMenu, ExcelExport, PdfQueryTimelineCellInfoEventArgs } from '../../src/index';
-import { exportData, image, adventProFont, GanttData1, pdfData1, customZoomingdata, templateData, projectResourcestemplate, virtual1, criticalData1, resourcesData1, resourceCollection1, coulmntemplate, resourceCollectiontemplate1, splitTasks, headerFooter, weekEndData,pdfData, images, milestoneTemplate } from '../base/data-source.spec';
+import { exportData, image, adventProFont, GanttData1, pdfData1, customZoomingdata, templateData, projectResourcestemplate, virtual1, criticalData1, resourcesData1, resourceCollection1, coulmntemplate, resourceCollectiontemplate1, splitTasks, headerFooter, weekEndData,pdfData, images, milestoneTemplate,datapdf } from '../base/data-source.spec';
 import { PdfExportProperties } from '../../src/gantt/base/interface';
 import { createGantt, destroyGantt } from '../base/gantt-util.spec';
 import { PdfDocument, PdfColor, PdfStandardFont, PdfFontFamily, PdfFontStyle } from '@syncfusion/ej2-pdf-export';
@@ -5842,6 +5842,151 @@ describe('Gantt PDF Export with customization of header and without footer', () 
            
           
         };
+        ganttObj.pdfExport(exportProperties);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Gantt PDF Export for big font size', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {dataSource:datapdf,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                taskFields: {
+                    id: "id",
+                    name: "name",
+                    startDate: "startDate",
+                    endDate: "endDate",
+                    duration: "duration",
+                    progress: "progress",
+                    parentID: "parentID",
+                    //child: "child",
+                    dependency: "dependency",
+                    cssClass: "cssClass",
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    {
+                      field: "name",
+                      width: window.innerWidth <= 768 ? 150 : 250,
+                    },
+                    {
+                      field: "Type",
+                      width: 120,
+                    },
+                    {
+                      field: "displayID",
+                      headerText: "ID",
+                      visible: false,
+                    },
+                    {
+                      field: "assignee",
+                      headerText: "Assignee",
+                      template: "#assignee-template",
+                    },
+                    {
+                      field: "status",
+                      headerText: "Status",
+                      template: "#status-template",
+                    },
+                    {
+                      field: "progress",
+                      headerText: "Progress %",
+                    },
+                    {
+                      field: "startDate",
+                    },
+                    {
+                      field: "endDate",
+                    },
+                    {
+                      field: "duration",
+                    },
+                  ],
+                toolbar: ['PdfExport'],
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowSelection: true,
+                allowRowDragAndDrop: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "50%",
+                   // columnIndex: 4
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                filterSettings: {
+                    type: 'Menu'
+                },
+                allowFiltering: true,
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                
+                searchSettings:
+                 { fields: ['TaskName', 'Duration'] 
+                },
+                labelSettings: {
+                    leftLabel: 'TaskID',
+                    rightLabel: 'Task Name: ${taskData.TaskName}',
+                    taskLabel: '${Progress}%'
+                },
+                allowResizing: true,
+                readOnly: false,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                allowUnscheduledTasks: true,
+            }, done);
+    });
+    it('Export data with big font', () => {
+        var exportProperties:any = {
+            pageSize: 'A0',
+            fitToWidthSettings:
+            {
+              isFitToWidth: true,
+              gridWidth: '100%',
+              chartWidth: '100%',
+            },
+            ganttStyle:{
+              cell:{fontSize:24},
+              columnHeader:{fontSize:24},
+              footer:{fontSize:24},
+              label:{fontSize:24},
+              timeline:{fontSize:24},
+            }
+          };
         ganttObj.pdfExport(exportProperties);
     });
     afterAll(() => {

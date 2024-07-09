@@ -1,12 +1,11 @@
 import { EmojiIconsSet, IRichTextEditor, NotifyArgs } from '../base/interface';
 import * as events from '../base/constant';
-import { detach, addClass, isNullOrUndefined as isNOU, KeyboardEventArgs, removeClass, closest, createElement, EventHandler, L10n } from '@syncfusion/ej2-base';
+import { detach, addClass, isNullOrUndefined as isNOU, KeyboardEventArgs, removeClass, closest, createElement, EventHandler, L10n, getComponent } from '@syncfusion/ej2-base';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { Popup } from '@syncfusion/ej2-popups';
 import { ClickEventArgs, Toolbar } from '@syncfusion/ej2-navigations';
 import { ItemModel } from '@syncfusion/ej2-navigations/src/toolbar/toolbar-model';
-import { BaseToolbar } from './base-toolbar';
 import { TextBox } from '@syncfusion/ej2-inputs';
 import { NodeSelection } from '../../selection';
 
@@ -14,21 +13,24 @@ export class EmojiPicker {
     protected parent: IRichTextEditor;
     protected locator: ServiceLocator;
     protected renderFactory: RendererFactory;
-    public baseToolbar: BaseToolbar;
     public popupObj: Popup;
     private popDiv: HTMLElement;
     private save: NodeSelection;
     private clickEvent: ClickEventArgs;
     private divElement: HTMLElement;
     private i10n: L10n;
+    private isDestroyed: boolean;
+    public isPopupDestroyed: boolean;
+
 
     public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.locator = serviceLocator;
         this.i10n = serviceLocator.getService<L10n>('rteLocale');
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
-        this.baseToolbar = new BaseToolbar(this.parent, this.locator);
         this.addEventListener();
+        this.isDestroyed = false;
+        this.isPopupDestroyed = false;
     }
 
     /**
@@ -40,7 +42,42 @@ export class EmojiPicker {
      * @deprecated
      */
     public destroy(): void {
+        if (this.isDestroyed) { return; }
         this.removeEventListener();
+        this.isDestroyed = true;
+    }
+
+    public childDestroy(): void {
+        if (this.isPopupDestroyed) { return; }
+        if (this.popupObj && !this.popupObj.isDestroyed) {
+            if (this.popupObj.element && this.popupObj.element.querySelector('.e-rte-emoji-search') ) {
+                const textBox: TextBox = getComponent(this.popupObj.element.querySelector('.e-rte-emoji-search') as HTMLElement, 'textbox') as TextBox;
+                if (textBox && !textBox.isDestroyed) {
+                    textBox.destroy();
+                }
+            }
+            if (this.popupObj.element && this.popupObj.element.querySelector('.e-rte-emojipicker-toolbar')) {
+                const toolbar: Toolbar = getComponent(this.popupObj.element.querySelector('.e-rte-emojipicker-toolbar') as HTMLElement, 'toolbar') as Toolbar;
+                if (toolbar && !toolbar.isDestroyed) {
+                    toolbar.destroy();
+                }
+            }
+            const closeIcon: HTMLElement = this.popupObj.element.querySelector('.e-clear-icon');
+            if (!isNOU(closeIcon)) {
+                EventHandler.remove(closeIcon, 'mousedown', this.searchFilter);
+            }
+            this.popupObj.destroy();
+            this.isPopupDestroyed = true;
+        }
+        if (this.popDiv) {
+            EventHandler.remove(this.popDiv, 'keydown', this.onKeyDown);
+            EventHandler.remove(this.popDiv, 'keyup', this.searchFilter);
+            if (this.popDiv.querySelector('.e-rte-emojipicker-btn')) {
+                const btn: HTMLElement = this.popDiv.querySelector('.e-rte-emojipicker-btn');
+                EventHandler.remove(btn, 'scroll', this.scrollEvent);
+                EventHandler.remove(btn, 'click', this.emojiBtnClick);
+            }
+        }
     }
 
     protected addEventListener(): void {
@@ -50,6 +87,7 @@ export class EmojiPicker {
         this.parent.on(events.keyUp, this.onkeyUp, this);
         this.parent.on(events.contentscroll, this.contentscroll, this);
         this.parent.on(events.scroll, this.contentscroll, this);
+        this.parent.on(events.destroy, this.destroy, this);
     }
 
     // eslint-disable-next-line
@@ -134,14 +172,14 @@ export class EmojiPicker {
             enableRtl: this.parent.enableRtl,
             zIndex: parseInt(zIndex, 10) + 1,
             actionOnScroll: 'hide',
-            // eslint-disable-next-line
-            close: (event: { [key: string]: object }) => {
+            close: () => {
                 this.parent.isBlur = false;
-                this.popupObj.destroy();
+                this.childDestroy();
                 detach(this.popupObj.element);
                 this.popupObj = null;
             }
         });
+        this.isPopupDestroyed = false;
         addClass([this.popupObj.element], 'e-popup-open');
         this.popupObj.refreshPosition(target);
         // header search element
@@ -808,15 +846,13 @@ export class EmojiPicker {
     }
 
     protected removeEventListener(): void {
-        if (this.parent.isDestroyed) {
-            return;
-        }
         this.parent.off(events.emojiPicker, this.toolbarClick);
         this.parent.off(events.docClick, this.docClick);
         this.parent.off(events.keyDown, this.onkeyPress);
         this.parent.off(events.keyUp, this.onkeyUp);
         this.parent.off(events.contentscroll, this.contentscroll);
         this.parent.off(events.scroll, this.contentscroll);
+        this.parent.off(events.destroy, this.destroy);
     }
 
     /**

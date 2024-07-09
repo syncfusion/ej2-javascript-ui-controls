@@ -121,9 +121,15 @@ export class ColorPickerInput {
         }
     }
 
-    private destroy(): void {
+    public destroy(): void {
         this.removeEventListener();
         this.destroyColorPicker();
+        this.defaultColorPicker = null;
+        this.fontColorPicker = null;
+        this.fontColorDropDown = null;
+        this.backgroundColorDropDown = null;
+        this.backgroundColorPicker = null;
+        this.tools = {};
     }
 
     /**
@@ -188,8 +194,6 @@ export class ColorPickerInput {
     protected addEventListener(): void {
         this.parent.on(events.toolbarRenderComplete, this.renderColorPickerInput, this);
         this.parent.on(events.rtlMode, this.setRtl, this);
-        this.parent.on(events.destroy, this.destroy, this);
-        this.parent.on(events.destroyColorPicker, this.destroyColorPicker, this);
         this.parent.on(events.modelChanged, this.onPropertyChanged, this);
         this.parent.on(events.bindCssClass, this.setCssClass, this);
         this.parent.on(events.showColorPicker, this.showColorPicker, this);
@@ -267,9 +271,7 @@ export class ColorPickerInput {
 
     protected removeEventListener(): void {
         this.parent.off(events.toolbarRenderComplete, this.renderColorPickerInput);
-        this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.rtlMode, this.setRtl);
-        this.parent.off(events.destroyColorPicker, this.destroyColorPicker);
         this.parent.off(events.modelChanged, this.onPropertyChanged);
         this.parent.off(events.bindCssClass, this.setCssClass);
         this.parent.off(events.showColorPicker, this.showColorPicker);

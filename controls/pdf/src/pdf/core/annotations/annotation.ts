@@ -2581,25 +2581,55 @@ export abstract class PdfAnnotation {
     }
     _obtainNativeRectangle(): number[] {
         const rect: number[] = [this._bounds.x, this._bounds.y, this.bounds.x + this._bounds.width, this.bounds.y + this._bounds.height];
-        let cropBoxOrMediaBox: number[];
+        const cropBoxOrMediaBox: number[] = this._getCropOrMediaBox();
         if (this._page) {
             const size: number[] = this._page.size;
             rect[1] = size[1] - rect[3];
-            const cropBox: number[] = this._page.cropBox;
-            if (cropBox && _areNotEqual(cropBox, [0, 0, 0, 0])) {
-                cropBoxOrMediaBox = cropBox;
-            } else {
-                const mBox: number[] = this._page.mediaBox;
-                if (mBox && _areNotEqual(mBox, [0, 0, 0, 0])) {
-                    cropBoxOrMediaBox = mBox;
-                }
-            }
             if (cropBoxOrMediaBox && cropBoxOrMediaBox.length > 2 && (cropBoxOrMediaBox[0] !== 0 || cropBoxOrMediaBox[1] !== 0)) {
                 rect[0] += cropBoxOrMediaBox[0];
                 rect[1] += cropBoxOrMediaBox[1];
             }
         }
         return rect;
+    }
+    _getPoints(polygonPoints: number[]): number[] {
+        const cropOrMediaBox: number[] = this._getCropOrMediaBox();
+        const points: number[] = polygonPoints;
+        if (cropOrMediaBox && cropOrMediaBox.length > 3 && typeof cropOrMediaBox[0] === 'number' && typeof cropOrMediaBox[1] === 'number' && (cropOrMediaBox[0] !== 0 || cropOrMediaBox[1] !== 0)) {
+            const modifiedPoints: number[] = [];
+            for (let i: number = 0; i < points.length; i++) {
+                modifiedPoints.push(points[Number.parseInt(i.toString(), 10)]);
+            }
+            for (let j: number = 0; j < modifiedPoints.length; j = j + 2) {
+                const x: number = modifiedPoints[Number.parseInt(j.toString(), 10)];
+                const y: number = modifiedPoints[j + 1];
+                if (cropOrMediaBox) {
+                    points[Number.parseInt(j.toString(), 10)] = x + cropOrMediaBox[0];
+                    if (this._page._pageDictionary.has('MediaBox') && !this._page._pageDictionary.has('CropBox') && cropOrMediaBox[3] === 0 && cropOrMediaBox[1] > 0) {
+                        points[j + 1] = y + cropOrMediaBox[3];
+                    } else {
+                        points[j + 1] = y + cropOrMediaBox[1];
+                    }
+                }
+            }
+        }
+        return points;
+    }
+    _getCropOrMediaBox(): number[] {
+        let cropOrMediaBox: number[];
+        if (this._page) {
+            cropOrMediaBox = this._page.cropBox;
+            if (!cropOrMediaBox || cropOrMediaBox.length === 0) {
+                cropOrMediaBox = this._page.mediaBox;
+            }
+        }
+        if (cropOrMediaBox && cropOrMediaBox[3] < 0) {
+            const y: number = cropOrMediaBox[1];
+            const height: number = cropOrMediaBox[3];
+            cropOrMediaBox[3] = y;
+            cropOrMediaBox[1] = height;
+        }
+        return cropOrMediaBox;
     }
 }
 /**
@@ -3149,6 +3179,15 @@ export class PdfLineAnnotation extends PdfComment {
     _postProcess(flatten: boolean): void {
         if (typeof this.linePoints === 'undefined' || this.linePoints === null) {
             throw new Error('Line points cannot be null or undefined');
+        } else {
+            const cropOrMediaBox: number[] = this._getCropOrMediaBox();
+            if (cropOrMediaBox && cropOrMediaBox.length > 3 && this.linePoints.length > 3 && typeof cropOrMediaBox[0] === 'number' && typeof cropOrMediaBox[1] === 'number' && (cropOrMediaBox[0] !== 0 || cropOrMediaBox[1] !== 0)) {
+                this._linePoints[0] += cropOrMediaBox[0];
+                this._linePoints[1] += cropOrMediaBox[1];
+                this._linePoints[2] += cropOrMediaBox[0];
+                this._linePoints[3] += cropOrMediaBox[1];
+                this._dictionary.update('L', this._linePoints);
+            }
         }
         if (!this._dictionary.has('Cap')) {
             this._dictionary.set('Cap', false);
@@ -4006,10 +4045,10 @@ export class PdfCircleAnnotation extends PdfComment {
         if (this._measure) {
             this._appearanceTemplate = this._createCircleMeasureAppearance(isFlatten);
         } else {
+            this._dictionary.update('Rect', _updateBounds(this));
             if (this._setAppearance || (isFlatten && !this._dictionary.has('AP'))) {
                 this._appearanceTemplate = this._createCircleAppearance();
             }
-            this._dictionary.update('Rect', _updateBounds(this));
         }
     }
     _doPostProcess(isFlatten: boolean = false): void {
@@ -4943,10 +4982,10 @@ export class PdfRectangleAnnotation extends PdfComment {
         if (typeof borderWidth === 'undefined') {
             borderWidth = 1;
         }
+        this._dictionary.update('Rect', _updateBounds(this));
         if (this._setAppearance || (isFlatten && !this._dictionary.has('AP'))) {
             this._appearanceTemplate = this._createRectangleAppearance(this.borderEffect);
         }
-        this._dictionary.update('Rect', _updateBounds(this));
         if (typeof this._intensity === 'undefined' &&
             typeof this._borderEffect !== 'undefined' &&
             this._borderEffect.style === PdfBorderEffectStyle.cloudy) {
@@ -5265,11 +5304,11 @@ export class PdfPolygonAnnotation extends PdfComment {
             const value: number = this._points[Number.parseInt(i.toString(), 10)];
             array.push(value);
         }
+        this._points = this._getPoints(this._points);
         if (array[0] !== array[array.length - 2] || array[1] !== array[array.length - 1]) {
-            array[array.length] = this._points[0];
-            array[array.length] = this._points[1];
+            this._points.push(this._points[0]);
+            this._points.push(this._points[1]);
         }
-        this._points = array;
         const polygonBounds: {x: number, y: number, width: number, height: number} = this._getBoundsValue(this._points);
         const bounds: number[] = [polygonBounds.x,
             polygonBounds.y,
@@ -6006,6 +6045,7 @@ export class PdfPolyLineAnnotation extends PdfComment {
                 }
             }
         } else if (this._points) {
+            this._points = this._getPoints(this._points);
             const polyLinepoints: number[] = [];
             this._points.forEach((value: number) => {
                 polyLinepoints.push(value);
@@ -7002,6 +7042,27 @@ export class PdfInkAnnotation extends PdfComment {
             this._inkPointsCollection.forEach((inkList: number[]) => {
                 this._previousCollection.push(inkList);
             });
+        }
+        const cropOrMediaBox: number[] = this._getCropOrMediaBox();
+        if (cropOrMediaBox && cropOrMediaBox.length > 3 && typeof cropOrMediaBox[0] === 'number' && typeof cropOrMediaBox[1] === 'number' && (cropOrMediaBox[0] !== 0 || cropOrMediaBox[1] !== 0)) {
+            for (let i: number = 0; i < this._inkPointsCollection.length; i++) {
+                const inkList: number[] = this._inkPointsCollection[Number.parseInt(i.toString(), 10)];
+                const modifiedInkList: number[] = inkList;
+                for (let j: number = 0; j < inkList.length; j = j + 2) {
+                    let x: number = inkList[Number.parseInt(j.toString(), 10)];
+                    let y: number = inkList[j + 1];
+                    x = x + cropOrMediaBox[0];
+                    if (this._page._pageDictionary.has('MediaBox') && !this._page._pageDictionary.has('CropBox') && cropOrMediaBox[3] === 0 && cropOrMediaBox[1] > 0) {
+                        y = y + cropOrMediaBox[3];
+                    } else {
+                        y = y + cropOrMediaBox[1];
+                    }
+                    modifiedInkList[Number.parseInt(j.toString(), 10)] = x;
+                    modifiedInkList[j + 1] = y;
+                    this._inkPointsCollection[Number.parseInt(i.toString(), 10)] = modifiedInkList;
+                }
+            }
+            this._dictionary.update('InkList', this._inkPointsCollection);
         }
         if (this._isEnableControlPoints) {
             return this._getInkBoundsValue();

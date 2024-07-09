@@ -1173,23 +1173,49 @@ export class PdfRenderer {
         return fileExtention;
     }
 
+    /**
+     * @private
+     */
     public exportAsImage(pageIndex: number): Promise<string> {
         return new Promise((resolve: Function, reject: Function) => {
             resolve(this.pdfiumExportAsImage(pageIndex));
         });
     }
 
+    /**
+     * @private
+     */
     public exportAsImages(startIndex: number, endIndex: number): Promise<string[]> {
         return new Promise((resolve: Function, reject: Function) => {
             resolve(this.pdfiumExportAsImages(startIndex, endIndex));
         });
     }
 
-    private pdfiumExportAsImage(pageIndex: number): Promise<string> {
+    /**
+     * @private
+     */
+    public exportAsImagewithSize(pageIndex: number, size: Size): Promise<string> {
+        return new Promise((resolve: Function, reject: Function) => {
+            resolve(this.pdfiumExportAsImage(pageIndex,size));
+        });
+    }
+
+    /**
+     * @private
+     */
+    public exportAsImagesWithSize(startIndex: number, endIndex: number, size: Size): Promise<string[]> {
+        return new Promise((resolve: Function, reject: Function) => {
+            resolve(this.pdfiumExportAsImages(startIndex, endIndex, size));
+        });
+    }
+
+
+    private pdfiumExportAsImage(pageIndex: number, size?: Size): Promise<string> {
         const proxy: PdfRenderer = this;
         return new Promise((resolve: Function, reject: Function) => {
             if (!isNullOrUndefined(this.pdfViewerBase.pdfViewerRunner) && !isNullOrUndefined(this.loadedDocument)) {
-                this.pdfViewerBase.pdfViewerRunner.postMessage({ pageIndex: pageIndex, message: 'extractImage', zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false });
+                size = !isNullOrUndefined(size) ? size : null;
+                this.pdfViewerBase.pdfViewerRunner.postMessage({ pageIndex: pageIndex, message: 'extractImage', zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false, size: size });
                 this.pdfViewerBase.pdfViewerRunner.onmessage = function (event: any): void {
                     if (event.data.message === 'imageExtracted') {
                         const canvas: HTMLCanvasElement = document.createElement('canvas');
@@ -1212,7 +1238,7 @@ export class PdfRenderer {
         });
     }
 
-    private pdfiumExportAsImages(startIndex: number, endIndex: number): Promise<string[]> {
+    private pdfiumExportAsImages(startIndex: number, endIndex: number, size?: Size): Promise<string[]> {
         const proxy: PdfRenderer = this;
         return new Promise((resolve: Function, reject: Function) => {
             if (!isNullOrUndefined(this.pdfViewerBase.pdfViewerRunner) && !isNullOrUndefined(this.loadedDocument)) {
@@ -1227,8 +1253,9 @@ export class PdfRenderer {
                 }
                 const imageUrls: string[] = [];
                 const count: number = endIndex - startIndex + 1;
+                size = !isNullOrUndefined(size) ? size : null;
                 for (let i: number = startIndex; i <= endIndex; i++) {
-                    this.pdfViewerBase.pdfViewerRunner.postMessage({ pageIndex: i, message: 'extractImage', zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false });
+                    this.pdfViewerBase.pdfViewerRunner.postMessage({ pageIndex: i, message: 'extractImage', zoomFactor: this.pdfViewer.magnificationModule.zoomFactor, isTextNeed: false, size: size });
                 }
                 this.pdfViewerBase.pdfViewerRunner.onmessage = function (event: any): void {
                     if (event.data.message === 'imageExtracted') {

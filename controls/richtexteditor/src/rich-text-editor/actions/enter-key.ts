@@ -428,10 +428,20 @@ export class EnterKeyAction {
                                         focusBRElem = imageElement as HTMLElement;
                                     } else {
                                         const lineBreakBRElem: HTMLElement = this.parent.createElement('br');
+                                        const anchorElement: Node = (!isNOU(this.range.startContainer.parentElement) && this.range.startContainer.parentElement.nodeName === 'A'
+                                            && this.range.startContainer.parentElement.textContent.length === this.range.startOffset)
+                                            ? this.range.startContainer.parentElement : this.range.startContainer;
                                         this.parent.formatter.editorManager.domNode.insertAfter(
-                                            focusBRElem, (this.range.startContainer as Element));
+                                            focusBRElem, (anchorElement as Element));
                                         this.parent.formatter.editorManager.domNode.insertAfter(
-                                            lineBreakBRElem, (this.range.startContainer as Element));
+                                            lineBreakBRElem, (anchorElement as Element));
+                                        const brSibling: Element = (anchorElement as Element).nextElementSibling;
+                                        const brNextSibling: Element = !isNOU(brSibling) ? brSibling.nextElementSibling : null;
+                                        if (!isNOU(brSibling) && !isNOU(brNextSibling) && !isNOU(brNextSibling.nextElementSibling) &&
+                                            brSibling.nodeName === 'BR' && brNextSibling.nodeName === 'BR' && brNextSibling.nextElementSibling.nodeName === 'BR'
+                                        ) {
+                                            brNextSibling.nextElementSibling.remove();
+                                        }
                                     }
                                 }
                                 this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
@@ -503,6 +513,13 @@ export class EnterKeyAction {
             isFocusTextNode = false;
         }
         const brElm: HTMLElement = this.parent.createElement('br');
+        let findAnchorLastChild: Node = this.startNode;
+        while (findAnchorLastChild.lastChild) {
+            findAnchorLastChild = findAnchorLastChild.lastChild;
+        }
+        const findAnchorElement: boolean = this.startNode.nodeName === 'A' && this.endNode.nodeName === 'A' &&
+            !isNOU(this.range.startContainer.parentElement) && this.range.startOffset === this.range.endOffset &&
+            this.range.startContainer.textContent.trim().length === findAnchorLastChild.textContent.trim().length;
         if (this.startNode.nodeName === 'BR' && this.endNode.nodeName === 'BR' && this.range.startOffset === 0 && this.range.startOffset === this.range.endOffset) {
             this.parent.formatter.editorManager.domNode.insertAfter(brElm, this.startNode);
             isEmptyBrInserted = true;
@@ -511,7 +528,12 @@ export class EnterKeyAction {
                 this.range.startContainer.previousSibling.nodeName === 'BR' && this.range.startContainer.textContent.length === 0) {
                 isEmptyBrInserted = true;
             }
-            this.range.insertNode(brElm);
+            if (findAnchorElement) {
+                this.parent.formatter.editorManager.domNode.insertAfter(brElm, this.startNode);
+            }
+            else {
+                this.range.insertNode(brElm);
+            }
         }
         if (isEmptyBrInserted || (!isNOU(brElm.nextElementSibling) && brElm.nextElementSibling.tagName === 'BR') || (!isNOU(brElm.nextSibling) && brElm.nextSibling.textContent.length > 0)) {
             this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
@@ -519,8 +541,13 @@ export class EnterKeyAction {
                 !isNOU( brElm.nextSibling ) && isFocusTextNode ? (brElm.nextSibling as Element) : brElm, 0);
             isEmptyBrInserted = false;
         } else {
-            const brElm2: HTMLElement = this.parent.createElement('br');
-            this.range.insertNode(brElm2);
+            const brElements: HTMLElement = this.parent.createElement('br');
+            if (findAnchorElement) {
+                this.parent.formatter.editorManager.domNode.insertAfter(brElements, this.startNode);
+            }
+            else {
+                this.range.insertNode(brElements);
+            }
             this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
                 this.parent.contentModule.getDocument(), brElm, 0);
         }

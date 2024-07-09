@@ -5,6 +5,8 @@ import { NodeSelection } from '../../selection/selection';
 import { NodeCutter } from './nodecutter';
 import { InsertHtml } from './inserthtml';
 import { createElement, isNullOrUndefined as isNOU, closest } from '@syncfusion/ej2-base';
+import * as EVENTS from './../../common/constant';
+
 
 /**
  * Link internal component
@@ -27,6 +29,12 @@ export class LinkCommand {
     }
     private addEventListener(): void {
         this.parent.observer.on(CONSTANT.LINK, this.linkCommand, this);
+        this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
+    }
+
+    private removeEventListener(): void {
+        this.parent.observer.off(CONSTANT.LINK, this.linkCommand);
+        this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
     }
 
     private linkCommand(e: IHtmlItem): void {
@@ -288,7 +296,11 @@ export class LinkCommand {
             const parent: Node = selectParent.parentNode;
             const child: Node[] = [];
             for (; selectParent.firstChild; null) {
-                child.push(parent.insertBefore(selectParent.firstChild, selectParent));
+                if (parent) {
+                    child.push(parent.insertBefore(selectParent.firstChild, selectParent));
+                } else {
+                    break;
+                }
             }
             parent.removeChild(selectParent);
             if (child && child.length === 1) {
@@ -320,5 +332,9 @@ export class LinkCommand {
                 elements: this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument) as Element[]
             });
         }
+    }
+
+    public destroy(): void {
+        this.removeEventListener();
     }
 }

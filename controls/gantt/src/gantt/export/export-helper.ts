@@ -251,9 +251,6 @@ export class ExportHelper {
                 } else {
                     this.processRecordRow(data);
                 }
-                if (this.exportProps.fitToWidthSettings && this.exportProps.fitToWidthSettings.isFitToWidth) {
-                    this.row.height = 33.33;
-                }
                 this.rowIndex++;
             });
         }

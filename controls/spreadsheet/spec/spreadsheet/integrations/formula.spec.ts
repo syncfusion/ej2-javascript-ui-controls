@@ -10354,13 +10354,7 @@ describe('Spreadsheet formula module ->', () => {
         it('GEOMEAN Formula with subtract operator->', (done: Function) => {
             helper.edit('K3', '=GEOMEAN(1,2)-1');
             expect(helper.invoke('getCell', [2, 10]).textContent).toBe('0.414213562');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[10])).toBe('{"value":"0.41421356237309515","formula":"=GEOMEAN(1,2)-1"}');
-            done();
-        });
-        it('GEOMEAN Formula with subtract operator->', (done: Function) => {
-            helper.edit('K3', '=GEOMEAN(1,2)-1');
-            expect(helper.invoke('getCell', [2, 10]).textContent).toBe('0.414213562');
-            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[10])).toBe('{"value":"0.41421356237309515","formula":"=GEOMEAN(1,2)-1"}');
+            expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[10])).toBe('{"value":"0.4142135623730952","formula":"=GEOMEAN(1,2)-1"}');
             done();
         });
         it('GEOMEAN Formula with negative value in argument 2->', (done: Function) => {
@@ -15058,7 +15052,7 @@ describe('Spreadsheet formula module ->', () => {
                 expect(helper.invoke('getCell', [8, 0]).textContent).toBe("Directors' Report and Audited Accounts");
                 expect(spreadsheet.sheets[0].rows[9].cells[0].value).toBe('September 1, 2019');
                 expect(helper.invoke('getCell', [9, 0]).textContent).toBe('September 1, 2019');
-                expect(spreadsheet.sheets[0].rows[9].cells[5].value).toBe('4.529225147610059');
+                expect(spreadsheet.sheets[0].rows[9].cells[5].value).toBe('4.529225147610062');
                 expect(helper.invoke('getCell', [9, 5]).textContent).toBe('4.529225148');
                 expect(spreadsheet.sheets[0].rows[10].cells[0].value).toBe('#DIV/0!');
                 expect(helper.invoke('getCell', [10, 0]).textContent).toBe('#DIV/0!');
@@ -16242,7 +16236,7 @@ describe('Spreadsheet formula module ->', () => {
                 done();
             });
         });
-        describe('EJ2-885263, EJ2-888011, EJ2-888038 ->', () => {
+        describe('EJ2-885263, EJ2-888011, EJ2-888038, EJ2-890143 ->', () => {
             beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
             });
@@ -16265,7 +16259,21 @@ describe('Spreadsheet formula module ->', () => {
                 helper.edit('A7', '=ROUNDDOWN(62427.10101-21400.91919,5)');
                 expect(helper.invoke('getCell', [6, 0]).textContent).toBe('41026.18182');
                 done();
-            }); it('When copy-pasting the formula with & operator is not getting updated properly ->', (done: Function) => {
+            }); 
+            it('The ROUND, ROUNDUP function returns the wrong result when performing actions with decimal values .499->', (done: Function) => {
+                helper.edit('A11', '=ROUND(10.30499126239,2)');
+                expect(helper.invoke('getCell', [10, 0]).textContent).toBe('10.3');
+                helper.edit('A12', '=ROUND(10.30134499126239,5)');
+                expect(helper.invoke('getCell', [11, 0]).textContent).toBe('10.30134');
+                helper.edit('A13', '=ROUND(10.301349499126239,6)');
+                expect(helper.invoke('getCell', [12, 0]).textContent).toBe('10.301349');
+                helper.edit('A14', '=ROUNDDOWN(0.9999998,2)');
+                expect(helper.invoke('getCell', [13, 0]).textContent).toBe('0.99');
+                helper.edit('A15', '=ROUNDUP(0.720000000001,2)');
+                expect(helper.invoke('getCell', [14, 0]).textContent).toBe('0.73');
+                done();
+            }); 
+            it('When copy-pasting the formula with & operator is not getting updated properly ->', (done: Function) => {
                 helper.edit('I8', '=A8&"-"&D8');
                 expect(helper.invoke('getCell', [7, 8]).textContent).toBe('Running Shoes-20');
                 helper.invoke('copy', ['I8']).then(() => {
@@ -16509,7 +16517,7 @@ describe('Spreadsheet formula module ->', () => {
                 const formula: string = '=IF(OR(AND(ABS(D10)>ABS(E10);D10<0);AND(ABS(D10)<=ABS(E10);E10<0));-1*(IF(D10=0;((ABS(E10)-ABS(D10))/1)*100;' +
                     '((ABS(E10)-ABS(D10))/ABS(D10))*100));IF(D10=0;((ABS(E10)-ABS(D10))/1)*100;((ABS(E10)-ABS(D10))/ABS(D10))*100))';
                 helper.invoke('updateCell', [{ formula: formula }, 'D12']);
-                expect(cell.value).toBe('-26.82926829268293');
+                expect(cell.value).toBe('-26.829268292682933');
                 expect(cellEle.textContent).toBe('-26.82926829');
                 done();
             });

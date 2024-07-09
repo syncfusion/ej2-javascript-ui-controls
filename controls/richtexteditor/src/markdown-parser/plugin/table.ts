@@ -32,10 +32,12 @@ export class MDTable {
     private addEventListener(): void {
         this.parent.observer.on(CONSTANT.MD_TABLE, this.createTable, this);
         this.parent.observer.on(EVENTS.KEY_DOWN_HANDLER, this.onKeyDown, this);
+        this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
     }
     private removeEventListener(): void {
         this.parent.observer.off(CONSTANT.MD_TABLE, this.createTable);
         this.parent.observer.off(EVENTS.KEY_DOWN_HANDLER, this.onKeyDown);
+        this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
     }
 
     /**

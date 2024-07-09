@@ -3728,3 +3728,100 @@ describe('Add and Remove palette', () => {
     });
 
 });
+
+describe('892454: Check BPMN Activity shapes Fill color for smaller size ', () => {
+    let diagram: Diagram;
+    let palette: SymbolPalette;
+    let ele: HTMLElement;
+    beforeAll((): void => {
+        ele = createElement('div', { styles: 'width:100%;height:500px;' });
+        ele.appendChild(createElement('div', { id: 'symbolpaletteBPMN2', styles: 'width:25%;float:left;' }));
+        document.body.appendChild(ele);
+
+        let palettes: PaletteModel[] = [{
+            id: 'bpmn', expanded: true, symbols: [
+                {
+                    id: 'Task', width: 35, height: 35, offsetX: 700, offsetY: 700,
+                    shape: {
+                        type: 'Bpmn', shape: 'Activity', activity: {
+                            activity: 'Task',
+                        },
+                    },
+                },
+                {
+                    id: 'Transaction', width: 35, height: 35, offsetX: 300, offsetY: 100,
+                    constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
+                    shape: {
+                        type: 'Bpmn', shape: 'Activity',
+                        activity: {
+                            activity: 'SubProcess', subProcess: {
+                                type: 'Transaction', transaction: {
+                                    cancel: { visible: false }, failure: { visible: false }, success: { visible: false }
+                                }
+                            }
+                        }
+                    }
+                }, {
+                    id: 'Task_Service', width: 35, height: 35, offsetX: 700, offsetY: 700,
+                    shape: {
+                        type: 'Bpmn', shape: 'Activity', activity: {
+                            activity: 'Task', task: { type: 'Service' }
+                        },
+                    }
+                },
+                {
+                    id: 'Gateway', width: 35, height: 35, offsetX: 100, offsetY: 100,
+                    shape: { type: 'Bpmn', shape: 'Gateway', gateway: { type: 'Exclusive' } }
+                },
+                {
+                    id: 'DataObject', width: 35, height: 35, offsetX: 500, offsetY: 100,
+                    shape: { type: 'Bpmn', shape: 'DataObject', dataObject: { collection: false, type: 'None' } }
+                },
+                {
+                    id: 'subProcess', width: 520, height: 250, offsetX: 355, offsetY: 230,
+                    constraints: NodeConstraints.Default | NodeConstraints.AllowDrop,
+                    shape: {
+                        shape: 'Activity', type: 'Bpmn',
+                        activity: {
+                            activity: 'SubProcess', subProcess: {
+                                type: 'Transaction', collapsed: false,
+                                processes: [], transaction: {
+                                    cancel: { visible: false }, failure: { visible: false }, success: { visible: false }
+                                }
+                            }
+                        }
+                    },
+                },
+            ],
+            title: 'BPMN Shapes'
+        }]
+        palette = new SymbolPalette({
+            width: '25%', height: '100%',
+            palettes: palettes, enableSearch: true,
+            expandMode: "Multiple",
+            getNodeDefaults:setPaletteNodeDefaults,
+            symbolMargin: { left: 12, right: 12, top: 12, bottom: 12 },
+            symbolHeight: 50, symbolWidth: 50,
+           
+        });
+        palette.appendTo('#symbolpaletteBPMN2');
+        function setPaletteNodeDefaults(node: any) {
+            node.style.strokeColor = '#757575';
+            node.style.fill ="red"; 
+            node.style.strokeColor = '#3A3A3A';
+        }
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        palette.destroy();
+        ele.remove();
+    });
+    it('Checking Symbol palette shapes', (done: Function) => {
+        expect(palette.palettes[0].symbols.length).toBe(6);
+        done();
+    });
+    it('Checking BPMN Activity shapes fill color applied properly', (done: Function) => {
+        expect((palette.palettes[0].symbols[0].wrapper.children[0] as any).children[0].children[0].children[0].style.fill == 'red').toBe(true)
+        done();
+    });
+});

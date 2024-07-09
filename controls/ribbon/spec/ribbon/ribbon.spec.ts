@@ -6,7 +6,7 @@ import { ComboBox, FilteringEventArgs } from "@syncfusion/ej2-dropdowns";
 import { ColorPicker } from "@syncfusion/ej2-inputs";
 import { Query } from "@syncfusion/ej2-data";
 import { DropDownButton, ItemModel, SplitButton, OpenCloseMenuEventArgs } from "@syncfusion/ej2-splitbuttons";
-import { ExpandCollapseEventArgs, ItemOrientation, LauncherClickEventArgs, Ribbon, RibbonItemSize, RibbonItemType, DisplayMode, TabSelectedEventArgs, TabSelectingEventArgs, RibbonLayout } from "../../src/ribbon/base/index";
+import { ExpandCollapseEventArgs, ItemOrientation, LauncherClickEventArgs, Ribbon, RibbonItemSize, RibbonItemType, DisplayMode, TabSelectedEventArgs, TabSelectingEventArgs, LayoutSwitchedEventArgs, RibbonLayout } from "../../src/ribbon/base/index";
 import { getMemoryProfile, inMB, profile } from "./common.spec";
 import { RibbonTabModel } from "../../src/ribbon/models/ribbon-tab-model";
 import { BackStageMenu, BackStageMenuModel, FileMenuSettingsModel, RibbonButtonSettings, RibbonButtonSettingsModel, RibbonCollectionModel, RibbonGalleryItemModel, RibbonGallerySettings, RibbonGallerySettingsModel, RibbonGroupButtonItemModel, RibbonGroupButtonSettingsModel, RibbonGroupModel, RibbonItemModel, RibbonSplitButtonSettingsModel, RibbonTooltipModel } from "../../src/ribbon/models/index";
@@ -13292,6 +13292,7 @@ describe('Ribbon', () => {
         it('events - mode switching', () => {
             let isRibbonExpanding: boolean = false;
             let isRibbonCollapsing: boolean = false;
+            let isRibbonLayoutSwitched: boolean = false;
             ribbon = new Ribbon({
                 tabs: [{
                     id: "tab1",
@@ -13328,10 +13329,15 @@ describe('Ribbon', () => {
                 ribbonCollapsing: (args: ExpandCollapseEventArgs) => {
                     isRibbonCollapsing = true;
                 },
+                ribbonLayoutSwitched: (args: LayoutSwitchedEventArgs) => {
+                    isRibbonLayoutSwitched = true;
+                }
             }, ribbonEle);
             expect(isRibbonCollapsing).toBe(false);
+            expect(isRibbonLayoutSwitched).toBe(false);
             (ribbon.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).click();
             expect(isRibbonCollapsing).toBe(false);
+            expect(isRibbonLayoutSwitched).toBe(true);
             (ribbon.element.querySelector('.e-ribbon-collapse-btn') as HTMLElement).click();
             expect(isRibbonExpanding).toBe(false);
             ribbon.activeLayout = "Simplified";

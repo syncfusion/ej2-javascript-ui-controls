@@ -25,6 +25,7 @@ export class FormatPainterActions implements IFormatPainterEditor{
     private addEventListener(): void {
         this.parent.observer.on(EVENTS.FORMAT_PAINTER_ACTIONS, this.actionHandler, this);
         this.parent.observer.on(EVENTS.MODEL_CHANGED_PLUGIN, this.onPropertyChanged, this);
+        this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
     }
 
     private onPropertyChanged(prop: { module: string; newProp: { formatPainterSettings: IFormatPainterSettings }}): void {
@@ -42,6 +43,7 @@ export class FormatPainterActions implements IFormatPainterEditor{
     private removeEventListener(): void {
         this.parent.observer.off(EVENTS.FORMAT_PAINTER_ACTIONS, this.actionHandler);
         this.parent.observer.off(EVENTS.MODEL_CHANGED_PLUGIN, this.onPropertyChanged);
+        this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
     }
 
     /**

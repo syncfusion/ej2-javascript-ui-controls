@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 26.1.41 (2024-07-09)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I585350` - Now, the list format is reverted properly when using the `executeCommand` method to apply and revert the list in the Rich Text Editor.
+
+- `#I600937` - Now, the entered value works properly when typed in Korean in the Rich Text Editor.
+
+- `#I571199` - Now, improved the memory performance of the Rich Text Editor. The Rich Text Editor instance will now be properly cleared when using the destroy method.
+
+- Now, the toolbar and quick toolbar tooltip will be rendered inside the Rich Text Editor Element instead of on the body.
+
 ## 26.1.40 (2024-07-02)
 
 ### RichTextEditor
@@ -17,6 +31,8 @@
 - `#I598541` - Now, the quick toolbar in the Rich Text Editor works properly and does not get hidden behind the dialog.
 
 - `#F188888` - Now, when setting the `layoutOption` to 'Break' in the `insertVideoSettings`, the break is applied to the embedded video element in the Rich Text Editor.
+
+- `#I598973` - Now, when you paste a link and then click the `Shift+Enter`, it should not cause the page to collapse and the cursor to remain maintained properly.
 
 - `#I596139` - Now, the `afterPasteCleanup` event returns the proper values in the `Value`argument when pasting the image into the Rich Text Editor.
 

@@ -1368,9 +1368,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         this.element.setAttribute('tabindex', '-1');
         this.actionButtons = this.createElement('div', { className: ACTION_BUTTONS });
         this.uploadButton = this.createElement('button', { className: UPLOAD_BUTTONS ,
-            attrs: {'type': 'button', 'tabindex': this.btnTabIndex }});
+            attrs: {'type': 'button', 'tabindex': this.btnTabIndex ,'aria-label': this.localizedTexts('Upload')} });
         this.clearButton = this.createElement('button', { className: CLEAR_BUTTONS,
-            attrs: {'type': 'button', 'tabindex': this.btnTabIndex }});
+            attrs: {'type': 'button', 'tabindex': this.btnTabIndex, 'aria-label': this.localizedTexts('Clear') } });
         this.actionButtons.appendChild(this.clearButton);
         this.actionButtons.appendChild(this.uploadButton);
         this.renderButtonTemplates();
@@ -1888,6 +1888,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             }
         } else if (!closest(args.target as Element, '.' + SPINNER_PANE)) {
             this.remove(fileData, false, false, true, args);
+        }
+        if(this.isForm && liElement && liElement.classList.contains(INVALID_FILE)){
+            this.element.value = '';
         }
         this.checkActionButtonStatus();
     }
@@ -2740,6 +2743,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 }
                 if (!iconElement.classList.contains(DELETE_ICON)) {
                     iconElement.classList.add(REMOVE_ICON);
+                    iconElement.setAttribute('aria-label', this.localizedTexts('remove'));
                 }
                 const index: number = fileData.indexOf(listItem);
                 const eventArgs: RenderingEventArgs = {
@@ -3004,6 +3008,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         this.pauseButton = this.createElement('span', {className: 'e-icons e-file-reload-btn', attrs: { 'tabindex': this.btnTabIndex}});
         deleteIcon.parentElement.insertBefore(this.pauseButton, deleteIcon);
         this.pauseButton.setAttribute('title', this.localizedTexts('retry'));
+        this.pauseButton.setAttribute('aria-label',this.localizedTexts('retry'));
         const retryElement: HTMLElement = liElement.querySelector('.' + RETRY_ICON) as HTMLElement;
         /* istanbul ignore next */
         retryElement.addEventListener('click', (e: Event) => {
@@ -3045,6 +3050,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 if (!isNullOrUndefined(iconEle)) {
                     iconEle.classList.add(DELETE_ICON);
                     iconEle.setAttribute('title', this.localizedTexts('delete'));
+                    iconEle.setAttribute('aria-label',this.localizedTexts('delete'));
                     iconEle.classList.remove(ABORT_ICON);
                     iconEle.classList.remove(UPLOAD_INPROGRESS);
                 }

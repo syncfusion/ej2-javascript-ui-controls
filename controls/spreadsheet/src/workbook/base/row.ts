@@ -139,11 +139,14 @@ export function isFilterHidden(sheet: SheetModel, index: number): boolean {
  */
 export function getRowHeight(sheet: SheetModel, rowIndex: number, checkDPR?: boolean, addHidden?: boolean): number {
     let hgt: number;
+    let stdHeight: number;
+    if (sheet && sheet.standardHeight) { stdHeight = sheet.standardHeight; }
     if (sheet && sheet.rows && sheet.rows[rowIndex as number]) {
         if (!addHidden && sheet.rows[rowIndex as number].hidden) { return 0; }
-        hgt = sheet.rows[rowIndex as number].height === undefined ? 20 : sheet.rows[rowIndex as number].height;
+        hgt = sheet.rows[rowIndex as number].height === undefined ?
+            (stdHeight === undefined ? 20 : stdHeight) : sheet.rows[rowIndex as number].height;
     } else {
-        hgt = 20;
+        hgt = stdHeight === undefined ? 20 : stdHeight;
     }
     if (checkDPR && window.devicePixelRatio % 1 > 0) {
         const pointValue: number = (hgt * window.devicePixelRatio) % 1;

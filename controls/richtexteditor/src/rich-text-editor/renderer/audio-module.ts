@@ -27,6 +27,7 @@ export class Audio {
     private parent: IRichTextEditor;
     public dialogObj: Dialog;
     public uploadObj: Uploader;
+    private button: Button
     private i10n: L10n;
     private inputUrl: HTMLElement;
     private uploadUrl: IAudioCommandsArgs;
@@ -40,6 +41,10 @@ export class Audio {
     private deletedAudio: Node[] = [];
     private removingAudioName: string;
     private prevSelectedAudEle: HTMLAudioElement;
+    private showPopupTime: number;
+    private isDestroyed: boolean;
+    private docClick: EventListenerOrEventListenerObject
+
     private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.rteID = parent.element.id;
@@ -47,6 +52,8 @@ export class Audio {
         this.rendererFactory = serviceLocator.getService<RendererFactory>('rendererFactory');
         this.dialogRenderObj = serviceLocator.getService<DialogRenderer>('dialogRenderObject');
         this.addEventListener();
+        this.docClick = this.onDocumentClick.bind(this);
+        this.isDestroyed = false;
     }
 
     protected addEventListener(): void {
@@ -65,14 +72,11 @@ export class Audio {
         this.parent.on(events.audioDelete, this.deleteAudio, this);
         this.parent.on(events.editAreaClick, this.editAreaClickHandler, this);
         this.parent.on(events.insertCompleted, this.showAudioQuickToolbar, this);
-        this.parent.on(events.destroy, this.removeEventListener, this);
+        this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.iframeMouseDown, this.closeDialog, this);
     }
 
     protected removeEventListener(): void {
-        if (this.parent.isDestroyed) {
-            return;
-        }
         this.parent.off(events.keyDown, this.onKeyDown);
         this.parent.off(events.keyUp, this.onKeyUp);
         this.parent.off(events.insertAudio, this.insertingAudio);
@@ -85,12 +89,12 @@ export class Audio {
         this.parent.off(events.audioDelete, this.deleteAudio);
         this.parent.off(events.editAreaClick, this.editAreaClickHandler);
         this.parent.off(events.insertCompleted, this.showAudioQuickToolbar);
-        this.parent.off(events.destroy, this.removeEventListener);
+        this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.iframeMouseDown, this.closeDialog);
         if (!isNullOrUndefined(this.contentModule)) {
             EventHandler.remove(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.touchStart);
             EventHandler.remove(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.audioClick);
-            EventHandler.remove(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick);
+            (this.parent.element.ownerDocument as Document).removeEventListener('mousedown', this.docClick, true);
         }
     }
 
@@ -98,7 +102,7 @@ export class Audio {
         this.contentModule = this.rendererFactory.getRenderer(RenderType.Content);
         EventHandler.add(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.touchStart, this);
         EventHandler.add(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.audioClick, this);
-        EventHandler.add(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick, this);
+        (this.parent.element.ownerDocument as Document).addEventListener('mousedown', this.docClick, true);
     }
 
     private checkAudioBack(range: Range): void {
@@ -403,6 +407,9 @@ export class Audio {
 
     private onDocumentClick(e: MouseEvent): void {
         const target: HTMLElement = <HTMLElement>e.target;
+        if (isNOU(this.contentModule.getEditPanel())) {
+            return;
+        }
         if (this.isAudioElem(target)) {
             this.audEle = (target as HTMLElement).querySelector('audio') as HTMLAudioElement;
         }
@@ -547,7 +554,7 @@ export class Audio {
         }
         if (this.parent.quickToolbarModule.audioQTBar) {
             if (e.isNotify) {
-                setTimeout(() => {
+                this.showPopupTime = setTimeout(() => {
                     this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
                     this.parent.formatter.editorManager.nodeSelection.setSelectionContents(this.contentModule.getDocument(), target);
                     this.quickToolObj.audioQTBar.showPopup(args.pageX - 50, target.getBoundingClientRect().top + 34, target as Element);
@@ -580,6 +587,24 @@ export class Audio {
             } else {
                 (dialogContent.querySelector('.e-audio-url') as HTMLElement).focus();
             }
+        }
+    }
+
+    private clearDialogObj(): void {
+        if (this.uploadObj && !this.uploadObj.isDestroyed) {
+            this.uploadObj.destroy();
+            detach(this.uploadObj.element);
+            this.uploadObj = null;
+        }
+        if (this.button && !this.button.isDestroyed) {
+            this.button.destroy();
+            detach(this.button.element);
+            this.button = null;
+        }
+        if (this.dialogObj && !this.dialogObj.isDestroyed) {
+            this.dialogObj.destroy();
+            detach(this.dialogObj.element);
+            this.dialogObj = null;
         }
     }
 
@@ -628,10 +653,8 @@ export class Audio {
                         selection.restore();
                     }
                 }
-                this.dialogObj.destroy();
-                detach(this.dialogObj.element);
+                this.clearDialogObj();
                 this.dialogRenderObj.close(event);
-                this.dialogObj = null;
             }
         };
         const dialogContent: HTMLElement = this.parent.createElement('div', { className: 'e-audio-content' });
@@ -727,9 +750,9 @@ export class Audio {
         });
         span.appendChild(btnEle); uploadParentEle.appendChild(span);
         const browserMsg: string = this.i10n.getConstant('browse');
-        const button: Button = new Button({ content: browserMsg, enableRtl: this.parent.enableRtl });
-        button.isStringTemplate = true; button.createElement = this.parent.createElement;
-        button.appendTo(btnEle);
+        this.button = new Button({ content: browserMsg, enableRtl: this.parent.enableRtl });
+        this.button.isStringTemplate = true; this.button.createElement = this.parent.createElement;
+        this.button.appendTo(btnEle);
         const btnClick: HTMLElement = (Browser.isDevice) ? span : btnEle;
         EventHandler.add(btnClick, 'click', this.fileSelect, this);
         const uploadEle: HTMLInputElement | HTMLElement = this.parent.createElement('input', {
@@ -890,8 +913,15 @@ export class Audio {
      */
     /* eslint-enable */
     public destroy(): void {
+        if (this.isDestroyed) { return; }
         this.prevSelectedAudEle = undefined;
+        if (this.showPopupTime){
+            clearTimeout(this.showPopupTime);
+            this.showPopupTime = null;
+        }
         this.removeEventListener();
+        this.clearDialogObj();
+        this.isDestroyed = true;
     }
 
     /**

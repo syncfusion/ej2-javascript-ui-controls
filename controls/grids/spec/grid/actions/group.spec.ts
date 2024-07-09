@@ -2449,4 +2449,41 @@ describe('Code Coverage => ', () => {
         });
     });
 
+    describe('892984 - Scroll with frozen columns and aggregations not work as expected => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowGrouping: true,
+                    frozenColumns: 2,
+                    groupSettings: { columns: ['CustomerID'] },
+                    columns: [
+                        { field: 'OrderID', textAlign: 'Right', width:100, headerText:"Order ID"},
+                        { field: 'CustomerID', width:120, headerText:"Customer ID"},
+                        { field: 'Freight', textAlign: 'Right', width:110 ,format:'C2',headerText:"Freight"},
+                        { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right', editType: 'datepickeredit' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 150, editType: 'dropdownedit' },
+                    ],
+                    aggregates: [{
+                        columns: [{
+                            type: 'Sum',
+                            field: 'Freight',
+                            format: 'C2',
+                            groupCaptionTemplate: 'Sum: ${Sum}'
+                        }]
+                    }]
+                }, done);
+        });
+
+        it('check groupcaption template class name', () => {
+            expect(gridObj.getContent().querySelectorAll('.e-groupcaption')[0].classList.contains('e-freezeleftborder')).toBeTruthy();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
 });

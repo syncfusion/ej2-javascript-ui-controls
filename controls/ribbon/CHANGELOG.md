@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 26.1.41 (2024-07-09)
+
+### Ribbon
+
+#### Features
+
+- `#I592358` - Now we have provided a new event `ribbonLayoutSwitched`, when the layout is switched between the classic and simplified modes in ribbon.
+
+## 26.1.40 (2024-07-02)
+
+### Ribbon
+
+#### Bug Fixes
+
+- `#I602654` - Now the issue with ribbon overflow popup opens when the button item is programmatically clicked has been resolved.
+
 ## 26.1.38 (2024-06-19)
 
 ### Ribbon

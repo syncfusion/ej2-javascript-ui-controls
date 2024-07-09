@@ -759,6 +759,9 @@ export class ConnectorLineEdit {
     }
 
     private calculateOffset(record: IGanttData, isRecursive?: boolean): void {
+        if (!this.parent.autoCalculateDateScheduling) {
+            return
+        }
         if (record) {
             const prevPredecessor: IPredecessor[] = extend([], record.ganttProperties.predecessor, [], true) as IPredecessor[];
             const validPredecessor: IPredecessor[] = this.parent.predecessorModule.getValidPredecessor(record);

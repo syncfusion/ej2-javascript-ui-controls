@@ -814,7 +814,9 @@ export class Signature {
                 this.saveDrawSignature(checkbox);
                 this.saveUploadSignature(imageCheckbox);
                 const canvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
-                this.saveTypeString = canvas.toDataURL();
+                if (canvas) {
+                    this.saveTypeString = canvas.toDataURL();
+                }
                 this.updateSignatureTypeValue();
                 if (this.pdfViewer.enableHtmlSanitizer && this.textValue) {
                     this.textValue = SanitizeHtmlHelper.sanitize(this.textValue);
@@ -938,7 +940,9 @@ export class Signature {
                 this.saveDrawSignature(checkbox);
                 this.saveTypeSignature(typeCheckbox);
                 const canvas: any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
-                this.saveUploadString = canvas.toDataURL();
+                if (canvas) {
+                    this.saveUploadString = canvas.toDataURL();
+                }
                 if (this.pdfViewer.enableHtmlSanitizer && this.outputString) {
                     this.outputString = SanitizeHtmlHelper.sanitize(this.outputString);
                 }
@@ -1400,7 +1404,9 @@ export class Signature {
             this.hideSignatureCheckbox(drawCheckbox);
         } else if (headerText.toLocaleLowerCase() === 'type') {
             const canvas : any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
-            this.drawSignatureDataUrl = canvas.toDataURL();
+            if (canvas) {
+                this.drawSignatureDataUrl = canvas.toDataURL();
+            }
             this.updateSignatureTypeValue();
             this.signaturetype = 'Type';
             this.enableCreateSignatureButton();
@@ -1414,7 +1420,9 @@ export class Signature {
             }
         } else if (headerText.toLocaleLowerCase() === 'upload') {
             const canvas : any = document.getElementById(this.pdfViewer.element.id + '_signatureCanvas_');
-            this.drawSignatureDataUrl = canvas.toDataURL();
+            if (canvas) {
+                this.drawSignatureDataUrl = canvas.toDataURL();
+            }
             this.signaturetype = 'Image';
             this.enableCreateSignatureButton();
             const imageCheckbox: HTMLElement = document.getElementById('checkbox2');

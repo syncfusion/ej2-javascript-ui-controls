@@ -431,6 +431,8 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public shapeColl: any = [];
     /** @hidden */
     public imgSrc: string;
+    /** @hidden */
+    public isKBDNavigation: boolean = false;
 
     private lowerContext: CanvasRenderingContext2D;
     private upperContext: CanvasRenderingContext2D;
@@ -1673,7 +1675,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.afterCropActions = []; this.currentFilter = ''; this.tempFrameZoomLevel = null; this.cxtTbarHeight = null;
             this.straightenPoint = null; this.transform.straighten = 0; this.cancelCropSelection = null;
             this.aspectWidth = this.aspectHeight = null; this.isResize = false; this.drawingShape = null;
-            this.isShapeDrawing = this.noPushUndo = this.isUndoRedoStack = false; this.shapeColl = [];
+            this.isShapeDrawing = this.noPushUndo = this.isUndoRedoStack = this.isKBDNavigation = false; this.shapeColl = [];
             const obj: Object = {initialZoomValue: false };
             this.notify('draw', { prop: 'getInitialZoomValue', onPropertyChange: false, value: {obj: obj }});
             if (obj['initialZoomValue']) {
@@ -1737,15 +1739,16 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      *
      * @param {string} type - Specifies a format of image to be saved. 
      * @param {string} fileName – Specifies a file name to be saved
+     * @param {number} imageQuality – Specifies the quality of an image to be saved. The default value is “1” which represents the original size of the image if not specified.
      *
      * @remarks
      * The supported file types are JPG, JPEG, PNG, and SVG.
      *
      * @returns {void}.
      */
-    public export(type?: string, fileName?: string): void {
+    public export(type?: string, fileName?: string, imageQuality?: number): void {
         this.applyShapes();
-        this.notify('export', { prop: 'export', onPropertyChange: false, value: {type: type, fileName: fileName}});
+        this.notify('export', { prop: 'export', onPropertyChange: false, value: {type: type, fileName: fileName, imgQuality: imageQuality}});
     }
 
     /**

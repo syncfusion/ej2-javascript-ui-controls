@@ -962,7 +962,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
                 const globalize: Internationalization = new Internationalization;
                 const dateOptions: { format: string, type: string, skeleton: string } = { format: option.format.toString(), type: 'dateTime', skeleton: 'yMd' };
                 const dateValue: Date = globalize.parseDate(option.value, dateOptions);
-                const maxValue: Date = globalize.parseDate(JSON.parse(JSON.stringify(option.param)), dateOptions);
+                const maxValue: Date = (typeof(option.param) === 'string') ? globalize.parseDate(JSON.parse(JSON.stringify(option.param)), dateOptions) : (option.param as Date);
                 return new Date(dateValue).getTime() <= new Date(maxValue).getTime();
             } else {
                 return new Date(option.value).getTime() <= new Date(JSON.parse(JSON.stringify(option.param))).getTime();
@@ -981,7 +981,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
                     const globalize: Internationalization = new Internationalization;
                     const dateOptions: { format: string, type: string, skeleton: string } = { format: option.format.toString(), type: 'dateTime', skeleton: 'yMd' };
                     const dateValue: Date = globalize.parseDate(option.value, dateOptions);
-                    const minValue: Date = globalize.parseDate(JSON.parse(JSON.stringify(option.param)), dateOptions);
+                    const minValue: Date = (typeof(option.param) === 'string') ? globalize.parseDate(JSON.parse(JSON.stringify(option.param)), dateOptions) : (option.param as Date);
                     return new Date(dateValue).getTime() >= new Date(minValue).getTime();
                 } else {
                     return new Date(option.value).getTime() >= new Date(JSON.parse(JSON.stringify(option.param))).getTime();

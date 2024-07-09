@@ -304,7 +304,7 @@ export class DateTime extends NiceInterval {
         let previousValue: number;
         const isBlazor: boolean = chart.getModuleName () === 'chart' ? (chart as Chart).isBlazor : false;
         const axisLabels: VisibleLabels[] = axis.visibleLabels;
-        if (!setRange(axis)) {
+        if (axis.minimum === null) {
             tempInterval = this.alignRangeStart(axis, tempInterval, axis.visibleRange.interval).getTime();
         }
         while (tempInterval <= axis.visibleRange.max) {
@@ -425,8 +425,7 @@ export class DateTime extends NiceInterval {
         }
         case 'Days': {
             const day: number = Math.floor(Math.floor((sResult.getDate()) / intervalSize) * intervalSize);
-            sResult = new Date(sResult.getFullYear(), sResult.getMonth(), day, sResult.getHours(),
-                               sResult.getMinutes(), sResult.getSeconds());
+            sResult = new Date(sResult.getFullYear(), sResult.getMonth(), day, 0, 0, 0);
             return sResult;
         }
         case 'Hours': {

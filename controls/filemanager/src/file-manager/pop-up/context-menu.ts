@@ -160,6 +160,15 @@ export class ContextMenu {
                 this.setFolderItem(true);
                 if (uid === this.parent.pathId[0]) {
                     this.disabledItems.push('Delete', 'Rename', 'Cut', 'Copy');
+                } else {
+                    const itemsToRemove: string[] = ['Delete', 'Rename', 'Cut', 'Copy'];
+                    for (let i: number = 0; i < this.disabledItems.length; i++) {
+                        const item: string = this.disabledItems[i as number];
+                        if (itemsToRemove.indexOf(item) !== -1) {
+                            this.disabledItems.splice(i, 1);
+                            i--;
+                        }
+                    }
                 }
                 /* istanbul ignore next */
             } else if (view === 'TreeView' || view === 'GridView' || view === 'LargeIcon') {
@@ -274,6 +283,11 @@ export class ContextMenu {
             const selectedTreeNode: Element = select('[data-uid="' + this.parent.navigationpaneModule.treeObj.selectedNodes[0] + '"]', this.parent.navigationpaneModule.treeObj.element);
             if (this.parent.pathNames[this.parent.pathNames.length - 1] === selectedTreeNode.querySelector('.e-list-text').innerHTML && this.parent.activeModule === 'navigationpane') {
                 this.disabledItems.push('Open');
+            } else {
+                const indexToRemove: number = this.disabledItems.indexOf('Open');
+                if (indexToRemove !== -1) {
+                    this.disabledItems.splice(indexToRemove, 1);
+                }
             }
             if (this.parent.selectedItems.length === 0) {
                 const renameIndex: number = this.disabledItems.indexOf('Rename');

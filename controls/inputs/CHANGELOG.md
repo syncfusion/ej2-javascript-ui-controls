@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 26.1.41 (2024-07-09)
+
+### FormValidator
+
+#### Bug Fixes
+
+- `#F58905` - Fixed an issue where the min and max validation rules were not functioning correctly.
+
+### Uploader
+
+#### Bug Fixes
+
+- `#I605386` - Fixed an issue where removing invalid files in a form did not trigger the select event again in the file upload.
+
 ## 26.1.40 (2024-07-02)
 
 ### Uploader
@@ -10,11 +24,7 @@
 
 - `#I601231` - Fixed issue where change event would return all uploaded files instead of single file when multiple is set to false.
 
-### FormValidator
-
-#### Bug Fixes
-
-- `#F58905` - Fixed an issue where the min and max validation rules were not functioning correctly.
+- `#I602694` - Added aria labels to buttons on the Uploader for improved accessibility.
 
 ### Input
 

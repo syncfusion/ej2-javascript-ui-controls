@@ -3581,6 +3581,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                             this.engineModule.fieldList = null;
                             this.engineModule.isEmptyData = true;
                             this.engineModule.data = [];
+                            this.engineModule.groupingFieldsInfo = {};
                         } else if (this.dataType === 'olap') {
                             this.olapEngineModule.fieldList = {};
                             this.olapEngineModule.fieldListData = undefined;

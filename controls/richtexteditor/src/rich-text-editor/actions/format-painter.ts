@@ -8,9 +8,11 @@ export class FormatPainter implements IFormatPainter {
     private isSticky: boolean = false;
     private isActive: boolean = false;
     public previousAction: string;
+    private isDestroyed: boolean;
     public constructor(parent?: IRichTextEditor) {
         this.parent = parent;
         this.addEventListener();
+        this.isDestroyed = false;
     }
 
     private addEventListener(): void {
@@ -141,21 +143,17 @@ export class FormatPainter implements IFormatPainter {
     }
 
     public destroy(): void {
-        if (isNOU(this.parent) || this.parent.isDestroyed) {
-            return;
-        }
+        if (this.isDestroyed) { return; }
         this.parent.off(events.formatPainterClick, this.toolbarClick);
         this.parent.off(events.editAreaClick, this.editAreaClick);
         this.parent.off(events.formatPainterDoubleClick, this.toolbarDoubleClick);
         this.parent.off(events.keyDown, this.onKeyDown);
         this.parent.off(events.destroy, this.destroy);
-        if (!isNOU(this.parent.formatter.editorManager.formatPainterEditor)) {
-            this.parent.formatter.editorManager.formatPainterEditor.destroy();
-        }
-        this.parent = undefined;
-        this.isSticky = undefined;
-        this.isActive = undefined;
-        this.previousAction = undefined;
+        this.parent = null;
+        this.isSticky = null;
+        this.isActive = null;
+        this.previousAction = null;
+        this.isDestroyed = true;
     }
 
     /**

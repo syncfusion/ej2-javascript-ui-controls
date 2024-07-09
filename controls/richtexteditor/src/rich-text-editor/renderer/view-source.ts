@@ -69,11 +69,11 @@ export class ViewSource {
         EventHandler.add(this.previewElement, 'mousedown', this.mouseDownHandler, this);
     }
     private unWireEvent(): void {
-        if (this.keyboardModule) {
-            this.keyboardModule.destroy();
-        }
         if (this.previewElement) {
             EventHandler.remove(this.previewElement, 'mousedown', this.mouseDownHandler);
+        }
+        if (this.keyboardModule && !this.keyboardModule.isDestroyed) {
+            this.keyboardModule.destroy();
         }
     }
     private wireBaseKeyDown(): void {

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 26.1.41 (2024-07-09)
+
+### PivotTable
+
+#### Bug fixes
+
+- `#F187996` - When dynamically updating the data source with the static field list, grouping will now work properly in the pivot table.
+- `#I591197` - Column header text will now be visible when using value sorting with autofit in the pivot table.
+
 ## 26.1.40 (2024-07-02)
 
 ### PivotTable
@@ -16,7 +25,6 @@
 
 #### Bug fixes
 
-- `#I591197` - Column header text will now be visible when using value sorting with autofit in the pivot table.
 - `#I596628` - The pivot table will now be properly rendered when the data source contains a special character.
 - `#I595763` - The pivot table will now be properly exported as an Excel document, with the calculated field using the "Standard" format string.
 - `#I592737` - When exporting a pivot table to an Excel document, it will now be properly formatted.

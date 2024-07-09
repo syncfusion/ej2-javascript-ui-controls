@@ -1,5 +1,5 @@
 import * as events from '../base/constant';
-import { IRichTextEditor, IToolbarItemModel, IColorPickerRenderArgs, IRenderer, IDropDownItemModel } from '../base/interface';
+import { IRichTextEditor, IToolbarItemModel, IRenderer, IDropDownItemModel } from '../base/interface';
 import { NotifyArgs, IToolbarOptions, ActionBeginEventArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { isNullOrUndefined, closest, KeyboardEventArgs, attributes, removeClass, addClass, Browser, detach, MouseEventArgs, L10n } from '@syncfusion/ej2-base';
@@ -11,7 +11,6 @@ import * as classes from '../base/classes';
 import { HtmlToolbarStatus } from './html-toolbar-status';
 import { IframeContentRender } from '../renderer/iframe-content-renderer';
 import { ContentRender } from '../renderer/content-renderer';
-import { ColorPickerInput } from './color-picker';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { NodeSelection } from '../../selection/selection';
 import { InsertHtml } from '../../editor-manager/plugin/inserthtml';
@@ -30,12 +29,12 @@ import * as CONSTANT from '../base/constant';
  * `HtmlEditor` module is used to HTML editor
  */
 export class HtmlEditor {
+    private isDestroyed: boolean;
     private parent: IRichTextEditor;
     private locator: ServiceLocator;
     private contentRenderer: IRenderer;
     private renderFactory: RendererFactory;
     private toolbarUpdate: HtmlToolbarStatus;
-    private colorPickerModule: ColorPickerInput;
     private nodeSelectionObj: NodeSelection;
     private rangeCollection: Range[] = [];
     private rangeElement: Element;
@@ -53,6 +52,7 @@ export class HtmlEditor {
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
         this.xhtmlValidation = new XhtmlValidation(parent);
         this.addEventListener();
+        this.isDestroyed = false;
     }
     /**
      * Destroys the Markdown.
@@ -63,7 +63,27 @@ export class HtmlEditor {
      * @deprecated
      */
     public destroy(): void {
+        if (this.isDestroyed) { return; }
+        if (this.clickTimeout) {
+            clearTimeout(this.clickTimeout);
+            this.clickTimeout = null;
+        }
         this.removeEventListener();
+        this.locator = null;
+        this.contentRenderer = null;
+        this.renderFactory = null;
+        this.toolbarUpdate = null;
+        this.nodeSelectionObj = null;
+        if (this.rangeCollection.length > 0) {
+            this.rangeCollection = [];
+        }
+        if (this.rangeElement) { this.rangeElement = null; }
+        if (this.oldRangeElement) { this.oldRangeElement = null; }
+        if (this.deleteRangeElement) { this.deleteRangeElement = null; }
+        if (this.deleteOldRangeElement) { this.deleteOldRangeElement = null; }
+        if (this.saveSelection) { this.saveSelection = null; }
+        if (this.xhtmlValidation) { this.xhtmlValidation = null; }
+        this.isDestroyed = true;
     }
 
     /**
@@ -82,12 +102,10 @@ export class HtmlEditor {
             return;
         }
         this.nodeSelectionObj = new NodeSelection();
-        this.colorPickerModule = new ColorPickerInput(this.parent, this.locator);
         this.parent.on(events.initialLoad, this.instantiateRenderer, this);
         this.parent.on(events.htmlToolbarClick, this.onToolbarClick, this);
         this.parent.on(events.keyDown, this.onKeyDown, this);
         this.parent.on(events.keyUp, this.onKeyUp, this);
-        this.parent.on(events.renderColorPicker, this.renderColorPicker, this);
         this.parent.on(events.initialEnd, this.render, this);
         this.parent.on(events.modelChanged, this.onPropertyChanged, this);
         this.parent.on(events.destroy, this.destroy, this);
@@ -243,7 +261,7 @@ export class HtmlEditor {
                         currentChild = currentChild.nextElementSibling;
                         continue;
                     }
-                    if (currentChild.textContent.replace(regEx, '').trim().length > 0) {
+                    if (currentChild.textContent.replace(regEx, '').trim().length > 0 && currentChild.textContent.includes('\u200B')) {
                         currentChild.innerHTML = currentChild.innerHTML.replace(regEx, '');
                     }
                     currentChild = currentChild.nextElementSibling;
@@ -712,6 +730,10 @@ export class HtmlEditor {
                 }
                 paraElem[i as number].innerHTML = resultSplitContent.trim();
             }
+            const anchorElement: Node = divElement.childNodes[0];
+            if (!isNullOrUndefined(anchorElement) && !isNullOrUndefined(anchorElement.childNodes[0]) && anchorElement.nodeName === 'SPAN' && anchorElement.childNodes[0].nodeName === 'A') {
+                divElement.innerHTML = divElement.innerHTML.replace('<span>', '').replace('</span>', '');
+            }
             if (!isNullOrUndefined(this.parent.pasteCleanupModule)) {
                 e.callBack(divElement.innerHTML);
             } else {
@@ -886,26 +908,19 @@ export class HtmlEditor {
             }
         }
     }
-    private renderColorPicker(args: IColorPickerRenderArgs): void {
-        this.colorPickerModule.renderColorPickerInput(args);
-    }
 
     private instantiateRenderer(): void {
         if (this.parent.iframeSettings.enable) {
-            this.renderFactory.addRenderer(RenderType.Content, new IframeContentRender(this.parent, this.locator));
+            this.renderFactory.addRenderer(RenderType.Content, new IframeContentRender(this.parent));
         } else {
-            this.renderFactory.addRenderer(RenderType.Content, new ContentRender(this.parent, this.locator));
+            this.renderFactory.addRenderer(RenderType.Content, new ContentRender(this.parent));
         }
     }
 
     private removeEventListener(): void {
-        if (this.parent.isDestroyed) {
-            return;
-        }
         this.parent.off(events.initialEnd, this.render);
         this.parent.off(events.modelChanged, this.onPropertyChanged);
         this.parent.off(events.htmlToolbarClick, this.onToolbarClick);
-        this.parent.off(events.renderColorPicker, this.renderColorPicker);
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.keyDown, this.onKeyDown);
         this.parent.off(events.initialLoad, this.instantiateRenderer);

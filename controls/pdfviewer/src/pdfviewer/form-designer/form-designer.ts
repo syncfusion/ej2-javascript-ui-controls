@@ -82,6 +82,8 @@ export class FormDesigner {
     private increasedSize: number = 5;
     private defaultZoomValue: number = 1;
     private defaultFontSize: number = 10;
+    private signIndicatorPadding: number = 3;
+    private signIndicatorMinimunFontSize: number = 4;
     private signatureFieldPropertyChanged: any =
     {
         isReadOnlyChanged: false,
@@ -1537,6 +1539,10 @@ export class FormDesigner {
         spanElement.style.width = widthNew + 'px';
         const heightNew : number = this.setHeightWidth(signatureFieldHeight, height, boundsOfSpan.height, zoomValue);
         spanElement.style.height = heightNew + 'px';
+        if (zoomValue < 1) {
+            let heightValue: number = parseInt(spanElement.style.height, 10);
+            spanElement.style.fontSize = (heightValue - this.signIndicatorPadding) < this.signIndicatorMinimunFontSize ? this.signIndicatorMinimunFontSize + 'px' : heightValue - this.signIndicatorPadding + 'px';
+        }
         if (!isPrint) {
             element.appendChild(spanElement);
         }

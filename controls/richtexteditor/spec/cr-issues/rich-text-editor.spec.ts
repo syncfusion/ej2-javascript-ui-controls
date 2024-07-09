@@ -4189,9 +4189,23 @@ describe('RTE CR issues ', () => {
 
     describe('885141: RichTextEditor creates P tag after pressing enter key on UL element on selection of DIV as enteraction in EnterKey Configuration', () => {
         let rteObj: RichTextEditor;
+        let EnterkeyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+            char: '',
+            key: '',
+            charCode: 13,
+            keyCode: 13,
+            which: 13,
+            code: 'Enter',
+            action: 'enter',
+            type: 'keydown'
+        };
         beforeAll(() => {
             rteObj = renderRTE({
-                value: '<ul><li><div>one</div></li><li><div>two</div></li><li><div class="test">three</div></li></ul><div></div>',
+                value: '<ul><li><div>one</div></li><li><div>two</div></li><li><div class="test">three</div></li></ul>',
                 enterKey: 'DIV',
                 toolbarSettings: {
                     items:['UnorderedList']
@@ -4202,10 +4216,11 @@ describe('RTE CR issues ', () => {
             rteObj.dataBind();
             let divElement: HTMLElement = rteObj.inputElement.querySelector('.test');
            setCursorPoint(divElement, 0);
-           rteObj.executeCommand('insertUnorderedList');
            let targetElm: HTMLElement=rteObj.element.querySelector(".e-toolbar-item button");
            targetElm.click();
-           expect(rteObj.inputElement.innerHTML === '<ul><li><div>one</div></li><li><div>two</div></li></ul><div class="test test">three</div><div><br></div>').toBe(true); 
+           rteObj.dataBind();
+           (<any>rteObj).keyDown(EnterkeyboardEventArgs);
+           expect(rteObj.inputElement.innerHTML === '<ul><li><div>one</div></li><li><div>two</div></li></ul><div><br></div><div class="test test">three</div>').toBe(true); 
         });
         afterAll((done: DoneFn) => {
            destroy(rteObj);
@@ -4536,6 +4551,93 @@ describe('RTE CR issues ', () => {
                 expect(table.querySelectorAll('tr').length === 3).toBe(true);
                 done();
             }, 200);
+        });
+    });
+    describe('894730 - List not get reverted when using executeCommand in the RichTextEditor', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+
+        beforeAll(() => {
+            rteObj = renderRTE({
+                height: 400,
+                value: `<div style="display:block;"><p style="margin-right:10px">The custom command "insert special character" is configured as the last item of the toolbar. Click on the command and choose the special character you want to include from the popup.</p></div>`,
+                toolbarSettings: {
+                    items: [{
+                        click: function () {
+                            let customBtn = rteObj.element.querySelector('#custom_tbar');
+                            rteObj.executeCommand('insertUnorderedList');
+                        },
+                        tooltipText: 'Insert Symbol',
+                        template:
+                            '<button class="e-tbar-btn e-btn" tabindex="-1" id="custom_tbar"  style="width:100%"><div class="e-tbar-btn-text" style="font-weight: 500;"> Apply list</div></button>',
+                    },
+                        '|',
+                        'Undo',
+                    ]
+                },
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+        it('Apply and revert list using custom toolbar ', (done: DoneFn) => {
+            document.getElementById('custom_tbar').click();
+            document.getElementById('custom_tbar').click();
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML === `<div style="display:block;"><p style="margin-right:10px">The custom command "insert special character" is configured as the last item of the toolbar. Click on the command and choose the special character you want to include from the popup.</p></div>`).toBe(true);
+                done();
+            }, 100);
+        });
+    });
+    xdescribe('895384 - The placeholder does not show up after cleaning up all the content in the Rich Text Editor.', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
+        let keyBoardEventDel: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
+        let innerHTML: string = `<h1>Welcome to the Syncfusion Rich Text Editor</h1><p>The Rich Text Editor, a WYSIWYG (what you see is what you get) editor, is a user interface that allows you to create, edit, and format rich text content. You can try out a demo of this editor here.</p><h2>Do you know the key features of the editor?</h2>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                placeholder: 'Insert table here',
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                value: innerHTML
+
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+        it('select all content in rte and press back space ', (done: DoneFn) => {
+            rteObj.dataBind();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('h1').childNodes[0], rteObj.element.querySelector('h2'), 0, 1);
+            keyBoardEvent.keyCode = 8;
+            keyBoardEvent.code = 'Backspace';
+            rteObj.dataBind();
+            (rteObj as any).keyDown(keyBoardEvent);
+            (rteObj as any).keyUp(keyBoardEvent);
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML==='<p><br></p>').toBe(true);
+                done();
+            }, 100);
+        });
+        it('select all content in rte and press delete ', (done: DoneFn) => {
+            rteObj.inputElement.innerHTML=innerHTML;
+            rteObj.dataBind();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('h1').childNodes[0], rteObj.element.querySelector('h2'), 0, 1);
+            keyBoardEventDel.keyCode = 46;
+            keyBoardEventDel.code = 'Delete';
+            keyBoardEventDel.action = 'delete';
+            (rteObj as any).keyDown(keyBoardEventDel);
+            (rteObj as any).keyUp(keyBoardEventDel);
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML==='<p><br></p>').toBe(true);
+                done();
+            }, 100);
         });
     });
 });

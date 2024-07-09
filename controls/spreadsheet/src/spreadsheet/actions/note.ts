@@ -142,7 +142,7 @@ export class SpreadsheetNote {
 
     private mouseOut(): void {
         if (this.isNoteVisible && (!this.isNoteVisibleOnTouch && !isNullOrUndefined(document.getElementsByClassName('e-addNoteContainer')[0] as HTMLTextAreaElement))) {
-            if (document.activeElement.className.indexOf("e-addNoteContainer") === -1) {
+            if (document.activeElement.className.indexOf('e-addNoteContainer') === -1) {
                 this.removeNoteContainer();
                 this.isNoteVisible = false;
             }
@@ -169,7 +169,8 @@ export class SpreadsheetNote {
 
     private createContainer(noteContainer: HTMLElement, cell: CellModel, cellRect: ClientRect, isShowNote: boolean): void {
         let containerTop: number = 5;
-        if (cellRect.top >= document.getElementsByClassName('e-select-all-cell')[0].getBoundingClientRect().bottom && cellRect.right >= document.getElementsByClassName('e-select-all-cell')[0].getBoundingClientRect().right) {
+        if (cellRect.top >= document.getElementsByClassName('e-select-all-cell')[0].getBoundingClientRect().bottom && cellRect.right >= document.getElementsByClassName('e-select-all-cell')[0].getBoundingClientRect().right &&
+            cellRect.bottom <= document.getElementsByClassName('e-scroller')[0].getBoundingClientRect().top && cellRect.right <= document.getElementsByClassName('e-scroller')[0].getBoundingClientRect().width) {
             noteContainer.style.display = 'block';
             containerTop = cellRect.top === document.getElementsByClassName('e-select-all-cell')[0].getBoundingClientRect().bottom ? 0 : containerTop;
         }
@@ -226,8 +227,10 @@ export class SpreadsheetNote {
         }
     }
 
-    private showNote(args : {rowIndex: number, columnIndex: number, isNoteEditable?: boolean, isScrollWithNote?: boolean}): void {
-        const targetElement: HTMLElement = this.parent.getCell(args.rowIndex, args.columnIndex);
+    private showNote(args : {rowIndex: number, columnIndex: number, isNoteEditable?: boolean, isScrollWithNote?: boolean,
+                                cellElement?: HTMLElement}): void {
+        const targetElement: HTMLElement = !isNullOrUndefined(this.parent.getCell(args.rowIndex, args.columnIndex)) ?
+            this.parent.getCell(args.rowIndex, args.columnIndex) : args.cellElement;
         const contextMenuElement: HTMLElement = document.getElementById(this.parent.element.id + '_contextmenu');
         const contextMenuDisplayStyle: string = !isNullOrUndefined(contextMenuElement) ? contextMenuElement.style.getPropertyValue('display') : 'none';
         const showNoteOverContextMenu: boolean = args.isNoteEditable ? true : contextMenuDisplayStyle !== 'block';
@@ -245,12 +248,12 @@ export class SpreadsheetNote {
     }
 
     private updateNoteContainer(): void {
+        this.parent.selectionModule.isNoteContainerIsActiveElement = document.activeElement.className.indexOf('e-addNoteContainer') > -1 ? true : this.parent.selectionModule.isNoteContainerIsActiveElement;
         const cellIdxs: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
         const cell: CellModel = getCell(cellIdxs[0], cellIdxs[1], this.parent.getActiveSheet());
         const noteContainer: HTMLTextAreaElement  = document.getElementsByClassName('e-addNoteContainer')[0] as HTMLTextAreaElement;
         if (((isNullOrUndefined(cell) || isNullOrUndefined(cell.notes)) || (cell.notes !== noteContainer.value))
-        && document.activeElement.className.indexOf('e-addNoteContainer') > -1) {
-            const targetElement: HTMLElement = this.parent.getCell(cellIdxs[0], cellIdxs[1]);
+        && this.parent.selectionModule.isNoteContainerIsActiveElement) {
             const address: string = getSheetName(this.parent as Workbook, this.parent.activeSheetIndex) + '!' + this.parent.getActiveSheet().activeCell;
             this.parent.notify(setActionData, { args: { action: 'beforeCellSave', eventArgs: { address: address } } });
             updateCell(
@@ -260,7 +263,7 @@ export class SpreadsheetNote {
             this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'addNote' });
             this.isShowNote = null;
         }
-        this.isShowNote = isNullOrUndefined(this.isShowNote) ? document.activeElement.className.indexOf('e-addNoteContainer') > -1 : this.isShowNote ;
+        this.isShowNote = isNullOrUndefined(this.isShowNote) ? this.parent.selectionModule.isNoteContainerIsActiveElement : this.isShowNote;
         if (this.isShowNote) {
             const isScrollWithNote : boolean = !isNullOrUndefined(cell) && !isNullOrUndefined(cell.isNoteEditable) ?
                 cell.isNoteEditable : false;

@@ -451,51 +451,64 @@ export class DropDownButtons {
         if (this.formatDropDown) {
             this.removeDropDownClasses(this.formatDropDown.element);
             this.formatDropDown.destroy();
+            this.formatDropDown = null;
         }
         if (this.fontNameDropDown) {
             this.removeDropDownClasses(this.fontNameDropDown.element);
             this.fontNameDropDown.destroy();
+            this.fontNameDropDown = null;
         }
         if (this.fontSizeDropDown) {
             this.removeDropDownClasses(this.fontSizeDropDown.element);
             this.fontSizeDropDown.destroy();
+            this.fontSizeDropDown = null;
         }
         if (this.alignDropDown) {
             this.removeDropDownClasses(this.alignDropDown.element);
             this.alignDropDown.destroy();
+            this.alignDropDown = null;
         }
         if (this.imageAlignDropDown) {
             this.removeDropDownClasses(this.imageAlignDropDown.element);
             this.imageAlignDropDown.destroy();
+            this.imageAlignDropDown = null;
         }
         if (this.displayDropDown) {
             this.removeDropDownClasses(this.displayDropDown.element);
             this.displayDropDown.destroy();
+            this.displayDropDown = null;
         }
         if (this.tableRowsDropDown) {
             this.removeDropDownClasses(this.tableRowsDropDown.element);
             this.tableRowsDropDown.destroy();
+            this.tableRowsDropDown = null;
         }
         if (this.tableColumnsDropDown) {
             this.removeDropDownClasses(this.tableColumnsDropDown.element);
             this.tableColumnsDropDown.destroy();
+            this.tableColumnsDropDown = null;
         }
         if (this.tableCellDropDown) {
             this.removeDropDownClasses(this.tableCellDropDown.element);
             this.tableCellDropDown.destroy();
+            this.tableCellDropDown = null;
         }
         if (this.tableCellVerticalAlignDropDown) {
             this.removeDropDownClasses(this.tableCellVerticalAlignDropDown.element);
             this.tableCellVerticalAlignDropDown.destroy();
+            this.tableCellVerticalAlignDropDown = null;
         }
         if (this.numberFormatListDropDown) {
             this.removeDropDownClasses(this.numberFormatListDropDown.element);
             this.numberFormatListDropDown.destroy();
+            this.numberFormatListDropDown = null;
         }
         if (this.bulletFormatListDropDown) {
             this.removeDropDownClasses(this.bulletFormatListDropDown.element);
             this.bulletFormatListDropDown.destroy();
+            this.bulletFormatListDropDown = null;
         }
+        this.toolbarRenderer = null;
     }
 
     private setRtl(args: { [key: string]: Object }): void {
@@ -553,7 +566,6 @@ export class DropDownButtons {
         this.parent.on(events.beforeDropDownItemRender, this.beforeRender, this);
         this.parent.on(events.iframeMouseDown, this.onIframeMouseDown, this);
         this.parent.on(events.rtlMode, this.setRtl, this);
-        this.parent.on(events.destroy, this.removeEventListener, this);
         this.parent.on(events.modelChanged, this.onPropertyChanged, this);
         this.parent.on(events.bindCssClass, this.setCssClass, this);
     }
@@ -571,9 +583,12 @@ export class DropDownButtons {
         this.parent.off(events.iframeMouseDown, this.onIframeMouseDown);
         this.parent.off(events.rtlMode, this.setRtl);
         this.parent.off(events.beforeDropDownItemRender, this.beforeRender);
-        this.parent.off(events.destroy, this.removeEventListener);
         this.parent.off(events.modelChanged, this.onPropertyChanged);
         this.parent.off(events.bindCssClass, this.setCssClass);
     }
 
+    public destroy(): void {
+        this.removeEventListener();
+        this.destroyDropDowns();
+    }
 }

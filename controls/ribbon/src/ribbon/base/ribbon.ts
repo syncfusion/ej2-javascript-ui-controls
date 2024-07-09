@@ -3,7 +3,7 @@ import { INotifyPropertyChanged, isNullOrUndefined, isUndefined, ModuleDeclarati
 import { Tab, TabAnimationSettings, TabAnimationSettingsModel, TabItemModel, SelectEventArgs, SelectingEventArgs, HScroll, Toolbar } from '@syncfusion/ej2-navigations';
 import { RibbonTab, RibbonTabModel, RibbonGroupModel, RibbonCollectionModel, RibbonItemModel, FileMenuSettings, FileMenuSettingsModel, BackStageMenu, BackStageMenuModel, RibbonItem, RibbonCollection, RibbonGroup, RibbonContextualTabSettingsModel, RibbonContextualTabSettings } from '../models/index';
 import { RibbonModel } from './ribbon-model';
-import { commonProperties, DisplayMode, ExpandCollapseEventArgs, itemProps, LauncherClickEventArgs, OverflowPopupEventArgs, ribbonItemPropsList, RibbonLayout, ribbonTooltipData, TabSelectedEventArgs, TabSelectingEventArgs } from './interface';
+import { commonProperties, DisplayMode, ExpandCollapseEventArgs, itemProps, LauncherClickEventArgs, LayoutSwitchedEventArgs, OverflowPopupEventArgs, ribbonItemPropsList, RibbonLayout, ribbonTooltipData, TabSelectedEventArgs, TabSelectingEventArgs } from './interface';
 import { ItemOrientation, RibbonItemSize, RibbonItemType, KeyTipDataType } from './interface';
 import { RibbonButton, RibbonComboBox, RibbonCheckBox, RibbonDropDown, RibbonColorPicker, RibbonSplitButton, RibbonGroupButton } from '../items/index';
 import { destroyControl, getCollection, getGroup, getIndex, getItem, getItemElement, updateCommonProperty, updateControlDisabled, isTooltipPresent, getTemplateFunction, createTooltip, destroyTooltip, updateTooltipProp } from './utils';
@@ -192,6 +192,14 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
      */
     @Event()
     public ribbonCollapsing: EmitType<ExpandCollapseEventArgs>;
+
+    /**
+     * Event triggers when the ribbon layout is switched.
+     *
+     * @event ribbonLayoutSwitched
+     */
+    @Event()
+    public ribbonLayoutSwitched: EmitType<LayoutSwitchedEventArgs>;
 
     /**
      * Event triggers when the launcher icon of the group is clicked.
@@ -829,9 +837,11 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         });
     }
 
-    private toggleLayout(): void {
+    private toggleLayout(args: Event): void {
         this.setProperties({ activeLayout: this.activeLayout === 'Simplified' ? 'Classic' : 'Simplified' }, true);
         this.switchLayout();
+        const eventArgs: LayoutSwitchedEventArgs = { activeLayout: this.activeLayout, event: args };
+        this.trigger('ribbonLayoutSwitched', eventArgs);
     }
 
     private tabCreated(): void {
@@ -2439,9 +2449,9 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             id: this.tabObj.element.id + constants.COLLAPSE_BUTTON_ID,
             attrs: { 'tabindex': '0', 'type': 'button', 'aria-label': 'Layout Switcher', 'role': 'button' }
         });
-        this.collapseButton.onclick = () => { this.toggleLayout(); };
+        this.collapseButton.onclick = (e: Event) => { this.toggleLayout(e); };
         this.collapseButton.onkeydown = (e: KeyboardEvent) => {
-            if (e.key === 'Enter') { this.toggleLayout(); }
+            if (e.key === 'Enter') { this.toggleLayout(e); }
         };
         this.element.classList.add(constants.RIBBON_COLLAPSIBLE);
         if (this.activeLayout === 'Simplified') { this.collapseButton.classList.add(constants.RIBBON_EXPAND_BUTTON); }

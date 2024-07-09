@@ -31,6 +31,14 @@ export class Formats {
         this.parent.observer.on(EVENTS.KEY_UP_HANDLER, this.onKeyUp, this);
         this.parent.observer.on(EVENTS.KEY_DOWN_HANDLER, this.onKeyDown, this);
         this.parent.observer.on(EVENTS.BLOCKQUOTE_LIST_HANDLE, this.blockQuotesHandled, this);
+        this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
+    }
+
+    private removeEventListener(): void {
+        this.parent.observer.off(EVENTS.FORMAT_TYPE, this.applyFormats);
+        this.parent.observer.off(EVENTS.KEY_UP_HANDLER, this.onKeyUp);
+        this.parent.observer.off(EVENTS.KEY_DOWN_HANDLER, this.onKeyDown);
+        this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
     }
 
     private getParentNode(node: Node): Node {
@@ -501,5 +509,9 @@ export class Formats {
         for (let i: number = 0; i < ignoreAttr.length && (tagName !== 'p' && tagName !== 'blockquote' && tagName !== 'pre'); i++) {
             (element as HTMLElement).style.removeProperty(ignoreAttr[i as number]);
         }
+    }
+
+    public destroy(): void {
+        this.removeEventListener();
     }
 }

@@ -33,6 +33,8 @@ export class Selection {
     public dAutoFillCell: string;
     /** @hidden */
     public previousActiveCell: string;
+    /** @hidden */
+    public isNoteContainerIsActiveElement: boolean = false;
     private isNoteTouch: boolean = false;
 
     /**
@@ -236,6 +238,7 @@ export class Selection {
     }
 
     private mouseDownHandler(e: MouseEvent & TouchEvent): void {
+        this.isNoteContainerIsActiveElement = document.activeElement.className.indexOf('e-addNoteContainer') > -1;
         if (closest(e.target as Element, '.e-scrollbar') || (e.target as Element).classList.contains('e-main-panel') ||
             (e.target as Element).classList.contains('e-sheet')) { return; }
         const eventArgs: { action: string, editedValue: string } = { action: 'getCurrentEditValue', editedValue: '' };
@@ -245,7 +248,7 @@ export class Selection {
         const cellIndexes: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
         const targetElement: HTMLElement = this.parent.getCell(cellIndexes[0], cellIndexes[1]);
         if (!isNullOrUndefined(targetElement) && targetElement.children !== null && targetElement.children.length > 0
-            && document.activeElement.className.indexOf('e-addNoteContainer') > -1 && targetElement.children[targetElement.children.length - 1].classList.contains('e-addNoteIndicator')) {
+            && this.isNoteContainerIsActiveElement && targetElement.children[targetElement.children.length - 1].classList.contains('e-addNoteIndicator')) {
             const cell: CellModel = getCell(cellIndexes[0], cellIndexes[1], sheet);
             const noteContainer: HTMLTextAreaElement  = document.getElementsByClassName('e-addNoteContainer')[0] as HTMLTextAreaElement;
             const address: string = getSheetName(this.parent as Workbook, this.parent.activeSheetIndex) + '!' + this.parent.getActiveSheet().activeCell;

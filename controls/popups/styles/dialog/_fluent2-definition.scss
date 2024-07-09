@@ -32,7 +32,7 @@ $dialog-bigger-footer-button-margin-right: 12px !default;
 $dialog-close-icon-margin-left: 0 !default;
 $dialog-close-icon-width: auto !default;
 $dialog-bigger-close-icon-height: 40px !default;
-$dialog-bigger-close-icon-width: 40px !default;
+$dialog-bigger-close-icon-width: auto !default;
 $dialog-close-icon-top: 0 !default;
 $dialog-bigger-header-content-font-size: 22px !default;
 $dialog-bigger-content-font-size: $text-base !default;
@@ -47,6 +47,8 @@ $dialog-headericon-bottom: 0 !default;
 $dialog-resize-handler-width: 15px;
 $dialog-resize-handler-height: 15px;
 $dialog-resize-handler-position: 0;
+$dialog-bigger-header-btn-padding: 7px !default;
+$dialog-header-btn-padding: 7px !default;
 
 //Layout Variables End
 
@@ -90,18 +92,10 @@ $dialog-footer-flat-btn-content-color: $secondary-text-color !default;
 $dialog-enable-resize-padding-bottom: 15px !default;
 
 /* stylelint-disable */
-.e-dialog .e-dlg-header-content .e-btn.e-dlg-closeicon-btn{
-  padding: 0;
-}
-
-.e-bigger .e-dialog .e-dlg-header-content .e-btn.e-dlg-closeicon-btn{
-  padding: 0;
-}
-
 .e-dialog {
-    & .e-dlg-content {
-        border-radius: $dialog-border-radius !important;
-      }
+  & .e-dlg-content {
+    border-radius: $dialog-border-radius !important;
+  }
 }
 
 .e-dlg-overlay {

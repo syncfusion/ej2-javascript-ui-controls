@@ -1178,6 +1178,40 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
+     * Method to get element width
+     *
+     * @param {HTMLElement} element Accepts the DOM element
+     * @returns {number} Returns the width of the given element
+     * @private
+     */
+    public getElementWidth(element: HTMLElement): number {
+        return util.getElementWidth(element, this.uiStateValues.isTransformed);
+    }
+
+    /**
+     * Method to get element height
+     *
+     * @param {HTMLElement} element Accepts the DOM element
+     * @returns {number} Returns the Height of the given element
+     * @private
+     */
+    public getElementHeight(element: HTMLElement): number {
+        return util.getElementHeight(element, this.uiStateValues.isTransformed);
+    }
+
+    /**
+     * Method to get height from element
+     *
+     * @param {Element} element Accepts the DOM element
+     * @param {string} elementClass Accepts the element class
+     * @returns {number} Returns the height of the element
+     * @private
+     */
+    public getElementHeightFromClass(element: Element, elementClass: string): number {
+        return util.getElementHeightFromClass(element, elementClass, this.uiStateValues.isTransformed);
+    }
+
+    /**
      * Method to render react templates
      *
      * @param {Function} callback - Specifies the callBack method
@@ -1258,6 +1292,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.headerModule = new HeaderRenderer(this);
         }
         this.renderTableContainer();
+        this.uiStateValues.isTransformed = Math.round(this.element.getBoundingClientRect().width) !== this.element.offsetWidth;
         if (Browser.isDevice || Browser.isTouch) {
             this.scheduleTouchModule = new ScheduleTouch(this);
         }
@@ -1769,7 +1804,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.uiStateValues = {
                 expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false,
                 isIgnoreOccurrence: false, groupIndex: this.adaptiveGroupIndex, action: false,
-                isBlock: false, isCustomMonth: true, isPreventTimezone: false
+                isBlock: false, isCustomMonth: true, isPreventTimezone: false, isTransformed: false
             };
         }
         this.currentTimezoneDate = this.getCurrentTime();
@@ -2468,8 +2503,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             const scheduleId: string = this.element.id + '_';
             const viewName: string = this.activeViewOptions.headerIndentTemplateName;
             const templateId: string = scheduleId + viewName + 'headerIndentTemplate';
-            const indentTemplate: HTMLElement[] = [].slice.call(this.getHeaderIndentTemplate()
-                (data, this, 'headerIndentTemplate', templateId, false, undefined, undefined, this.root));
+            const indentTemplate: HTMLElement[] = [].slice.call(
+                this.getHeaderIndentTemplate()(data, this, 'headerIndentTemplate', templateId, false, undefined, undefined, this.root));
             append(indentTemplate, td);
         }
     }
@@ -3188,6 +3223,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public scrollTo(hour: string, scrollDate?: Date): void {
+        if (this.currentView.indexOf('Agenda') < 0 && isNullOrUndefined(this.element.querySelector('.e-work-cells'))) {
+            return;
+        }
         if (this.activeView.scrollToDate && isNullOrUndefined(hour) && scrollDate) {
             this.activeView.scrollToDate(scrollDate);
         } else if (this.activeView.scrollToHour) {

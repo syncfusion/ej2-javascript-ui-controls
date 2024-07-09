@@ -281,7 +281,6 @@ export class CollaborativeEditingHandler {
     }
     private applyRemoteOperation(action: ActionInfo, offset: number, selectionLength: number): void {
         let currentUser: string = this.documentEditor.currentUser;
-        let bookmarks: BookmarkElementBox[] = [];
         let currentEditMode: boolean = this.documentEditor.commentReviewPane.commentPane.isEditMode;
         let currenteditorHistory = this.documentEditor.editorHistoryModule.lastOperation;
         let currentTextArea: HTMLTextAreaElement;
@@ -315,7 +314,6 @@ export class CollaborativeEditingHandler {
             // let newStartOffset = this.getRelativePositionFromAbsolutePosition(action.operations[i].offset, false, false, false);
             // this.documentEditor.selection.isNewApproach = false;
             // throwCustomError(startOffset !== newStartOffset, "New StartIndex " + newStartOffset + " and old StartIndex " + startOffset + " doesnot match");
-
             let op2 = action.operations[i];
             let endOffset = startOffset;
 
@@ -386,19 +384,21 @@ export class CollaborativeEditingHandler {
                     let element: ElementBox;
                     if (markerData.type && markerData.type === 'Bookmark') {
                         if (op2.text === CONTROL_CHARACTERS.Marker_Start) {
-                            bookmarks = this.documentEditor.editorModule.createBookmarkElements(markerData.bookmarkName);
+                            let bookmarks: BookmarkElementBox[] = this.documentEditor.editorModule.createBookmarkElements(markerData.bookmarkName);
                             element = bookmarks[0];
                             this.documentEditor.documentHelper.isBookmarkInserted = false;
                             this.documentEditor.editorModule.insertElementsInternal(this.documentEditor.selectionModule.start, [element]);
                         } else {
-                            const bookmark: BookmarkElementBox = bookmarks[0];
-                            if (bookmark) {
-                                element = bookmark.reference;
-                                this.documentEditor.documentHelper.isBookmarkInserted = true;
-                                this.documentEditor.editorModule.insertElementsInternal(this.documentEditor.selectionModule.start, [element]);
-                                this.documentEditor.selectionModule.selectBookmark(markerData.bookmarkName);
-                                bookmark.properties = this.documentEditor.selectionModule.getBookmarkProperties(bookmark);
-                                (element as BookmarkElementBox).properties = this.documentEditor.selectionModule.getBookmarkProperties(element as BookmarkElementBox);
+                            if (this.documentEditor.documentHelper.bookmarks.containsKey(markerData.bookmarkName)) {
+                                const bookmark: BookmarkElementBox = this.documentEditor.documentHelper.bookmarks.get(markerData.bookmarkName);
+                                if (bookmark) {
+                                    element = bookmark.reference;
+                                    this.documentEditor.documentHelper.isBookmarkInserted = true;
+                                    this.documentEditor.editorModule.insertElementsInternal(this.documentEditor.selectionModule.start, [element]);
+                                    this.documentEditor.selectionModule.selectBookmark(markerData.bookmarkName);
+                                    bookmark.properties = this.documentEditor.selectionModule.getBookmarkProperties(bookmark);
+                                    (element as BookmarkElementBox).properties = this.documentEditor.selectionModule.getBookmarkProperties(element as BookmarkElementBox);
+                                }
                             }
                         }
                     } else if (markerData.type && markerData.type === 'EditRange') {
@@ -1158,7 +1158,7 @@ export class CollaborativeEditingHandler {
                 }
             }
         }
-        if (currentLength + childBlockLength + length + paragraphStartLength + 1 == offset && this.documentEditor.selection.isEndOffset) {
+        if (currentLength + childBlockLength + length + paragraphStartLength + 1 == offset && this.documentEditor.selection.isEndOffset && !this.documentEditor.selection.isFootEndNoteParagraph(block)) {
             completed.done = true;
             return { 'offset': offset - 1, 'currentLength': currentLength + childBlockLength, 'paragraph': block };
         } else {

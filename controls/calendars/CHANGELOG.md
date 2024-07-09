@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.1.41 (2024-07-09)
+
+### DatePicker
+
+#### Bug Fixes
+
+- `#F58554` - Fixed issue where disabled dates were being selected when enabling html attributes while typing.
+
 ## 19.3.46 (2021-10-19)
 
 ### TimePicker

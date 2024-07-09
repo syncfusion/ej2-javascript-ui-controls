@@ -694,4 +694,97 @@ describe('Diagram Control', () => {
             done();
         });
     });
+
+    describe('892441 - Infinite scroll not working in vertical axis of diagram', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramVerticalScrollInfinity' });
+            ele.style.width = '100%';
+            document.body.appendChild(ele);
+            let node: NodeModel = {
+                id: 'node1', width: 150, height: 100, offsetX: 100, offsetY: 100, annotations: [{ content: 'Node1' }]
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 80, height: 130, offsetX: 200, offsetY: 200, annotations: [{ content: 'Node2' }]
+            };
+            let node3: NodeModel = {
+                id: 'node3', width: 100, height: 75, offsetX: 300, offsetY: 350, annotations: [{ content: 'Node3' }]
+            };
+            diagram = new Diagram({
+                width: '500px', height: '300px', nodes: [node, node2, node3],
+                scrollSettings: { scrollLimit:'Infinity' },
+                rulerSettings:{showRulers:true}
+            });
+            diagram.appendTo('#diagramVerticalScrollInfinity');
+
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking Infinity scroll in vertical axis', (done: Function) => {
+            let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            // Scroll the diagram vertically down with infinite scroll.
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, false);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, false);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, false);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, false);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, false);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, false);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, false);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, false);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, false);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, false);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, false);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, false);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, false);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, false);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, false);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, false);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, false);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, false);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, false);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, false);
+            var scrollOffset1 = diagram.scrollSettings.verticalOffset;
+            console.log(scrollOffset1);
+             // Scroll the diagram vertically up with infinite scroll.
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            mouseEvents.mouseWheelEvent(diagramCanvas, 1, 1, false, false, true);
+            var scrollOffset2 = diagram.scrollSettings.verticalOffset;
+            console.log(scrollOffset2);
+            expect(scrollOffset1 < scrollOffset2 && scrollOffset1 === -200 && scrollOffset2 === 100).toBe(true);
+            done();
+        });
+    });
 });

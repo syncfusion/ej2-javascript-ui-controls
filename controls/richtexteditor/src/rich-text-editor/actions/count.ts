@@ -1,4 +1,4 @@
-import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { detach, isNullOrUndefined} from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
 import { IRichTextEditor, IRenderer } from '../base/interface';
 import { RenderType } from '../base/enum';
@@ -21,12 +21,14 @@ export class Count {
     private contentRenderer: IRenderer;
     private args: KeyboardEventArgs;
     private element: HTMLElement;
+    private isDestroyed: boolean;
 
     public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.locator = serviceLocator;
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
         this.addEventListener();
+        this.isDestroyed = false;
     }
 
     private initializeInstance(): void {
@@ -104,6 +106,7 @@ export class Count {
      * @deprecated
      */
     public destroy(): void {
+        if (this.isDestroyed) { return; }
         if (this.parent && this.parent.rootContainer && this.parent.rootContainer.classList.contains('e-count-enabled')) {
             this.parent.rootContainer.classList.remove('e-count-enabled');
         }
@@ -114,6 +117,12 @@ export class Count {
             detach(this.element);
         }
         this.removeEventListener();
+        if (this.editPanel) { this.editPanel = null; }
+        if (this.element) {
+            detach(this.element);
+            this.element = null;
+        }
+        this.isDestroyed = true;
     }
 
 
@@ -122,9 +131,6 @@ export class Count {
     }
 
     protected addEventListener(): void {
-        if (this.parent.isDestroyed) {
-            return;
-        }
         this.parent.on(events.initialEnd, this.renderCount, this);
         this.parent.on(events.keyUp, this.refresh, this);
         this.parent.on(events.count, this.refresh, this);
@@ -136,9 +142,6 @@ export class Count {
     }
 
     protected removeEventListener(): void {
-        if (this.parent.isDestroyed) {
-            return;
-        }
         this.parent.off(events.initialEnd, this.renderCount);
         this.parent.off(events.keyUp, this.refresh);
         this.parent.off(events.refreshBegin, this.refresh);

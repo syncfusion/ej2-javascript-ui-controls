@@ -35,6 +35,12 @@ export class Alignments {
     private addEventListener(): void {
         this.parent.observer.on(CONSTANT.ALIGNMENT_TYPE, this.applyAlignment, this);
         this.parent.observer.on(EVENTS.KEY_DOWN_HANDLER, this.onKeyDown, this);
+        this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
+    }
+    private removeEventListener(): void {
+        this.parent.observer.off(CONSTANT.ALIGNMENT_TYPE, this.applyAlignment);
+        this.parent.observer.off(EVENTS.KEY_DOWN_HANDLER, this.onKeyDown);
+        this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
     }
     private onKeyDown(e: IHtmlKeyboardEvent): void {
         switch ((e.event as KeyboardEventArgs).action) {
@@ -109,5 +115,9 @@ export class Alignments {
                 elements: (isTableAlign ? this.getTableNode(range) : this.parent.domNode.blockNodes()) as Element[]
             });
         }
+    }
+
+    public destroy(): void {
+        this.removeEventListener();
     }
 }

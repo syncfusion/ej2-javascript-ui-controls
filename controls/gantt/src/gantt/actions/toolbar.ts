@@ -354,9 +354,11 @@ export class Toolbar {
                 }
                 case gID + '_expandall':
                     this.parent.ganttChartModule.expandCollapseAll('expand');
+                    this.parent.isCollapseAll = false;
                     break;
                 case gID + '_collapseall':
                     this.parent.ganttChartModule.expandCollapseAll('collapse');
+                    this.parent.isCollapseAll = true;
                     break;
                 case gID + '_prevtimespan':
                     this.parent.previousTimeSpan();
@@ -436,8 +438,7 @@ export class Toolbar {
             }
         }
         let previousGanttRecord: IGanttData;
-        const isSelected: boolean = gObj.selectionModule ? gObj.selectionModule.selectedRowIndexes.length === 1 ||
-            gObj.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
+        const isSelected: boolean = gObj.selectionModule ?  gObj.selectionModule.getSelectedRecords().length === 1 ? true : false : false;
         const toolbarItems: ItemModel[] = this.toolbar ? this.toolbar.items : [];
         const toolbarDefaultItems: string[] = [gID + '_add', gID + '_edit', gID + '_delete',
             gID + '_update', gID + '_cancel', gID + '_indent', gID + '_outdent'];
@@ -472,7 +473,7 @@ export class Toolbar {
                     }
                 }
             }
-            const isDeleteSelected: boolean = gObj.selectionModule ? gObj.selectionModule.selectedRowIndexes.length > 0 ||
+            const isDeleteSelected: boolean = gObj.selectionModule ? gObj.selectionModule.getSelectedRecords().length > 0 ||
                 gObj.selectionModule.getSelectedRowCellIndexes().length > 0 ? true : false : false;
             // eslint-disable-next-line
             edit.allowDeleting && hasData && isDeleteSelected && !touchEdit ?

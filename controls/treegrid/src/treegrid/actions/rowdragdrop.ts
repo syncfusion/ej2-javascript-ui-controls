@@ -970,7 +970,7 @@ export class RowDD {
             for (let i: number = 0; i < dragLength; i++) {
                 draggedRecord = dragRecords[parseInt(i.toString(), 10)];
                 this.draggedRecord = draggedRecord;
-                if (this.dropPosition !== 'Invalid') {
+                if (this.dropPosition !== 'Invalid' && !isNullOrUndefined(this.droppedRecord)) {
                     if (!tObj.rowDropSettings.targetID || isByMethod) {
                         this.deleteDragRow();
                     }

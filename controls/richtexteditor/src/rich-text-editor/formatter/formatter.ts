@@ -277,7 +277,7 @@ export class Formatter {
         if (self.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
             updateUndoRedoStatus(self.quickToolbarModule.inlineQTBar.quickTBarObj, status);
         } else {
-            if (self.toolbarModule) {
+            if (self.toolbarModule && self.toolbarModule.baseToolbar) {
                 updateUndoRedoStatus(self.toolbarModule.baseToolbar, status);
             }
         }

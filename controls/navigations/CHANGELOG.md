@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 26.1.41 (2024-07-09)
+
+### Toolbar
+
+#### Bug fixes
+
+- An issue with memory leak in the Toolbar events has been resolved.
+
+### Stepper
+
+#### Bug fixes
+
+- `#I603606` - Now the issue with the stepper progress bar misalignment when minimized, and maximized the browser window has been resolved. Also, a new method `refreshProgressbar` has been added in the stepper control to programmatically update the progress bar.
+
 ## 26.1.40 (2024-07-02)
 
 ### TreeView

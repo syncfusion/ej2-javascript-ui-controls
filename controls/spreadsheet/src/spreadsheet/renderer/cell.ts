@@ -216,7 +216,7 @@ export class CellRenderer implements ICellRenderer {
             }
             if (args.cell.isNoteEditable) {
                 this.parent.notify(showNote,
-                                   {rowIndex: args.rowIdx, columnIndex: args.colIdx, isNoteEditable: true, isScrollWithNote: true});
+                                   {rowIndex: args.rowIdx, columnIndex: args.colIdx, isNoteEditable: true, isScrollWithNote: true, cellElement: args.td});
             }
         }
         if (args.isRefresh && isNullOrUndefined(args.cell) && !isNullOrUndefined(args.td) && args.td.children.length > 0 && args.td.children[args.td.childElementCount - 1].className.indexOf('e-addNoteIndicator') > -1) {

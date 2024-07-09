@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2-treegrid",
-	"version": "26.1.39",
+	"version": "26.1.40",
 	"description": "Essential JS 2 TreeGrid Component",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -44,10 +44,20 @@
 		"JavaScript",
 		"TypeScript",
 		"treelist",
-		"tree-data",
 		"tree-table",
+		"tree-data",
+		"treegrid",
 		"table",
-		"treegrid"
+		"tree-grid-component",
+		"tree-table-control",
+		"hierarchy-table",
+		"nested-grid",
+		"treeview-grid",
+		"hierarchical-grid",
+		"nested-table",
+		"parent-child-table",
+		"collapsible-table",
+		"multi-level-table"
 	],
 	"repository": {
 		"type": "git",

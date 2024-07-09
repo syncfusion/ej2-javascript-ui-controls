@@ -1175,6 +1175,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                     this.isFilteredData = false;
                     this.isFilterRestore = true;
                     fields = this.cloneFields(this.fields);
+                    this.treeObj.element.classList.remove('e-filtering');
                 } else if (args.preventDefaultAction) {
                     fields = args.fields;
                 } else {
@@ -1191,6 +1192,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                             fields = this.nestedFilter(args.text, args.fields);
                         }
                     }
+                    this.treeObj.element.classList.add('e-filtering');
                 }
                 this.hideCheckAll(this.isFilteredData);
                 if (flag) { return; }
@@ -2283,6 +2285,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     /* To render the popup element */
     private renderPopup(): void {
         if (this.isFilteredData) {
+            this.treeObj.element.classList.remove('e-filtering');
             this.filterObj.value = '';
             this.treeObj.fields = this.getTreeFields(this.fields);
             this.isFilterRestore = true;

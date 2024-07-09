@@ -121,18 +121,18 @@ describe('Datepicker', () => {
             expect(document.getElementsByClassName(' e-input-group')[0].classList.contains('e-error')).toBe(false);
         });
         it('Input element max attributes test case', () => {
-            let inputEle: HTMLElement = createElement('input', { id: 'datepicker', attrs: { "max": "3/3" } });
+            let inputEle: HTMLElement = createElement('input', { id: 'datepicker', attrs: { "max": "3/3/17" } });
             document.body.appendChild(inputEle);
-            datepicker = new DatePicker({ format: 'd/M' });
+            datepicker = new DatePicker({ format: 'd/M/yy' });
             datepicker.appendTo('#datepicker');
-            expect(datepicker.max).toBe(null);
+            expect(datepicker.max.toDateString()).toBe(new Date('3/3/17').toDateString());
         });
         it('Input element min attributes test case', () => {
-            let inputEle: HTMLElement = createElement('input', { id: 'datepicker', attrs: { "min": "3/3" } });
+            let inputEle: HTMLElement = createElement('input', { id: 'datepicker', attrs: { "min": "3/3/17" } });
             document.body.appendChild(inputEle);
-            datepicker = new DatePicker({ format: 'd/M' });
+            datepicker = new DatePicker({ format: 'd/M/yy' });
             datepicker.appendTo('#datepicker');
-            expect(datepicker.min).toBe(null);
+            expect(datepicker.min.toDateString()).toBe(new Date('3/3/17').toDateString());
         });
         it('Input element value html attributes along with control value property defined test case', () => {
             let inputEle: HTMLElement = createElement('input', { id: 'datepicker', attrs: { "value": "3/3/17" } });

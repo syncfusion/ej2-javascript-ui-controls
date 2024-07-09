@@ -64,6 +64,8 @@ export class Render {
     public destroy(): void {
         if (isNullOrUndefined(this.parent)) { return; }
         this.removeEventListener();
+        this.locator.destroy();
+        this.renderer.destroy();
     }
 
     private moduleDestroy(): void {

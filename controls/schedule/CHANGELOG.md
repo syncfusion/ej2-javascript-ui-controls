@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 26.1.41 (2024-07-09)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I577891` - An issue with the virtual scrolling performance in the vertical view has been addressed.
+- `#I589776` - An issue where the events are moved to next or previous week while multi dragging has been fixed.
+- `#F188870` - An issue with the current time indicator throws the console error when the resource data source is empty has been fixed.
+
 ## 26.1.40 (2024-07-02)
 
 ### Schedule

@@ -2457,7 +2457,7 @@ export class Shape {
     private pushActItemIntoObj(): void {
         const parent: ImageEditor = this.parent;
         if (parent.textArea.style.display === 'none') {
-            if (parent.activeObj.activePoint.width !== 0 || parent.activeObj.activePoint.height!== 0) {
+            if (parent.activeObj.activePoint.width !== 0 || parent.activeObj.activePoint.height !== 0) {
                 parent.objColl.push(parent.activeObj);
             }
         } else {

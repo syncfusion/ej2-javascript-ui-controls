@@ -66,7 +66,7 @@ export class TimelineViews extends VerticalView {
         }
         let scrollLeft: number;
         if (isNullOrUndefined(hour) || !this.parent.activeViewOptions.timeScale.enable) {
-            scrollLeft = index * util.getElementWidth(this.element.querySelector('.e-work-cells'));
+            scrollLeft = index * this.parent.getElementWidth(this.element.querySelector('.e-work-cells'));
         } else {
             scrollLeft = isNullOrUndefined(scrollDate) ? this.getLeftFromDateTime(null, date) :
                 this.getLeftFromDateTime([index], date);
@@ -151,7 +151,7 @@ export class TimelineViews extends VerticalView {
                 if (this.parent.activeView.colLevels[parseInt(index.toString(), 10)] &&
                     this.parent.activeView.colLevels[parseInt(index.toString(), 10)][0].colSpan) {
                     diffInDates = currentDateIndex[0] * this.parent.activeView.colLevels[parseInt(index.toString(), 10)][0].colSpan *
-                        util.getElementWidth(this.element.querySelector('.e-work-cells'));
+                        this.parent.getElementWidth(this.element.querySelector('.e-work-cells'));
                 }
                 else {
                     const endHour: Date = this.getEndHour();
@@ -161,8 +161,8 @@ export class TimelineViews extends VerticalView {
                 }
             }
         }
-        return diffInDates + ((diffInMinutes * util.getElementWidth(this.element.querySelector('.e-work-cells')) * this.parent.activeViewOptions.timeScale.slotCount) /
-            this.parent.activeViewOptions.timeScale.interval);
+        return diffInDates + ((diffInMinutes * this.parent.getElementWidth(this.element.querySelector('.e-work-cells'))
+            * this.parent.activeViewOptions.timeScale.slotCount) / this.parent.activeViewOptions.timeScale.interval);
     }
 
     public renderHeader(): void {

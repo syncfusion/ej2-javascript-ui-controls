@@ -255,9 +255,9 @@ export class InsertHtml {
                 if (isSingleNode) {
                     preNode.parentNode.replaceChild(fragment, preNode);
                 } else {
-                    const startContainerParent: Node = range.startContainer.parentNode;
+                    const startContainerParent: Node = editNode === range.startContainer ? range.startContainer : range.startContainer.parentNode;
                     // Get the index of the start container among its siblings
-                    const startIndex: number = Array.prototype.indexOf.call(startContainerParent.childNodes, range.startContainer);
+                    const startIndex: number = Array.prototype.indexOf.call(startContainerParent.childNodes, (Browser.userAgent.indexOf('Firefox') !== -1 && editNode === range.startContainer) ? range.startContainer.firstChild : range.startContainer);
                     range.deleteContents();
                     range.setStart(startContainerParent, startIndex);
                     range.setEnd(startContainerParent, startIndex);
@@ -520,7 +520,7 @@ export class InsertHtml {
             const hasNbsp: boolean = element.parentElement.textContent.length > 0 && element.parentElement.textContent.match(/\u00a0/g)
                 && element.parentElement.textContent.match(/\u00a0/g).length > 0;
             if (!hasNbsp && element.parentElement.textContent.trim() === '' && element.parentElement.contentEditable !== 'true' &&
-                isNOU(element.parentElement.querySelector('img'))) {
+                isNOU(element.parentElement.querySelector('img')) && element.parentElement.nodeName !== 'TD' && element.parentElement.nodeName !== 'TH') {
                 removableElement = this.findDetachEmptyElem(element.parentElement);
             } else {
                 removableElement = element as HTMLElement;

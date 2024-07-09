@@ -134,6 +134,7 @@ export class ScheduleTouch {
                 this.parent.selectedElements = [];
                 this.parent.eventBase.getSelectedEventElements(target);
                 if (this.parent.resizeModule && closest(e.originalEvent.target as Element, '.' + cls.EVENT_RESIZE_CLASS)) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     this.parent.resizeModule.resizeStart(e.originalEvent as any);
                 }
             }

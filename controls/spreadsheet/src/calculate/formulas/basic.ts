@@ -650,14 +650,9 @@ export class BasicFormulas {
             const digits: number = Math.ceil(this.parent.parseFloat(arg2));
             num = this.parent.parseFloat(arg1);
             if (digits > 0) {
-                if (num > 0) {
-                    num += .4999999999 / Math.pow(10, digits);
-                } else if (num < 0) {
-                    num -= .4999999999 / Math.pow(10, digits);
-                }
                 const decimalArr: string[] = arg1.split('.');
                 const decimalCount: number = decimalArr.length === 2 ? (decimalArr[1].length >= digits ? digits : decimalArr[1].length) : 0;
-                num = this.parent.parseFloat(num.toFixed(decimalCount));
+                num = this.parent.parseFloat(this.preciseRound(num, decimalCount, 'ROUNDUP'));
                 str = num.toString();
                 if (isNaN(num)) {
                     if (digits.toString().indexOf('"') > - 1) {
@@ -749,18 +744,13 @@ export class BasicFormulas {
             const digits: number = Math.ceil(this.parent.parseFloat(arg2));
             num = this.parent.parseFloat(arg1);
             if (digits > 0) {
-                if (num > 0) {
-                    num -= .4999999999 / Math.pow(10, digits);
-                } else if (num < 0) {
-                    num += .4999999999 / Math.pow(10, digits);
-                }
                 const decimalIndex: number = arg1.indexOf('.');
                 let decimalCount: number = 0;
                 if (decimalIndex !== -1) {
                     decimalCount = arg1.length - decimalIndex - 1;
                     decimalCount = decimalCount >= digits ? digits : decimalCount;
                 }
-                num = this.parent.parseFloat(this.preciseRound(num, decimalCount));
+                num = this.parent.parseFloat(this.preciseRound(num, decimalCount, 'ROUNDDOWN'));
                 result = num.toString();
                 if (isNaN(num)) {
                     if (digits.toString().indexOf('"') > - 1) {
@@ -4755,7 +4745,7 @@ export class BasicFormulas {
         const digits: number = this.parent.parseFloat(digStr);
         let round: number | string;
         if (!isNaN(digits) && !isNaN(x) && digits > 0) {
-            round = this.parent.parseFloat(this.preciseRound(x, digits));
+            round = this.parent.parseFloat(this.preciseRound(x, digits, 'ROUND'));
         } else {
             const mult: number = Math.pow(10, -digits);
             round = Math.round(x / mult) * mult;
@@ -4763,9 +4753,13 @@ export class BasicFormulas {
         return round.toString();
     }
 
-    private preciseRound(numValue: number, decimalValue: number): string {
+    private preciseRound(numValue: number, decimalValue: number, formula: string): string {
+        const factor: number = Math.pow(10, decimalValue);
+        const absValue: number = Math.abs(numValue) * factor;
         const sign: number = numValue >= 0 ? 1 : -1;
-        return (Math.round((numValue * Math.pow(10, decimalValue)) + (sign * 0.001)) / Math.pow(10, decimalValue)).toFixed(decimalValue);
+        const result: number = formula === 'ROUND' ? Math.round(absValue) : formula === 'ROUNDDOWN' ?
+            Math.floor(absValue) : Math.ceil(absValue);
+        return (sign * (result / factor)).toFixed(decimalValue);
     }
 
     /**

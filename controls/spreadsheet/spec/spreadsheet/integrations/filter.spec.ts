@@ -2001,5 +2001,46 @@ describe('Filter ->', () => {
                 });
             });
         });
+        describe('EJ2-891546 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }, { ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Filtering is applied to the active sheet when applying filter to a non-active sheet using applyFilter() method', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.goTo('Sheet2!A1');
+                setTimeout(() => {
+                    helper.edit('I12', '10');
+                    spreadsheet.goTo('Sheet1!A1');
+                    setTimeout(() => {
+                        spreadsheet.applyFilter(null, 'Sheet2!A1:H11');
+                        spreadsheet.goTo('Sheet2!A1');
+                        setTimeout(() => {
+                            expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-icon')).not.toBeNull();
+                            expect(helper.invoke('getCell', [0, 1]).querySelector('.e-filter-icon')).not.toBeNull();
+                            expect(helper.invoke('getCell', [0, 2]).querySelector('.e-filter-icon')).not.toBeNull();
+                            expect(helper.invoke('getCell', [0, 3]).querySelector('.e-filter-icon')).not.toBeNull();
+                            spreadsheet.goTo('Sheet1!A1');
+                            setTimeout(() => {
+                                spreadsheet.applyFilter(null, 'Sheet2!A1:H11');
+                                spreadsheet.goTo('Sheet2!A1');
+                                setTimeout(() => {
+                                    expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-icon')).toBeNull();
+                                    expect(helper.invoke('getCell', [0, 1]).querySelector('.e-filter-icon')).toBeNull();
+                                    expect(helper.invoke('getCell', [0, 2]).querySelector('.e-filter-icon')).toBeNull();
+                                    expect(helper.invoke('getCell', [0, 3]).querySelector('.e-filter-icon')).toBeNull();
+                                    done();
+                                });
+                            });
+                        });
+                    });
+
+                });
+            });
+        });
     });
 });

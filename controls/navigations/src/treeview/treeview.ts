@@ -678,6 +678,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private isRightClick: boolean = false;
     private mouseDownStatus: boolean = false;
     private isDropIn: boolean = false;
+    private DDTTreeData: { [key: string]: Object }[];
+    private OldCheckedData: { [key: string]: Object; }[] = [];
     /**
      * Indicates whether the TreeView allows drag and drop of nodes. To drag and drop a node in
      * desktop, hold the mouse on the node, drag it to the target node and drop the node by releasing
@@ -1257,6 +1259,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.expandChildren = [];
         this.index = 0;
         this.setTouchClass();
+        this.DDTTreeData = JSON.parse(JSON.stringify(this.fields.dataSource));
         if (isNOU(this.selectedNodes)) {
             this.setProperties({ selectedNodes: [] }, true);
         }
@@ -1639,20 +1642,31 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private updateParentCheckState(): void {
         const indeterminate: Element[] = selectAll('.' + INDETERMINATE, this.element);
         let childCheckedElement: { [key: string]: Object }[];
+        let data: { [key: string]: Object }[] = this.treeData;
+        if (this.element.classList.contains('e-filtering')) {
+            data = this.DDTTreeData;
+        }
         for (let i: number = 0; i < indeterminate.length; i++) {
             const node: Element = closest(indeterminate[parseInt(i.toString(), 10)], '.' + LISTITEM);
             const nodeId: string = node.getAttribute('data-uid').toString();
+            let OldCheckedNodes: { [key: string]: Object; }[];
+            if (this.element.classList.contains('e-filtering')) {
+                OldCheckedNodes = <{ [key: string]: Object }[]>new DataManager(this.OldCheckedData).executeLocal(new Query().where('parentID', 'equal', nodeId, true));
+            }
             if (this.dataType === 1) {
-                childCheckedElement = <{ [key: string]: Object }[]>new DataManager(this.treeData).
+                childCheckedElement = <{ [key: string]: Object }[]>new DataManager(data).
                     executeLocal(new Query().where(this.fields.parentID, 'equal', nodeId, true));
             } else {
-                childCheckedElement = this.getChildNodes(this.treeData, nodeId);
+                childCheckedElement = this.getChildNodes(data, nodeId);
             }
             let count: number = 0;
             if (childCheckedElement) {
                 for (let j: number = 0; j < childCheckedElement.length; j++) {
                     const childId: string = childCheckedElement[parseInt(j.toString(), 10)][this.fields.id].toString();
                     if (this.checkedNodes.indexOf(childId) !== -1) {
+                        count++;
+                    }
+                    else if (this.element.classList.contains('e-filtering') && OldCheckedNodes.findIndex((e: { [key: string]: Object; }) => e['id'] === childId) !== -1) {
                         count++;
                     }
                 }
@@ -1938,11 +1952,26 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             const indeterminateNodes: HTMLElement[] = selectAll('.' + INDETERMINATE, ulElement);
             const nodes: HTMLElement[] = selectAll('.' + LISTITEM, ulElement);
             const checkBoxEle: Element = element.getElementsByClassName(CHECKBOXWRAP)[0];
-            if (nodes.length === checkedNodes.length) {
+            let count: number = nodes.length;
+            let checkedCount: number = checkedNodes.length;
+            const dataUid: string = element.getAttribute('data-uid');
+            if (this.element.classList.contains('e-filtering')) {
+                const oldCheckedNodes: { [key: string]: Object }[] = <{ [key: string]: Object }[]>new DataManager(this.OldCheckedData).executeLocal(new Query().where('parentID', 'equal', dataUid, true));
+                checkedCount = oldCheckedNodes.length;
+                let childItems: { [key: string]: Object }[] = [];
+                if (this.dataType === 1) {
+                    childItems = <{ [key: string]: Object }[]>new DataManager(this.DDTTreeData).executeLocal(new Query().where(this.fields.parentID, 'equal', dataUid, true));
+                }
+                else {
+                    childItems = this.getChildNodes(this.DDTTreeData, dataUid);
+                }
+                count = childItems.length;
+            }
+            if (count === checkedCount) {
                 this.changeState(checkBoxEle, 'check', null, true, true);
-            } else if (checkedNodes.length > 0 || indeterminateNodes.length > 0) {
+            } else if (checkedCount > 0 || indeterminateNodes.length > 0) {
                 this.changeState(checkBoxEle, 'indeterminate', null, true, true);
-            } else if (checkedNodes.length === 0) {
+            } else if (checkedCount === 0) {
                 this.changeState(checkBoxEle, 'uncheck', null, true, true);
             }
             const parentUL: Element = closest(element, '.' + PARENTITEM);
@@ -2551,6 +2580,26 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         const eventArgs: NodeCheckEventArgs = this.getCheckEvent(wrapper, isCheck ? 'uncheck' : 'check', e);
         eventArgs.data = eventArgs.data.splice(0, eventArgs.data.length - 1);
         this.trigger('nodeChecked', eventArgs);
+    }
+
+    private updateOldCheckedData(data: { [key: string]: Object }[]): void {
+        const dataManager: DataManager = new DataManager(data);
+        const childItems: { [key: string]: Object }[] = <{ [key: string]: Object }[]>dataManager.executeLocal(new Query().where('isChecked', 'equal', 'true', true));
+        const uncheckedItems: { [key: string]: Object }[] = <{ [key: string]: Object }[]>dataManager.executeLocal(new Query().where('isChecked', 'equal', 'false', true));
+        if (uncheckedItems.length > 0) {
+            const index: number = this.OldCheckedData.findIndex((e: { [key: string]: Object; }) => e['id'] === uncheckedItems[0]['id']);
+            if (index !== -1) {
+                this.OldCheckedData.splice(index, 1);
+                return;
+            }
+        }
+        if (childItems.length > 0) {
+            const index: number = this.OldCheckedData.findIndex((e: { [key: string]: Object; }) => e['id'] === childItems[0]['id']);
+            if (index === -1) {
+                this.OldCheckedData.push(childItems[0]);
+                return;
+            }
+        }
     }
 
     private triggerClickEvent(e: MouseEvent, li: Element): void {
@@ -3405,6 +3454,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.changeState(checkWrap, isCheck ? 'uncheck' : 'check', e, true);
         if (this.autoCheck) {
             this.ensureChildCheckState(li);
+            this.updateOldCheckedData([this.getNodeData(li)]);
             this.ensureParentCheckState(closest(closest(li, '.' + PARENTITEM), '.' + LISTITEM));
             let doCheck: boolean;
             if (eventArgs.action === 'check') {
@@ -5868,6 +5918,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 this.initialRender = true;
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if (!(this as any).isReact || (this as any).isReact && !(this.fields.dataSource instanceof DataManager)) {
+                    if (!this.element.classList.contains('e-filtering')) {
+                        this.DDTTreeData = JSON.parse(JSON.stringify(this.fields.dataSource));
+                    }
                     this.reRenderNodes();
                 }
                 this.initialRender = false;

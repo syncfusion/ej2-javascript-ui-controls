@@ -1121,7 +1121,7 @@ export class AnnotationToolbar {
         // eslint-disable-next-line
         const proxy: any = this;
         let items: ItemModel[] = [];
-        if (this.pdfViewer.handWrittenSignatureSettings.signatureItem.length === 0 ||
+        if (this.pdfViewer.handWrittenSignatureSettings || this.pdfViewer.handWrittenSignatureSettings.signatureItem.length === 0 ||
             this.pdfViewer.handWrittenSignatureSettings.signatureItem.length === 2) {
             items = [
                 {
@@ -4159,11 +4159,17 @@ export class AnnotationToolbar {
         let newToolbarHeight: string = '';
         if (isAdjust) {
             if (this.pdfViewer.enableToolbar) {
-                sideBarToolbar.style.top = (toolbarHeight + annotationToolbarHeight) + 'px';
-                sideBarContentContainer.style.top = (toolbarHeight + annotationToolbarHeight) + 'px';
-                splitterElement.style.top = (toolbarHeight + annotationToolbarHeight) + 'px';
-                commentsContainer.style.top = (toolbarHeight + annotationToolbarHeight) + 'px';
-                commentPanelResizer.style.top = (toolbarHeight + annotationToolbarHeight) + 'px';
+                if (!isNullOrUndefined(sideBarToolbar)) {
+                    sideBarToolbar.style.top = (toolbarHeight + annotationToolbarHeight) + 'px';
+                } if (!isNullOrUndefined(sideBarContentContainer)) {
+                    sideBarContentContainer.style.top = (toolbarHeight + annotationToolbarHeight) + 'px';
+                } if (!isNullOrUndefined(splitterElement)) {
+                    splitterElement.style.top = (toolbarHeight + annotationToolbarHeight) + 'px';
+                } if (!isNullOrUndefined(commentsContainer)) {
+                    commentsContainer.style.top = (toolbarHeight + annotationToolbarHeight) + 'px';
+                } if (!isNullOrUndefined(commentPanelResizer)) {
+                    commentPanelResizer.style.top = (toolbarHeight + annotationToolbarHeight) + 'px';
+                }
             } else {
                 sideBarToolbar.style.top = (annotationToolbarHeight) + 'px';
                 sideBarContentContainer.style.top = (annotationToolbarHeight) + 'px';
@@ -4176,10 +4182,15 @@ export class AnnotationToolbar {
             }
             this.pdfViewerBase.viewerContainer.style.height = this.updateViewerHeight(this.getElementHeight(this.pdfViewerBase.viewerContainer), (annotationToolbarHeight + toolbarHeight)) + 'px';
             newToolbarHeight = this.getNavigationToolbarHeight(annotationToolbarHeight + toolbarHeight);
-            sideBarToolbar.style.height = newToolbarHeight;
-            splitterElement.style.height = newToolbarHeight;
-            commentPanelResizer.style.height = newToolbarHeight;
-            sideBarContentContainer.style.height = newToolbarHeight;
+            if (!isNullOrUndefined(sideBarToolbar)) {
+                sideBarToolbar.style.height = newToolbarHeight;
+            } if (!isNullOrUndefined(splitterElement)) {
+                splitterElement.style.height = newToolbarHeight;
+            } if (!isNullOrUndefined(commentPanelResizer)) {
+                commentPanelResizer.style.height = newToolbarHeight;
+            } if (!isNullOrUndefined(sideBarContentContainer)) {
+                sideBarContentContainer.style.height = newToolbarHeight;
+            }
         } else {
             if (this.pdfViewer.enableToolbar) {
                 sideBarToolbar.style.top = toolbarHeight + 'px';
@@ -4233,12 +4244,15 @@ export class AnnotationToolbar {
     }
 
     private getToolbarHeight(element: HTMLElement): number {
-        let toolbarHeight: number = element.getBoundingClientRect().height;
-        if (toolbarHeight === 0 && element === this.pdfViewerBase.getElement('_toolbarContainer')) {
-            // getComputedStyle gets the value from style and toolbar border height is added to it.
-            toolbarHeight = parseFloat(window.getComputedStyle(element)['height']) + this.toolbarBorderHeight;
+        if (!isNullOrUndefined(element)) {
+            let toolbarHeight: number = element.getBoundingClientRect().height;
+            if (toolbarHeight === 0 && element === this.pdfViewerBase.getElement('_toolbarContainer')) {
+                // getComputedStyle gets the value from style and toolbar border height is added to it.
+                toolbarHeight = parseFloat(window.getComputedStyle(element)['height']) + this.toolbarBorderHeight;
+            }
+            return toolbarHeight;      
         }
-        return toolbarHeight;
+        return null;
     }
 
     private getNavigationToolbarHeight(toolbarHeight: number): string {

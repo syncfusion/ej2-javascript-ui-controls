@@ -1451,14 +1451,23 @@ export class DiagramEventHandler {
                         (Math.abs(evt.deltaX) < 100 && Math.abs(evt.deltaY) === -0)) {
                         isTrackpadScroll = true;
                     }
+                    //Bug 892441: Infinite scroll not working in vertical axis of diagram.
+                    //Due to the prevention of zoom method trigger in vertical scroll, the infinite scroll is not working in vertical axis.
+                    //So added the below condition to check macOS and allowed the zoom method trigger in vertical scroll for non-MacOs.
+                    let isMacOS: boolean = false;
+                    if (evt.deltaX !== 0 || evt.deltaY !== 0) {
+                        // Perform macOS detection
+                        isMacOS = navigator.userAgent.includes('Macintosh');
+                      }
+
                     //Bug 837940: In mac, scrollbar flickers on horizontal and vertical scroll using trackpad.
                     // 878719: Resolve ESLint errors
                     // eslint-disable-next-line no-compare-neg-zero
-                    if (evt.shiftKey || (evt.deltaX && evt.deltaX !== -0 && isTrackpadScroll)) {
+                    if (evt.shiftKey || (evt.deltaX && evt.deltaX !== -0 && (isTrackpadScroll || !isMacOS))) {
                         this.diagram.scroller.zoom(1, change, 0, mousePosition, canMouseWheel, undefined, isTrackpadScroll);
                     }
                     // eslint-disable-next-line no-compare-neg-zero
-                    else if ((evt.deltaY && evt.deltaY !== -0 && isTrackpadScroll)) {
+                    else if ((evt.deltaY && evt.deltaY !== -0 && (isTrackpadScroll || !isMacOS))) {
                         this.diagram.scroller.zoom(1, 0, change, mousePosition, canMouseWheel, undefined, isTrackpadScroll);
                     }
                 }

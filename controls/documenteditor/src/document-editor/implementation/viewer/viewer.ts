@@ -3302,28 +3302,33 @@ export class DocumentHelper {
 
     private updateViewerSizeInternal(element: HTMLElement): void {
         if (!isNullOrUndefined(element)) {
-            let rect = element.getBoundingClientRect();
-            if (rect.width === 0 && rect.height === 0) {
+            let computedStyle = getComputedStyle(element);
+            let rectHeight = parseFloat(computedStyle.height.replace('px', ''));
+            let rectWidth = parseFloat(computedStyle.width.replace('px', ''));
+            if (rectWidth === 0 && rectHeight === 0) {
                 this.isAutoResizeCanStart = true;
             } else {
                 this.isAutoResizeCanStart = false;
             }       
             let width: number = 0;
             let height: number = 0;
-            height = rect.height > 0 ? rect.height : 200;
-            let restrictPaneRect: ClientRect = this.restrictEditingPane && this.restrictEditingPane.isShowRestrictPane ?
-                this.restrictEditingPane.restrictPane.getBoundingClientRect() : undefined;
-            let optionsRect: ClientRect = this.owner.optionsPaneModule && this.owner.optionsPaneModule.isOptionsPaneShow ?
-                this.owner.optionsPaneModule.optionsPane.getBoundingClientRect() : undefined;
-            let commentPane: ClientRect = this.owner.commentReviewPane && this.owner.commentReviewPane.parentPaneElement ?
-                this.owner.commentReviewPane.parentPaneElement.getBoundingClientRect() : undefined;
+            height = rectHeight > 0 ? rectHeight : 200;
+            let restrictPaneRect: number = this.restrictEditingPane && this.restrictEditingPane.isShowRestrictPane ?
+                this.getComputedWidth(this.restrictEditingPane.restrictPane) : undefined;
+            let optionsRect: number = this.owner.optionsPaneModule && this.owner.optionsPaneModule.isOptionsPaneShow ?
+                this.getComputedWidth(this.owner.optionsPaneModule.optionsPane) : undefined;
+            let commentPane: number = 0;
+            if (this.owner.commentReviewPane && this.owner.commentReviewPane.parentPaneElement) {
+                commentPane = this.getComputedWidth(this.owner.commentReviewPane.parentPaneElement);
+            }
+
             if (restrictPaneRect || optionsRect || commentPane) {
-                let paneWidth: number = restrictPaneRect ? restrictPaneRect.width : 0;
-                paneWidth += optionsRect ? optionsRect.width : 0;
-                paneWidth += commentPane ? commentPane.width : 0;
-                width = (rect.width - paneWidth) > 0 ? (rect.width - paneWidth) : 200;
+                let paneWidth: number = restrictPaneRect ? restrictPaneRect : 0;
+                paneWidth += optionsRect ? optionsRect : 0;
+                paneWidth += commentPane ? commentPane : 0;
+                width = (rectWidth - paneWidth) > 0 ? (rectWidth - paneWidth) : 200;
             } else {
-                width = rect.width > 0 ? rect.width : 200;
+                width = rectWidth > 0 ? rectWidth : 200;
             }
             this.viewerContainer.style.height = height.toString() + 'px';
             this.viewerContainer.style.width = Math.ceil(width) + 'px';
@@ -3338,6 +3343,14 @@ export class DocumentHelper {
             this.selectionCanvas.style.height = height + 'px';
             this.measureScrollbarWidth(element);
         }
+    }
+
+    private getComputedWidth(element: HTMLElement): number {
+        const style: CSSStyleDeclaration = getComputedStyle(element);
+        if (style.display === 'block') {
+            return parseFloat(style.width.replace('px', ''));
+        }
+        return 0;
     }
     /**
      * Inserts page in specified index.

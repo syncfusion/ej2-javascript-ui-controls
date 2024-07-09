@@ -19,12 +19,6 @@
     .e-dlg-header-content {
       border-radius: $header-content-border-radius;
       line-height: $dialog-header-line-height;
-
-      .e-dlg-closeicon-btn.e-btn.e-icon-btn {
-        @if $skin-name =='fluent2' {
-          line-height: 2;
-        }
-      }
     }
 
     .e-dlg-header-content + .e-dlg-content {
@@ -198,6 +192,9 @@
       @if $skin-name == 'Material3' {
         padding: $zero-value;
       }
+      @if $skin-name == 'fluent2' {
+        padding: $dialog-bigger-header-btn-padding;
+      }
     }
 
     .e-btn .e-btn-icon.e-icon-dlg-close {
@@ -302,6 +299,9 @@
     }
     @if $skin-name == 'Material3' {
       padding: $zero-value;
+    }
+    @if $skin-name == 'fluent2' {
+      padding: $dialog-header-btn-padding;
     }
   }
 

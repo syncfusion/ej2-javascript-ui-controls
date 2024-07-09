@@ -243,11 +243,8 @@ export class VerticalView extends ViewBase implements IRenderer {
         const currentDate: Date = this.parent.getCurrentTime();
         if (this.parent.showTimeIndicator && this.isWorkHourRange(currentDate)) {
             const currentDateIndex: number[] = this.getCurrentTimeIndicatorIndex();
-            if (currentDateIndex.length > 0) {
-                const workCells: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS));
-                if (workCells.length > 0) {
-                    this.changeCurrentTimePosition();
-                }
+            if (currentDateIndex.length > 0 && !isNullOrUndefined(this.element.querySelector('.' + cls.WORK_CELLS_CLASS))) {
+                this.changeCurrentTimePosition();
                 if (isNullOrUndefined(this.currentTimeIndicatorTimer)) {
                     const interval: number = util.MS_PER_MINUTE - ((currentDate.getSeconds() * 1000) + currentDate.getMilliseconds());
                     if (interval <= (util.MS_PER_MINUTE - 1000)) {
@@ -365,7 +362,7 @@ export class VerticalView extends ViewBase implements IRenderer {
             this.parent.activeViewOptions.timeScale.interval;
     }
     private getWorkCellHeight(): number {
-        return parseFloat(util.getElementHeight(this.element.querySelector('.' + cls.WORK_CELLS_CLASS)).toFixed(2));
+        return parseFloat(this.parent.getElementHeight(this.element.querySelector('.' + cls.WORK_CELLS_CLASS)).toFixed(2));
     }
     private getTdContent(date: Date, type: string, groupIndex?: number): HTMLElement[] {
         let cntEle: HTMLElement[];
@@ -683,11 +680,26 @@ export class VerticalView extends ViewBase implements IRenderer {
         const rows: Element[] = [];
         const tr: Element = createElement('tr');
         const td: Element = createElement('td', { attrs: { 'aria-selected': 'false' } });
+        let existingGroupIndices: Set<number> = new Set();
+        if (this.parent.virtualScrollModule && this.parent.activeViewOptions.group.resources.length > 0 &&
+            this.parent.virtualScrollModule.existingDataCollection.length > 0
+        ) {
+            existingGroupIndices = new Set(this.parent.virtualScrollModule.existingDataCollection.map((data: TdData) => data.groupIndex));
+        }
+
         const handler: CallbackFunction = (r: TimeSlotData): TimeSlotData => {
             const ntr: Element = tr.cloneNode() as Element;
             for (const tdData of this.colLevels[this.colLevels.length - 1]) {
-                const ntd: Element = this.createContentTd(tdData, r, td);
-                ntr.appendChild(ntd);
+                let isAllowTdCreation: boolean = true;
+                if (this.parent.virtualScrollModule && this.parent.activeViewOptions.group.resources.length > 0) {
+                    if (existingGroupIndices.has(tdData.groupIndex)) {
+                        isAllowTdCreation = false;
+                    }
+                }
+                if (isAllowTdCreation) {
+                    const ntd: Element = this.createContentTd(tdData, r, td);
+                    ntr.appendChild(ntd);
+                }
             }
             rows.push(ntr);
             return r;

@@ -3421,6 +3421,7 @@ export class Drawing {
                 if (this.pdfViewer.clipboardData.pasteIndex !== 0) {
                     this.pdfViewer.clearSelection(index);
                 }
+                if (this.pdfViewer.currentPageNumber === copiedItems[0].pageIndex + 1) {
                 for (const copy of copiedItems) {
                     fieldId = copy.id;
                     copy.id += randomId();
@@ -3524,6 +3525,7 @@ export class Drawing {
                         this.pdfViewer.annotationModule.triggerAnnotationAddEvent(newNode);
                     }
                 }
+            }
             }
             this.pdfViewer.renderDrawing(undefined, index);
             this.pdfViewer.clipboardData.pasteIndex++;

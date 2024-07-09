@@ -40,6 +40,8 @@ export class DragAndDrop extends ActionBase {
     private targetTd: HTMLElement = null;
     private isCursorAhead: boolean = false;
     private dragArea: HTMLElement;
+    private enableCurrentViewDrag: boolean = false;
+    private isPreventMultiDrag: boolean = false;
 
     public wireDragEvent(element: HTMLElement): void {
         new Draggable(element, {
@@ -151,6 +153,9 @@ export class DragAndDrop extends ActionBase {
             if (cloneBottom > scrollHeight) {
                 topValue = (parseInt(topValue, 10) - (cloneBottom - scrollHeight)) + 'px';
             }
+            if (this.isPreventMultiDrag) {
+                topValue = formatUnit(this.actionObj.clone.offsetTop);
+            }
         }
         return { left: leftValue, top: topValue };
     }
@@ -203,6 +208,7 @@ export class DragAndDrop extends ActionBase {
             this.actionObj.interval = dragEventArgs.interval;
             this.actionObj.navigation = dragEventArgs.navigation;
             this.actionObj.scroll = dragEventArgs.scroll;
+            this.enableCurrentViewDrag = dragArgs.dragWithinRange && !dragArgs.navigation.enable && this.parent.allowMultiDrag;
             this.actionObj.excludeSelectors = dragEventArgs.excludeSelectors;
             const viewElement: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
             this.scrollArgs = { element: viewElement, width: viewElement.scrollWidth, height: viewElement.scrollHeight };
@@ -362,6 +368,7 @@ export class DragAndDrop extends ActionBase {
 
     private dragStop(e: MouseEvent): void {
         this.isCursorAhead = false;
+        this.isPreventMultiDrag = false;
         this.removeCloneElementClasses();
         this.removeCloneElement();
         clearInterval(this.actionObj.navigationInterval);
@@ -432,7 +439,7 @@ export class DragAndDrop extends ActionBase {
             this.timelineEventModule.cellWidth = this.actionObj.cellWidth;
             this.timelineEventModule.getSlotDates();
             this.actionObj.cellWidth = this.isHeaderRows ? this.timelineEventModule.cellWidth :
-                util.getElementWidth(this.parent.element.querySelector('.' + cls.WORK_CELLS_CLASS));
+                this.parent.getElementWidth(this.parent.element.querySelector('.' + cls.WORK_CELLS_CLASS));
             this.calculateTimelineTime(e);
         } else {
             if (this.parent.currentView === 'Month' || this.parent.currentView === 'TimelineYear') {
@@ -604,7 +611,9 @@ export class DragAndDrop extends ActionBase {
         }
         let dragStart: Date; let dragEnd: Date;
         if (this.parent.activeViewOptions.timeScale.enable && !this.isAllDayDrag) {
-            this.appendCloneElement(this.getEventWrapper(colIndex));
+            if (!this.enableCurrentViewDrag || this.multiData.length === 0) {
+                this.appendCloneElement(this.getEventWrapper(colIndex));
+            }
             dragStart = this.parent.getDateFromElement(td);
             dragStart.setMinutes(dragStart.getMinutes() + (diffInMinutes / heightPerMinute));
             dragEnd = new Date(dragStart.getTime());
@@ -658,19 +667,35 @@ export class DragAndDrop extends ActionBase {
                 this.startTime = (eventObj[this.parent.eventFields.startTime] as Date).getTime();
             }
             const startTimeDiff: number = (event[this.parent.eventFields.startTime] as Date).getTime() - this.startTime;
-            for (let index: number = 0; index < this.multiData.length; index++) {
-                this.updatedData[parseInt(index.toString(), 10)] =
-                    this.updateMultipleData(this.multiData[parseInt(index.toString(), 10)], startTimeDiff);
-                const dayIndex: number = this.getDayIndex(this.updatedData[parseInt(index.toString(), 10)]);
-                if (dayIndex >= 0) {
-                    const wrapper: HTMLElement =
-                        this.getEventWrapper(dayIndex,
-                                             this.updatedData[parseInt(index.toString(), 10)][this.parent.eventFields.isAllDay] as boolean);
-                    this.appendCloneElement(wrapper, this.actionObj.cloneElement[parseInt(index.toString(), 10)]);
-                    this.updateEventHeight(this.updatedData[parseInt(index.toString(), 10)], index, dayIndex);
-                } else {
-                    if (!isNullOrUndefined(this.actionObj.cloneElement[parseInt(index.toString(), 10)].parentNode)) {
-                        remove(this.actionObj.cloneElement[parseInt(index.toString(), 10)]);
+            if (this.enableCurrentViewDrag) {
+                const renderDates: Date[] = this.getRenderedDates();
+                for (let i: number = 0; i < this.multiData.length; i++) {
+                    const eventObj: Record<string, any> =
+                        extend({}, this.multiData[parseInt(i.toString(), 10)], null, true) as Record<string, any>;
+                    const startTime: Date = new Date(eventObj[this.parent.eventFields.startTime].getTime() + startTimeDiff);
+                    const dayIndex: number = this.parent.getIndexOfDate(renderDates, util.resetTime(startTime));
+                    if (dayIndex < 0) {
+                        this.isPreventMultiDrag = true;
+                        break;
+                    }
+                    this.isPreventMultiDrag = false;
+                }
+            }
+            if (!this.isPreventMultiDrag) {
+                for (let index: number = 0; index < this.multiData.length; index++) {
+                    this.updatedData[parseInt(index.toString(), 10)] =
+                        this.updateMultipleData(this.multiData[parseInt(index.toString(), 10)], startTimeDiff);
+                    const dayIndex: number = this.getDayIndex(this.updatedData[parseInt(index.toString(), 10)]);
+                    if (dayIndex >= 0) {
+                        const isAllDay: boolean =
+                            this.updatedData[parseInt(index.toString(), 10)][this.parent.eventFields.isAllDay] as boolean;
+                        const wrapper: HTMLElement = this.getEventWrapper(dayIndex, isAllDay);
+                        this.appendCloneElement(wrapper, this.actionObj.cloneElement[parseInt(index.toString(), 10)]);
+                        this.updateEventHeight(this.updatedData[parseInt(index.toString(), 10)], index, dayIndex);
+                    } else {
+                        if (!isNullOrUndefined(this.actionObj.cloneElement[parseInt(index.toString(), 10)].parentNode)) {
+                            remove(this.actionObj.cloneElement[parseInt(index.toString(), 10)]);
+                        }
                     }
                 }
             }
@@ -889,6 +914,9 @@ export class DragAndDrop extends ActionBase {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private swapDragging(e: MouseEvent & TouchEvent): void {
+        if (this.isPreventMultiDrag) {
+            return;
+        }
         const colIndex: number = !isNullOrUndefined(closest((<HTMLTableCellElement>this.actionObj.target), 'td')) && (closest((<HTMLTableCellElement>this.actionObj.target), 'td') as HTMLTableCellElement).cellIndex;
         if (closest(this.actionObj.target as Element, '.' + cls.DATE_HEADER_WRAP_CLASS) &&
             !closest(this.actionObj.clone, '.' + cls.ALLDAY_APPOINTMENT_WRAPPER_CLASS)) {
@@ -1244,7 +1272,7 @@ export class DragAndDrop extends ActionBase {
             ~~(dragArea.querySelector('table').offsetHeight / trCollection.length) : this.actionObj.cellHeight;
         let rowIndex: number = Math.floor(Math.floor((this.actionObj.Y +
             (dragArea.scrollTop - translateY - (window.scrollY || window.pageYOffset))) -
-            util.getElementTop(dragArea)) / rowHeight);
+            util.getElementTop(dragArea, this.parent.uiStateValues.isTransformed)) / rowHeight);
         rowIndex = (rowIndex < 0) ? 0 : (rowIndex > trCollection.length - 1) ? trCollection.length - 1 : rowIndex;
         this.actionObj.index = rowIndex;
         const eventContainer: Element = this.parent.element.querySelectorAll('.e-appointment-container:not(.e-hidden)').item(rowIndex);
@@ -1260,7 +1288,7 @@ export class DragAndDrop extends ActionBase {
         if (!isNullOrUndefined(this.parent.eventDragArea)) {
             return;
         }
-        let top: number = util.getElementHeight((<HTMLElement>trCollection[parseInt(rowIndex.toString(), 10)])) * rowIndex;
+        let top: number = this.parent.getElementHeight((<HTMLElement>trCollection[parseInt(rowIndex.toString(), 10)])) * rowIndex;
         if (this.parent.rowAutoHeight) {
             const cursorElement: HTMLElement = this.getCursorElement(e);
             if (cursorElement) {

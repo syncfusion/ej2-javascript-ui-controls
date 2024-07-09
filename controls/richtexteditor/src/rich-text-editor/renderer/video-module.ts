@@ -48,6 +48,15 @@ export class Video {
     private inputWidthValue: string;
     private inputHeightValue: string;
     private removingVideoName: string;
+    private showPopupTime: number;
+    private isResizeBind: boolean = true;
+    private isDestroyed: boolean;
+    private docClick: EventListenerOrEventListenerObject
+    private webUrlBtn: RadioButton;
+    private embedUrlBtn: RadioButton;
+    private widthNum: TextBox;
+    private heightNum: TextBox;
+    private button: Button;
     private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.rteID = parent.element.id;
@@ -55,6 +64,8 @@ export class Video {
         this.rendererFactory = serviceLocator.getService<RendererFactory>('rendererFactory');
         this.dialogRenderObj = serviceLocator.getService<DialogRenderer>('dialogRenderObject');
         this.addEventListener();
+        this.isDestroyed = false;
+        this.docClick = this.onDocumentClick.bind(this);
     }
 
     protected addEventListener(): void {
@@ -77,7 +88,7 @@ export class Video {
         this.parent.on(events.videoSize, this.videoSize, this);
         this.parent.on(events.insertCompleted, this.showVideoQuickToolbar, this);
         this.parent.on(events.clearDialogObj, this.clearDialogObj, this);
-        this.parent.on(events.destroy, this.removeEventListener, this);
+        this.parent.on(events.destroy, this.destroy, this);
     }
 
     protected removeEventListener(): void {
@@ -100,13 +111,13 @@ export class Video {
         this.parent.off(events.videoSize, this.videoSize);
         this.parent.off(events.insertCompleted, this.showVideoQuickToolbar);
         this.parent.off(events.clearDialogObj, this.clearDialogObj);
-        this.parent.off(events.destroy, this.removeEventListener);
+        this.parent.off(events.destroy, this.destroy);
         if (!isNullOrUndefined(this.contentModule)) {
             EventHandler.remove(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.videoClick);
             this.parent.formatter.editorManager.observer.off(events.checkUndo, this.undoStack);
             if (this.parent.insertVideoSettings.resize) {
                 EventHandler.remove(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart);
-                EventHandler.remove(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick);
+                (this.parent.element.ownerDocument as Document).removeEventListener('mousedown', this.docClick, true);
                 EventHandler.remove(this.contentModule.getEditPanel(), 'cut', this.onCutHandler);
                 EventHandler.remove(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing);
             }
@@ -118,13 +129,43 @@ export class Video {
         EventHandler.add(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.videoClick, this);
         if (this.parent.insertVideoSettings.resize) {
             EventHandler.add(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart, this);
-            EventHandler.add(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick, this);
+            (this.parent.element.ownerDocument as Document).addEventListener('mousedown', this.docClick, true);
             EventHandler.add(this.contentModule.getEditPanel(), 'cut', this.onCutHandler, this);
         }
     }
 
     private clearDialogObj(): void {
-        if (this.dialogObj) {
+        if (this.uploadObj && !this.uploadObj.isDestroyed) {
+            this.uploadObj.destroy();
+            detach(this.uploadObj.element);
+            this.uploadObj = null;
+        }
+        if (this.webUrlBtn && !this.webUrlBtn.isDestroyed) {
+            this.webUrlBtn.destroy();
+            detach(this.webUrlBtn.element);
+            this.webUrlBtn = null;
+        }
+        if (this.embedUrlBtn && !this.embedUrlBtn.isDestroyed) {
+            this.embedUrlBtn.destroy();
+            detach(this.embedUrlBtn.element);
+            this.embedUrlBtn = null;
+        }
+        if (this.widthNum && !this.widthNum.isDestroyed) {
+            this.widthNum.destroy();
+            detach(this.widthNum.element);
+            this.widthNum = null;
+        }
+        if (this.heightNum && !this.heightNum.isDestroyed) {
+            this.heightNum.destroy();
+            detach(this.heightNum.element);
+            this.heightNum = null;
+        }
+        if (this.button && !this.button.isDestroyed) {
+            this.button.destroy();
+            detach(this.button.element);
+            this.heightNum = null;
+        }
+        if (this.dialogObj && this.dialogObj.element ) {
             this.dialogObj.destroy();
             detach(this.dialogObj.element);
             this.dialogObj = null;
@@ -224,24 +265,24 @@ export class Video {
             + ' /></div>';
         const contentElem: DocumentFragment = parseHtml(content);
         vidSizeWrap.appendChild(contentElem);
-        const widthNum: TextBox = new TextBox({
+        this.widthNum = new TextBox({
             value: formatUnit(widthVal as string),
             enableRtl: this.parent.enableRtl,
             input: (e: InputEventArgs) => {
                 this.inputWidthValue = formatUnit((e.value));
             }
         });
-        widthNum.createElement = this.parent.createElement;
-        widthNum.appendTo(vidSizeWrap.querySelector('#vidwidth') as HTMLElement);
-        const heightNum: TextBox = new TextBox({
+        this.widthNum.createElement = this.parent.createElement;
+        this.widthNum.appendTo(vidSizeWrap.querySelector('#vidwidth') as HTMLElement);
+        this.heightNum = new TextBox({
             value: formatUnit(heightVal as string),
             enableRtl: this.parent.enableRtl,
             input: (e: InputEventArgs) => {
                 this.inputHeightValue = formatUnit((e.value));
             }
         });
-        heightNum.createElement = this.parent.createElement;
-        heightNum.appendTo(vidSizeWrap.querySelector('#vidheight') as HTMLElement);
+        this.heightNum.createElement = this.parent.createElement;
+        this.heightNum.appendTo(vidSizeWrap.querySelector('#vidheight') as HTMLElement);
         return vidSizeWrap;
     }
 
@@ -336,7 +377,11 @@ export class Video {
                     }
                 });
             }
-            EventHandler.add(this.contentModule.getDocument(), Browser.touchEndEvent, this.resizeEnd, this);
+            if (this.isResizeBind) {
+                EventHandler.add(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing, this);
+                EventHandler.add(this.contentModule.getDocument(), Browser.touchEndEvent, this.resizeEnd, this);
+                this.isResizeBind = false;
+            }
         }
     }
 
@@ -386,7 +431,6 @@ export class Video {
         this.vidResizePos(e, this.vidResizeDiv);
         this.resizeVidDupPos(e);
         this.contentModule.getEditPanel().appendChild(this.vidResizeDiv);
-        EventHandler.add(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing, this);
     }
 
     private getPointX(e: PointerEvent | TouchEvent): number {
@@ -578,6 +622,7 @@ export class Video {
     }
 
     private cancelResizeAction(): void {
+        this.isResizeBind = true;
         EventHandler.remove(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing);
         EventHandler.remove(this.contentModule.getDocument(), Browser.touchEndEvent, this.resizeEnd);
         if (this.videoEle && this.vidResizeDiv && this.contentModule.getEditPanel().contains(this.vidResizeDiv)) {
@@ -903,6 +948,9 @@ export class Video {
 
     private onDocumentClick(e: MouseEvent): void {
         const target: HTMLElement = <HTMLElement>e.target;
+        if (isNOU(this.contentModule.getEditPanel())) {
+            return;
+        }
         if (target.nodeName === 'VIDEO' || this.isEmbedVidElem(target)) {
             this.videoEle = !this.isEmbedVidElem(target) ? (target as HTMLVideoElement) : target.querySelector('iframe');
         }
@@ -943,6 +991,7 @@ export class Video {
         }
     }
     private removeResizeEle(): void {
+        this.isResizeBind = true;
         EventHandler.remove(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing);
         EventHandler.remove(this.contentModule.getDocument(), Browser.touchEndEvent, this.resizeEnd);
         detach(this.contentModule.getEditPanel().querySelector('.e-vid-resize'));
@@ -1039,7 +1088,7 @@ export class Video {
                 this.parent.element.getBoundingClientRect().top + args.clientY : args.pageY;
         if (this.parent.quickToolbarModule.videoQTBar) {
             if (e.isNotify) {
-                setTimeout(() => {
+                this.showPopupTime = setTimeout(() => {
                     this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
                     this.parent.formatter.editorManager.nodeSelection.setSelectionContents(this.contentModule.getDocument(), target);
                     this.quickToolObj.videoQTBar.showPopup(
@@ -1134,10 +1183,8 @@ export class Video {
                         selection.restore();
                     }
                 }
-                this.dialogObj.destroy();
-                detach(this.dialogObj.element);
+                this.clearDialogObj();
                 this.dialogRenderObj.close(event);
-                this.dialogObj = null;
             }
         };
         const dialogContent: HTMLElement = this.parent.createElement('div', { className: 'e-video-content' });
@@ -1228,7 +1275,7 @@ export class Video {
             }
         }
         const isWebUrl: boolean = (this.inputUrl as HTMLInputElement).value ? true : false;
-        const embedUrlBtn: RadioButton = new RadioButton({
+        this.embedUrlBtn = new RadioButton({
             label: this.i10n.getConstant('embeddedCode'),
             checked: !isWebUrl,
             name: 'URL',
@@ -1243,8 +1290,8 @@ export class Video {
                 urlContent.appendChild(this.embedInputUrl);
             }
         });
-        embedUrlBtn.appendTo((videoUrl.querySelector('#embedURL') as HTMLElement));
-        const webUrlBtn: RadioButton = new RadioButton({
+        this.embedUrlBtn.appendTo((videoUrl.querySelector('#embedURL') as HTMLElement));
+        this.webUrlBtn = new RadioButton({
             label: this.i10n.getConstant('webUrl'),
             checked: isWebUrl,
             name: 'URL',
@@ -1259,7 +1306,7 @@ export class Video {
                 urlContent.appendChild(this.inputUrl);
             }
         });
-        webUrlBtn.appendTo((videoUrl.querySelector('#webURL') as HTMLElement));
+        this.webUrlBtn.appendTo((videoUrl.querySelector('#webURL') as HTMLElement));
         return videoUrl;
     }
 
@@ -1294,9 +1341,9 @@ export class Video {
         });
         span.appendChild(btnEle); uploadParentEle.appendChild(span);
         const browserMsg: string = this.i10n.getConstant('browse');
-        const button: Button = new Button({ content: browserMsg, enableRtl: this.parent.enableRtl });
-        button.isStringTemplate = true; button.createElement = this.parent.createElement;
-        button.appendTo(btnEle);
+        this.button = new Button({ content: browserMsg, enableRtl: this.parent.enableRtl });
+        this.button.isStringTemplate = true; this.button.createElement = this.parent.createElement;
+        this.button.appendTo(btnEle);
         const btnClick: HTMLElement = (Browser.isDevice) ? span : btnEle;
         EventHandler.add(btnClick, 'click', this.fileSelect, this);
         const uploadEle: HTMLInputElement | HTMLElement = this.parent.createElement('input', {
@@ -1489,8 +1536,15 @@ export class Video {
      */
     /* eslint-enable */
     public destroy(): void {
+        if (this.isDestroyed) { return; }
         this.prevSelectedVidEle = undefined;
         this.removeEventListener();
+        if (this.showPopupTime){
+            clearTimeout(this.showPopupTime);
+            this.showPopupTime = null;
+        }
+        this.clearDialogObj();
+        this.isDestroyed = true;
     }
 
     /**

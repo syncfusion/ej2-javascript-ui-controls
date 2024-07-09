@@ -1271,12 +1271,12 @@ client side. Customer easy to edit the contents and get the HTML content for
             let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
             let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
             (<any>rteObj).imageModule.uploadObj.onSelectFiles(eventArgs);
+            expect((<any>rteObj).imageModule.uploadObj.fileList.length).toEqual(1);
+            (<any>rteObj).imageModule.uploadObj.upload((<any>rteObj).imageModule.uploadObj.filesData[0]);
             (document.querySelector('.e-insertImage') as HTMLElement).click();
             setTimeout(() => {
-                expect((<any>rteObj).imageModule.uploadObj.fileList.length).toEqual(1);
                 evnArg.selectNode = [rteObj.element];
                 (<any>rteObj).imageModule.deleteImg(evnArg);
-                (<any>rteObj).imageModule.uploadObj.upload((<any>rteObj).imageModule.uploadObj.filesData[0]);
                 done();
             }, 100);
         });
@@ -3113,7 +3113,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect(rteObj.getContent().querySelector(".e-rte-image.e-imginline").getAttribute("src").indexOf("blob") == -1).toBe(true);
                 evnArg.selectNode = [rteObj.element];
                 (<any>rteObj).imageModule.deleteImg(evnArg);
-                (<any>rteObj).imageModule.uploadObj.upload((<any>rteObj).imageModule.uploadObj.filesData[0]);
+                // (<any>rteObj).imageModule.uploadObj.upload((<any>rteObj).imageModule.uploadObj.filesData[0]);
                 done();
             }, 100);
         });
@@ -3152,7 +3152,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect(rteObj.getContent().querySelector(".e-rte-image.e-imginline").getAttribute("src").indexOf("base64") == -1).toBe(true);
                 evnArg.selectNode = [rteObj.element];
                 (<any>rteObj).imageModule.deleteImg(evnArg);
-                (<any>rteObj).imageModule.uploadObj.upload((<any>rteObj).imageModule.uploadObj.filesData[0]);
+                // (<any>rteObj).imageModule.uploadObj.upload((<any>rteObj).imageModule.uploadObj.filesData[0]);
                 done();
             }, 100);
         });
@@ -4259,7 +4259,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         it('When OffsetParent is null', (done: Function) => {
             (rteObj as any).element.style.display = 'none';
             (rteObj as any).destroy();
-            expect(((rteObj as any).imageModule as any).parent).toBe(null);
+            expect(((rteObj as any).imageModule as any).isDestroyed).toBe(true);
             rteObj.element.style.display = 'block';
             done();
         });

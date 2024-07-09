@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.1.41 (2024-07-09)
+
+### Image Editor
+
+#### Bug Fixes
+
+- The issue with "keyboard navigation not proper" has been resolved.
+
 ## 26.1.40 (2024-07-02)
 
 ### Image Editor

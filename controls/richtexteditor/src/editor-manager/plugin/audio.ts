@@ -4,6 +4,8 @@ import * as CONSTANT from './../base/constant';
 import * as classes from './../base/classes';
 import { IHtmlItem } from './../base/interface';
 import { InsertHtml } from './inserthtml';
+import * as EVENTS from './../../common/constant';
+
 /**
  * Audio internal component
  *
@@ -25,6 +27,11 @@ export class AudioCommand {
     }
     private addEventListener(): void {
         this.parent.observer.on(CONSTANT.AUDIO, this.audioCommand, this);
+        this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
+    }
+    private removeEventListener(): void {
+        this.parent.observer.off(CONSTANT.AUDIO, this.audioCommand);
+        this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
     }
     /**
      * audioCommand method
@@ -97,13 +104,15 @@ export class AudioCommand {
                 : (Browser.isIE ? (selectedNode as Element) : (selectedNode as Element).querySelector('audio'));
             audioElm.addEventListener('loadeddata', () => {
                 if (e.value !== 'AudioReplace' || !isReplaced) {
-                    e.callBack({
-                        requestType: 'Audios',
-                        editorMode: 'HTML',
-                        event: e.event,
-                        range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
-                        elements: [audioElm]
-                    });
+                    if (!isNOU(this.parent.currentDocument)) {
+                        e.callBack({
+                            requestType: 'Audios',
+                            editorMode: 'HTML',
+                            event: e.event,
+                            range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
+                            elements: [audioElm]
+                        });
+                    }
                 }
             });
             if (isReplaced) {
@@ -139,5 +148,9 @@ export class AudioCommand {
                 elements: this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument) as Element[]
             });
         }
+    }
+
+    public destroy(): void {
+        this.removeEventListener();
     }
 }

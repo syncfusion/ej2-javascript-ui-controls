@@ -307,6 +307,10 @@ export interface BeforeSaveEventArgs {
      * Returns the file type for an image.
      */
     fileType: FileType;
+    /**
+     * Returns the Quality of an image.
+     */
+    imageQuality?: number;
 }
 
 /**

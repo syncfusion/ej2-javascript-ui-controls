@@ -364,6 +364,7 @@ export class Selection {
                 parent.notify('undo-redo', {prop: 'updateCurrUrc', value: {type: 'ok' }});
             }
         }
+        parent.isKBDNavigation = true;
     }
 
     private selMouseUpEvent(): void {
@@ -2668,6 +2669,7 @@ export class Selection {
 
     private mouseDownEventHandler(e: MouseEvent & TouchEvent): void {
         const parent: ImageEditor = this.parent;
+        parent.isKBDNavigation = false;
         this.mouseDown = e.currentTarget === parent.lowerCanvas || e.currentTarget === parent.upperCanvas ?
             'canvas' : '';
         if (e.type === 'touchstart') {
@@ -3095,6 +3097,7 @@ export class Selection {
 
     private mouseUpEventHandler(e: MouseEvent & TouchEvent): void {
         const parent: ImageEditor = this.parent; const id: string = parent.element.id;
+        parent.isKBDNavigation = false;
         if (!Browser.isDevice && ((parent.element.querySelector('#' + id + '_contextualToolbar') &&
             !parent.element.querySelector('#' + id + '_contextualToolbar').parentElement.classList.contains('e-hide')) ||
             (parent.element.querySelector('#' + id + '_headWrapper')
@@ -3223,7 +3226,10 @@ export class Selection {
                                     previousCropObj: prevCropObj, previousText: null,
                                     currentText: null, previousFilter: null, isCircleCrop: null}});
                         }
-                        this.redrawShape(parent.objColl[parent.objColl.length - 1], true);
+                        const tempObj: SelectionPoint = extend({}, parent.objColl[parent.objColl.length - 1], {}, true) as SelectionPoint;
+                        parent.objColl.pop();
+                        this.redrawShape(tempObj);
+                        parent.objColl.push(tempObj);
                         this.tempObjColl = undefined;
                     }
                     if (!this.isFhdEditing) {
@@ -3267,6 +3273,7 @@ export class Selection {
                             parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false });
                         }
                         if (!isCropSelection) {
+                            this.adjustActObjForLineArrow();
                             if (parent.isShapeDrawing) {
                                 const temp: string = this.currentDrawingShape;
                                 parent.notify('undo-redo', { prop: 'updateUndoRedoStack', onPropertyChange: false});
@@ -3288,8 +3295,11 @@ export class Selection {
                     parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'text',
                         isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
                 } else {
+                    const temp: string = this.currentDrawingShape;
+                    this.currentDrawingShape = '';
                     parent.notify('toolbar', { prop: 'refresh-toolbar', onPropertyChange: false, value: {type: 'shapes',
                         isApplyBtn: null, isCropping: null, isZooming: null, cType: null}});
+                    this.currentDrawingShape = temp;
                 }
                 parent.notify('toolbar', { prop: 'update-toolbar-items', onPropertyChange: false});
                 parent.notify('toolbar', { prop: 'renderQAT', onPropertyChange: false, value: {isPenEdit: null} });
@@ -3799,8 +3809,15 @@ export class Selection {
     private performEnterAction(e?: KeyboardEvent): void {
         const parent: ImageEditor = this.parent;
         if (parent.isResize) {
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            const target: any = (e.target as any);
+            const isIcon: boolean = target.id.indexOf('aspectratio') ||
+                target.id.indexOf('non-aspectratio') > -1 ? true : false;
             const isValue: boolean = this.isValueUpdated();
-            if (!isValue) {return; }
+            if (!isValue) {
+                if (isIcon) {this.focusRatioBtn(); }
+                return;
+            }
             const point: Point = this.getNumTextValue();
             const aspectRatioElement: HTMLInputElement = (parent.element.querySelector('#' + parent.element.id + '_aspectratio') as HTMLInputElement);
             const blrAspRatElem: HTMLInputElement = (parent.element.querySelector('.e-ie-toolbar-aspect-ratio-btn') as HTMLInputElement);
@@ -3831,6 +3848,17 @@ export class Selection {
                 }
             }
             parent.notify('draw', { prop: 'redrawDownScale' });
+            if (isIcon) {this.focusRatioBtn(); }
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        } else if ((e.target as any).classList.contains('e-upload')) {
+            const upload: HTMLElement = parent.element.querySelector('.e-image-upload');
+            if (upload && upload.querySelector('.e-tbar-btn')) {
+                (upload.querySelector('.e-tbar-btn') as HTMLButtonElement).click();
+            }
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        } else if ((e.target as any).classList.contains('filter-wrapper')) {
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            (e.target as any).parentElement.click();
         } else {
             let splitWords: string[];
             if (parent.activeObj.shape) {splitWords = parent.activeObj.shape.split('-'); }
@@ -3838,6 +3866,19 @@ export class Selection {
                 parent.activeObj.horTopLine && (parent.activeObj.shape && splitWords[0] === 'crop')) {
                 parent.crop();
             }
+        }
+    }
+
+    private focusRatioBtn(): void {
+        const id: string = this.parent.element.id;
+        if (this.parent.isKBDNavigation) {
+            setTimeout(function () {
+                if (document.getElementById(id + '_aspectratio')) {
+                    document.getElementById(id + '_aspectratio').focus();
+                } else if (document.getElementById(id + '_nonaspectratio')) {
+                    document.getElementById(id + '_nonaspectratio').focus();
+                }
+            }, 50);
         }
     }
 

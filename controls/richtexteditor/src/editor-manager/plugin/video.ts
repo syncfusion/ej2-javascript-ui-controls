@@ -4,6 +4,8 @@ import * as CONSTANT from './../base/constant';
 import * as classes from './../base/classes';
 import { IHtmlItem } from './../base/interface';
 import { InsertHtml } from './inserthtml';
+import * as EVENTS from './../../common/constant';
+
 /**
  * Video internal component
  *
@@ -26,6 +28,11 @@ export class VideoCommand {
     }
     private addEventListener(): void {
         this.parent.observer.on(CONSTANT.VIDEO, this.videoCommand, this);
+        this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
+    }
+    private removeEventListener(): void {
+        this.parent.observer.off(CONSTANT.VIDEO, this.videoCommand);
+        this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
     }
     /**
      * videoCommand method
@@ -199,13 +206,15 @@ export class VideoCommand {
                     if (e.item.isEmbedUrl && videoElm) {
                         videoElm.classList.add('e-rte-embed-url');
                     }
-                    e.callBack({
-                        requestType: 'Videos',
-                        editorMode: 'HTML',
-                        event: e.event,
-                        range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
-                        elements: [videoElm]
-                    });
+                    if (!isNOU(this.parent.currentDocument)) {
+                        e.callBack({
+                            requestType: 'Videos',
+                            editorMode: 'HTML',
+                            event: e.event,
+                            range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
+                            elements: [videoElm]
+                        });
+                    }
                 }
             });
             if (isReplaced) {
@@ -293,5 +302,8 @@ export class VideoCommand {
                 elements: this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument) as Element[]
             });
         }
+    }
+    public destroy(): void {
+        this.removeEventListener();
     }
 }

@@ -341,14 +341,14 @@ export class Edit {
                     const isBackSpace: boolean = keyCode === this.keyCodes.BACKSPACE;
                     const isMacDelete: boolean = /(Macintosh|MacIntel|MacPPC|Mac68K|Mac|Mac OS|iPod|iPad)/i.test(navigator.userAgent) && isBackSpace;
                     const readonlyDialog: Element = this.parent.element.querySelector('.e-readonly-alert-dlg');
+                    const overlayElements: HTMLCollection = this.parent.element.getElementsByClassName('e-ss-overlay-active');
                     if ((!e.ctrlKey && !e.metaKey && !e.altKey && (
                         (!e.shiftKey && keyCode === this.keyCodes.SPACE) || isAlphabet || isNumeric ||
                         isNumpadKeys || isSymbolkeys || (Browser.info.name === 'mozilla' && isFirefoxExceptionkeys)
                     )) || isF2Edit || isBackSpace) {
                         if (isF2Edit) { this.isNewValueEdit = false; }
-                        const overlayElements: HTMLCollection = this.parent.element.getElementsByClassName('e-ss-overlay-active');
                         if (!readonlyDialog) {
-                            if (isReadOnlyCells(this.parent)) {
+                            if (isReadOnlyCells(this.parent) && overlayElements.length === 0) {
                                 this.parent.notify(readonlyAlert, null);
                             } else if (overlayElements.length) {
                                 if (isBackSpace && !isMacDelete) {
@@ -365,7 +365,7 @@ export class Edit {
                         if (!readonlyDialog) {
                             if (islockcell) {
                                 this.parent.notify(editAlert, null);
-                            } else if (isReadOnlyCells(this.parent)) {
+                            } else if (isReadOnlyCells(this.parent) && overlayElements.length === 0) {
                                 this.parent.notify(readonlyAlert, null);
                             } else {
                                 this.editingHandler('delete');

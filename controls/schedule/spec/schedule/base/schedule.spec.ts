@@ -3200,6 +3200,35 @@ describe('Schedule base module', () => {
         });
     });
 
+    describe('893978 - Current time indicator operation throwing script error due to no work cells present', () => {
+        let schObj: Schedule;
+        const actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
+        beforeAll((done: DoneFn) => {
+            const model: ScheduleModel = {
+                height: '550px',
+                group: { resources: ['Owners'] },
+                views: ['TimelineDay'],
+                resources: [
+                    {
+                        field: 'OwnerId', title: 'Owner',
+                        name: 'Owners', allowMultiple: true,
+                        dataSource: [],
+                        textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                    }
+                ],
+                actionFailure: actionFailedFunction
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Ensuring the current time indicator rendering is prevented if there is no work cells present', () => {
+            expect(actionFailedFunction).toHaveBeenCalledTimes(0);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

@@ -32,6 +32,7 @@ export class QuickToolbar {
     public inlineQTBar: BaseQuickToolbar;
     public debounceTimeout: number = 1000;
     private renderFactory: RendererFactory;
+    public isDestroyed: boolean;
 
     public constructor(parent?: IRichTextEditor, locator?: ServiceLocator) {
         this.parent = parent;
@@ -39,6 +40,7 @@ export class QuickToolbar {
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
         this.renderFactory.addRenderer(RenderType.Popup, new PopupRenderer(this.parent));
         this.addEventListener();
+        this.isDestroyed = false;
     }
 
     private formatItems(items: (string | IToolbarItems)[]): (string | IToolbarItems)[] {
@@ -393,38 +395,38 @@ export class QuickToolbar {
      * @deprecated
      */
     public destroy(): void {
-        if (isNOU(this.parent)) { return; }
-        if (this.linkQTBar) {
+        if (this.isDestroyed) { return; }
+        if (this.linkQTBar && !this.linkQTBar.isDestroyed) {
             EventHandler.remove(this.linkQTBar.element, 'mousedown', this.onMouseDown);
             EventHandler.remove(this.linkQTBar.element, 'keyup', this.keyUpQT);
             this.linkQTBar.destroy();
         }
-        if (this.textQTBar) {
+        if (this.textQTBar && !this.textQTBar.isDestroyed) {
             EventHandler.remove(this.textQTBar.element, 'mousedown', this.onMouseDown);
             EventHandler.remove(this.textQTBar.element, 'keyup', this.keyUpQT);
             this.textQTBar.destroy();
         }
-        if (this.imageQTBar) {
+        if (this.imageQTBar && !this.imageQTBar.isDestroyed) {
             EventHandler.remove(this.imageQTBar.element, 'mousedown', this.onMouseDown);
             EventHandler.remove(this.imageQTBar.element, 'keyup', this.keyUpQT);
             this.imageQTBar.destroy();
         }
-        if (this.audioQTBar) {
+        if (this.audioQTBar && !this.audioQTBar.isDestroyed) {
             EventHandler.remove(this.audioQTBar.element, 'mousedown', this.onMouseDown);
             EventHandler.remove(this.audioQTBar.element, 'keyup', this.keyUpQT);
             this.audioQTBar.destroy();
         }
-        if (this.videoQTBar) {
+        if (this.videoQTBar && !this.videoQTBar.isDestroyed) {
             EventHandler.remove(this.videoQTBar.element, 'mousedown', this.onMouseDown);
             EventHandler.remove(this.videoQTBar.element, 'keyup', this.keyUpQT);
             this.videoQTBar.destroy();
         }
-        if (this.tableQTBar) {
+        if (this.tableQTBar && !this.tableQTBar.isDestroyed) {
             EventHandler.remove(this.tableQTBar.element, 'mousedown', this.onMouseDown);
             EventHandler.remove(this.tableQTBar.element, 'keyup', this.keyUpQT);
             this.tableQTBar.destroy();
         }
-        if (this.inlineQTBar) {
+        if (this.inlineQTBar && !this.inlineQTBar.isDestroyed ) {
             EventHandler.remove(this.inlineQTBar.element, 'mousedown', this.onMouseDown);
             EventHandler.remove(this.inlineQTBar.element, 'keyup', this.keyUpQT);
             if (isIDevice()) {
@@ -433,10 +435,7 @@ export class QuickToolbar {
             this.inlineQTBar.destroy();
         }
         this.removeEventListener();
-    }
-
-    private moduleDestroy(): void {
-        this.parent = null;
+        this.isDestroyed = true;
     }
 
     private wireInlineQTBarEvents(): void {
@@ -446,7 +445,6 @@ export class QuickToolbar {
         this.parent.on(events.keyUp, this.keyUpHandler, this);
         this.parent.on(events.sourceCodeMouseDown, this.mouseUpHandler, this);
         this.parent.on(events.renderInlineToolbar, this.renderInlineQuickToolbar, this);
-        this.parent.on(events.moduleDestroy, this.moduleDestroy, this);
     }
 
     private unWireInlineQTBarEvents(): void {
@@ -456,7 +454,6 @@ export class QuickToolbar {
         this.parent.off(events.keyUp, this.keyUpHandler);
         this.parent.off(events.sourceCodeMouseDown, this.mouseUpHandler);
         this.parent.off(events.renderInlineToolbar, this.renderInlineQuickToolbar);
-        this.parent.off(events.moduleDestroy, this.moduleDestroy);
     }
     // eslint-disable-next-line
     private toolbarUpdated(args: NotifyArgs): void {
@@ -581,9 +578,7 @@ export class QuickToolbar {
     public removeEventListener(): void {
         if (this.deBouncer) {
             clearTimeout(this.deBouncer);
-        }
-        if (this.parent.isDestroyed) {
-            return;
+            this.deBouncer = null;
         }
         this.parent.off(events.initialEnd, this.initializeQuickToolbars);
         this.parent.off(events.mouseDown, this.renderQuickToolbars);

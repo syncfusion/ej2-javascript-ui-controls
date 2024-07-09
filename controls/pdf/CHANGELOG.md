@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.1.41 (2024-07-09)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved the issue with newly added annotations preservation in PDFs that have a negative value in the crop box.
+
 ## 26.1.40 (2024-07-02)
 
 ### PDF Parser

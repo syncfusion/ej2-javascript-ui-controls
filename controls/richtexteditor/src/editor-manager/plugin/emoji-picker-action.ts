@@ -12,6 +12,12 @@ export class EmojiPickerAction {
 
     private addEventListener(): void {
         this.parent.observer.on(EVENTS.EMOJI_PICKER_ACTIONS, this.emojiInsert, this);
+        this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
+    }
+
+    private removeEventListener(): void {
+        this.parent.observer.off(EVENTS.EMOJI_PICKER_ACTIONS, this.emojiInsert);
+        this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
     }
 
     private emojiInsert(args: IHtmlSubCommands): void {
@@ -62,5 +68,9 @@ export class EmojiPickerAction {
         const range2: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
         const node2: Node = this.parent.nodeCutter.GetSpliceNode(range2, node as HTMLElement);
         node2.parentNode.removeChild(node2);
+    }
+
+    public destroy(): void {
+        this.removeEventListener();
     }
 }

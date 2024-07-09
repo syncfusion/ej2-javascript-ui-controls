@@ -33,6 +33,14 @@ export class MDLists {
         this.parent.observer.on(CONSTANT.LISTS_COMMAND, this.applyListsHandler, this);
         this.parent.observer.on(EVENTS.KEY_DOWN_HANDLER, this.keyDownHandler, this);
         this.parent.observer.on(EVENTS.KEY_UP_HANDLER, this.keyUpHandler, this);
+        this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
+    }
+
+    private removeEventListener(): void {
+        this.parent.observer.off(CONSTANT.LISTS_COMMAND, this.applyListsHandler);
+        this.parent.observer.off(EVENTS.KEY_DOWN_HANDLER, this.keyDownHandler);
+        this.parent.observer.off(EVENTS.KEY_UP_HANDLER, this.keyUpHandler);
+        this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
     }
     private keyDownHandler(event: IMDKeyboardEvent): void {
         switch (event.event.which) {
@@ -477,5 +485,9 @@ export class MDLists {
                 '|^(' + syntax + ')|^(' + syntax.trim() + ')';
         }
         return new regExp(regex);
+    }
+
+    public destroy(): void {
+        this.removeEventListener();
     }
 }

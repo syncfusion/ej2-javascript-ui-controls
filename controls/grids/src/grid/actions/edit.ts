@@ -924,11 +924,14 @@ export class Edit implements IAction {
                             .call(commandColCell[parseInt(i.toString(), 10)].querySelectorAll('.e-btn:not(.e-hide)')));
                     }
                 }
-                const rowCell: Element = parentsUntil(e.target as Element, 'e-rowcell');
-                if ((rowCell === parentsUntil(focusableEditCells[focusableEditCells.length - 1], 'e-rowcell')
-                    && e.action === 'tab' && !rowCell.classList.contains('e-unboundcell'))
-                    || (rowCell === parentsUntil(focusableEditCells[0], 'e-rowcell') && e.action === 'shiftTab' &&
-                    !this.parent.editSettings.showAddNewRow) || e.action === 'escape') {
+                let rowCell: Element = parentsUntil(e.target as Element, 'e-rowcell');
+                rowCell = rowCell && rowCell.classList.contains('e-unboundcell') ? e.target as Element : rowCell;
+                let lastCell: Element = parentsUntil(focusableEditCells[focusableEditCells.length - 1], 'e-rowcell');
+                lastCell = lastCell && lastCell.classList.contains('e-unboundcell') ?
+                    focusableEditCells[focusableEditCells.length - 1] as Element : lastCell;
+                if ((rowCell === lastCell && e.action === 'tab') || e.action === 'escape' ||
+                    (rowCell === parentsUntil(focusableEditCells[0], 'e-rowcell') && e.action === 'shiftTab' &&
+                        !this.parent.editSettings.showAddNewRow)) {
                     const uid: string = editedRow.getAttribute('data-uid');
                     const rows: Element[] = this.parent.getRows();
                     let rowIndex: number = rows.map((m: HTMLTableRowElement) => m.getAttribute('data-uid')).indexOf(uid);
@@ -942,6 +945,7 @@ export class Edit implements IAction {
                         this.closeEdit();
                     } else {
                         this.isShowAddedRowValidate = true;
+                        this.parent.selectionModule.preventFocus = false;
                         this.endEdit();
                         this.isShowAddedRowValidate = false;
                     }
@@ -949,7 +953,18 @@ export class Edit implements IAction {
                         editedRow.classList.contains('e-editedrow') || (this.parent.editSettings.showAddNewRow &&
                         (editedRow.classList.contains('e-addedrow') && isNullOrUndefined(this.parent.element.querySelector(
                             '.e-griderror:not([style*="display: none"])')))))) {
-                        this.parent.focusModule.active.matrix.current = [rowIndex, 0];
+                        let firstCellIndex: number = 0;
+                        let matrix = this.parent.focusModule.active.matrix;
+                        if (matrix && matrix.matrix.length && matrix.matrix[parseInt(rowIndex.toString(), 10)]) {
+                            let rowMatrix = matrix.matrix[parseInt(rowIndex.toString(), 10)];
+                            for (let i: number = 0; i < rowMatrix.length; i++) {
+                                if (matrix[parseInt(i.toString(), 10)] > 0) {
+                                    firstCellIndex = i;
+                                    break;
+                                }
+                            }
+                        }
+                        this.parent.focusModule.active.matrix.current = [rowIndex, firstCellIndex];
                     }
                 }
                 if (this.parent.editSettings.showAddNewRow && e.action === 'tab' && parentsUntil(e.target as Element, 'e-addedrow')) {

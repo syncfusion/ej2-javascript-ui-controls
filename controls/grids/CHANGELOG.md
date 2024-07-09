@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 26.1.40 (2024-07-02)
+
+### Grid
+
+#### Bug fixes
+
+- `#FB58829` - Resolved the `ColumnChooser` position misalignment issue.
+- `#FB58782` - Resolved the problem that arises when using the format option `N2` and setting the type as number.
+- `#I598304` - Resolved the issue where the date column Excel filter not includes previous selected value with `EnableInfiniteScrolling` in `filterSettings`.
+- `#I600803` - The issue of the `FilterBar` cell being misaligned in the checkbox column has been resolved.
+
 ## 26.1.39 (2024-06-25)
 
 ### Grid

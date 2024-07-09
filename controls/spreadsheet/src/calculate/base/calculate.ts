@@ -2149,7 +2149,13 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     private getValArithmetic(stack: string[], operator: string, isIfError?: boolean): void {
         let isErrorString: boolean = false;
         let num1: string = stack.pop();
+        const decimalCount1: number = num1.indexOf('.') !== -1 ? num1.split('.')[1].length : 0;
+        const factor1: number = Math.pow(10, decimalCount1);
         let num2: string = stack.pop();
+        const decimalCount2: number = num2.indexOf('.') !== -1 ? num2.split('.')[1].length : 0;
+        const factor2: number = Math.pow(10, decimalCount2);
+        const bigFactor: number = factor1 >= factor2 ? factor1 : factor2;
+        const factors: number = factor1 * factor2;
         num1 = num1 === this.trueValue ? '1' : (num1 === this.falseValue ? '0' : num1);
         num1 = num1 === this.emptyString ? '0' : (this.getErrorStrings().indexOf(num1.toString()) < 0 ? this.parseFloat(num1 + '').toString() : num1);
         let num: number = Number(num1);
@@ -2173,13 +2179,13 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             }
         }
         if (operator === 'add' && !isErrorString) {
-            stack.push((Number(num2) + Number(num1)).toString());
+            stack.push(((((Number(num2) * bigFactor) + (Number(num1) * bigFactor)) / bigFactor)).toString());
         }
         if (operator === 'sub' && !isErrorString) {
-            stack.push((Number(num2) - Number(num1)).toString());
+            stack.push(((((Number(num2) * bigFactor) - (Number(num1) * bigFactor)) / bigFactor)).toString());
         }
         if (operator === 'mul' && !isErrorString) {
-            stack.push((Number(num2) * Number(num1)).toString());
+            stack.push(((((Number(num2) * factor2) * (Number(num1) * factor1)) / factors)).toString());
         }
         if (operator === 'div' && !isErrorString) {
             if (this.isNaN(this.parseFloat(num1)) || this.isNaN(this.parseFloat(num2))) {
@@ -2187,7 +2193,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
             } else if (this.parseFloat(num1) === 0) {
                 stack.push(this.getErrorStrings()[CommonErrors.DivZero]);
             } else {
-                stack.push((Number(num2) / Number(num1)).toString());
+                stack.push(((Number(num2) * factors) / (Number(num1) * factors)).toString());
             }
         }
     }

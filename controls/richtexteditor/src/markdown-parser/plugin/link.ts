@@ -2,6 +2,8 @@ import { MarkdownParser } from './../base/markdown-parser';
 import { MarkdownSelection } from './../plugin/markdown-selection';
 import * as CONSTANT from './../base/constant';
 import { IMarkdownItem } from '../index';
+import * as EVENTS from './../../common/constant';
+
 /**
  * Link internal component
  *
@@ -26,6 +28,12 @@ export class MDLink {
     }
     private addEventListener(): void {
         this.parent.observer.on(CONSTANT.LINK_COMMAND, this.createLink, this);
+        this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
+    }
+
+    private removeEventListener(): void {
+        this.parent.observer.off(CONSTANT.LINK_COMMAND, this.createLink);
+        this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
     }
 
     private createLink(e: IMarkdownItem): void {
@@ -53,5 +61,9 @@ export class MDLink {
                 event: event.event
             });
         }
+    }
+
+    public destroy(): void {
+        this.removeEventListener();
     }
 }

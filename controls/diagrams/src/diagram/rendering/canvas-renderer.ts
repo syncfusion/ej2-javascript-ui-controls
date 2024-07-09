@@ -210,6 +210,8 @@ export class CanvasRenderer implements IRenderer {
         context.quadraticCurveTo(x + w, y, x + w, my);
         context.quadraticCurveTo(x + w, y + h, mx, y + h);
         context.quadraticCurveTo(x, y + h, x, my);
+        //892454-Fill color not applied for BPMN activity shapes inside the symbol palette.
+        context.fill();
         context.stroke();
     }
 

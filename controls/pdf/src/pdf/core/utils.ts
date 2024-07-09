@@ -3890,7 +3890,7 @@ export function _obtainDestination(dictionary: _PdfDictionary, key: string): Pdf
  */
 export function _updateBounds(annotation: PdfAnnotation, bounds?: number[]): number[] {
     if (bounds) {
-        annotation._bounds = {x: bounds[0], y: bounds[1], width: bounds[2], height: bounds[3]};
+        annotation._bounds = { x: bounds[0], y: bounds[1], width: bounds[2], height: bounds[3] };
     }
     let rect: number[];
     if (annotation._page && annotation.bounds) {
@@ -3904,10 +3904,13 @@ export function _updateBounds(annotation: PdfAnnotation, bounds?: number[]): num
             rect[0] += pageBounds[0];
             rect[1] = pageSettings.size[1] - (pageBounds[1] + rect[1]);
         } else {
-            rect = [annotation.bounds.x,
-                annotation._page.size[1] - (annotation.bounds.y + annotation.bounds.height),
-                annotation.bounds.width,
-                annotation.bounds.height];
+            const size: number[] = annotation._page.size;
+            rect[1] = size[1] - (annotation.bounds.y + annotation.bounds.height);
+            const cropBoxOrMediaBox: number[] = annotation._getCropOrMediaBox();
+            if (cropBoxOrMediaBox && cropBoxOrMediaBox.length > 2 && (cropBoxOrMediaBox[0] !== 0 || cropBoxOrMediaBox[1] !== 0)) {
+                rect[0] += cropBoxOrMediaBox[0];
+                rect[1] += cropBoxOrMediaBox[1];
+            }
         }
         return [rect[0], rect[1], rect[0] + rect[2], rect[1] + rect[3]];
     }

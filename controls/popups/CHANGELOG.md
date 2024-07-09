@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.1.41 (2024-07-09)
+
+### Tooltip
+
+#### Bug Fixes
+
+- `#F188940` - The issue with the afterClose event returning the argument values as null in the Tooltip component has been resolved.
+
 ## 21.1.35 (2023-03-23)
 
 ### Tooltip

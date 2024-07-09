@@ -2,7 +2,108 @@
 
 ## [Unreleased]
 
+## 26.1.41 (2024-07-09)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I603942` - Column hide issue in details view pane when utilizing the `hideAtMedia` property in File Manager component has been resolved.
+
 ## 26.1.40 (2024-07-02)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I603473` - Resolved the issue where the context menu item in the File Manager component remained disabled after opening the context menu for the root folder in the navigation pane.
+
+## 26.1.35 (2024-06-11)
+
+### FileManager
+
+#### Features
+
+- `#FB10417` - Provided support for rendering flat data objects in FileManager component, removing the necessity for server requests and backend URL configuration. This enhancement also eliminating the need to define `ajaxSettings` while rendering the component.
+- Now, we have provided [closeDialog](https://ej2.syncfusion.com/documentation/api/file-manager/#closeDialog) method in FileManager to programmatically close the
+delete, rename, upload, create, details and other dialog popups.
+- Introduced new event support for actions performed within the FileManager component. These new events significantly expand your ability to tailor and enhance your interactions within the File Manager, providing you with more control and flexibility. Below, you will find the corresponding event names and event argument details.
+
+**Event Information**
+
+Event Name | Argument Name | Properties | Description
+ ---  | ---  | --- | ---
+[beforeDelete](https://ej2.syncfusion.com/documentation/api/file-manager/#beforedelete) | DeleteEventArgs | path, itemData, cancel. | This event is triggered before the deletion of a file or folder occurs. It can be utilized to prevent the deletion of specific files or folders. Any actions, such as displaying a spinner for deletion, can be implemented here.
+[delete](https://ej2.syncfusion.com/documentation/api/file-manager/#delete) | DeleteEventArgs | path, itemData, cancel. | This event is triggered after the file or folder is deleted successfully. The deleted file or folder details can be retrieved here. Additionally, custom elements' visibility can be managed here based on the application's use case.
+[beforeFolderCreate](https://ej2.syncfusion.com/documentation/api/file-manager/#beforefoldercreate) | FolderCreateEventArgs | path, folderName, parentFolder, cancel. | This event is triggered before a folder is created. It allows for the restriction of folder creation based on the application's use case.
+[folderCreate](https://ej2.syncfusion.com/documentation/api/file-manager/#foldercreate) | FolderCreateEventArgs | path, folderName, parentFolder, cancel. | This event is triggered when a folder is successfully created. It provides an opportunity to retrieve details about the newly created folder.
+[search](https://ej2.syncfusion.com/documentation/api/file-manager/#search) | SearchEventArgs | showHiddenItems, caseSensitive, searchText, path, cancel, searchResults. | This event is triggered when a search action occurs in the search bar of the File Manager component. It triggers each character entered in the input during the search process.
+[beforeRename](https://ej2.syncfusion.com/documentation/api/file-manager/#beforerename) | RenameEventArgs | path, itemData, newName, cancel. | This event is triggered when a file or folder is about to be renamed. It allows for the restriction of the rename action for specific folders or files by utilizing the cancel option.
+[rename](https://ej2.syncfusion.com/documentation/api/file-manager/#rename) | RenameEventArgs | path, itemData, newName, cancel. | This event is triggered when a file or folder is successfully renamed. It provides an opportunity to fetch details about the renamed file.
+[beforeMove](https://ej2.syncfusion.com/documentation/api/file-manager/#beforemove) | MoveEventArgs  | path, targetPath, targetData, itemData, isCopy, cancel. | This event is triggered when a file or folder begins to move from its current path through a copy/cut and paste action.
+[move](https://ej2.syncfusion.com/documentation/api/file-manager/#move) | MoveEventArgs | path, targetPath, targetData, itemData, isCopy, cancel. | This event is triggered when a file or folder is pasted into the destination path.
+
+#### Bug Fixes
+
+- `#I594282` - Resolved the fileOpen event issue in the File Manager component.
+
+## 25.2.6 (2024-05-28)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I590909` - Resolved the file selection issue when enabling the virtualization support in the File Manager component.
+
+## 25.2.3 (2024-05-08)
+
+### FileManager
+
+#### Breaking Changes
+
+- The [`isPrimayKey`](https://ej2.syncfusion.com/documentation/api/file-manager/columnModel/#isprimarykey) property in the File Manager component `detailsViewSettings` has been marked as deprecated. It will continue to function as before, but it is recommended to avoid using it in new code as this usage is handled internally without declaring it in sample.
+
+## 25.1.40 (2024-04-16)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I574902` - The error dialog that appears when refreshing the File Manager component's SQL service has been resolved.
+
+## 25.1.39 (2024-04-09)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I574481` - The issue with context menu items not getting disabled when menu items contain spaces in the File Manager component has been resolved.
+- `#I573974` - The console error while trying to persist the deleted file in the File Manager component has been resolved.
+- `#I574902` - The error dialog that appears when refreshing the File Manager component's SQL service has been resolved.
+
+## 25.1.38 (2024-04-02)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I572635` - The problem where an extra plus icon appeared in the details view of the file manager component when in mobile mode has been resolved.
+
+## 25.1.37 (2024-03-26)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I561123` - The issue with being unable to sort the header columns using keyboard interaction has been resolved.
+
+## 25.1.35 (2024-03-15)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#FB50961` - The issues related to XSS attacks with file or folder names in the File Manager details view template is fixed.
 
 ### FileManager
 

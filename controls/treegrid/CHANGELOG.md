@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 26.1.41 (2024-07-09)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#F58804` - Fixed an issue where an exception was being thrown when dragging and dropping between the tree grid and detail template.
+- `#F603044` - Resolved a console error that occurred when clicking the checkbox of child records.
+
 ## 26.1.40 (2024-07-02)
 
 ### Tree Grid

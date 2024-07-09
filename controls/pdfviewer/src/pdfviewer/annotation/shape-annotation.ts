@@ -824,7 +824,7 @@ export class ShapeAnnotation {
         if (annotationModel.subject === 'Line' && annotationModel.shapeAnnotationType === 'Polygon') {
             annotationModel.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', 'Polygon');
         } else {
-            annotationModel.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotationModel.subject);
+            annotationModel.author = annotationModel && annotationModel.author != "Guest" ? annotationModel.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotationModel.subject);
         }
         this.pdfViewer.annotation.stickyNotesAnnotationModule.addTextToComments(annotationName, annotationModel.notes);
         let borderDashArray: number = parseInt(annotationModel.borderDashArray, 10);

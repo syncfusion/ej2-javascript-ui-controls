@@ -48,6 +48,9 @@
   @if $ddl-multiselect-skin-name != 'Material3' {
     background-color: $ddl-chip-bg-color;
   }
+  @if $ddl-multiselect-skin-name == 'fluent2' {
+    border: $dd-chip-border;
+  }
   border-radius: $ddl-chip-radius;
   height: $ddl-chip-height;
 }

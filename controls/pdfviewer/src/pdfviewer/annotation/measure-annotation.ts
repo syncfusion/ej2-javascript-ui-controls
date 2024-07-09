@@ -579,7 +579,7 @@ export class MeasureAnnotation {
             document.getElementById(commentsDivid).id = annotationName;
         }
         annotationModel.annotName = annotationName;
-        annotationModel.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotationModel.subject);
+        annotationModel.author = annotationModel && annotationModel.author != "Guest" ? annotationModel.author : this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotationModel.subject);
         this.pdfViewer.annotation.stickyNotesAnnotationModule.addTextToComments(annotationName, annotationModel.notes);
         if (annotationModel.wrapper.bounds) {
             bound = {

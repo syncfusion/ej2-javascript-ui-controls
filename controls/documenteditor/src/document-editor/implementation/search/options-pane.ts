@@ -1468,5 +1468,8 @@ export class OptionsPane {
         if (this.replaceAllButtonText) {
             this.replaceAllButtonText = undefined;
         }
+        if(this.tabDiv) {
+            this.tabDiv = undefined;
+        }
     }
 }

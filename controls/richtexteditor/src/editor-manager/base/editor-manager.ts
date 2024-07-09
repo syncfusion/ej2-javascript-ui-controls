@@ -99,6 +99,17 @@ export class EditorManager {
         this.observer.on(EVENTS.MS_WORD_CLEANUP, this.onWordPaste, this);
         this.observer.on(EVENTS.ON_BEGIN, this.onBegin, this);
         this.observer.on(EVENTS.MOUSE_DOWN, this.editorMouseDown, this);
+        this.observer.on(EVENTS.DESTROY, this.destroy, this);
+    }
+    private unwireEvents(): void {
+        this.observer.off(EVENTS.KEY_DOWN, this.editorKeyDown);
+        this.observer.off(EVENTS.KEY_UP, this.editorKeyUp);
+        this.observer.off(EVENTS.KEY_UP, this.editorKeyUp);
+        this.observer.off(EVENTS.MODEL_CHANGED, this.onPropertyChanged);
+        this.observer.off(EVENTS.MS_WORD_CLEANUP, this.onWordPaste);
+        this.observer.off(EVENTS.ON_BEGIN, this.onBegin);
+        this.observer.off(EVENTS.MOUSE_DOWN, this.editorMouseDown);
+        this.observer.off(EVENTS.DESTROY, this.destroy);
     }
     private onWordPaste(e: NotifyArgs): void {
         this.observer.notify(EVENTS.MS_WORD_CLEANUP_PLUGIN, e);
@@ -317,6 +328,33 @@ export class EditorManager {
         );
         const firstTextNode: Node | null = treeWalker.nextNode();
         return firstTextNode;
+    }
+
+    public destroy(): void {
+        this.unwireEvents();
+        this.observer.notify(EVENTS.INTERNAL_DESTROY);
+        if (this.editableElement) { this.editableElement = null; }
+        this.currentDocument = null;
+        // if (this.nodeSelection) { this.nodeSelection = null; }
+        if (this.nodeCutter) { this.nodeCutter = null; }
+        if (this.domNode) { this.domNode = null; }
+        if (this.listObj) { this.listObj = null; }
+        if (this.formatObj) { this.formatObj = null; }
+        if (this.alignmentObj) { this.alignmentObj = null; }
+        if (this.indentsObj) {  this.indentsObj = null; }
+        if (this.linkObj) { this.linkObj = null; }
+        if (this.imgObj) { this.imgObj = null; }
+        if (this.audioObj) { this.audioObj = null; }
+        if (this.videoObj) { this.videoObj = null; }
+        if (this.selectionObj) { this.selectionObj = null; }
+        if (this.inserthtmlObj) { this.inserthtmlObj = null; }
+        if (this.insertTextObj) { this.insertTextObj = null; }
+        if (this.clearObj) { this.clearObj = null; }
+        if (this.tableObj) { this.tableObj = null; }
+        if (this.msWordPaste) { this.msWordPaste = null; }
+        if (this.formatPainterEditor) { this.formatPainterEditor = null; }
+        if (this.emojiPickerObj) { this.emojiPickerObj = null; }
+        if (this.tableCellSelection) { this.tableCellSelection = null; }
     }
 }
 

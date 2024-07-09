@@ -31,7 +31,7 @@ import { PdfAnnotationBaseModel, PdfFormFieldBaseModel } from './drawing/pdf-ann
 import { Drawing, ClipBoardObject } from './drawing/drawing';
 import { Selector } from './drawing/selector';
 import { SelectorModel } from './drawing/selector-model';
-import { PointModel, IElement, Rect, Point } from '@syncfusion/ej2-drawings';
+import { PointModel, IElement, Rect, Point, Size } from '@syncfusion/ej2-drawings';
 import { renderAdornerLayer } from './drawing/dom-util';
 import { ThumbnailClickEventArgs } from './index';
 
@@ -7831,6 +7831,48 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         }
     }
 
+    /**
+     * Exports the specified page as a Base64-encoded image string.
+     *
+     * @param {number} pageIndex -  The index of the page to export.
+     * @param {Size} [size] - Specifies the width and height of the image. If not specified, the default size will be used.
+     * @param {number} [size.width] - The width of the image.
+     * @param {number} [size.height] - The height of the image.
+     * @returns { Promise<string> } - Returns the Base64-encoded string representing the image of the specified page.
+     * @private
+     */
+    public exportAsImage(pageIndex: number, size?: Size): Promise<string> {
+        let image: Promise<string>;
+        if (!isNullOrUndefined(size)) {
+            image = this.pdfRendererModule.exportAsImagewithSize(pageIndex, size);
+        } else {
+            image = this.pdfRendererModule.exportAsImage(pageIndex);
+        }
+        return image;
+    }
+
+    /**
+     * Exports the range of pages as Base64-encoded image strings.
+     *
+     * @param {number} startIndex - The index of the first page to export.
+     * @param {number} endIndex - The index of the last page to export.
+     * @param {Size} [size] - Specifies the width and height of the image. If not specified, the default size will be used.
+     * @param {number} [size.width] - The width of the image.
+     * @param {number} [size.height] - The height of the image.
+     * @returns { Promise<string[]> } - An array of Base64-encoded strings, each representing the image of a page within the specified range.
+     * @private
+     */
+    public exportAsImages(startIndex: number, endIndex: number, size?: Size): Promise<string[]> {
+        let imageDeatils: Promise<string[]>;
+        if (!isNullOrUndefined(size)) {
+            imageDeatils = this.pdfRendererModule.exportAsImagesWithSize(startIndex, endIndex, size);
+        }
+        else {
+            imageDeatils = this.pdfRendererModule.exportAsImages(startIndex, endIndex)
+        }
+        return imageDeatils;
+    }
+
     private getScriptPathForPlatform(): string {
         if (this.enableHtmlSanitizer && this.resourceUrl) {
             this.resourceUrl = SanitizeHtmlHelper.sanitize(this.resourceUrl);
@@ -8977,7 +9019,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @returns {void}
      */
     public unload(): void {
-        this.viewerBase.pdfViewerRunner.postMessage({ message: 'unloadFPDF' });
+        if (!isNullOrUndefined(this.viewerBase.pdfViewerRunner)) {
+            this.viewerBase.pdfViewerRunner.postMessage({ message: 'unloadFPDF' });
+        }
         this.viewerBase.clear(true);
         this.pageCount = 0;
         if (!isBlazor()) {

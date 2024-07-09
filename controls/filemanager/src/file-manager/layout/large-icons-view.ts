@@ -816,6 +816,7 @@ export class LargeIconsView {
         this.parent.isFile = false;
         let action: string = 'select';
         if (e.which === 3 && !isNOU(item) && item.classList.contains(CLS.ACTIVE)) {
+            this.addActive(item);
             this.updateType(item);
             return;
         } else if (!isNOU(item)) {

@@ -55,6 +55,10 @@ export class Table {
     private previousTableElement: HTMLElement;
     private resizeEndTime: number = 0;
     private isTableMoveActive: boolean = false;
+    private resizeIconPositionTime: number;
+    private isResizeBind: boolean = true;
+    private isDestroyed: boolean;
+
     private constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.rteID = parent.element.id;
@@ -62,7 +66,7 @@ export class Table {
         this.rendererFactory = serviceLocator.getService<RendererFactory>('rendererFactory');
         this.dialogRenderObj = serviceLocator.getService<DialogRenderer>('dialogRenderObject');
         this.addEventListener();
-
+        this.isDestroyed = false;
     }
 
     protected addEventListener(): void {
@@ -117,6 +121,7 @@ export class Table {
         this.parent.off(events.afterKeyDown, this.afterKeyDown);
         if (!Browser.isDevice && this.parent.tableSettings.resize) {
             EventHandler.remove(this.contentModule.getEditPanel(), 'mouseover', this.resizeHelper);
+            EventHandler.remove(this.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart);
         }
     }
 
@@ -1037,6 +1042,15 @@ export class Table {
             selection: selectionObj.selection
         };
         if (proxy.popupObj) {
+            const rows: HTMLElement[] = Array.prototype.slice.call((e.target as HTMLElement).parentElement.parentElement.children);
+            for(let i: number = 0; i < rows.length; i++) {
+                EventHandler.remove(rows[i as number], 'mouseleave', this.tableCellLeave);
+                const cells: HTMLElement[] = Array.prototype.slice.call(rows[i as number].children);
+                for(let j: number = 0; j < cells.length; j++) {
+                    EventHandler.remove(cells[j as number], 'mousemove', this.tableCellSelect);
+                    EventHandler.remove(cells[j as number], 'mouseup', this.tableCellClick);
+                }
+            }
             proxy.popupObj.hide();
         }
         if (proxy.editdlgObj) {
@@ -1366,8 +1380,11 @@ export class Table {
                     }
                 });
             }
-            EventHandler.add(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing, this);
-            EventHandler.add(this.contentModule.getDocument(), Browser.touchEndEvent, this.resizeEnd, this);
+            if (this.isResizeBind) {
+                EventHandler.add(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing, this);
+                EventHandler.add(this.contentModule.getDocument(), Browser.touchEndEvent, this.resizeEnd, this);
+                this.isResizeBind = false;
+            }
         }
     }
     private getCellIndex(rowSpanCells: Map<string, HTMLTableDataCellElement>, rowIndex: number, colIndex: number): number {
@@ -1681,12 +1698,14 @@ export class Table {
     }
 
     private cancelResizeAction(): void {
+        this.isResizeBind = true;
         EventHandler.remove(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing);
         EventHandler.remove(this.contentModule.getDocument(), Browser.touchEndEvent, this.resizeEnd);
         this.removeResizeElement();
     }
     private resizeEnd(e: PointerEvent | TouchEvent): void {
         this.resizeBtnInit();
+        this.isResizeBind = true;
         EventHandler.remove(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing);
         EventHandler.remove(this.contentModule.getDocument(), Browser.touchEndEvent, this.resizeEnd);
         if (this.contentModule.getEditPanel().querySelector('.e-table-box') &&
@@ -1850,6 +1869,13 @@ export class Table {
             zIndex: 10001,
             // eslint-disable-next-line
             close: (event: { [key: string]: object }) => {
+                EventHandler.remove(btnEle, 'click', this.insertTableDialog);
+                detach(btnEle);
+                if (this.createTableButton && !this.createTableButton.isDestroyed) {
+                    this.createTableButton.destroy();
+                    this.createTableButton.element = null;
+                    this.createTableButton = null;
+                }
                 this.parent.isBlur = false;
                 this.popupObj.destroy();
                 detach(this.popupObj.element);
@@ -1920,6 +1946,7 @@ export class Table {
         let tableCell: HTMLElement;
         for (let row: number = 0; row < 3; row++) {
             rowDiv = this.parent.createElement('div', { className: 'e-rte-table-row' + this.parent.getCssClass(true), attrs: { 'data-column': '' + row } });
+            EventHandler.add(rowDiv, 'mouseleave', this.tableCellLeave, this);
             for (let col: number = 0; col < 10; col++) {
                 tableCell = this.parent.createElement('div', { className: 'e-rte-tablecell e-default' + this.parent.getCssClass(true), attrs: { 'data-cell': '' + col } });
                 rowDiv.appendChild(tableCell);
@@ -1928,7 +1955,6 @@ export class Table {
                     addClass([tableCell], 'e-active');
                 }
                 EventHandler.add(tableCell, 'mousemove', this.tableCellSelect, this);
-                EventHandler.add(rowDiv, 'mouseleave', this.tableCellLeave, this);
                 EventHandler.add(tableCell, 'mouseup', this.tableCellClick, { self: this, args: args.args, selection: args.selection });
             }
             tableDiv.appendChild(rowDiv);
@@ -2187,8 +2213,41 @@ export class Table {
      * @deprecated
      */
     public destroy(): void {
-        if (isNOU(this.parent)) { return; }
+        if (this.isDestroyed) { return; }
+        if (this.resizeIconPositionTime){
+            clearTimeout(this.resizeIconPositionTime);
+            this.resizeIconPositionTime = null;
+        }
         this.removeEventListener();
+        EventHandler.remove(this.parent.contentModule.getDocument(), 'selectionchange', this.tableCellsKeyboardSelection);
+        if (this.curTable) {
+            EventHandler.remove(this.curTable, 'mouseleave', this.tableMouseLeave);
+        }
+        if (this.tableCellSpacing && !this.tableCellSpacing.isDestroyed) {
+            this.tableCellSpacing.destroy();
+            this.tableCellSpacing = null;
+        }
+        if (this.tableCellPadding && !this.tableCellPadding.isDestroyed) {
+            this.tableCellPadding.destroy();
+            this.tableCellPadding = null;
+        }
+        if (this.tableWidthNum && !this.tableWidthNum.isDestroyed) {
+            this.tableWidthNum.destroy();
+            this.tableWidthNum = null;
+        }
+        if (this.rowTextBox && !this.rowTextBox.isDestroyed) {
+            this.rowTextBox.destroy();
+            this.rowTextBox = null;
+        }
+        if (this.columnTextBox && !this.columnTextBox.isDestroyed) {
+            this.columnTextBox.destroy();
+            this.columnTextBox = null;
+        }
+        if (this.createTableButton && !this.createTableButton.isDestroyed) {
+            this.createTableButton.destroy();
+            this.createTableButton = null;
+        }
+        this.isDestroyed = true;
     }
 
     private moduleDestroy(): void {
@@ -2206,7 +2265,7 @@ export class Table {
 
     private afterKeyDown(): void {
         if (this.curTable) {
-            setTimeout(() => {
+            this.resizeIconPositionTime = setTimeout(() => {
                 this.updateResizeIconPosition();
             }, 1);
         }

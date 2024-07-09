@@ -598,7 +598,9 @@ export class DetailsView {
     }
     private onPathChanged(args: ReadArgs): void {
         this.parent.isCut = false;
-        if (this.parent.breadcrumbbarModule.searchObj.element.value.trim() === '' && this.gridObj) {
+        const pathField: ColumnModel = this.parent.detailsViewSettings.columns.find((column: ColumnModel) => column.field === 'filterPath');
+        if ((this.parent.breadcrumbbarModule.searchObj.element.value.trim() === '' && this.gridObj) ||
+        (!isNullOrUndefined(pathField) && !isNullOrUndefined(pathField.hideAtMedia) && pathField.hideAtMedia !== '')) {
             this.parent.searchedItems = [];
             if (!this.parent.isFiltered) {
                 this.removePathColumn(false);

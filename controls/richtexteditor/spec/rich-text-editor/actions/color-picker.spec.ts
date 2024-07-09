@@ -83,7 +83,7 @@ describe(' RTE content selection with ', () => {
         mouseEventArgs = {
             target: fontColorPickerItem
         };
-        (rteObj.htmlEditorModule as any).colorPickerModule.fontColorPicker.btnClickHandler(mouseEventArgs);
+        (rteObj.toolbarModule as any).colorPickerModule.fontColorPicker.btnClickHandler(mouseEventArgs);
         selectNode = editNode.querySelector('.first-p-node');
         expect((selectNode.childNodes[0] as HTMLElement).style.color === 'rgb(28, 188, 81)')
     });
@@ -130,7 +130,7 @@ describe(' RTE content selection with ', () => {
         mouseEventArgs = {
             target: backgroundColorPickerItem
         };
-        (rteObj.htmlEditorModule as any).colorPickerModule.backgroundColorPicker.btnClickHandler(mouseEventArgs);
+        (rteObj.toolbarModule as any).colorPickerModule.backgroundColorPicker.btnClickHandler(mouseEventArgs);
         selectNode = editNode.querySelector('.first-p-node');
         expect((selectNode.childNodes[0] as HTMLElement).style.backgroundColor === 'rgb(255, 255, 0)');
         backgroundColorPicker.click();
@@ -249,7 +249,7 @@ describe(' RTE content selection with ', () => {
         mouseEventArgs = {
             target: fontColorPickerItem
         };
-        (rteObj.htmlEditorModule as any).colorPickerModule.fontColorPicker.btnClickHandler(mouseEventArgs);
+        (rteObj.toolbarModule as any).colorPickerModule.fontColorPicker.btnClickHandler(mouseEventArgs);
         selectNode = editNode.querySelector('.first-p-node');
         expect((selectNode.childNodes[0] as HTMLElement).style.color === 'rgb(28, 188, 81)')
     });
@@ -297,7 +297,7 @@ describe(' RTE content selection with ', () => {
         mouseEventArgs = {
             target: backgroundColorPickerItem
         };
-        (rteObj.htmlEditorModule as any).colorPickerModule.backgroundColorPicker.btnClickHandler(mouseEventArgs);
+        (rteObj.toolbarModule as any).colorPickerModule.backgroundColorPicker.btnClickHandler(mouseEventArgs);
         selectNode = editNode.querySelector('.first-p-node');
         expect((selectNode.childNodes[0] as HTMLElement).style.backgroundColor === 'rgb(255, 255, 0)');
     });
@@ -362,7 +362,7 @@ describe("'FontColor and BackgroundColor' - ColorPicker DROPDOWN", () => {
             mouseEventArgs = {
                 target: backgroundColorPickerItem
             };
-            (rteObj.htmlEditorModule as any).colorPickerModule.backgroundColorPicker.btnClickHandler(mouseEventArgs);
+            (rteObj.toolbarModule as any).colorPickerModule.backgroundColorPicker.btnClickHandler(mouseEventArgs);
             expect(selectNode.childNodes[0].nodeName.toLocaleLowerCase()).toBe("span");
             expect((selectNode.childNodes[0] as HTMLElement).getAttribute('style')).toBe('background-color: rgba(255, 255, 0, 0.5);');
             done();

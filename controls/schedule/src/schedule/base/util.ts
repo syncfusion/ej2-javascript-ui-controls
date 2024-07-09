@@ -15,15 +15,16 @@ export const MS_PER_MINUTE: number = 60000;
  *
  * @param {Element} container Accepts the DOM element
  * @param {string} elementClass Accepts the element class
+ * @param {boolean} isTransformed Accepts the boolean value that indicates the status of the transform style applied to the element
  * @returns {number} Returns the height of the element
  */
-export function getElementHeightFromClass(container: Element, elementClass: string): number {
+export function getElementHeightFromClass(container: Element, elementClass: string, isTransformed?: boolean): number {
     let height: number = 0;
     const el: HTMLElement = createElement('div', { className: elementClass }).cloneNode() as HTMLElement;
     el.style.visibility = 'hidden';
     el.style.position = 'absolute';
     container.appendChild(el);
-    height = getElementHeight(el);
+    height = getElementHeight(el, isTransformed);
     remove(el);
     return height;
 }
@@ -33,15 +34,16 @@ export function getElementHeightFromClass(container: Element, elementClass: stri
  *
  * @param {Element} container Accepts the DOM element
  * @param {string} elementClass Accepts the element class
+ * @param {boolean} isTransformed Accepts the boolean value that indicates the status of the transform style applied to the element
  * @returns {number} Returns the width of the element
  */
-export function getElementWidthFromClass(container: Element, elementClass: string): number {
+export function getElementWidthFromClass(container: Element, elementClass: string, isTransformed?: boolean): number {
     let width: number = 0;
     const el: HTMLElement = createElement('div', { className: elementClass }).cloneNode() as HTMLElement;
     el.style.visibility = 'hidden';
     el.style.position = 'absolute';
     container.appendChild(el);
-    width = getElementWidth(el);
+    width = getElementWidth(el, isTransformed);
     remove(el);
     return width;
 }
@@ -459,29 +461,32 @@ export function capitalizeFirstWord(inputString: string, type: string): string {
  * Method to get element cell width
  *
  * @param {HTMLElement} element Accepts the DOM element
+ * @param {boolean} isTransformed Accepts the boolean value that indicates the status of the transform style applied to the element
  * @returns {number} Returns the width of the given element
  */
-export function getElementWidth(element: HTMLElement): number {
-    return document.body.style.transform.includes('scale') ? element.offsetWidth : element.getBoundingClientRect().width;
+export function getElementWidth(element: HTMLElement, isTransformed?: boolean): number {
+    return isTransformed ? element.offsetWidth : element.getBoundingClientRect().width;
 }
 
 /**
  * Method to get element cell Height
  *
  * @param {HTMLElement} element Accepts the DOM element
+ * @param {boolean} isTransformed Accepts the boolean value that indicates the status of the transform style applied to the element
  * @returns {number} Returns the Height of the given element
  */
-export function getElementHeight(element: HTMLElement): number {
-    return document.body.style.transform.includes('scale') ? element.offsetHeight : element.getBoundingClientRect().height;
+export function getElementHeight(element: HTMLElement, isTransformed?: boolean): number {
+    return isTransformed ? element.offsetHeight : element.getBoundingClientRect().height;
 }
 
 /**
  * Method to get element cell Top
  *
  * @param {HTMLElement} element Accepts the DOM element
+ * @param {boolean} isTransformed Accepts the boolean value that indicates the status of the transform style applied to the element
  * @returns {number} Returns the top value of the given element
  */
-export function getElementTop(element: HTMLElement): number {
-    return document.body.style.transform.includes('scale') ? element.offsetTop : element.getBoundingClientRect().top;
+export function getElementTop(element: HTMLElement, isTransformed?: boolean): number {
+    return isTransformed ? element.offsetTop : element.getBoundingClientRect().top;
 }
 

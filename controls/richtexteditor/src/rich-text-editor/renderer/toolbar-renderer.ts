@@ -36,6 +36,7 @@ export class ToolbarRenderer implements IRenderer {
     private tooltip: Tooltip;
     private l10n: L10n;
     private tooltipTargetEle: Element;
+    public isDestroyed: boolean;
 
     /**
      * Constructor for toolbar renderer module
@@ -45,6 +46,7 @@ export class ToolbarRenderer implements IRenderer {
      */
     public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
+        this.isDestroyed = false;
         if (serviceLocator){
             this.l10n = serviceLocator.getService<L10n>('rteLocale');
         }
@@ -52,7 +54,7 @@ export class ToolbarRenderer implements IRenderer {
     }
 
     private wireEvent(): void {
-        this.parent.on(events.destroy, this.unWireEvent, this);
+        this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.destroyTooltip, this.destroyTooltip, this);
         this.parent.on(events.closeTooltip, this.closeTooltip, this);
     }
@@ -68,7 +70,7 @@ export class ToolbarRenderer implements IRenderer {
     }
 
     private unWireEvent(): void {
-        this.parent.off(events.destroy, this.unWireEvent);
+        this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.destroyTooltip, this.destroyTooltip);
         this.parent.off(events.closeTooltip, this.closeTooltip);
     }
@@ -180,14 +182,14 @@ export class ToolbarRenderer implements IRenderer {
         args.rteToolbarObj.toolbarObj.isStringTemplate = true;
         args.rteToolbarObj.toolbarObj.createElement = this.parent.createElement;
         args.rteToolbarObj.toolbarObj.appendTo(args.target);
-        if (this.parent.showTooltip) {
+        if (this.parent.showTooltip && args.type === 'toolbar') {
             this.tooltip = new Tooltip({
                 target: '#' + this.parent.getID() + '_toolbar_wrapper [title]',
+                container: this.toolbarPanel as HTMLElement,
                 showTipPointer: true,
                 openDelay: 400,
                 opensOn: 'Hover',
                 beforeRender: this.tooltipBeforeRender.bind(this),
-                beforeOpen: this.tooltipBeforeOpen.bind(this),
                 cssClass: this.parent.getCssClass(),
                 windowCollision: true,
                 position: 'BottomCenter'
@@ -688,12 +690,6 @@ export class ToolbarRenderer implements IRenderer {
         return colorPicker;
     }
 
-    public tooltipBeforeOpen(args: TooltipEventArgs): void {
-        if (args.element) {
-            args.element.setAttribute('data-rte-id', this.parent.getID());
-        }
-    }
-
     /**
      * The function is used to render Rich Text Editor toolbar
      *
@@ -726,5 +722,20 @@ export class ToolbarRenderer implements IRenderer {
      */
     public setPanel(panel: Element): void {
         this.toolbarPanel = panel;
+    }
+
+    public destroy(): void {
+        if (this.isDestroyed) { return; }
+        if (this.tooltip && !this.tooltip.isDestroyed) {
+            this.tooltip.destroy();
+        }
+        this.unWireEvent();
+        this.mode = null;
+        this.toolbarPanel = null;
+        this.currentElement = null;
+        this.currentDropdown = null;
+        this.tooltip = null;
+        this.tooltipTargetEle = null;
+        this.isDestroyed = true;
     }
 }

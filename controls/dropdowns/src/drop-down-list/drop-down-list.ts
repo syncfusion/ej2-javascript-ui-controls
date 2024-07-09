@@ -4301,11 +4301,13 @@ export class DropDownList extends DropDownBase implements IInput {
             Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
         }
         this.element.style.display = 'block';
-        if (this.inputWrapper.container.parentElement.tagName === this.getNgDirective()) {
-            detach(this.inputWrapper.container);
-        } else {
-            this.inputWrapper.container.parentElement.insertBefore(this.element, this.inputWrapper.container);
-            detach(this.inputWrapper.container);
+        if (this.inputWrapper.container && this.inputWrapper.container.parentElement) {
+            if (this.inputWrapper.container.parentElement.tagName === this.getNgDirective()) {
+                detach(this.inputWrapper.container);
+            } else {
+                this.inputWrapper.container.parentElement.insertBefore(this.element, this.inputWrapper.container);
+                detach(this.inputWrapper.container);
+            }
         }
         delete this.hiddenElement;
         this.filterInput = null;

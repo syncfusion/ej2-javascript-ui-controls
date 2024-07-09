@@ -1306,17 +1306,13 @@ export class Edit {
                         eventArg.data['ganttProperties']),
                     eventArg.data['ganttProperties'], true);
             }
-            if (unModifiedData !== eventArg.data['ganttProperties']) {
-                if (!isNullOrUndefined(eventArg.data['ganttProperties'].startDate) && !isNullOrUndefined(eventArg.data['ganttProperties'].duration)) {
-                    this.parent.dateValidationModule.calculateEndDate(eventArg.data as IGanttData);
-                }
-                if (!isNullOrUndefined(eventArg.data['ganttProperties'].startDate) && !isNullOrUndefined(eventArg.data['ganttProperties'].endDate) && isNullOrUndefined(eventArg.data['ganttProperties'].duration)) {
-                    this.parent.dateValidationModule.calculateDuration(eventArg.data as IGanttData)
-                }
-                this.parent.dataOperation.updateWidthLeft(eventArg.data as IGanttData);
+
+            if (unModifiedData !== eventArg.data['ganttProperties'] && !isNullOrUndefined(eventArg.data['parentItem']) ) {
                 this.updateParentItemOnEditing()
-                this.parent.dataOperation.updateParentItems(eventArg.data as IGanttData, true)
+                this.parent.dataOperation.updateParentItems(eventArg.data as IGanttData, true);
             }
+            this.parent.dataOperation.updateWidthLeft(eventArg.data as IGanttData);
+
             if (!isNullOrUndefined(this.parent.taskFields.progress) && currentProgress !== eventArg.data['ganttProperties'].progress) {
                 const width: number = eventArg.data['ganttProperties'].isAutoSchedule ? eventArg.data['ganttProperties'].width :
                     eventArg.data['ganttProperties'].autoWidth;

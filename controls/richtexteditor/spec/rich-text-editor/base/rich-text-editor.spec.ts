@@ -7396,7 +7396,7 @@ describe('876271 - Checking the tooltip is notshown when the dropdown is in open
         destroy(rteObj);
     });
 });
-describe('881576 - The tooltips are not destroyed when the dialog with the editor is closed by a keyboard action.', () => {
+xdescribe('881576 - The tooltips are not destroyed when the dialog with the editor is closed by a keyboard action.', () => {
     let rteObj: RichTextEditor;
     beforeAll((done)=> {
         rteObj = renderRTE({

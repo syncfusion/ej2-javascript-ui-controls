@@ -1,5 +1,4 @@
 import { IRenderer, IRichTextEditor } from '../base/interface';
-import { ServiceLocator } from '../services/service-locator';
 import { getEditValue } from '../base/util';
 /**
  * Content module is used to render Rich Text Editor content
@@ -13,17 +12,13 @@ export class ContentRender implements IRenderer {
     //Module declarations
     protected parent: IRichTextEditor;
     protected editableElement: Element;
-    private serviceLocator: ServiceLocator;
     /**
      * Constructor for content renderer module
      *
      * @param {IRichTextEditor} parent - specifies the parent element.
-     * @param {ServiceLocator} serviceLocator - specifies the service.
-     * @returns {void}
      */
-    public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
+    public constructor(parent?: IRichTextEditor) {
         this.parent = parent;
-        this.serviceLocator = serviceLocator;
     }
 
     /**

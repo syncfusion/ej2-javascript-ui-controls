@@ -652,7 +652,7 @@ export class ToolbarModule {
         const toolbarItems: ItemModel[] = [];
         if (isOkBtn) {
             toolbarItems.push({ id: id + '_ok', prefixIcon: 'e-icons e-check', cssClass: 'top-icon e-tick',
-                tooltipText: this.l10n.getConstant('OK'), align: 'Right' });
+                tooltipText: this.l10n.getConstant('OK'), align: 'Right', tabIndex: 0 });
             toolbarItems.push({ id: id + '_cancel', prefixIcon: 'e-icons e-close', cssClass: 'top-icon e-save',
                 tooltipText: this.l10n.getConstant('Cancel'), align: 'Right' });
         }
@@ -733,7 +733,7 @@ export class ToolbarModule {
         }
         if (isApplyOption) {
             toolbarItems.push({ id: id + '_ok', prefixIcon: 'e-icons e-check', cssClass: 'top-icon e-tick',
-                tooltipText: this.l10n.getConstant('OK'), align: 'Right' });
+                tooltipText: this.l10n.getConstant('OK'), align: 'Right', tabIndex: 0 });
             toolbarItems.push({ id: id + '_cancel', prefixIcon: 'e-icons e-close', cssClass: 'top-icon e-save',
                 tooltipText: this.l10n.getConstant('Cancel'), align: 'Right' });
         }
@@ -867,7 +867,7 @@ export class ToolbarModule {
 
     private widthAspectRatio(e: MouseEvent & TouchEvent): void {
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        if ((e as any).keyCode === 109) {return; }
+        if ((e as any).keyCode === 109 || (e as any).keyCode === 9) {return; }
         const parent: ImageEditor = this.parent;
         const id: string = parent.element.id;
         const aspectRatioHeight: HTMLInputElement = parent.element.querySelector('#' + id + '_resizeHeight');
@@ -907,7 +907,7 @@ export class ToolbarModule {
 
     private heightAspectRatio(e: MouseEvent & TouchEvent):  void {
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        if ((e as any).keyCode === 109) {return; }
+        if ((e as any).keyCode === 109 || (e as any).keyCode === 9) {return; }
         const parent: ImageEditor = this.parent; const id: string = parent.element.id;
         const aspectRatioHeight: HTMLElement = parent.element.querySelector('#' + id + '_resizeHeight');
         const aspectRatioWidth: HTMLInputElement = parent.element.querySelector('#' + id + '_resizeWidth');
@@ -969,7 +969,8 @@ export class ToolbarModule {
                 placeholder: isResize ? null : height, format: '###.## px' })
         });
         if (!this.isAspectRatio) {
-            toolbarItems.push({ id: id + '_aspectratio', prefixIcon: 'e-icons e-lock', align: 'Center', tooltipText: this.l10n.getConstant('AspectRatio'), type: 'Button'});
+            toolbarItems.push({ id: id + '_aspectratio', prefixIcon: 'e-icons e-lock', align: 'Center',
+                tooltipText: this.l10n.getConstant('AspectRatio'), type: 'Button', tabIndex: 0 });
             this.isAspectRatio = true;
         } else {
             toolbarItems.push({ id: id + '_nonaspectratio', prefixIcon: 'e-icons e-unlock', align: 'Center', tooltipText: this.l10n.getConstant('AspectRatio'), type: 'Button'});
@@ -977,7 +978,7 @@ export class ToolbarModule {
         }
         if (!Browser.isDevice) {
             toolbarItems.push({ id: id + '_ok', prefixIcon: 'e-icons e-check', cssClass: 'top-icon e-tick',
-                tooltipText: this.l10n.getConstant('OK'), align: 'Right' });
+                tooltipText: this.l10n.getConstant('OK'), align: 'Right', tabIndex: 0 });
             toolbarItems.push({ id: id + '_cancel', prefixIcon: 'e-icons e-close', cssClass: 'top-icon e-save',
                 tooltipText: this.l10n.getConstant('Cancel'), align: 'Right' });
         }
@@ -1568,7 +1569,7 @@ export class ToolbarModule {
             { id: 'svg', text: 'SVG' }
         ];
         const inputObj: TextBox = new TextBox({
-            placeholder: this.l10n.getConstant('ImageName'),
+            placeholder: this.l10n.getConstant('ImageName')
         });
         inputObj.appendTo('#' + id + '_imgNametext');
         const qualityContainer: HTMLElement = document.getElementById(id + '_imgQualitydiv');
@@ -1730,7 +1731,7 @@ export class ToolbarModule {
         } else {
             imageNameLabel = document.getElementById(id + '_imageNameLabel');
         }
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/tslint/config */
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         tempCanvas.toBlob((function (blob: any): void {
             fileSize = Math.floor(blob.size / 1024);
             if (fileSize > 1000) {
@@ -1807,7 +1808,7 @@ export class ToolbarModule {
         }
         if (!Browser.isDevice) {
             toolbarItems.push({ id: id + '_ok', prefixIcon: 'e-icons e-check', cssClass: 'top-icon e-tick',
-                tooltipText: this.l10n.getConstant('OK'), align: 'Right' });
+                tooltipText: this.l10n.getConstant('OK'), align: 'Right', tabIndex: 0 });
             toolbarItems.push({ id: id + '_cancel', prefixIcon: 'e-icons e-close', cssClass: 'top-icon e-save',
                 tooltipText: this.l10n.getConstant('Cancel'), align: 'Right' });
         }
@@ -1884,7 +1885,7 @@ export class ToolbarModule {
             parent.notify('selection', { prop: 'getCurrentDrawingShape', value: {obj: obj }});
             if (obj['shape'] !== 'path') {
                 toolbarItems.push({ id: id + '_ok', prefixIcon: 'e-icons e-check', cssClass: 'top-icon e-tick',
-                    tooltipText: this.l10n.getConstant('OK'), align: 'Right' });
+                    tooltipText: this.l10n.getConstant('OK'), align: 'Right', tabIndex: 0 });
                 toolbarItems.push({ id: id + '_cancel', prefixIcon: 'e-icons e-close', cssClass: 'top-icon e-save',
                     tooltipText: this.l10n.getConstant('Cancel'), align: 'Right' });
             }
@@ -2471,7 +2472,7 @@ export class ToolbarModule {
         }
         if (!Browser.isDevice) {
             toolbarItems.push({ id: id + '_ok', prefixIcon: 'e-icons e-check', cssClass: 'top-icon e-tick',
-                tooltipText: this.l10n.getConstant('OK'), align: 'Right' });
+                tooltipText: this.l10n.getConstant('OK'), align: 'Right', tabIndex: 0 });
             toolbarItems.push({ id: id + '_cancel', prefixIcon: 'e-icons e-close', cssClass: 'top-icon e-save',
                 tooltipText: this.l10n.getConstant('Cancel'), align: 'Right' });
         }
@@ -2822,6 +2823,34 @@ export class ToolbarModule {
         }
         this.currToolbar = type;
         this.refreshDropDownBtn(isCropping);
+        this.updateKBDNavigation(this.currToolbar);
+    }
+
+    private updateKBDNavigation(type: string): void {
+        const parent: ImageEditor = this.parent; const id: string = parent.element.id;
+        if (!parent.isKBDNavigation) { return; }
+        if (this.isToolbar()) {
+            const tbar: Element = parent.element.querySelectorAll('#' + id + '_toolbar')[0];
+            let tbarInitialChild: Element; let tbarInitialBtn: HTMLButtonElement;
+            if (tbar) {
+                tbarInitialChild = tbar.querySelector('.e-toolbar-center');
+                if (!tbarInitialChild || !tbarInitialChild.children[0]) {return; }
+                tbarInitialBtn = tbarInitialChild.children[0].querySelector('.e-btn');
+                let tempElem: Element = tbarInitialChild.children[1];
+                if (tempElem) {tempElem = tempElem.children[0]; }
+                if (tempElem) {tempElem = tempElem.children[0]; }
+                if (type === 'resize' && tempElem) {
+                    tbarInitialBtn = tempElem as HTMLButtonElement;
+                }
+                if (tbarInitialBtn) {
+                    if (type === 'main') {
+                        setTimeout(() => tbarInitialBtn.focus(), 50);
+                    } else {
+                        tbarInitialBtn.focus();
+                    }
+                }
+            }
+        }
     }
 
     private performCropTransformClick(shape?: string, isTransform?: boolean): void {
@@ -2885,7 +2914,7 @@ export class ToolbarModule {
         }
         if (!Browser.isDevice) {
             toolbarItems.push({ id: id + '_ok', prefixIcon: 'e-icons e-check', cssClass: 'top-icon e-tick',
-                tooltipText: this.l10n.getConstant('OK'), align: 'Right' });
+                tooltipText: this.l10n.getConstant('OK'), align: 'Right', tabIndex: 0 });
             toolbarItems.push({ id: id + '_cancel', prefixIcon: 'e-icons e-close', cssClass: 'top-icon e-save',
                 tooltipText: this.l10n.getConstant('Cancel'), align: 'Right' });
         }
@@ -2937,7 +2966,7 @@ export class ToolbarModule {
         if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Default') > -1)) {
             toolbarItems.push({ id: id + '_default', prefixIcon: 'e-icons e-none', cssClass: 'top-icon e-none',
                 tooltipText: this.l10n.getConstant('Default'), align: 'Center',
-                template: '<div class="filter-wrapper" style="box-sizing: content-box;"><canvas id=' + id + '_defaultCanvas' + '></canvas><div style="text-align:center;"><span>' + this.l10n.getConstant('Default') + '</span></div></div>' });
+                template: '<div class="filter-wrapper" style="box-sizing: content-box;"><canvas id=' + id + '_defaultCanvas' + ' tabindex=0></canvas><div style="text-align:center;"><span>' + this.l10n.getConstant('Default') + '</span></div></div>' });
         }
         if (isNullOrUndefined(parent.toolbar) || !isCustomized || (parent.toolbar && parent.toolbar.indexOf('Chrome') > -1)) {
             toolbarItems.push({ id: id + '_chrome', prefixIcon: 'e-icons e-none', cssClass: 'top-icon e-none',
@@ -3010,7 +3039,7 @@ export class ToolbarModule {
         }
         if (!Browser.isDevice) {
             toolbarItems.push({ id: id + '_ok', prefixIcon: 'e-icons e-check', cssClass: 'top-icon e-tick',
-                tooltipText: this.l10n.getConstant('OK'), align: 'Right' });
+                tooltipText: this.l10n.getConstant('OK'), align: 'Right', tabIndex: 0 });
             toolbarItems.push({ id: id + '_cancel', prefixIcon: 'e-icons e-close', cssClass: 'top-icon e-save',
                 tooltipText: this.l10n.getConstant('Cancel'), align: 'Right' });
         }

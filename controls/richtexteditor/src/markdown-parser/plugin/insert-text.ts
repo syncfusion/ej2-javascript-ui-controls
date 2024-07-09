@@ -2,6 +2,8 @@ import { MarkdownParser } from './../base/markdown-parser';
 import { MarkdownSelection } from './../plugin/markdown-selection';
 import * as CONSTANT from './../base/constant';
 import { IMarkdownItem } from './../base/interface';
+import * as EVENTS from './../../common/constant';
+
 /**
  * Link internal component
  *
@@ -26,6 +28,12 @@ export class MDInsertText {
     }
     private addEventListener(): void {
         this.parent.observer.on(CONSTANT.INSERT_TEXT_COMMAND, this.InsertTextExec, this);
+        this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
+    }
+
+    private removeEventListener(): void {
+        this.parent.observer.off(CONSTANT.INSERT_TEXT_COMMAND, this.InsertTextExec);
+        this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
     }
 
     private InsertTextExec(e: IMarkdownItem): void {
@@ -52,5 +60,8 @@ export class MDInsertText {
                 event: event.event
             });
         }
+    }
+    public destroy(): void {
+        this.removeEventListener();
     }
 }

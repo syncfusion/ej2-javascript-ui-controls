@@ -123,7 +123,7 @@ export class VerticalEvent extends EventBase {
             this.resources = this.parent.resourceBase.renderedResources;
         }
         this.cellHeight =
-            parseFloat(util.getElementHeight(this.parent.element.querySelector('.e-content-wrap tbody tr')).toFixed(2));
+            parseFloat(this.parent.getElementHeight(this.parent.element.querySelector('.e-content-wrap tbody tr')).toFixed(2));
         this.dateRender[0] = this.parent.activeView.renderDates;
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             for (let i: number = 0, len: number = this.resources.length; i < len; i++) {
@@ -212,7 +212,7 @@ export class VerticalEvent extends EventBase {
         const resources: number[] = this.getResourceList();
         let dateCount: number = this.getStartCount();
         let isRender: boolean;
-        const appHeight: number = eventType === 'allDayEvents' ? util.getElementHeightFromClass(
+        const appHeight: number = eventType === 'allDayEvents' ? this.parent.getElementHeightFromClass(
             this.element.querySelector('.' + cls.ALLDAY_APPOINTMENT_WRAPPER_CLASS), cls.APPOINTMENT_CLASS) : 0;
         const allDayRowTop: number = eventType === 'allDayEvents' && this.allDayElement.length > 0 ? this.allDayElement[0].offsetTop : 0;
         for (const resource of resources) {

@@ -75,22 +75,12 @@ export const bindOnEnd: string = 'bind-on-end';
  * @hidden
  * @deprecated
  */
-export const renderColorPicker: string = 'render-color-picker';
-/**
- * @hidden
- * @deprecated
- */
 export const htmlToolbarClick: string = 'html-toolbar-click';
 /**
  * @hidden
  * @deprecated
  */
 export const markdownToolbarClick: string = 'markdown-toolbar-click';
-/**
- * @hidden
- * @deprecated
- */
-export const destroyColorPicker: string = 'destroy-color-picker';
 /**
  * @hidden
  * @deprecated
@@ -710,7 +700,7 @@ export const closeTableDialog: string = 'closeTableDialog';
  * @hidden
  * @deprecated
  */
-export const bindCssClass: string = 'closeTableDialog';
+export const bindCssClass: string = 'bindCssClass';
 /**
  * @hidden
  * @deprecated

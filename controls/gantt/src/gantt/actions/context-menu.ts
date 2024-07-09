@@ -258,6 +258,9 @@ export class ContextMenu {
                 this.parent.showSpinner();
             }
             this.parent.chartRowsModule.splitTask(this.rowData[taskSettings.id], currentClickedDate);
+            if (this.parent.projectEndDate >= this.rowData.ganttProperties.endDate) {
+            this.parent.nextTimeSpan()
+            }
         });
     }
     private mergeCall(item: string): void {

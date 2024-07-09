@@ -1,4 +1,4 @@
-import { Rect } from "@syncfusion/ej2-drawings";
+import { Rect, Size } from "@syncfusion/ej2-drawings";
 
 declare let importScripts: (...scripts: string[]) => void;
 /**
@@ -249,7 +249,7 @@ export function PdfiumRunner(): void {
                 const firstPage: Page = documentDetails.getPage(event.data.pageIndex);
                 const ImageData: any = event.data;
                 const data: object = firstPage.render(null, ImageData.zoomFactor, ImageData.isTextNeed, null, null,
-                                                      ImageData.textDetailsId);
+                                                      ImageData.textDetailsId,null, null,null, event.data.size);
                 (data as any).message = 'imageExtracted';
                 ctx.postMessage(data);
             }
@@ -289,9 +289,9 @@ export function PdfiumRunner(): void {
             this.processor = processor;
         }
         public render(message: any, zoomFactor?: number, isTextNeed?: boolean, printScaleFactor?: any,
-                      printDevicePixelRatio?: number, textDetailsId?: any, isTransparent?: boolean, cropBoxRect?: Rect, mediaBoxRect?: Rect): object {
+                      printDevicePixelRatio?: number, textDetailsId?: any, isTransparent?: boolean, cropBoxRect?: Rect, mediaBoxRect?: Rect, size?: Size): object {
             return this.processor.render(this.index, message, zoomFactor, isTextNeed, printScaleFactor,
-                                         printDevicePixelRatio, textDetailsId, isTransparent, cropBoxRect, mediaBoxRect);
+                                         printDevicePixelRatio, textDetailsId, isTransparent, cropBoxRect, mediaBoxRect, size);
         }
         public renderTileImage(x: any, y: any, tileX: any, tileY: any, zoomFactor?: number, isTextNeed?: boolean,
                                textDetailsId?: any, cropBoxRect?: Rect, mediaBoxRect?: Rect): object {
@@ -983,7 +983,7 @@ export function PdfiumRunner(): void {
         }
 
         public render(n: number = 0, message: any, zoomFactor: number, isTextNeed: boolean, printScaleFactor: any,
-                      printDevicePixelRatio: number, textDetailsId: any, isTransparent?: boolean, cropBoxRect?: Rect, mediaBoxRect?: Rect): object {
+                      printDevicePixelRatio: number, textDetailsId: any, isTransparent?: boolean, cropBoxRect?: Rect, mediaBoxRect?: Rect, size?: Size): object {
             const [w, h] = this.getPageSize(n);
             const scaleFactor: number = 1.5;
             const thumbnailWidth: number = 99.7;
@@ -1018,8 +1018,8 @@ export function PdfiumRunner(): void {
                 return { value: data, width: newWidth, height: newHeight, pageIndex: n, pageWidth: w, pageHeight: h, message: 'printImage', printDevicePixelRatio };
             }
             else {
-                let newWidth: number = Math.round(w * scaleFactor * zoomFactor);
-                let newHeight: number = Math.round(h * scaleFactor * zoomFactor);
+                let newWidth: number = Math.round(((size && size!== null) ? size.width : w) * scaleFactor * zoomFactor);
+                let newHeight: number = Math.round(((size && size!== null) ? size.height : h) * scaleFactor * zoomFactor);
                 // Reduce the zoom factor if the new image size exceeds the memory limit
                 while (((newWidth * newHeight * 4) * 2) >= 2147483648) {
                     zoomFactor = zoomFactor - 0.1;

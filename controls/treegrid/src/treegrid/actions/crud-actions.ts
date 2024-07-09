@@ -225,7 +225,7 @@ export function removeChildRecords(childRecords: ITreeData[], modifiedData: Obje
                         editedData.taskData[keys[parseInt(i.toString(), 10)]] =
                         childRecords[parseInt(j.toString(), 10)][keys[parseInt(i.toString(), 10)]] =
                         modifiedData[keys[parseInt(i.toString(), 10)]];
-                        if (control.grid.editSettings.mode === 'Normal' && control.editSettings.mode === 'Cell') {
+                        if (control.grid.editSettings.mode === 'Normal' && control.editSettings.mode === 'Cell' && !isNullOrUndefined(control.grid.editModule)) {
                             const editModule: string = 'editModule';
                             control.grid.editModule[`${editModule}`].editRowIndex = (<ITreeData>modifiedData).index;
                             control.grid.editModule[`${editModule}`].updateCurrentViewData(modifiedData);

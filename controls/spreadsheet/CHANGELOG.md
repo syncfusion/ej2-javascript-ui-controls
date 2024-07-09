@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.1.41 (2024-07-09)
+
+### Spreadsheet
+
+#### Bug fixes
+
+- `#I605907` - The notes dialog box in the Spreadsheet will not appear outside the viewport when scrolling within the control.
+
 ## 26.1.38 (2024-06-19)
 
 ### Spreadsheet

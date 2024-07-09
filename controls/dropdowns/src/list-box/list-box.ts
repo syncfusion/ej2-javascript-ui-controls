@@ -310,6 +310,9 @@ export class ListBox extends DropDownBase {
         items: { [key: string]: Object }[] | { [key: string]: Object } | string | boolean | number | string[] | boolean[] | number[],
         itemIndex?: number): void {
         super.addItem(items, itemIndex);
+        if (this.allowFiltering && this.filterInput.value !=='') {
+            this.filteringAction(this.jsonData, new Query(), this.fields);
+        }
     }
 
     /**
@@ -1140,6 +1143,9 @@ export class ListBox extends DropDownBase {
      */
     public addItems(items: obj[] | obj, itemIndex?: number): void {
         super.addItem(items, itemIndex);
+        if (this.allowFiltering && this.filterInput.value !=='') {
+            this.filteringAction(this.jsonData, new Query(), this.fields);
+        }
     }
     /**
      * Removes a item from the list. By default, removed the last item in the list,

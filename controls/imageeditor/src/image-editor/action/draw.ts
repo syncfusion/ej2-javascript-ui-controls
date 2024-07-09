@@ -233,7 +233,7 @@ export class Draw {
             args.value['obj']['isNewPath'] = this.isNewPath;
             break;
         case 'getArrowDimension':
-            args.value['obj']['arrowDimension'] = this.arrowDimension;
+            args.value['obj']['arrowDimension'] = extend({}, this.arrowDimension, {}, true);
             break;
         case 'setArrowDimension':
             this.arrowDimension = args.value['arrowDimension'];
@@ -3375,8 +3375,8 @@ export class Draw {
             const contentLength: number = parseInt(response.headers.get('content-length') || '0', 10);
             const imageSizeMB: number | null = contentLength;
             callback(imageSizeMB);
-        } catch(ex) {
-            console.log(ex.message);
+        } catch (ex) {
+            /* action on catch */
         }
     }
 

@@ -11,6 +11,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { isNullOrUndefined, extend, EmitType } from '@syncfusion/ej2-base';
 import { IHtmlUndoRedoData } from '../../editor-manager';
+import { ToolbarRenderer } from '../renderer';
 
 /**
  * `Toolbar` module is used to handle Toolbar actions.
@@ -23,6 +24,7 @@ export class BaseToolbar {
      * @private
      */
     public parent: IRichTextEditor;
+    public isDestroyed: boolean;
     protected locator: ServiceLocator;
     protected toolbarRenderer: IRenderer;
     protected renderFactory: RendererFactory;
@@ -31,6 +33,7 @@ export class BaseToolbar {
     public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.locator = serviceLocator;
+        this.isDestroyed = false;
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
         this.addEventListener();
         if (this.parent.toolbarSettings && Object.keys(this.parent.toolbarSettings.itemConfigs).length > 0) {
@@ -38,18 +41,20 @@ export class BaseToolbar {
         } else {
             this.tools = tools;
         }
+        if (this.parent.toolbarSettings.enable || this.parent.quickToolbarSettings.enable) {
+            this.toolbarRenderer = new ToolbarRenderer(this.parent, this.locator);
+            this.renderFactory.addRenderer(RenderType.Toolbar, this.toolbarRenderer);
+        }
     }
 
     private addEventListener(): void {
         this.parent.on(events.rtlMode, this.setRtl, this);
         this.parent.on(events.bindCssClass, this.setCssClass, this);
-        this.parent.on(events.destroy, this.removeEventListener, this);
     }
 
     private removeEventListener(): void {
         this.parent.off(events.rtlMode, this.setRtl);
         this.parent.off(events.bindCssClass, this.setCssClass);
-        this.parent.off(events.destroy, this.removeEventListener);
     }
 
     private setCssClass(e: ICssClassArgs): void {
@@ -213,7 +218,8 @@ export class BaseToolbar {
             overflowMode: args.mode,
             enablePersistence: this.parent.enablePersistence,
             enableRtl: this.parent.enableRtl,
-            cssClass: args.cssClass
+            cssClass: args.cssClass,
+            type: args.container
         };
     }
 
@@ -227,6 +233,22 @@ export class BaseToolbar {
      */
     public render(args: IToolbarRenderOptions): void {
         this.toolbarRenderer = this.renderFactory.getRenderer(RenderType.Toolbar);
+        if (this.toolbarRenderer && (this.toolbarRenderer as ToolbarRenderer).isDestroyed) {
+            this.toolbarRenderer = new ToolbarRenderer(this.parent, this.locator);
+        }
         this.toolbarRenderer.renderToolbar(this.getToolbarOptions(args));
+    }
+
+    public destroy(): void {
+        if (this.isDestroyed) { return; }
+        this.removeEventListener();
+        if (this.toolbarObj && !this.toolbarObj.isDestroyed) {
+            this.toolbarObj.destroy();
+            this.toolbarObj = null;
+        }
+        (this.toolbarRenderer as ToolbarRenderer).destroy();
+        this.toolbarRenderer = null;
+        this.tools = {};
+        this.isDestroyed = true;
     }
 }

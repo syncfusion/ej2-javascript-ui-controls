@@ -19,7 +19,6 @@ export class DialogRenderer {
         if (this.parent.isDestroyed) {
             return;
         }
-        this.parent.on(events.moduleDestroy, this.moduleDestroy, this);
         this.parent.on(events.destroy, this.removeEventListener, this);
         this.parent.on(events.documentClickClosedBy, this.documentClickClosedBy, this);
     }
@@ -28,7 +27,6 @@ export class DialogRenderer {
             return;
         }
         this.parent.off(events.destroy, this.removeEventListener);
-        this.parent.off(events.moduleDestroy, this.moduleDestroy);
         this.parent.off(events.documentClickClosedBy, this.documentClickClosedBy);
     }
     /**
@@ -127,9 +125,5 @@ export class DialogRenderer {
      */
     public close(args: Object): void {
         this.parent.trigger(events.dialogClose, args);
-    }
-
-    private moduleDestroy(): void {
-        this.parent = null;
     }
 }

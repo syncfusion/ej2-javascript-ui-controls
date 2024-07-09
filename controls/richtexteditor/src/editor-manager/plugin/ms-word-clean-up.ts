@@ -55,6 +55,12 @@ export class MsWordPaste {
     private listContents: string[] = [];
     private addEventListener(): void {
         this.parent.observer.on(EVENTS.MS_WORD_CLEANUP_PLUGIN, this.wordCleanup, this);
+        this.parent.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
+    }
+    private removeEventListener(): void {
+        this.parent.observer.off(EVENTS.MS_WORD_CLEANUP_PLUGIN, this.wordCleanup);
+        this.parent.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
+
     }
     private cropImageDimensions: { [key: string]: string | boolean | number }[] = [];
 
@@ -1067,5 +1073,9 @@ export class MsWordPaste {
             }
         }
         return 'html';
+    }
+
+    public destroy(): void {
+        this.removeEventListener();
     }
 }

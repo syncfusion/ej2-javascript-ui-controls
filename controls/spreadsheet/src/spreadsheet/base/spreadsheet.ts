@@ -4,7 +4,7 @@ import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclarat
 import { addClass, removeClass, EmitType, Complex, formatUnit, L10n, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { detach, select, closest, setStyleAttribute, EventHandler, getComponent } from '@syncfusion/ej2-base';
 import { MenuItemModel, BeforeOpenCloseMenuEventArgs, ItemModel } from '@syncfusion/ej2-navigations';
-import { mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, refreshSheetTabs, positionAutoFillElement, updateSortCollection, isReadOnlyCells, readonlyAlert } from '../common/index';
+import { mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, clearViewer, refreshSheetTabs, positionAutoFillElement, updateSortCollection, isReadOnlyCells, readonlyAlert, deInitProperties } from '../common/index';
 import { performUndoRedo, overlay, DialogBeforeOpenEventArgs, createImageElement, deleteImage, removeHyperlink } from '../common/index';
 import { HideShowEventArgs, sheetNameUpdate, updateUndoRedoCollection, getUpdateUsingRaf, setAutoFit } from '../common/index';
 import { actionEvents, CollaborativeEditArgs, keyDown, enableFileMenuItems, hideToolbarItems, updateAction } from '../common/index';
@@ -21,7 +21,7 @@ import { CellRenderEventArgs, IRenderer, IViewport, OpenOptions, MenuSelectEvent
 import { Dialog, ActionEvents, Overlay } from '../services/index';
 import { ServiceLocator } from '../../workbook/services/index';
 import { SheetModel, getColumnsWidth, getSheetIndex, WorkbookHyperlink, HyperlinkModel, DefineNameModel } from './../../workbook/index';
-import { BeforeHyperlinkArgs, AfterHyperlinkArgs, FindOptions, ValidationModel, getCellAddress, getColumnHeaderText, SortCollectionModel, PrintOptions, getSwapRange } from './../../workbook/common/index';
+import { BeforeHyperlinkArgs, AfterHyperlinkArgs, FindOptions, ValidationModel, getCellAddress, getColumnHeaderText, SortCollectionModel, PrintOptions, getSwapRange, getSheetIndexFromAddress } from './../../workbook/common/index';
 import { BeforeCellFormatArgs, afterHyperlinkCreate, getColIndex, CellStyleModel, setLinkModel } from './../../workbook/index';
 import { BeforeSaveEventArgs, SaveCompleteEventArgs, WorkbookInsert, WorkbookDelete, WorkbookMerge } from './../../workbook/index';
 import { getSheetNameFromAddress, DataBind, CellModel, beforeHyperlinkCreate, DataSourceChangedEventArgs } from './../../workbook/index';
@@ -1930,6 +1930,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             this.openModule.isImportedFile = this.openModule.preventFormatCheck = false;
             this.openModule.unProtectSheetIdx = [];
         } else {
+            this.notify(deInitProperties, {});
             super.refresh();
         }
     }
@@ -3237,8 +3238,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                 predicate.value = eventArgs.arg3;
             });
         }
-        const filterArgs: { promise: Promise<void>, predicates?: PredicateModel[], range?: string, isInternal: boolean } = { predicates:
-            predicates, range: range, isInternal: true, promise: promise };
+        const sheetIdx: number = range ? getSheetIndexFromAddress(this, range) : this.activeSheetIndex;
+        const filterArgs: { promise: Promise<void>, predicates?: PredicateModel[], range?: string, isInternal: boolean, sIdx: number } =
+            { predicates: predicates, range: range, isInternal: true, promise: promise, sIdx: sheetIdx };
         this.notify(initiateFilterUI, filterArgs);
         return filterArgs.promise as Promise<void>;
     }

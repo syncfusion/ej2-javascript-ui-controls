@@ -48,4 +48,8 @@ export class RendererFactory {
             return this.rendererMap[`${rName}`];
         }
     }
+
+    public destroy(): void {
+        this.rendererMap = {};
+    }
 }
