@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 26.1.42 (2024-07-16)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I602548` -  The undefined exception will no longer be thrown when double-clicking on the UML classifier connector.
+- `#I604677` -  Now, The Parameter names in UML Class shapes with multiple Methods are updated correctly.
+- `#F58854` - Resolved Flickering issue of tooltip when hovered over user handle.
+- `#I607983` - Connector will no longer split, when the node is moved away from the highlighted connector.
+
 ## 26.1.41 (2024-07-09)
 
 ### Diagram

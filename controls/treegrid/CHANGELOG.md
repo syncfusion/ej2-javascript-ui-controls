@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.1.42 (2024-07-16)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I607837` - Resolved an issue where an action failure logged an error while rendering the Tree Grid with both `idMapping` and `parentIdMapping` properties.
+
 ## 26.1.41 (2024-07-09)
 
 ### Tree Grid
@@ -10,6 +18,7 @@
 
 - `#F58804` - Fixed an issue where an exception was being thrown when dragging and dropping between the tree grid and detail template.
 - `#F603044` - Resolved a console error that occurred when clicking the checkbox of child records.
+- `#F58676` - Fixed white space issue that occurred when using remote data with virtualization.
 
 ## 26.1.40 (2024-07-02)
 

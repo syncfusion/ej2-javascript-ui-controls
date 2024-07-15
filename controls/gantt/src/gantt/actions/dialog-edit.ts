@@ -1446,6 +1446,11 @@ export class DialogEdit {
                 ganttObj.dataOperation.updateDurationValue(value, ganttProp);
                 this.parent.setRecordValue(taskSettings.duration, value, currentData);
                 this.parent.setRecordValue('taskData.' + taskSettings.duration, ganttProp.duration, currentData);
+                if (ganttProp.isMilestone && !isNullOrUndefined(this.parent.editModule.cellEditModule)) {
+                    const editedArgs: ITaskbarEditedEventArgs = {};
+                    editedArgs.data = currentData;
+                    this.parent.editModule.cellEditModule['updateDates'](editedArgs);
+                }
                 this.validateDuration(currentData);
             } else {
                 if (ganttObj.allowUnscheduledTasks) {
@@ -1505,6 +1510,11 @@ export class DialogEdit {
                     this.parent.setRecordValue('endDate', endDate, ganttProp, true);
                 }
                 this.validateEndDate(currentData);
+                if (ganttProp.isMilestone && !isNullOrUndefined(this.parent.editModule.cellEditModule)) {
+                    const editedArgs: ITaskbarEditedEventArgs = {};
+                    editedArgs.data = currentData;
+                    this.parent.editModule.cellEditModule['updateDates'](editedArgs);
+                }
             } else {
                 if (ganttObj.allowUnscheduledTasks) {
                     this.parent.setRecordValue('endDate', null, ganttProp, true);
@@ -1989,11 +1999,20 @@ export class DialogEdit {
     }
     public getDialogTabIndex(tabName: DialogFieldType): number {
         let indexValue: number;
-        this.parent.addDialogFields.map((item: AddDialogFieldSettingsModel, index: number) => {
-            if (item.type === tabName) {
-                indexValue = index;
-            }
-        });
+        if (!this.isEdit) {
+            this.parent.addDialogFields.map((item: AddDialogFieldSettingsModel, index: number) => {
+                if (item.type === tabName) {
+                    indexValue = index;
+                }
+            })
+        }
+        else {
+            this.parent.editDialogFields.map((item: EditDialogFieldSettingsModel, index: number) => {
+                if (item.type === tabName) {
+                    indexValue = index;
+                }
+            })
+        }
         return indexValue;
     }
     private renderSegmentsTab(itemName: string): HTMLElement {
@@ -2113,7 +2132,8 @@ export class DialogEdit {
         Grid.Inject(Edit, Page, GridToolbar, ForeignKey);
         gridModel = { ...gridModel, ...allProperty };
         gridModel.toolbar = [...toolbarCollection, ...gridModel.toolbar];
-        gridModel.columns = [...columnCollection, ...gridModel.columns] as (Column[] | string[] | ColumnModel[]);
+        const columnCollections: Column[] | string[] | ColumnModel[] = this.updateColumns(columnCollection, gridModel.columns as Column[]);
+        gridModel.columns = columnCollections;
         const gridObj: Grid = new Grid(gridModel);
         const divElement: HTMLElement = this.createDivElement('', ganttObj.element.id + '' + itemName + 'TabContainer');
         gridObj.appendTo(divElement);
@@ -2323,6 +2343,7 @@ export class DialogEdit {
         let toolbarCollection: (string | ItemModel | ToolbarItem)[] = [];
         let allProperty: GridModel;
         let toolbar: (string | ItemModel | ToolbarItem)[];
+        let columnCollection: any = [];
         if (!isNullOrUndefined(dialogField) && !isNullOrUndefined(dialogField.additionalParams)) {
             allProperty = dialogField.additionalParams as GridModel;
             for (const i in allProperty) {
@@ -2399,6 +2420,9 @@ export class DialogEdit {
                     case 'enableVirtualization':
                         Grid.Inject(VirtualScroll);
                         break;
+                    case 'columns':
+                        columnCollection = gridModel.columns;
+                        break;    
                     default:
                         break;
                     }
@@ -2408,10 +2432,31 @@ export class DialogEdit {
         Grid.Inject(Edit, Page, GridToolbar, ForeignKey);
         gridModel = { ...gridModel, ...allProperty };
         gridModel.toolbar = [...gridModel.toolbar, ...toolbarCollection];
+        const columnCollections : Column[] | string[] | ColumnModel[] =this.updateColumns(columnCollection, gridModel.columns as Column[]);
+        gridModel.columns = columnCollections;
         const gridObj: Grid = new Grid(gridModel);
         const divElement: HTMLElement = this.createDivElement('e-dependent-div', ganttObj.element.id + '' + itemName + 'TabContainer');
         gridObj.appendTo(divElement);
         return divElement;
+    }
+    private updateColumns(existingColumns: Column[], newColumns: Column[]): Column[] | string[] | ColumnModel[] {
+        let columnMap: { [key: string]: Column | string | ColumnModel } = {};
+        existingColumns.forEach(column => {
+            if (typeof column === 'object') {
+                columnMap[(column as Column | ColumnModel).field] = column as Column | ColumnModel;
+            }
+        });
+        newColumns.forEach(newColumn => {
+            if (typeof newColumn === 'object') {
+                let field = (newColumn as Column).field;
+                if (columnMap[field as string]) {
+                    Object.assign(columnMap[field as string], newColumn);
+                } else {
+                    existingColumns.push(newColumn);
+                }
+            }
+        });
+        return existingColumns;
     }
     private gridActionBegin(args: GridActionEventArgs): void {
         const itemName: string = 'Dependency';
@@ -2638,7 +2683,8 @@ export class DialogEdit {
         }
         TreeGrid.Inject(TreeGridSelection, TreeGridFilter, TreeGridEdit, VirtualScroll, TreeGridToolbar);
         inputModel = { ...inputModel, ...allProperty };
-        inputModel.columns = [...columnCollection, ...inputModel.columns];
+        const columnCollections: Column[] | string[] | ColumnModel[] = this.updateColumns(columnCollection, inputModel.columns as Column[]);
+        inputModel.columns = columnCollections as TreeGridColumnModel[];
         const treeGridObj: TreeGrid = new TreeGrid(inputModel);
         const resourceColumn: GanttColumnModel = this.parent.columnByField[this.parent.taskFields.resourceInfo];
         if (resourceColumn.allowEditing === false || resourceColumn.isPrimaryKey || this.parent.readOnly) {
@@ -3276,6 +3322,10 @@ export class DialogEdit {
         const parentRecord: IGanttData[] = [];
         for (let i: number = 0; i < dataSource.length; i++) {
             const preData: IPreData = dataSource[i as number];
+            const splitString = preData.name.split("-");
+            if (isNullOrUndefined(preData.id) || preData.id !== splitString[0]) {
+                preData.id = splitString[0];
+            }
             if (ids.indexOf(preData.id) === -1) {
                 if (this.parent.viewType === 'ProjectView') {
                     const currentRecord: IGanttData = this.parent.flatData[(this.parent.ids.indexOf(preData.id))];

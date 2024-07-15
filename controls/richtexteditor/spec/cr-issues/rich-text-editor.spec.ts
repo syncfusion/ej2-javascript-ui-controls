@@ -4102,6 +4102,19 @@ describe('RTE CR issues ', () => {
             expect(editor.element.classList.contains('e-rte-full-screen')).not.toBe(true);
         });
     });
+
+    describe('896562 - Script error throws when using RichTextEditor inside the Grid', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({});
+        });
+        it('Should not call remove method for the input element and then should not set null for the input elemeent.', () => {
+            destroy(editor);
+            expect(editor.inputElement).not.toBe(null);
+            // Setting null will not remove the event listener on the ngOnDestroy angular Base method focus and blur events.
+        });
+    });
+
     describe('875856 - Using indents on Numbered or Bulleted list turns into nested list in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         let rteEle: Element;
@@ -4591,7 +4604,7 @@ describe('RTE CR issues ', () => {
             }, 100);
         });
     });
-    xdescribe('895384 - The placeholder does not show up after cleaning up all the content in the Rich Text Editor.', () => {
+    describe('895384 - The placeholder does not show up after cleaning up all the content in the Rich Text Editor.', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8};
@@ -4638,6 +4651,33 @@ describe('RTE CR issues ', () => {
                 expect(rteObj.inputElement.innerHTML==='<p><br></p>').toBe(true);
                 done();
             }, 100);
+        });
+    });
+    describe('894204: Deleting empty line removes the text in the first list in RichTextEditor', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyboardEventArgs =  { code: 'Delete', preventDefault: function () { }, ctrlKey: false,keyCode:46, key: 'delete', stopPropagation: function () { }, shiftKey: false, which: 46 };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                placeholder: 'Insert table here',
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                value: '<p>Hello</p><p><br></p><ul><li>line 1</li><li>line 2</li><li>line 3</li></ul>'
+
+            });
+            rteEle = rteObj.element;
+        });
+        it('Delete with Empty br node', () => {
+            rteObj.dataBind();
+            rteObj.formatter.editorManager.nodeSelection.setCursorPoint(document,rteObj.inputElement.firstChild.nextSibling as HTMLElement,0);
+            rteObj.dataBind();
+            (rteObj as any).keyDown(keyboardEventArgs);
+            expect(rteObj.inputElement.innerHTML==='<p>Hello</p><p></p><ul><li>line 1</li><li>line 2</li><li>line 3</li></ul>').toBe(true);
+        });
+        afterEach((done: DoneFn)=> {
+            destroy(rteObj);
+            done();
         });
     });
 });

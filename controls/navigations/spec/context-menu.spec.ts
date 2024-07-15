@@ -1320,4 +1320,129 @@ describe('ContextMenu', () => {
         // check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
+
+    describe('Null or undefined Property testing', () => {
+        afterEach(() => {
+            contextMenu.destroy();
+        });
+        it('ContextMenu with cssClass', () => {
+            document.body.appendChild(div);
+            document.body.appendChild(ul);
+            contextMenu = new ContextMenu({ cssClass: null }, '#contextmenu');
+            contextMenu.dataBind();
+            expect(contextMenu.cssClass).toEqual(null);
+            contextMenu = new ContextMenu({ cssClass: undefined }, '#contextmenu');
+            contextMenu.dataBind();
+            expect(contextMenu.cssClass).toEqual('');
+        });
+        it('ContextMenu with RTL', () => {
+            document.body.appendChild(div);
+            document.body.appendChild(ul);
+            contextMenu = new ContextMenu({ enableRtl: null }, '#contextmenu');
+            contextMenu.dataBind();
+            expect(contextMenu.enableRTL).toEqual(undefined);
+            contextMenu = new ContextMenu({ enableRtl: undefined }, '#contextmenu');
+            contextMenu.dataBind();
+            expect(contextMenu.enableRTL).toEqual(undefined);
+        });
+        it('ContextMenu with  showItemOnClick', () => {
+            document.body.appendChild(div);
+            document.body.appendChild(ul);
+            contextMenu = new ContextMenu({ showItemOnClick: null }, '#contextmenu');
+            contextMenu.dataBind();
+            expect(contextMenu.showItemOnClick).toEqual(null);
+            contextMenu = new ContextMenu({ showItemOnClick: undefined }, '#contextmenu');
+            contextMenu.dataBind();
+            expect(contextMenu.showItemOnClick).toEqual(false);
+        });
+        it('ContextMenu with filter', () => {
+            document.body.appendChild(div);
+            document.body.appendChild(ul);
+            contextMenu = new ContextMenu({ filter: null }, '#contextmenu');
+            contextMenu.dataBind();
+            expect(contextMenu.filter).toEqual(null);
+            contextMenu = new ContextMenu({ filter: undefined }, '#contextmenu');
+            contextMenu.dataBind();
+            expect(contextMenu.filter).toEqual('');
+        });
+        it('ContextMenu with target', () => {
+            document.body.appendChild(div);
+            document.body.appendChild(ul);
+            contextMenu = new ContextMenu({ target: null }, '#contextmenu');
+            contextMenu.dataBind();
+            expect(contextMenu.target).toEqual(null);
+            contextMenu = new ContextMenu({ target: undefined }, '#contextmenu');
+            contextMenu.dataBind();
+            expect(contextMenu.target).toEqual('');
+        });
+        it('ContextMenu with items', () => {
+            document.body.appendChild(div);
+            document.body.appendChild(ul);
+            contextMenu = new ContextMenu({ items: null }, '#contextmenu');
+            contextMenu.dataBind();
+            expect(contextMenu.items).toEqual([]);
+            contextMenu = new ContextMenu({ items: undefined }, '#contextmenu');
+            contextMenu.dataBind();
+            expect(contextMenu.items).toEqual([]);
+        });
+
+        it('ContextMenu with hoverDelay', () => {
+            document.body.appendChild(div);
+            document.body.appendChild(ul);
+            contextMenu = new ContextMenu({ hoverDelay: null }, '#contextmenu');
+            contextMenu.dataBind();
+            expect(contextMenu.hoverDelay).toEqual(null);
+            contextMenu = new ContextMenu({ hoverDelay: undefined }, '#contextmenu');
+            contextMenu.dataBind();
+            expect(contextMenu.hoverDelay).toEqual(0);
+        });
+
+        it('ContextMenu with locale', () => {
+            document.body.appendChild(div);
+            document.body.appendChild(ul);
+            contextMenu = new ContextMenu({ locale: null }, '#contextmenu');
+            contextMenu.dataBind();
+            expect(contextMenu.locale).toEqual('en-US');
+            contextMenu = new ContextMenu({ locale: undefined }, '#contextmenu');
+            contextMenu.dataBind();
+            expect(contextMenu.locale).toEqual('en-US');
+        });
+
+        it('ContextMenu with enableHtmlSanitizer', () => {
+            document.body.appendChild(div);
+            document.body.appendChild(ul);
+            contextMenu = new ContextMenu({ enableHtmlSanitizer: null }, '#contextmenu');
+            contextMenu.dataBind();
+            expect(contextMenu.enableHtmlSanitizer).toEqual(null);
+            contextMenu = new ContextMenu({ enableHtmlSanitizer: undefined }, '#contextmenu');
+            contextMenu.dataBind();
+            expect(contextMenu.enableHtmlSanitizer).toEqual(true);
+        });
+
+        it('ContextMenu with animationSettings', () => {
+            document.body.appendChild(div);
+            document.body.appendChild(ul);
+            contextMenu = new ContextMenu({ animationSettings: { duration: null, easing: null, effect: null } }, '#contextmenu');
+            contextMenu.dataBind();
+            expect(contextMenu.animationSettings.duration).toEqual(null);
+            expect(contextMenu.animationSettings.easing).toEqual(null);
+            expect(contextMenu.animationSettings.effect).toEqual(null);
+            contextMenu = new ContextMenu({ animationSettings: { duration: undefined, easing: undefined, effect: undefined } }, '#contextmenu');
+            contextMenu.dataBind();
+            expect(contextMenu.animationSettings.duration).toEqual(undefined);
+            expect(contextMenu.animationSettings.easing).toEqual(undefined);
+            expect(contextMenu.animationSettings.effect).toEqual(undefined);
+        });
+
+        it('ContextMenu with enablePersistence', () => {
+            document.body.appendChild(div);
+            document.body.appendChild(ul);
+            contextMenu = new ContextMenu({ enablePersistence: null }, '#contextmenu');
+            contextMenu.dataBind();
+            expect(contextMenu.enablePersistence).toEqual(null);
+            contextMenu = new ContextMenu({ enablePersistence: undefined }, '#contextmenu');
+            contextMenu.dataBind();
+            expect(contextMenu.enablePersistence).toEqual(false);
+        });
+    });
 });

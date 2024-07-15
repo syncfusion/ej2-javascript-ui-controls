@@ -2346,10 +2346,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 this.popupObj.refreshPosition();
                 if (!(this.showCheckBox && this.showSelectAll) && (!this.popupDiv.classList.contains(NODATA)
                     && this.treeItems.length > 0)) {
-                    let focusedElement: HTMLElement;
-                    if (this.value != null && this.text != null) {
+                    let focusedElement: HTMLElement = this.value != null && this.text != null ? this.treeObj.element.querySelector('[data-uid="' + this.value[0] + '"]') : null;
+                    if (focusedElement) {
                         this.treeObj.element.querySelector('li').setAttribute('tabindex', '-1');
-                        focusedElement = this.treeObj.element.querySelector('[data-uid="' + this.value[0] + '"]');
                         focusedElement.setAttribute('tabindex', '0');
                     }
                     else {

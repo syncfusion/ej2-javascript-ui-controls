@@ -1575,4 +1575,40 @@ describe('Editing ->', () => {
             });
         });
     });
+
+    describe('EJ2-893055 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Formula cells are not calculated properly while changing the values of formula dependent cells', (done: Function) => {
+            helper.invoke('numberFormat', ['dd-mm-yyyy', 'B3']);
+            helper.edit('B3', '26-02-2024');
+            helper.edit('I1', '=IF(B3="", True, SUM(B3,H2))');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('45358');
+            helper.edit('B3', '25-02-2024');
+            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('10');
+            done();
+        });
+        it('Checking the values of formula dependent cells', (done: Function) => {
+            helper.invoke('numberFormat', ['dd-mm-yyyy', 'B4']);
+            helper.edit('B4', '26-02-2024');
+            helper.edit('I2', '=B4');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('26-02-2024');
+            helper.edit('B4', '25-02-2024');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('25-02-2024');
+            done();
+        });
+        it('Checking the values of formula dependent cells with custom formats', (done: Function) => {
+            helper.invoke('numberFormat', ['dd-mm-yyyy', 'B4']);
+            helper.edit('B4', '26-02-2024');
+            helper.edit('I2', '=B4');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('26-02-2024');
+            helper.edit('B4', '02/25/2024');
+            expect(helper.invoke('getCell', [1, 8]).textContent).toBe('25-02-2024');
+            done();
+        });
+    });
 });

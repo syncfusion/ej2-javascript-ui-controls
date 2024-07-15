@@ -109,7 +109,7 @@ describe('Autocomplete_Virtualization', () => {
                     expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
                     //expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[7].textContent.trim()).toBe('Item 12');
                     done();
-                    }, 650)
+                    }, 500)
             }, 100)
            
         });
@@ -160,7 +160,7 @@ describe('Autocomplete_Virtualization', () => {
                 dropObj.keyActionHandler(keyEventArgs); 
                 expect((li[2] as Element).classList.contains('e-item-focus')).toBe(true);
                 done();
-            }, 450);
+            }, 500);
         });
         describe('virtualization mouse actions', () => {
             let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down' };
@@ -194,7 +194,7 @@ describe('Autocomplete_Virtualization', () => {
                     dropObj.keyActionHandler(keyEventArgs);
                     expect((li[1] as Element).classList.contains('e-active')).toBe(true);
                     done();
-                }, 850);
+                }, 500);
             });
             it('virtualization up actions scroll by manually', (done) => {
 
@@ -218,9 +218,9 @@ describe('Autocomplete_Virtualization', () => {
                         dropObj.keyActionHandler(keyEventArgs);
                         expect((li[2] as Element).classList.contains('e-active')).toBe(true);
                         done();
-                    }, 850);
+                    }, 500);
                    
-                }, 850);
+                }, 500);
             });
         });
         describe('virtualization filtering actions', () => {
@@ -240,27 +240,30 @@ describe('Autocomplete_Virtualization', () => {
                 dropObj.destroy();
                 document.body.innerHTML = '';
             });
-            it('filter a suggestion list with ascending order', () => {
+            it('filter a suggestion list with ascending order', (done) => {
                 dropObj.sortOrder = 'Ascending';
                 dropObj.dataBind();
                 dropObj.showPopup();
-                expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(30);
-                expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
-                expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 1');
-                dropObj.filterInput.value = "Item 2";
-                dropObj.onInput()
-                dropObj.onFilterUp(keyEventArgs);
-                let li: Element[] = dropObj.list.querySelectorAll('li:not(.e-virtual-list)');
-                dropObj.isPopupOpen = true;
-                keyEventArgs.type = 'keydown';
-                keyEventArgs.action = 'down';
-                dropObj.keyActionHandler(keyEventArgs);
-                expect(li[1].classList.contains('e-item-focus')).toBe(true);
-                expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 2');
-                keyEventArgs.action = 'down';
-                dropObj.keyActionHandler(keyEventArgs);
-                expect(li[2].classList.contains('e-item-focus')).toBe(true);
-                expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[1].textContent.trim()).toBe('Item 20');
+                setTimeout(() => {
+                    expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(30);
+                    expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
+                    expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 1');
+                    dropObj.filterInput.value = "Item 2";
+                    dropObj.onInput()
+                    dropObj.onFilterUp(keyEventArgs);
+                    let li: Element[] = dropObj.list.querySelectorAll('li:not(.e-virtual-list)');
+                    dropObj.isPopupOpen = true;
+                    keyEventArgs.type = 'keydown';
+                    keyEventArgs.action = 'down';
+                    dropObj.keyActionHandler(keyEventArgs);
+                    expect(li[1].classList.contains('e-item-focus')).toBe(true);
+                    expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 2');
+                    keyEventArgs.action = 'down';
+                    dropObj.keyActionHandler(keyEventArgs);
+                    expect(li[2].classList.contains('e-item-focus')).toBe(true);
+                    expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[1].textContent.trim()).toBe('Item 20');
+                    done();
+                }, 500)
             });
         });
         describe('virtualization mouse actions with clear value', () => {
@@ -299,8 +302,8 @@ describe('Autocomplete_Virtualization', () => {
                         dropObj.keyActionHandler(keyEventArgs);
                         expect((li[1] as Element).classList.contains('e-active')).toBe(true);
                         done();
-                    }, 850);
-                }, 850);
+                    }, 500);
+                }, 500);
             });
         });
         describe('Virtualization Template support', () => {
@@ -331,7 +334,7 @@ describe('Autocomplete_Virtualization', () => {
                     dropObj.keyActionHandler(keyEventArgs);
                     //expect((li[0] as Element).classList.contains('e-active')).toBe(true);
                     done();
-                }, 850);
+                }, 500);
             });
         });
         describe('Virtualization with clear value', () => {
@@ -368,7 +371,7 @@ describe('Autocomplete_Virtualization', () => {
                     expect(dropObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
                     expect(dropObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Item 1');
                     done();
-                }, 650);
+                }, 500);
             });
         });
     });

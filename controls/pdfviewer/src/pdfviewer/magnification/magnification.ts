@@ -39,6 +39,10 @@ export class Magnification {
     /**
      * @private
      */
+    public isWaitingPopupUpdated: boolean = false;
+    /**
+     * @private
+     */
     public isInitialCustomZoomValues: boolean = true;
     /**
      * @private
@@ -516,6 +520,7 @@ export class Magnification {
     private magnifyPages(): void {
         this.clearRerenderTimer();
         this.pdfViewerBase.showPageLoadingIndicator(this.pdfViewerBase.currentPageNumber - 1, true);
+        this.isWaitingPopupUpdated = true;
         if (!this.isPagesZoomed) {
             this.reRenderPageNumber = this.pdfViewerBase.currentPageNumber;
         }

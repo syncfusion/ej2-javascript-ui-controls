@@ -1173,6 +1173,9 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.isCustomRendered = true;
             this.remoteCustomValue = this.enableVirtualization ? false : this.remoteCustomValue;
         }
+        if (this.mode === 'CheckBox' && this.enableGroupCheckBox && !isNullOrUndefined(this.fields.groupBy) && !isNullOrUndefined(this.fields.disabled)) {
+            this.disableGroupHeader();
+        }
         if (this.dataSource instanceof DataManager && this.mode === 'CheckBox' && this.allowFiltering) {
             this.removeFocus();
         }
@@ -1338,9 +1341,9 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
 
     private checkSelectAll(): void {
-        const groupItemLength: number = this.list.querySelectorAll('li.e-list-group-item.e-active').length;
+        const groupItemLength: number = !isNullOrUndefined(this.fields.disabled) ? this.list.querySelectorAll('li.e-list-group-item.e-active:not(.e-disabled)').length : this.list.querySelectorAll('li.e-list-group-item.e-active').length;
         const listItem: NodeListOf<Element> = this.list.querySelectorAll('li.e-list-item');
-        const searchCount: number = this.enableVirtualization ? this.list.querySelectorAll('li.' + dropDownBaseClasses.li + ':not(.e-virtual-list)').length : this.list.querySelectorAll('li.' + dropDownBaseClasses.li).length;
+        const searchCount: number = this.enableVirtualization ? this.list.querySelectorAll('li.' + dropDownBaseClasses.li + ':not(.e-virtual-list)').length : !isNullOrUndefined(this.fields.disabled) ? this.list.querySelectorAll('li.' + dropDownBaseClasses.li + ':not(.e-disabled)').length : this.list.querySelectorAll('li.' + dropDownBaseClasses.li).length;
         let searchActiveCount: number = this.list.querySelectorAll('li.' + dropDownBaseClasses.selected).length;
         if (this.enableGroupCheckBox && !isNullOrUndefined(this.fields.groupBy)) {
             searchActiveCount = searchActiveCount - groupItemLength;
@@ -2729,7 +2732,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         const focusedLi: HTMLElement  = this.list ? this.list.querySelector('.e-item-focus') : null;
         if (this.isDisabledElement(focusedLi)) {
-            if (this.list.querySelectorAll('.e-list-item:not(.e-hide-listitem):not(.e-disabled)').length === 0) {
+            if (this.list.querySelectorAll('.e-list-item:not(.e-hide-listitem):not(.e-disabled)').length === 0 || (this.keyCode === 38 && this.mode === 'CheckBox' && this.enableGroupCheckBox && !isNullOrUndefined(this.fields.groupBy) && focusedLi === this.list.querySelector('li.e-list-group-item'))) {
                 this.removeFocus();
                 return;
             }
@@ -3130,9 +3133,18 @@ export class MultiSelect extends DropDownBase implements IInput {
     private checkMaxSelection(): void {
         const limit: number = this.value && this.value.length ? this.value.length : 0;
         if (limit === this.maximumSelectionLength) {
-            const collection: NodeListOf<Element> = <NodeListOf<HTMLElement>>this.list.querySelectorAll('li.'
+            const activeItems: NodeListOf<Element> = <NodeListOf<HTMLElement>>this.list.querySelectorAll('li.'
+                + dropDownBaseClasses.li + '.e-active');
+            removeClass(activeItems, 'e-disable');
+
+            const inactiveItems: NodeListOf<Element> = <NodeListOf<HTMLElement>>this.list.querySelectorAll('li.'
                 + dropDownBaseClasses.li + ':not(.e-active)');
-            addClass(collection, 'e-disable');
+            addClass(inactiveItems, 'e-disable');
+        }
+        if (limit < this.maximumSelectionLength) {
+            const collection: NodeListOf<Element> = <NodeListOf<HTMLElement>>this.list.querySelectorAll('li.'
+                + dropDownBaseClasses.li );
+            removeClass(collection, 'e-disable');
         }
     }
     private dispatchSelect(
@@ -3684,7 +3696,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.mode === 'CheckBox') {
             this.refreshPlaceHolder();
             this.refreshInputHight();
-            if (this.changeOnBlur && isClearAll && (isNullOrUndefined(this.value) || this.value.length === 0)) {
+            if (!this.changeOnBlur && isClearAll && (isNullOrUndefined(this.value) || this.value.length === 0)) {
                 this.updateValueState(e, this.value, this.tempValues);
             }
         }
@@ -4498,16 +4510,18 @@ export class MultiSelect extends DropDownBase implements IInput {
 
     private findGroupAttrtibutes(listElement: Element, checked: number, unChecked: number, count: number, position: number): number[] {
         while (!listElement.classList.contains('e-list-group-item')) {
-            if (listElement.classList.contains('e-list-icon')) {
-                listElement = listElement.parentElement;
+            if (!(this.fields.disabled && this.isDisabledElement(listElement as HTMLElement))) {
+                if (listElement.classList.contains('e-list-icon')) {
+                    listElement = listElement.parentElement;
+                }
+                if (listElement.getElementsByClassName('e-frame')[0].classList.contains('e-check') &&
+                    listElement.classList.contains('e-list-item')) {
+                    checked++;
+                } else if (listElement.classList.contains('e-list-item')) {
+                    unChecked++;
+                }
+                count++;
             }
-            if (listElement.getElementsByClassName('e-frame')[0].classList.contains('e-check') &&
-            listElement.classList.contains('e-list-item')) {
-                checked++;
-            } else if (listElement.classList.contains('e-list-item')) {
-                unChecked++;
-            }
-            count++;
             (listElement as Element) = position ? listElement.nextElementSibling : listElement.previousElementSibling;
             if (listElement == null) {
                 break;
@@ -4516,7 +4530,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         return [checked, unChecked, count];
     }
     private updateCheckBox(groupHeader: Element, checked: number, unChecked: number, count: number): void {
-        if (groupHeader === null) {
+        if (groupHeader === null || (!isNullOrUndefined(this.fields.disabled) && count === 0)) {
             return;
         }
         const checkBoxElement : Element = groupHeader.getElementsByClassName('e-frame')[0];
@@ -4540,6 +4554,28 @@ export class MultiSelect extends DropDownBase implements IInput {
             checkBoxElement.classList.add('e-stop');
             closest(checkBoxElement, '.' + 'e-list-group-item').classList.add('e-active');
             groupHeader.setAttribute('aria-selected', 'false');
+        }
+    }
+    private disableGroupHeader (): void {
+        const collection: NodeListOf<HTMLLIElement> = this.list.querySelectorAll('li.e-list-group-item');
+        if (collection) {
+            for (let index: number = 0; index < collection.length; index++) {
+                let isDisabled: boolean = true;
+                let target: Element = collection[index as number].nextElementSibling as Element;
+                while (!target.classList.contains('e-list-group-item')) {
+                    if (!this.isDisabledElement(target as HTMLElement)) {
+                        isDisabled = false;
+                        break;
+                    }
+                    target = target.nextElementSibling;
+                    if (target == null) {
+                        break;
+                    }
+                }
+                if (isDisabled) {
+                    this.disableListItem(collection[index as number]);
+                }
+            }
         }
     }
     private deselectHeader (): void {
@@ -4921,19 +4957,21 @@ export class MultiSelect extends DropDownBase implements IInput {
                     return;
                 }
                 while (listElement.classList.contains('e-list-item')) {
-                    if (state) {
-                        if (!listElement.firstElementChild.lastElementChild.classList.contains('e-check')) {
-                            let selectionLimit: number = this.value && this.value.length ? this.value.length : 0;
-                            if (listElement.classList.contains('e-active')) {
-                                selectionLimit -= 1;
+                    if (!(this.fields.disabled && this.isDisabledElement(listElement as HTMLElement))) {
+                        if (state) {
+                            if (!listElement.firstElementChild.lastElementChild.classList.contains('e-check')) {
+                                let selectionLimit: number = this.value && this.value.length ? this.value.length : 0;
+                                if (listElement.classList.contains('e-active')) {
+                                    selectionLimit -= 1;
+                                }
+                                if (selectionLimit < this.maximumSelectionLength) {
+                                    this.updateListSelection(listElement, event);
+                                }
                             }
-                            if (selectionLimit < this.maximumSelectionLength) {
+                        } else {
+                            if (listElement.firstElementChild.lastElementChild.classList.contains('e-check')) {
                                 this.updateListSelection(listElement, event);
                             }
-                        }
-                    } else {
-                        if (listElement.firstElementChild.lastElementChild.classList.contains('e-check')) {
-                            this.updateListSelection(listElement, event);
                         }
                     }
                     listElement = listElement.nextElementSibling;
@@ -5237,7 +5275,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         if (this.mode === 'CheckBox') {
             this.updateDelimView();
-            if (!(isRemoveAll || this.isSelectAll) && this.isSelectAllTarget) {
+            if ((!(isRemoveAll || this.isSelectAll) && this.isSelectAllTarget) || (this.isSelectAll && this.isSelectAllTarget)) {
                 this.updateDelimeter(this.delimiterChar, event);
             }
             this.refreshInputHight();
@@ -5791,7 +5829,7 @@ export class MultiSelect extends DropDownBase implements IInput {
      * @returns {void}
      */
     public render(): void {
-        if(!isNullOrUndefined(this.value))
+        if(!isNullOrUndefined(this.value) && this.value.length > 0)
         {
             // eslint-disable-next-line
             this.value = [...this.value as any];
@@ -6198,6 +6236,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                             const oldValue: string[] | number[] | boolean[] | object[] = this.value;
                             this.removeDisabledItemsValue(this.value);
                             this.updateVal(this.value, oldValue, 'value');
+                        }
+                        if (this.mode === 'CheckBox' && this.enableGroupCheckBox && !isNullOrUndefined(this.fields.groupBy)) {
+                            this.disableGroupHeader();
                         }
                     }
                 }

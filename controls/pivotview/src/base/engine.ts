@@ -2873,8 +2873,8 @@ export class PivotEngine {
         let isNumberGroupSorting: boolean = false;
         if (this.dataSourceSettings.groupSettings.length > 0) {
             const groupField: IGroupSettings[] = this.dataSourceSettings.groupSettings.filter((field: IGroupSettings) => {
-                return field.name === childrens.id as string
-            })
+                return field.name === childrens.id as string;
+            });
             if (!isNullOrUndefined(groupField) && groupField.length > 0) {
                 isNumberGroupSorting = groupField[0].type === 'Number' && childrens.type === 'string';
             }

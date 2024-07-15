@@ -2,7 +2,21 @@
 
 ## [Unreleased]
 
-## 26.1.41 (2024-07-09)
+## 26.1.42 (2024-07-16)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#I503891` - Provide parent item filtering support for QueryBuilder dropdowntree field mode.
+
+## 26.1.40 (2024-07-02)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- `#599199` - Issue with `setRulesFromSql` and `getSqlFromRules` methods is not working properly when using complex query with `NOT` operator in Query Builder has been fixed.
 
 ### QueryBuilder
 

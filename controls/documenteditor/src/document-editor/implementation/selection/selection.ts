@@ -2557,19 +2557,22 @@ export class Selection {
      * @returns {void}
      */
     public handleTabKey(isNavigateInCell: boolean, isShiftTab: boolean): void {
-        const start: TextPosition = this.start;
+        let start: TextPosition = this.start;
+        if (!this.isForward) {
+            start = this.end;
+        }
         let isCursorAtParaStart : boolean = false;
         let isCursorAtLineStart : boolean = false;
         if (isNullOrUndefined(start)) {
             return;
         }
-        if ((start.offset === 0 || (!this.isForward && this.end.offset === 0)) && start.paragraph.paragraphFormat.listFormat.listId == -1) {
+        if (start.offset === 0 && start.paragraph.paragraphFormat.listFormat.listId == -1) {
             if (start.currentWidget.isFirstLine()) {
                 isCursorAtParaStart = true;
             }
             isCursorAtLineStart = true;
         }
-        if (start.paragraph.isInsideTable && this.end.paragraph.isInsideTable && (isNavigateInCell || isShiftTab)) {
+        if (this.start.paragraph.isInsideTable && this.end.paragraph.isInsideTable && (isNavigateInCell || isShiftTab)) {
             //Perform tab navigation
             if (!this.owner.documentHelper.isDocumentProtected && !(this.documentHelper.protectionType === 'FormFieldsOnly')) {
                 if (isShiftTab) {
@@ -4225,8 +4228,8 @@ export class Selection {
      * @param element 
      * @returns 
      */
-    public isElementInSelection(element: ElementBox, isStart: boolean): boolean {
-        let offset: number = element.line.getOffset(element, isStart ? 0 : 1);
+    public isElementInSelection(element: ElementBox, isEnd: boolean): boolean {
+        let offset: number = element.line.getOffset(element, isEnd ? 0 : 1);
         let elemPosition: TextPosition = new TextPosition(this.owner);
         elemPosition.setPositionParagraph(element.line, offset);
         let start: TextPosition = this.start;

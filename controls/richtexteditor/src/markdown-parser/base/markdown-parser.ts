@@ -67,13 +67,11 @@ export class MarkdownParser {
         this.observer.on(EVENTS.KEY_DOWN, this.editorKeyDown, this);
         this.observer.on(EVENTS.KEY_UP, this.editorKeyUp, this);
         this.observer.on(EVENTS.MODEL_CHANGED, this.onPropertyChanged, this);
-        this.observer.on(EVENTS.INTERNAL_DESTROY, this.destroy, this);
     }
     private unwireEvents(): void {
         this.observer.off(EVENTS.KEY_DOWN, this.editorKeyDown);
         this.observer.off(EVENTS.KEY_UP, this.editorKeyUp);
         this.observer.off(EVENTS.MODEL_CHANGED, this.onPropertyChanged);
-        this.observer.off(EVENTS.INTERNAL_DESTROY, this.destroy);
     }
     private onPropertyChanged(props: { [key: string]: Object }): void {
         this.observer.notify(EVENTS.MODEL_CHANGED_PLUGIN, props);
@@ -137,6 +135,7 @@ export class MarkdownParser {
     }
 
     public destroy(): void {
+        this.observer.notify(EVENTS.INTERNAL_DESTROY, {});
         this.unwireEvents();
     }
 }

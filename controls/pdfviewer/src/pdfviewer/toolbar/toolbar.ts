@@ -223,6 +223,14 @@ export class Toolbar {
         const toolbar: HTMLElement = this.toolbarElement;
         if (enableToolbar) {
             toolbar.style.display = 'block';
+            const toolbarContainer: HTMLElement = this.pdfViewerBase.getElement('_toolbarContainer');
+            if (toolbarContainer) {
+                let toolbarHeight: number = toolbarContainer.clientHeight;;
+                if (toolbarHeight === 0) {
+                    toolbarHeight = parseFloat(window.getComputedStyle(toolbarContainer)['height']) + 1;
+                }
+                this.pdfViewerBase.toolbarHeight = toolbarHeight;
+            }
             if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && this.pdfViewer.toolbarModule &&
             this.pdfViewer.toolbarModule.annotationToolbarModule) {
                 this.pdfViewer.toolbarModule.annotationToolbarModule.hideMobileAnnotationToolbar();

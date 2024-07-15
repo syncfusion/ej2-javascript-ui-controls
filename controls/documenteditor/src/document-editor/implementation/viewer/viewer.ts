@@ -2425,6 +2425,9 @@ export class DocumentHelper {
                 return;
             }
             const widget: LineWidget = this.getLineWidget(touchPoint);
+            if (isNullOrUndefined(widget)) {
+                return;
+            }
             let formField: FieldElementBox = this.selection.getHyperLinkFieldInCurrentSelection(widget, touchPoint, true);
             if (isNullOrUndefined(formField)) {
                 formField = this.selection.getCurrentFormField();

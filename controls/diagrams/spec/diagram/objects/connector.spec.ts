@@ -2673,4 +2673,39 @@ describe('Diagram Control', () => {
         }); 
     });
 
+    describe('UML classifier connector double click', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let connectors: ConnectorModel[] = [
+                {
+                    id: 'Composition',
+                    sourcePoint: { x: 300, y: 100 },
+                    targetPoint: { x: 500, y: 200 },
+                    type: 'Straight',
+                    shape: { type: 'UmlClassifier', relationship: 'Composition' }
+                }
+            ];
+            diagram = new Diagram({
+                width: '900px', height: '500px', connectors: connectors,
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Check UML classifier connector on double click', function (done) {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            expect(document.getElementById('diagram_editBox') === null);
+            mouseEvents.clickEvent(diagramCanvas, 409, 159);
+            mouseEvents.dblclickEvent(diagramCanvas, 409, 159);
+            expect(document.getElementById('diagram_editBox') !== null);
+            done();
+        }); 
+    });
+
 });

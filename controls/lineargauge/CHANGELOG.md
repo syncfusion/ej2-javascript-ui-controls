@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 26.1.42 (2024-07-16)
+
+### LinearGauge
+
+#### Bug Fixes
+
+- `#I604579` - The `cancel` property is now available in the `resized` event to halt the progress of the event when it is set to **true**.
+
 ## 18.3.47 (2020-11-05)
 
 ### LinearGauge

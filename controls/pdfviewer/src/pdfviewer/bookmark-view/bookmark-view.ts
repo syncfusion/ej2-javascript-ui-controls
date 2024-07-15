@@ -387,6 +387,9 @@ export class BookmarkView {
         if (!this.isKeyboardNavigation) {
             this.pdfViewerBase.focusViewerContainer();
         }
+        if (pageIndex > 0 && pageIndex <= this.pdfViewerBase.pageCount && this.pdfViewerBase.currentPageNumber !== pageIndex + 1) {
+            this.pdfViewerBase.updateScrollTop(pageIndex, false);
+        }
         this.isKeyboardNavigation = false;
         return false;
     }

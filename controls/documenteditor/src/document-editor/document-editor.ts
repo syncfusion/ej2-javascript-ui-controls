@@ -32,7 +32,7 @@ import { PasteOptions } from './index';
 import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs, Operation, ProtectionInfo, HistoryInfo, BaseHistoryInfo, WParagraphStyle, WList, WCharacterStyle, CollaborativeEditingHandler, ActionInfo } from './implementation/index';
 import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-dialog';
 import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';
-import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat, ProtectionType, ContentControlInfo } from './base';
+import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat, ProtectionType, ContentControlInfo, ServerActionType } from './base';
 import { TrackChangesPane } from './implementation/track-changes/track-changes-pane';
 import { RevisionCollection } from './implementation/track-changes/track-changes';
 import { NotesDialog } from './implementation/dialogs/notes-dialog';
@@ -1154,6 +1154,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public enableContentControlPropertiesDialog: boolean;
+    /**
+     * @private
+     */
+    public serverActionSettingsImport: string = 'Import';
     /**
      * Gets the total number of pages.
      *
@@ -3303,7 +3307,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             return await this.send(formData);
         }
         private send(formData: FormData): Promise<string> {
-            let serviceUrl: string = this.serviceUrl + 'Import';
+            let serviceUrl: string = this.serviceUrl + this.serverActionSettingsImport;
             return new Promise((resolve, reject) => {
                 const ajax: XmlHttpRequestHandler = new XmlHttpRequestHandler();
                 ajax.url = serviceUrl;
@@ -3313,7 +3317,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 ajax.onFailure = this.failureHandler.bind(this);
                 ajax.onError = this.failureHandler.bind(this);
                 ajax.customHeaders = this.headers;
-                const httprequestEventArgs: XmlHttpRequestEventArgs = { serverActionType: 'Import', headers: this.headers, timeout: 0, cancel: false, withCredentials: false };
+                const httprequestEventArgs: XmlHttpRequestEventArgs = { serverActionType: this.serverActionSettingsImport as ServerActionType, headers: this.headers, timeout: 0, cancel: false, withCredentials: false };
                 this.trigger(beforeXmlHttpRequestSend, httprequestEventArgs);
                 if (httprequestEventArgs.cancel) {
                     reject(null);

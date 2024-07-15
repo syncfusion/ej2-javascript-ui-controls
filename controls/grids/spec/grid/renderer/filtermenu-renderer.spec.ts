@@ -271,6 +271,8 @@ describe('filter menu module =>', () => {
 
         it('number filter ui change render testing', (done: Function) => {
             actionComplete = (args?: any): void => {
+                let flm: FilterMenuRenderer = new FilterMenuRenderer(
+                    gridObj, gridObj.filterSettings as FilterSettings, gridObj.serviceLocator);
                 if (args.requestType === 'filterAfterOpen') {
                     expect((gridObj.filterModule as any).filterModule.isDialogOpen).toEqual(true);
                     let instances: string = 'ej2_instances';
@@ -282,6 +284,7 @@ describe('filter menu module =>', () => {
                     expect(valInput[instances][0].enabled).toBe(false);
                     dd.value = 'equal';
                     dd.refresh();
+                    (flm as any).closeResponsiveDialog();
                     gridObj.actionComplete = null;
                     done();
                 }

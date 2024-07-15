@@ -1188,7 +1188,10 @@ export class Layout {
         } while (firstChild = firstChild.nextWidget as BlockWidget);
     }
 
-    private linkFieldInParagraph(widget: ParagraphWidget): void {
+    /**
+     * @private
+     */
+    public linkFieldInParagraph(widget: ParagraphWidget): void {
         for (let j: number = 0; j < widget.childWidgets.length; j++) {
             const line: LineWidget = widget.childWidgets[j] as LineWidget;
             for (let i: number = 0; i < line.children.length; i++) {
@@ -1594,6 +1597,9 @@ export class Layout {
             //        this.isfoot = true;
             /* eslint-disable-next-line max-len */
             if (this.viewer instanceof PageLayoutViewer && footnote.bodyWidgets.length > 0 && ((footnote.footNoteType === 'Footnote' && footnote.sectionFormat.columns.length > 1) || (footnote.footNoteType === 'Endnote' && footnote.bodyWidgets[0].sectionFormat.columns.length > 1))) {
+                if (this.isLayoutWhole) {
+                    this.updateColumnIndex(footnote.bodyWidgets[0], false);
+                }
                 this.splitFootNoteWidgetBasedOnColumn(footnote.bodyWidgets[0]);
             }
             let footBody: BodyWidget = footnote.bodyWidgets[0];
@@ -1663,7 +1669,10 @@ export class Layout {
                 let height: number = this.getNextWidgetHeight(section);
                 if (height > footnote.y) {
                     this.footnoteHeight = footnote.height;
+                    let isLayoutWhole: boolean = this.isLayoutWhole;
+                    this.isLayoutWhole = false;
                     this.layoutMultiColumnBody(section, true);
+                    this.isLayoutWhole = isLayoutWhole;
                 }
             }
             this.viewer.clientActiveArea = clientActiveArea;
@@ -9398,9 +9407,7 @@ export class Layout {
         if (wrapDiff > 0) {
             this.viewer.clientArea.x = this.viewer.clientArea.x - wrapDiff;
         }
-        let tableWidget: TableWidget[] = table.getSplitWidgets() as TableWidget[];
-        if (table.wrapTextAround && table.bodyWidget && (table.bodyWidget.lastChild !== tableWidget[tableWidget.length - 1] 
-            || (this.isRelayout && clientActiveAreaForTableWrap.height < table.height))) {
+        if (table.wrapTextAround) {
             this.updateClientAreaForWrapTable(tableView, table, false, clientActiveAreaForTableWrap, clientAreaForTableWrap);
         }
         tableView[tableView.length - 1].isLayouted = true;
@@ -9431,9 +9438,13 @@ export class Layout {
             if (table.wrapTextAround && table.bodyWidget) {
                 if (tables.length == 1) {
                     if (!isNullOrUndefined(table.previousWidget) || table.isInHeaderFooter || table.isInsideTable) {
-                        this.viewer.clientActiveArea = clientActiveAreaForTableWrap.clone();
-                        this.viewer.clientArea = clientAreaForTableWrap.clone();
-                        if (!table.isLayouted && this.viewer.clientActiveArea.height < table.height && table.width >= this.viewer.clientActiveArea.width) {
+                        let clientActiveArea: Rect = clientActiveAreaForTableWrap.clone();
+                        let clientArea: Rect = clientAreaForTableWrap.clone();
+                        if (table.bodyWidget.lastChild !== tables[tables.length - 1]) {
+                            this.viewer.clientActiveArea = clientActiveArea;
+                            this.viewer.clientArea = clientArea;
+                        }
+                        if (!table.isLayouted && clientActiveArea.height < table.height && table.width >= clientActiveArea.width) {
                             this.moveBlocksToNextPage(table.previousWidget as BlockWidget, false);
                         }
                     } else {
@@ -9444,6 +9455,13 @@ export class Layout {
                         table.bodyWidget.floatingElements.push(table);
                     }
                 } else {
+                    if (!isNullOrUndefined(table.previousWidget) && !table.isLayouted && clientActiveAreaForTableWrap.height < table.height && table.width >= clientActiveAreaForTableWrap.width) {
+                        let splittedTable: TableWidget = table;
+                        do {
+                            this.moveBlocksToNextPage(splittedTable.previousWidget as BlockWidget, false);
+                            splittedTable = splittedTable.nextSplitWidget as TableWidget;
+                        } while (splittedTable);
+                    }
                     this.documentHelper.tableLefts.pop();
                     this.viewer.updateClientArea(table.bodyWidget, table.bodyWidget.page);
                     for (let z: number = 0; z < tables.length; z++) {
@@ -10073,7 +10091,7 @@ export class Layout {
     public updateFieldElements(reLayout?: boolean): void {
         for (let i: number = 0; i < this.documentHelper.fields.length; i++) {
             const fieldBegin: FieldElementBox = this.documentHelper.fields[i];
-            if(this.viewer instanceof PageLayoutViewer || (this.viewer instanceof WebLayoutViewer && !(fieldBegin.line.paragraph.bodyWidget instanceof HeaderFooterWidget))){
+            if (this.viewer instanceof PageLayoutViewer || (this.viewer instanceof WebLayoutViewer && !(fieldBegin.line.paragraph.containerWidget instanceof TextFrame || fieldBegin.line.paragraph.bodyWidget instanceof HeaderFooterWidget))) {
                 if (!isNullOrUndefined(this.documentHelper.selection)) {
                     const fieldCode: string = this.documentHelper.selection.getFieldCode(fieldBegin);
                     const regex: RegExp = /^(?!.*\bhyperlink\b).*\bpage\b.*$/;

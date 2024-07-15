@@ -570,10 +570,11 @@ export class ConnectorLineEdit {
             if (ganttRecord.taskData[this.parent.taskFields.dependency]) {
                 ganttRecord.taskData[this.parent.taskFields.dependency] = null;
             }
+            const err: string = `${predecessorString} is an invalid relation for task ${this.parent.taskFields.id}. Kindly ensure the ${this.parent.taskFields.dependency} field contains only valid predecessor relations.`;
+            this.parent.trigger('actionFailure', { error: err });
             return false;
         }
     }
-
     private checkParentRelation(ganttRecord: IGanttData, predecessorIdArray: string[]): boolean {
         const editingData: IGanttData = ganttRecord;
         const checkParent: boolean = true;
@@ -1010,12 +1011,22 @@ export class ConnectorLineEdit {
             parentGanttRecord = this.parent.connectorLineModule.getRecordByID(predecessor[i as number].from as string);
             let violationType: string = null;
             if (predecessor[i as number].type === 'FS') {
-                if (ganttTaskData.startDate < startDate) {
-                    this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
-                    violationType = 'taskBeforePredecessor_FS';
-                } else if (ganttTaskData.startDate > startDate) {
-                    this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
-                    violationType = 'taskAfterPredecessor_FS';
+                if (
+                    this.parent.dateValidationModule.getDuration(
+                    startDate,
+                    ganttTaskData.startDate,
+                    this.parent.durationUnit,
+                    ganttTaskData.isAutoSchedule,
+                    ganttTaskData.isMilestone, true
+                    )!== 0
+                ) {
+                    if (ganttTaskData.startDate < startDate) {
+                        this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
+                        violationType = 'taskBeforePredecessor_FS';
+                    } else if (ganttTaskData.startDate > startDate) {
+                        this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
+                        violationType = 'taskAfterPredecessor_FS';
+                    }
                 }
             } else if (predecessor[i as number].type === 'SS') {
                 if (ganttTaskData.startDate < startDate) {
@@ -1026,20 +1037,40 @@ export class ConnectorLineEdit {
                     violationType = 'taskAfterPredecessor_SS';
                 }
             } else if (predecessor[i as number].type === 'FF') {
-                if (endDate <= parentGanttRecord.ganttProperties.endDate) {
-                    this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
-                    violationType = 'taskBeforePredecessor_FF';
-                } else if (endDate > parentGanttRecord.ganttProperties.endDate) {
-                    this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
-                    violationType = 'taskAfterPredecessor_FF';
+                if (
+                    this.parent.dateValidationModule.getDuration(
+                        endDate,
+                        parentGanttRecord.ganttProperties.endDate,
+                        this.parent.durationUnit,
+                        parentGanttRecord.ganttProperties.isAutoSchedule,
+                        parentGanttRecord.ganttProperties.isMilestone, true
+                    )!== 0
+                    ) {
+                    if (endDate <= parentGanttRecord.ganttProperties.endDate) {
+                        this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
+                        violationType = 'taskBeforePredecessor_FF';
+                    } else if (endDate > parentGanttRecord.ganttProperties.endDate) {
+                        this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
+                        violationType = 'taskAfterPredecessor_FF';
+                    }
                 }
             } else if (predecessor[i as number].type === 'SF') {
-                if (endDate < parentGanttRecord.ganttProperties.startDate) {
-                    this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
-                    violationType = 'taskBeforePredecessor_SF';
-                } else if (endDate >= parentGanttRecord.ganttProperties.startDate) {
-                    this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
-                    violationType = 'taskAfterPredecessor_SF';
+                if (
+                    this.parent.dateValidationModule.getDuration(
+                        endDate,
+                        parentGanttRecord.ganttProperties.startDate,
+                        this.parent.durationUnit,
+                        parentGanttRecord.ganttProperties.isAutoSchedule,
+                        parentGanttRecord.ganttProperties.isMilestone, true
+                    )!== 0
+                    ) {
+                    if (endDate < parentGanttRecord.ganttProperties.startDate) {
+                        this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
+                        violationType = 'taskBeforePredecessor_SF';
+                    } else if (endDate >= parentGanttRecord.ganttProperties.startDate) {
+                        this.validationPredecessor.push(predecessor[parseInt(i.toString(), 10)]);
+                        violationType = 'taskAfterPredecessor_SF';
+                    }
                 }
             }
             if (!isNullOrUndefined(violationType) && isNullOrUndefined(violateType)) {

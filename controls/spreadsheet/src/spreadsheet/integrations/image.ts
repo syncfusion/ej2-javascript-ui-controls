@@ -170,8 +170,10 @@ export class SpreadsheetImage {
                 currCellObj.image[i as number].left - (count * 64) : currCellObj.image[i as number].left;
             currCellObj.image[i as number].top = top;
             currCellObj.image[i as number].left = left;
-            pictureElements.style.top = top + 'px';
-            pictureElements.style.left = left + 'px';
+            if (pictureElements) {
+                pictureElements.style.top = top + 'px';
+                pictureElements.style.left = left + 'px';
+            }
         }
 
 

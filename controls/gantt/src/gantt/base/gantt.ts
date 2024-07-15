@@ -2207,14 +2207,13 @@ export class Gantt extends Component<HTMLElement>
         const lettersRegex: RegExp = /^[a-zA-Z/]+$/;
         let allPropertiesNull: boolean = true;
         const fields: TaskFieldsModel = this.taskFields['properties'];
-        for (const key in fields) {
-            if (Object.hasOwnProperty.call(fields, key)) {
-                if (fields[parseInt(key, 10)] !== null) {
-                    allPropertiesNull = false;
-                    break;
-                }
+        let shouldBreak = false;
+        Object.keys(fields).forEach((key: string) => {
+            if (fields[key as string] !== null) {
+                allPropertiesNull = false;
+                shouldBreak = true;
             }
-        }
+        });
         let isPrimary: boolean = true;
         for (let i: number = 0; i < this.columns.length; i++) {
             if (this.columns[i as number]['isPrimaryKey']) {
@@ -2233,14 +2232,14 @@ export class Gantt extends Component<HTMLElement>
         if (this.dataSource instanceof DataManager && isNullOrUndefined(this.taskFields.hasChildMapping)) {
             failureCases.push('hasChildMapping property is not configured for load-on-demand. Please ensure its properly configured in the Gantt Task Fields!');
         }
-        if (isNullOrUndefined(this.timelineSettings.topTier.format) && !lettersRegex.test(this.timelineSettings.topTier.format)) {
+        if (!isNullOrUndefined(this.timelineSettings.topTier.format) && this.timelineSettings.topTier.format !== '' && !lettersRegex.test(this.timelineSettings.topTier.format)) {
             failureCases.push('The provided top tier format is invalid. Please ensure that you provide a valid format for these tier. Make sure to use only letters and avoid numbers or special characters!');
         }
-        if (isNullOrUndefined(this.timelineSettings.bottomTier.format) && !lettersRegex.test(this.timelineSettings.bottomTier.format)) {
+        if (!isNullOrUndefined(this.timelineSettings.bottomTier.format) && this.timelineSettings.bottomTier.format !== '' && !lettersRegex.test(this.timelineSettings.bottomTier.format)) {
             failureCases.push('The provided bottom  tier format is invalid. Please ensure that you provide a valid format for these tier. Make sure to use only letters and avoid numbers or special characters!');
         }
         if (isPrimary && this.viewType !== 'ResourceView') {
-            failureCases.push('Primarykey is not configured properly. The primarykey is crucial for doing CRUD oepration or map taskId in column field of gantt!');
+            failureCases.push('Primarykey is not configured properly. The primarykey is crucial for doing CRUD operations or map taskId in column field of gantt!');
         }
         if (this.eventMarkers.length > 0) {
             this.eventMarkers.forEach((markers: EventMarkerModel) => {
@@ -3502,7 +3501,7 @@ export class Gantt extends Component<HTMLElement>
                 break;
             case 'width':
             case 'height':
-                this.reUpdateDimention();
+                this.reUpdateDimention(prop);
                 break;
             case 'editSettings':
                 this.treeGrid.editSettings.allowAdding = this.editSettings.allowAdding;
@@ -3956,7 +3955,7 @@ export class Gantt extends Component<HTMLElement>
      * @returns {void} .
      * @private
      */
-    public reUpdateDimention(): void {
+    public reUpdateDimention(currentProp?: string): void {
         let toolbarHeight: number = 0;
         this.calculateDimensions();
         if (!isNullOrUndefined(this.toolbarModule) && !isNullOrUndefined(this.toolbarModule.element)) {
@@ -3984,7 +3983,9 @@ export class Gantt extends Component<HTMLElement>
                 eventMarkersContainer.style.height =  this.ganttHeight + 'px';
             }
         }
-        this.splitterModule.splitterObject.width = this.ganttWidth.toString();
+        if (currentProp === "width") {
+            this.splitterModule.splitterObject.width = this.ganttWidth.toString();
+        }
         this.ganttChartModule.scrollObject.
             setHeight(this.ganttHeight - this.ganttChartModule.chartTimelineContainer.offsetHeight - toolbarHeight);
     }
@@ -4223,7 +4224,7 @@ export class Gantt extends Component<HTMLElement>
         if (isNullOrUndefined(cloneParent)) {
             return null;
         }
-        if (!this.autoCalculateDateScheduling && this.dataMap && this.dataMap.size > 0) {
+        if (!this.autoCalculateDateScheduling && this.dataMap && this.dataMap.size > 0 && !this.taskFields.hasChildMapping) {
             const parent = this.dataMap.get(cloneParent.uniqueID);
             if (parent) {
                 return parent;

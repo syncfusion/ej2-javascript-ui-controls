@@ -807,7 +807,7 @@ export class SfdtExport {
                 inlines.push(this.writeInlinesFootNote(element));
                 continue;
             }
-            if (element instanceof ContentControl || this.startContent || this.blockContent) {
+            if (element instanceof ContentControl || (this.startContent && !this.blockContent)) {
                 this.writeInlinesContentControl(element, line, inlines, i);
             } else {
                 let inline: any = this.writeInline(element);

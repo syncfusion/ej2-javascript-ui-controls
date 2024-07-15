@@ -110,7 +110,6 @@ export class Canvas extends Container {
                             -child.parentTransform : child.parentTransform;
                     }
                     const childSize: Size = child.desiredSize.clone();
-
                     let topLeft: PointModel;
                     let center: PointModel = { x: 0, y: 0 };
 
@@ -125,6 +124,7 @@ export class Canvas extends Container {
                     }
                     if (child.relativeMode === 'Object') {
                         topLeft = this.alignChildBasedOnParent(child, childSize, desiredSize, childX, childY);
+                        child.flip = this.flip;
                     } else {
                         topLeft = this.alignChildBasedOnaPoint(child, childX, childY);
                     }

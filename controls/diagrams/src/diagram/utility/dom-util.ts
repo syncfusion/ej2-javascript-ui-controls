@@ -103,11 +103,28 @@ export function getChildNode(node: SVGElement): SVGElement[] | HTMLCollection {
  */
 export function translatePoints(element: PathElement, points: PointModel[]): PointModel[] {
     const translatedPts: PointModel[] = [];
+    const left: number = element.offsetX - element.actualSize.width * element.pivot.x;
+    const top: number = element.offsetY - element.actualSize.height * element.pivot.y;
     for (const point of points) {
-        let pt1: PointModel = {
-            x: element.offsetX - element.actualSize.width * element.pivot.x + point.x,
-            y: element.offsetY - element.actualSize.height * element.pivot.y + point.y
-        };
+        let pt1: PointModel;
+        const baseX: number = left + point.x;
+        const baseY: number = top + point.y;
+        const flipX: number = left + element.actualSize.width - point.x;
+        const flipY: number = top + element.actualSize.height - point.y;
+        switch (element.flip) {
+            case 'Both':
+                pt1 = { x: flipX, y: flipY };
+                break;
+            case 'Horizontal':
+                pt1 = { x: flipX, y: baseY };
+                break;
+            case 'Vertical':
+                pt1 = { x: baseX, y: flipY };
+                break;
+            default:
+                pt1 = { x: baseX, y: baseY };
+                break;
+        }
         let matrix: Matrix;
         const angle: number = element.rotateAngle + element.parentTransform;
         if (angle) {
@@ -120,7 +137,6 @@ export function translatePoints(element: PathElement, points: PointModel[]): Poi
         translatedPts.push(pt1);
     }
     return translatedPts;
-
 }
 
 /**
@@ -252,9 +268,9 @@ function wordWrapping(text: TextAttributes, textValue?: string, laneWidth?: numb
         words = text.textWrapping !== 'NoWrap' ? eachLine[parseInt(j.toString(), 10)].split(' ') : (text.textWrapping === 'NoWrap') ? [eachLine[parseInt(j.toString(), 10)]] : eachLine;
         for (i = 0; i < words.length; i++) {
             txtValue += (((i !== 0 || words.length === 1) && wrap && txtValue.length > 0) ? ' ' : '') + words[parseInt(i.toString(), 10)];
-             //Bug 885842: Position of annotation inside the node is not aligned center.
+            //Bug 885842: Position of annotation inside the node is not aligned center.
             //Extra space is added when we have single word as annotation text and due to this the width of the text is increased.
-            if(words[i+1]){
+            if (words[i + 1]) {
                 newText = txtValue + ' ' + (words[i + 1]);
             }else{
                 newText = txtValue;

@@ -213,10 +213,8 @@ export class GanttTreeGrid {
                 this.parent.hideMaskRow();
             }
             this.parent.isVirtualScroll = false;
-            if (this.parent.selectionModule.getSelectedRecords().length === 0) {
-                if (!isNullOrUndefined(this.parent.toolbarModule)) {
-                    this.parent.toolbarModule.refreshToolbarItems();
-                }
+            if (!isNullOrUndefined(this.parent.selectionModule) && !isNullOrUndefined(this.parent.toolbarModule)) {
+                this.parent.toolbarModule.refreshToolbarItems();
             }
         }
         this.prevCurrentView = extend([], [], this.parent.currentViewData, true);
@@ -520,11 +518,23 @@ export class GanttTreeGrid {
         }
         if (getValue('requestType', args) === 'refresh' && isNullOrUndefined(getValue('type', args)) && this.parent.addDeleteRecord) {
             if (this.parent.selectedRowIndex !== -1) {
-                this.parent.selectRow(this.parent.selectedRowIndex);
-                if (this.parent.selectedRowIndex > this.parent.currentViewData.length - 1) {
-                    this.parent.selectedRowIndex = -1;
+                if (!isNullOrUndefined(this.parent.selectionModule)) {
+                    const selectedIndexes: number[] = this.parent.selectionModule.selectedRowIndexes;
+                    if (selectedIndexes.length > 1 && this.parent.selectionSettings.persistSelection) {
+                        for (let i: number = 0; i < selectedIndexes.length; i++) {
+                            const records: any = this.parent.flatData[selectedIndexes[i as number].toString()];
+                            this.parent.selectRows(records);
+                        }
+                    }
                 }
-            } else {
+                else {
+                    this.parent.selectRow(this.parent.selectedRowIndex);
+                    if (this.parent.selectedRowIndex > this.parent.currentViewData.length - 1) {
+                        this.parent.selectedRowIndex = -1;
+                    }
+                }
+            }
+            else {
                 let indexvalue: number = 0;
                 this.parent.currentViewData.map((data: Object, index: number) => {
                     if (!isNullOrUndefined(this.parent.currentSelection)

@@ -346,7 +346,7 @@ export class CellEdit {
             if ((currentValue.getHours() === 0 && dayEndTime !== 86400)) {
                 this.parent.dateValidationModule.setTime(dayEndTime, currentValue);
             }
-            currentValue = this.parent.dateValidationModule.checkEndDate(currentValue, ganttProb);
+            currentValue = this.parent.dateValidationModule.checkEndDate(currentValue, ganttProb, ganttProb.isMilestone);
             this.parent.setRecordValue('endDate', currentValue, ganttProb, true);
             if (!isNOU(ganttProb.startDate) && isNOU(ganttProb.duration)) {
                 if (this.parent.dateValidationModule.compareDates(ganttProb.endDate, ganttProb.startDate) === -1) {
@@ -370,6 +370,7 @@ export class CellEdit {
             } else {
                 this.parent.editModule.revertCellEdit(args);
             }
+            this.updateDates(args);
             this.parent.setRecordValue('isMilestone', (ganttProb.duration === 0 ? true : false), ganttProb, true);
             if (ganttProb.isMilestone) {
                 this.parent.setRecordValue(

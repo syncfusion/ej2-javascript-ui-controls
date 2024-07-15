@@ -152,7 +152,7 @@ export class PdfTreeGridCell {
                 font = this.row.treegrid.ganttStyle.font;
             }
             /* eslint-disable */
-            const slr: PdfStringLayoutResult = layouter.layout(currentValue, font, this.style.format, new SizeF(width, 0), false, new SizeF(0, 0));
+            const slr: PdfStringLayoutResult = layouter.layout(currentValue, font, this.style.format, new SizeF(width - 10, 0), false, new SizeF(0, 0));
             const value: number = Math.max(slr.lineHeight, slr.actualSize.height)
             if (currentValue.length > 80) {
                 height += value + 20;

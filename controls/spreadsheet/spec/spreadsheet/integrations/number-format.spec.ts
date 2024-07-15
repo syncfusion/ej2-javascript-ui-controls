@@ -1252,19 +1252,19 @@ describe('Spreadsheet Number Format Module ->', (): void => {
             helper.triggerMouseAction('dblclick', { x: coords.right, y: coords.top }, null, td);
             let editEle: HTMLElement = helper.getElementFromSpreadsheet('.e-spreadsheet-edit');
             expect(editEle.textContent).toBe('1/23/1928');
-            helper.getElement('.e-spreadsheet-edit').textContent = '1/23/1920';
+            helper.getInstance().notify('editOperation', { action: 'refreshEditor', value: '1/23/1920', refreshCurPos: true, refreshEditorElem: true });
             helper.triggerKeyNativeEvent(13);
             setTimeout(() => {
                 expect(helper.invoke('getCell', [0, 0]).textContent).toEqual('23/01/1920');
                 helper.invoke('selectRange', ['B1']);
                 setTimeout((): void => {
+                    expect(helper.getElement('#' + helper.id + '_formula_input').value).toEqual('1/23/1928');
                     td = helper.invoke('getCell', [1, 0]);
                     coords = td.getBoundingClientRect();
-                    expect(helper.getElement('#' + helper.id + '_formula_input').value).toEqual('1/23/1928');
                     helper.triggerMouseAction('dblclick', { x: coords.right, y: coords.top }, null, td);
                     editEle = helper.getElementFromSpreadsheet('.e-spreadsheet-edit');
                     expect(editEle.textContent).toBe('1/23/1928');
-                    helper.getElement('.e-spreadsheet-edit').textContent = '1/23/1920';
+                    helper.getInstance().notify('editOperation', { action: 'refreshEditor', value: '1/23/1920', refreshCurPos: true, refreshEditorElem: true });
                     helper.triggerKeyNativeEvent(13);
                     setTimeout(() => {
                         expect(helper.invoke('getCell', [0, 1]).textContent).toEqual('23-01-1920');

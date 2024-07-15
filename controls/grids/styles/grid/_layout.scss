@@ -520,7 +520,7 @@
       .e-headercell.e-fltr-icon .e-headercelldiv .e-sortnumber {
         margin: $grid-rtl-bigger-sortnumber-withfilter-margin;
         @if $grid-skin == 'tailwind' {
-          margin-left: 0;
+          margin-left: 4px;
         }
       }
   
@@ -2362,6 +2362,9 @@
         right: 2px;
       }
     }
+    &.e-rtl .e-sortfilter .e-rightalign .e-headercelldiv {
+      padding: $grid-headercelldiv-right-align-padding;
+    }
 
     .e-sortfilterdiv {
       float: right;
@@ -2408,7 +2411,7 @@
     }
 
     &.e-rtl .e-gridheader .e-sortfilter {
-      .e-centeralign.e-headercell[aria-sort="none"],
+      .e-centeralign.e-headercell[aria-sort="none"]:not(.e-centeralign),
       .e-centeralign.e-headercell:not([aria-sort]) {
         .e-headercelldiv,
         .e-stackedheadercelldiv {
@@ -3761,6 +3764,9 @@
           .e-headercelldiv.e-headerchkcelldiv {
             padding: $grid-rtl-headercelldiv-padding;
             text-align: right;
+            @if $grid-skin == 'highcontrast' {
+              margin: -7px 0;
+            }
 
             & .e-sortnumber {
               @include grid-flot-margin(left, $grid-fltr-rtl-sortnumber-margin);
@@ -3772,6 +3778,9 @@
         .e-headercelldiv.e-headerchkcelldiv {
           padding: $grid-rtl-headercelldiv-padding;
           text-align: right;
+          @if $grid-skin == 'highcontrast' {
+            margin: -7px 0;
+          }
 
           & .e-sortnumber {
             @include grid-flot-margin(left, $grid-rtl-sortnumber-margin);
@@ -3792,9 +3801,6 @@
 
             & .e-sortnumber {
               margin: $grid-rtl-sort-num-left-align-margin;
-              @if $grid-skin == 'bootstrap4' {
-                margin: 4px -2px 0 0;
-              }
             }
           }
 
@@ -3813,7 +3819,7 @@
           }
 
           & .e-headercelldiv {
-            padding: 0 25px 0 .7em;
+            padding: 0 1.6em 0 1.2em;
 
             & .e-sortnumber {
               @include grid-flot-margin(right, $grid-bigger-sort-right-margin);

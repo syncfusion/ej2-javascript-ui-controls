@@ -4,7 +4,7 @@ import { CellVerticalAlignment, LineStyle } from '../../base/types';
 import { WCharacterFormat } from '../format/character-format';
 import { WParagraphFormat } from '../format/paragraph-format';
 import { HelperMethods } from '../editor/editor-helper';
-import { sectionsProperty, characterFormatProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, nameProperty, boldProperty, italicProperty, underlineProperty, baselineAlignmentProperty, strikethroughProperty, highlightColorProperty, fontSizeProperty, fontColorProperty, fontFamilyProperty, styleNameProperty, allCapsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, bordersProperty, leftMarginProperty, rightMarginProperty, topMarginProperty, bottomMarginProperty, cellWidthProperty, columnSpanProperty, rowSpanProperty, verticalAlignmentProperty, isHeaderProperty, cellSpacingProperty, shadingProperty, tableAlignmentProperty, preferredWidthProperty, preferredWidthTypeProperty, backgroundColorProperty, hasNoneStyleProperty, lineStyleProperty, lineWidthProperty, textProperty, widthProperty, heightProperty, colorProperty, imageStringProperty, topProperty, bottomProperty, rightProperty, leftProperty, fieldTypeProperty, inlinesProperty, cellFormatProperty, rowFormatProperty, cellsProperty, rowsProperty, tableFormatProperty, blocksProperty, listLevelPatternProperty, abstractListIdProperty, levelsProperty, bookmarkTypeProperty, inlineFormatProperty, startAtProperty, characterSpacingProperty, scalingProperty, DocumentEditor,imagesProperty, Dictionary, isMetaFileProperty, isCreatedUsingHtmlSpanTagProperty, restartLevelProperty} from '../../index';
+import { sectionsProperty, characterFormatProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, nameProperty, boldProperty, italicProperty, underlineProperty, baselineAlignmentProperty, strikethroughProperty, highlightColorProperty, fontSizeProperty, fontColorProperty, fontFamilyProperty, styleNameProperty, allCapsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, bordersProperty, leftMarginProperty, rightMarginProperty, topMarginProperty, bottomMarginProperty, cellWidthProperty, columnSpanProperty, rowSpanProperty, verticalAlignmentProperty, isHeaderProperty, cellSpacingProperty, shadingProperty, tableAlignmentProperty, preferredWidthProperty, preferredWidthTypeProperty, backgroundColorProperty, hasNoneStyleProperty, lineStyleProperty, lineWidthProperty, textProperty, widthProperty, heightProperty, colorProperty, imageStringProperty, topProperty, bottomProperty, rightProperty, leftProperty, fieldTypeProperty, inlinesProperty, cellFormatProperty, rowFormatProperty, cellsProperty, rowsProperty, tableFormatProperty, blocksProperty, listLevelPatternProperty, abstractListIdProperty, levelsProperty, bookmarkTypeProperty, inlineFormatProperty, startAtProperty, characterSpacingProperty, scalingProperty, DocumentEditor,imagesProperty, Dictionary, isMetaFileProperty, isCreatedUsingHtmlSpanTagProperty, restartLevelProperty, titleProperty, descriptionProperty} from '../../index';
 
 /**
  * @private
@@ -929,6 +929,14 @@ export class HtmlExport {
                 tableStyle += ('border-collapse:collapse;');
             }
             tagAttributes.push('cellpadding="' + '0"');
+            //Table title property
+            if (!isNullOrUndefined(table[titleProperty[this.keywordIndex]])) {
+                tagAttributes.push('title="' + table[titleProperty[this.keywordIndex]] + '"');
+            }
+            //Table description property
+            if (!isNullOrUndefined(table[descriptionProperty[this.keywordIndex]])) {
+                tagAttributes.push('summary="' + table[descriptionProperty[this.keywordIndex]] + '"');
+            }
             if (!isNullOrUndefined(table[tableFormatProperty[this.keywordIndex]][leftIndentProperty[this.keywordIndex]]) && table[tableFormatProperty[this.keywordIndex]][leftIndentProperty[this.keywordIndex]] !== 0 &&
                 table[tableFormatProperty[this.keywordIndex]][tableAlignmentProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 0 : 'Left')) {
                 tableStyle += 'margin-left:' + (table[tableFormatProperty[this.keywordIndex]][leftIndentProperty[this.keywordIndex]].toString() + 'pt;');

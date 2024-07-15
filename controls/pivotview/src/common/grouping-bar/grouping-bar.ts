@@ -455,10 +455,20 @@ export class GroupingBar implements IAction {
                         this.parent.engineModule.pivotValues.length > 0) ?
                         this.parent.engineModule.pivotValues[0].length : 2);
                 }
+                let vSortColumn: ColumnModel; let vSortColumnWidth: string | number;
+                if (this.parent.renderModule.vSortColumnPos.length > 0) {
+                    vSortColumn = this.parent.renderModule.getValueSortColumn(
+                        this.parent.grid.columns as ColumnModel[],
+                        this.parent.renderModule.vSortColumnPos.slice(1, this.parent.renderModule.vSortColumnPos.length)
+                    ) as ColumnModel;
+                    if (!isNullOrUndefined(vSortColumn)) {
+                        vSortColumnWidth = vSortColumn.width;
+                    }
+                }
                 for (let cCnt: number = 0; cCnt < gridColumn.length; cCnt++) {
                     if (cCnt !== 0) {
                         if ((gridColumn[cCnt as number] as Column).columns) {
-                            this.setColWidth(
+                            this.parent.setCommonColumnsWidth(
                                 (this.parent.renderModule.pivotColumns[cCnt as number] as Column).columns as Column[], valueColWidth
                             );
                         } else {
@@ -478,6 +488,10 @@ export class GroupingBar implements IAction {
                 }
                 this.parent.posCount = 0;
                 this.parent.setGridColumns(this.parent.grid.columns as ColumnModel[]);
+                if (!isNullOrUndefined(vSortColumn)) {
+                    vSortColumn.autoFit = false;
+                    vSortColumn.width = vSortColumnWidth;
+                }
                 this.parent.grid.headerModule.refreshUI();
                 if (!this.parent.firstColWidth) {
                     buttonWidth = gridColumn[0].autoFit ? gridColumn[0].width.toString() : buttonWidth;
@@ -507,23 +521,6 @@ export class GroupingBar implements IAction {
         }
         if (this.groupingTable) {
             this.refreshUI();
-        }
-    }
-    private setColWidth(columns: Column[], width: number): void {
-        for (let cCnt: number = 0; cCnt < columns.length; cCnt++) {
-            if (columns[cCnt as number].columns) {
-                this.setColWidth(columns[cCnt as number].columns as Column[], width);
-            }
-            else {
-                if (!columns[cCnt as number].autoFit) {
-                    if (columns[cCnt as number].width !== 'auto') {
-                        columns[cCnt as number].width = this.parent.renderModule.lastColumnName === columns[cCnt as number].field ?
-                            (width - 2) : width;
-                    } else {
-                        columns[cCnt as number].minWidth = width;
-                    }
-                }
-            }
         }
     }
     private wireEvent(element: Element): void {

@@ -1700,7 +1700,7 @@ export class DropDownList extends DropDownBase implements IInput {
         this.removeSelection();
         li.classList.add(dropDownBaseClasses.selected);
         this.removeHover();
-        const value: string | number | boolean = li.getAttribute('data-value') !== "null" ? this.getFormattedValue(li.getAttribute('data-value')) : null;
+        const value: string | number | boolean = li.getAttribute('data-value') !== null ? this.getFormattedValue(li.getAttribute('data-value')) : null;
         const selectedData: string | number | boolean | {
             [key: string]: Object
         } = this.getDataByValue(value);
@@ -1783,6 +1783,7 @@ export class DropDownList extends DropDownBase implements IInput {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected setValue(e?: KeyboardEventArgs): boolean {
         const dataItem: { [key: string]: string } = this.getItemData();
+        this.isTouched = !isNullOrUndefined(e);
         if (dataItem.value === null) {
             Input.setValue(null, this.inputElement, this.floatLabelType, this.showClearButton);
         } else {
@@ -3688,7 +3689,9 @@ export class DropDownList extends DropDownBase implements IInput {
     protected checkData(newProp?: DropDownListModel): void {
         if (newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource)) && this.itemTemplate && this.allowFiltering &&
             !(this.isListSearched && (newProp.dataSource instanceof DataManager))) {
-            this.list = null;
+            if (this.list) {
+                this.list.innerHTML = '';
+            }
             this.actionCompleteData = { ulElement: null, list: null, isUpdated: false };
         }
         this.isListSearched = false;
@@ -3729,7 +3732,13 @@ export class DropDownList extends DropDownBase implements IInput {
         this.itemData = this.getDataByValue(currentValue);
         const dataItem: { [key: string]: string } = this.getItemData();
         let value: string | number | boolean | Object = this.allowObjectBinding ? this.itemData : dataItem.value;
-        this.setProperties({ 'text': dataItem.text, 'value': value });
+        const index: number = isNullOrUndefined(value) ? null : this.index;
+        if (isNullOrUndefined(index) && (currentValue == value)) {
+            this.setProperties({ 'text': dataItem.text, 'value': value});
+        }
+        else {
+            this.setProperties({ 'text': dataItem.text, 'index':  index, 'value': value});
+        }
     }
     private updateInputFields(): void {
         if (this.getModuleName() === 'dropdownlist') {

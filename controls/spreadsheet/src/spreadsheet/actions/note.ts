@@ -227,8 +227,8 @@ export class SpreadsheetNote {
         }
     }
 
-    private showNote(args : {rowIndex: number, columnIndex: number, isNoteEditable?: boolean, isScrollWithNote?: boolean,
-                                cellElement?: HTMLElement}): void {
+    private showNote(args: { rowIndex: number, columnIndex: number, isNoteEditable?: boolean,
+        isScrollWithNote?: boolean, cellElement?: HTMLElement }): void {
         const targetElement: HTMLElement = !isNullOrUndefined(this.parent.getCell(args.rowIndex, args.columnIndex)) ?
             this.parent.getCell(args.rowIndex, args.columnIndex) : args.cellElement;
         const contextMenuElement: HTMLElement = document.getElementById(this.parent.element.id + '_contextmenu');

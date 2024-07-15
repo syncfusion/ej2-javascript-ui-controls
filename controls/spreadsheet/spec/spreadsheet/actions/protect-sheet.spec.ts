@@ -1179,5 +1179,21 @@ describe('Protect sheet ->', () => {
                 });
             });
         });
+        describe('CR-895594', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ rows: [{ cells: [{ value: 'spreadsheet' }] }], isProtected: true }, { rows: [{ cells: [{ value: 'spreadsheet' }] }], isProtected: true }, { rows: [{ cells: [{ value: 'spreadsheet' }] }], isProtected: true }], activeSheetIndex: 1 }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('When unprotecting a non-active sheet using the unprotectSheet() method, activeSheet gets unprotected', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].isProtected).toBe(true);
+                spreadsheet.unprotectSheet(0);
+                expect(spreadsheet.sheets[1].isProtected).toBe(true);
+                expect(spreadsheet.sheets[0].isProtected).toBe(false);
+                done();
+            });
+        });
     });
 });

@@ -247,6 +247,19 @@ describe('Image ->', () => {
                 expect(helper.getElementFromSpreadsheet('#' + imageId)).toBeNull();
                 done();
             });
+            it('Script Error occurs when inserting rows using insertRow method after inserting an image and freezing rows.', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.invoke('insertImage', [[{ src: "https://www.w3schools.com/images/w3schools_green.jpg" }], 'A1']);
+                const image: ImageModel = spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[0].cells[0].image[0];
+                expect(image.top && image.left).toBe(0);
+                spreadsheet.insertRow(0, 1);
+                setTimeout(() => {
+                    helper.invoke('freezePanes', [5, 0]);
+                })
+                expect(image.top).toBe(40);
+                expect(image.left).toBe(0);
+                done();
+            });
         });
     });
 });

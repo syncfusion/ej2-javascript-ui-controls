@@ -141,7 +141,7 @@ export class TaskProcessor extends DateProcessor {
                 this.parent.setProperties({ taskFields: { child: 'Children' } }, true);
             }
             this.constructDataSource(data);
-            if (!this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping && this.hierarchyData.length === 0) {
+            if (!this.parent.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
                 hierarchicalData = this.dataArray;
             }
             else {
@@ -366,6 +366,7 @@ export class TaskProcessor extends DateProcessor {
         let id: string = null; let name: string = null;
         const notes: string = data[taskSettings.notes];
         progress = progress ? parseFloat(progress.toString()) ? parseFloat(progress.toString()) : 0 : 0;
+        progress = (100 < progress) ? 100 : progress;
         const predecessors: string | number | object[] = data[taskSettings.dependency];
         const baselineStartDate: Date = this.getDateFromFormat(data[taskSettings.baselineStartDate], true);
         let baselineEndDate: Date = this.getDateFromFormat(data[taskSettings.baselineEndDate], true);

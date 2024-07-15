@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.1.42 (2024-07-16)
+
+### Slider
+
+#### Bug Fixes
+
+- `#I605471` - The issue with Range Slider component in material dark theme has been resolved.
+
 ## 26.1.41 (2024-07-09)
 
 ### FormValidator

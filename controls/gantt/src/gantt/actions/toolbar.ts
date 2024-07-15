@@ -438,7 +438,15 @@ export class Toolbar {
             }
         }
         let previousGanttRecord: IGanttData;
-        const isSelected: boolean = gObj.selectionModule ?  gObj.selectionModule.getSelectedRecords().length === 1 ? true : false : false;
+        let isSelected: boolean = false;
+        if (gObj.selectionModule) {
+            if (gObj.selectionModule.getSelectedRecords().length === 1 || gObj.selectionModule.getSelectedRowCellIndexes().length === 1) {
+                isSelected = true;
+            }
+        }      
+        if (gObj.selectionModule && gObj.selectionSettings.type === 'Multiple' && gObj.selectionModule.selectedRowIndexes.length > 1) {
+            isSelected = false;
+        }      
         const toolbarItems: ItemModel[] = this.toolbar ? this.toolbar.items : [];
         const toolbarDefaultItems: string[] = [gID + '_add', gID + '_edit', gID + '_delete',
             gID + '_update', gID + '_cancel', gID + '_indent', gID + '_outdent'];

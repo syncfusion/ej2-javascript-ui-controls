@@ -5300,7 +5300,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         for (let i: number = 0, objlen: number = obj.length; i < objlen; i++) {
             const nodeId: Object = getValue(mapper.id, obj[parseInt(i.toString(), 10)]);
-            if (obj[parseInt(i.toString(), 10)] && nodeId && nodeId.toString() === id) {
+            if (obj[parseInt(i.toString(), 10)] && !isNOU(nodeId) && nodeId.toString() === id) {
                 if (remove) {
                     removedData = obj.splice(i, 1);
                 } else {

@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 26.1.42 (2024-07-16)
+
+### Tooltip
+
+#### Bug Fixes
+
+- `#I607499` - The issue with the tooltip position in the Tooltip component has been resolved.
+- `#I609205` - The issue with the console error while assigning a function type value to the Content property in the Tooltip component has been resolved.
+
 ## 26.1.41 (2024-07-09)
 
 ### Tooltip

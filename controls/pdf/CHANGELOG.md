@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 26.1.42 (2024-07-16)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved the text rendering mode preservation issue while drawing text with pen and brush.
+- Resolved issue with calculating path points for ink and free text annotations in PDFs that have a negative value in the crop box.
+
 ## 26.1.41 (2024-07-09)
 
 ### PDF Parser

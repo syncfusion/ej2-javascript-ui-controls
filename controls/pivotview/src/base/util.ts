@@ -1093,22 +1093,25 @@ export class PivotUtil {
      * @param {IAxisSet[]} sortMembersOrder - It contains the sort members order.
      * @param {string} sortOrder - It contains the sort order.
      * @param {string | boolean} type - It contains the type.
+     * @param {boolean} isNumberGroupSorting - It denotes the number group sorting or not.
      * @returns {IAxisSet[]} - It returns the sorted data as IAxisSet[].
      * @hidden
      */
-    public static applyHeadersSort(sortMembersOrder: IAxisSet[], sortOrder: string, type: string | boolean, isNumberGroupSorting?: boolean): IAxisSet[] {
+    public static applyHeadersSort(
+        sortMembersOrder: IAxisSet[], sortOrder: string, type: string | boolean, isNumberGroupSorting?: boolean
+    ): IAxisSet[] {
         if (isNumberGroupSorting) {
             sortMembersOrder = sortOrder === 'Ascending' ? (sortMembersOrder.sort(function (a: IAxisSet, b: IAxisSet): number {
-                    return (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : (a.actualText === 'Out of Range') ? 1 :
-                        (b.actualText === 'Out of Range') ? -1 : (a.actualText as string).localeCompare(b.actualText as string, undefined, {
-                            numeric: true, sensitivity: 'base'
-                        });
-                })) : sortOrder === 'Descending' ? (sortMembersOrder.sort(function (a: IAxisSet, b: IAxisSet): number {
-                    return (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : (a.actualText === 'Out of Range') ? 1 :
-                        (b.actualText === 'Out of Range') ? -1 : (b.actualText as string).localeCompare(a.actualText as string, undefined, {
-                            numeric: true, sensitivity: 'base'
-                        }); 
-                })) : sortMembersOrder;
+                return (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : (a.actualText === 'Out of Range') ? 1 :
+                    (b.actualText === 'Out of Range') ? -1 : (a.actualText as string).localeCompare(b.actualText as string, undefined, {
+                        numeric: true, sensitivity: 'base'
+                    });
+            })) : sortOrder === 'Descending' ? (sortMembersOrder.sort(function (a: IAxisSet, b: IAxisSet): number {
+                return (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : (a.actualText === 'Out of Range') ? 1 :
+                    (b.actualText === 'Out of Range') ? -1 : (b.actualText as string).localeCompare(a.actualText as string, undefined, {
+                        numeric: true, sensitivity: 'base'
+                    });
+            })) : sortMembersOrder;
         } else if (type === 'datetime' || type === 'date' || type === 'time') {
             sortMembersOrder = sortOrder === 'Ascending' ?
                 (sortMembersOrder.sort((a: IAxisSet, b: IAxisSet): number => (a.dateText > b.dateText) ? 1 :

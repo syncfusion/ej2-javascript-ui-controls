@@ -555,10 +555,10 @@ export class Scroll implements IAction {
                 const height: number = headerEle.offsetHeight + (toolbarEle ? toolbarEle.offsetHeight : 0) +
                     (groupHeaderEle ? groupHeaderEle.offsetHeight : 0);
                 const parentTop: number = this.parent.element.getClientRects()[0].top;
-                const top: number = contentRect.top - (parentTop < 0 ? 0 : parentTop);
+                const top: number = Math.floor(contentRect.top - (parentTop < 0 ? 0 : parentTop));
                 const left: number = contentRect.left;
                 const colMenuEle: HTMLElement = document.body.querySelector('#' + this.parent.element.id + '_columnmenu');
-                if (top < height && contentRect.bottom > 0) {
+                if (top <= height && contentRect.bottom > 0) {
                     headerEle.classList.add('e-sticky');
                     let elemTop: number = 0;
                     if (groupHeaderEle && this.parent.groupSettings.showDropArea) {

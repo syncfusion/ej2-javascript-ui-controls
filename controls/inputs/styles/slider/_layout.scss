@@ -914,7 +914,13 @@
       &.e-scale {
         &.e-h-scale {
           .e-tick {
-            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+            @if ($skin-name != 'material' and $skin-name == 'material-dark') {
+              @include alignment($tick-after-height, $tick-after-top, 'horizontal');
+              @if ($skin-name == 'material-dark') {
+                background-position: bottom;
+              }
+            }
+            @else if ($skin-name != 'material' and $skin-name != 'material-dark') {
               @include alignment($tick-after-height, $tick-after-top, 'horizontal');
             }
             @else {
@@ -924,7 +930,10 @@
           }
 
           .e-large {
-            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+            @if ($skin-name != 'material' and $skin-name == 'material-dark') {
+              @include alignment($largetick-before-height, $largetick-before-top, 'horizontal');
+            }
+            @else if ($skin-name != 'material' and $skin-name != 'material-dark') {
               @include alignment($largetick-before-height, $largetick-before-top, 'horizontal');
             }
           }
@@ -954,7 +963,13 @@
       &.e-scale {
         &.e-h-scale {
           .e-tick {
-            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+            @if ($skin-name != 'material' and $skin-name == 'material-dark') {
+              @include alignment($tick-before-height, $tick-before-top, 'horizontal');
+              @if ($skin-name == 'material-dark') {
+                background-position-x: center;
+              }
+            }
+            @else if ($skin-name != 'material' and $skin-name != 'material-dark') {
               @include alignment($tick-before-height, $tick-before-top, 'horizontal');
             }
             @else {
@@ -964,7 +979,10 @@
           }
 
           .e-large {
-            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
+            @if ($skin-name != 'material' and $skin-name == 'material-dark') {
+              @include alignment($largetick-after-height, $largetick-after-top, 'horizontal');
+            }
+            @else if ($skin-name != 'material' and $skin-name != 'material-dark') {
               @include alignment($largetick-after-height, $largetick-after-top, 'horizontal');
             }
           }
@@ -1040,7 +1058,12 @@
             }
             @if ($skin-name == 'material' or $skin-name == 'material-dark') {
               background-position: center;
-              height: 99%;
+              @if ($skin-name == 'material-dark') {
+                height: 12px;
+              }
+              @else {
+                height: 99%;
+              }
             }
           }
 
@@ -1065,6 +1088,10 @@
             }
             @else if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
               @include alignment(calc(100% + 3px), -9px, 'horizontal');
+            }
+            @else if ($skin-name == 'material-dark') {
+              height: 20px;
+              top: 4px;
             }
           }
         }
@@ -1165,7 +1192,7 @@
           background-position: center center;
         }
 
-        @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3') {
+        @if ($skin-name == 'bootstrap4' or $skin-name == 'tailwind' or $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $skin-name == 'Material3' or $skin-name == 'material-dark') {
           &.e-large {
             @if ($skin-name != 'bootstrap4') {
               background-image: $slider-scale-tick-image-dark;
@@ -1255,7 +1282,7 @@
         .e-tick {
           display: inline-block;
           @if ($skin-name == 'material' or $skin-name == 'material-dark') {
-            background-repeat: no-repeat;
+            background-repeat: repeat-y;
           }
 
           @if ($skin-name != 'material' and $skin-name != 'material-dark') {

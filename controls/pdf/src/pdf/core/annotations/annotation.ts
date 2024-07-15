@@ -7028,25 +7028,25 @@ export class PdfInkAnnotation extends PdfComment {
         const inkCollection: Array<number[]> = [];
         if (this._linePoints !== null && (this._previousCollection.length === 0 || this._isModified)) {
             this._inkPointsCollection.unshift(this._linePoints);
-            this._isModified = false;
         }
         const isEqual: boolean = _checkInkPoints(this._inkPointsCollection, this._previousCollection);
         if (this._inkPointsCollection !== null && !isEqual) {
             for (let i: number = 0; i < this._inkPointsCollection.length; i++) {
-                const inkList: number[] = this._inkPointsCollection[Number.parseInt(i.toString(), 10)];
+                const inkList: number[] = this._inkPointsCollection[Number.parseInt(i.toString(), 10)].slice();
                 inkCollection.push(inkList);
             }
             this._dictionary.update('InkList', inkCollection);
         }
-        if (this._inkPointsCollection.length > 0) {
+        if (this._inkPointsCollection.length > 0 && (!isEqual || this._isModified)) {
             this._inkPointsCollection.forEach((inkList: number[]) => {
                 this._previousCollection.push(inkList);
+                this._isModified = false;
             });
         }
         const cropOrMediaBox: number[] = this._getCropOrMediaBox();
         if (cropOrMediaBox && cropOrMediaBox.length > 3 && typeof cropOrMediaBox[0] === 'number' && typeof cropOrMediaBox[1] === 'number' && (cropOrMediaBox[0] !== 0 || cropOrMediaBox[1] !== 0)) {
-            for (let i: number = 0; i < this._inkPointsCollection.length; i++) {
-                const inkList: number[] = this._inkPointsCollection[Number.parseInt(i.toString(), 10)];
+            for (let i: number = 0; i < inkCollection.length; i++) {
+                const inkList: number[] = inkCollection[Number.parseInt(i.toString(), 10)];
                 const modifiedInkList: number[] = inkList;
                 for (let j: number = 0; j < inkList.length; j = j + 2) {
                     let x: number = inkList[Number.parseInt(j.toString(), 10)];
@@ -7059,18 +7059,31 @@ export class PdfInkAnnotation extends PdfComment {
                     }
                     modifiedInkList[Number.parseInt(j.toString(), 10)] = x;
                     modifiedInkList[j + 1] = y;
-                    this._inkPointsCollection[Number.parseInt(i.toString(), 10)] = modifiedInkList;
+                    inkCollection[Number.parseInt(i.toString(), 10)] = modifiedInkList;
                 }
             }
-            this._dictionary.update('InkList', this._inkPointsCollection);
+            this._dictionary.update('InkList', inkCollection);
         }
-        if (this._isEnableControlPoints) {
-            return this._getInkBoundsValue();
+        if (this._isEnableControlPoints || (Array.isArray(cropOrMediaBox) && cropOrMediaBox.length > 3 &&
+            _areNotEqual(cropOrMediaBox, [0, 0, 0, 0]))) {
+            return this._getInkBoundsValue(inkCollection);
         } else {
+            if (!this._isFlatten) {
+                this._updateInkListCollection(inkCollection);
+            }
             return [this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height];
         }
     }
-    _getInkBoundsValue(): number[] {
+    _updateInkListCollection(inkCollection: Array<number[]>): void {
+        for (let i: number = 0; i < inkCollection.length; i++) {
+            const inkList: number[] = [];
+            for (let j: number = 0; j < inkCollection[Number.parseInt(i.toString(), 10)].length; j++) {
+                inkList.push(inkCollection[Number.parseInt(i.toString(), 10)][Number.parseInt(j.toString(), 10)]);
+            }
+            this._inkPointsCollection[Number.parseInt(i.toString(), 10)] = inkList;
+        }
+    }
+    _getInkBoundsValue(inkCollection?: Array<number[]>): number[] {
         let bounds: number[] = [0, 0, 0, 0];
         if (this._points) {
             this.bounds = {x: this._points[0], y: this._points[1], width: this._points[2], height: this._points[3]};
@@ -7146,6 +7159,8 @@ export class PdfInkAnnotation extends PdfComment {
                             bounds = [this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height];
                         }
                     }
+                } else if (inkCollection) {
+                    bounds = this._calculateInkBounds(pointCollection, bounds, borderWidth, isTwoPoints, inkCollection);
                 } else {
                     bounds = this._calculateInkBounds(pointCollection, bounds, borderWidth, isTwoPoints);
                 }
@@ -7154,7 +7169,8 @@ export class PdfInkAnnotation extends PdfComment {
         }
         return bounds;
     }
-    private _calculateInkBounds(pointCollection: number[][], bounds: number[], borderWidth: number, isTwoPoints: boolean): number[] {
+    private _calculateInkBounds(pointCollection: number[][], bounds: number[], borderWidth: number, isTwoPoints: boolean,
+                                inkCollection?: Array<number[]>): number[] {
         if (pointCollection.length > 5) {
             let xMin: number = 0;
             let yMin: number = 0;
@@ -7182,11 +7198,20 @@ export class PdfInkAnnotation extends PdfComment {
                     }
                 }
             }
+            const cropOrMediaBox: number[] = this._getCropOrMediaBox();
             if (bounds[2] < xMax) {
                 xMax = bounds[2];
+            } else if (cropOrMediaBox) {
+                xMax = xMax - xMin;
             }
             if (bounds[3] < yMax) {
                 yMax = bounds[3];
+            } else if (cropOrMediaBox) {
+                yMax = yMax - yMin;
+            }
+            if (cropOrMediaBox) {
+                xMin = xMin + cropOrMediaBox[0];
+                yMin = yMin + cropOrMediaBox[1];
             }
             bounds = [xMin, yMin, xMax, yMax];
             if (this._isFlatten || this._setAppearance) {
@@ -7202,6 +7227,9 @@ export class PdfInkAnnotation extends PdfComment {
             } else {
                 bounds = this._points;
             }
+        }
+        if (!this._isFlatten && inkCollection) {
+            this._updateInkListCollection(inkCollection);
         }
         return bounds;
     }
@@ -10631,7 +10659,11 @@ export class PdfFreeTextAnnotation extends PdfComment {
      * ```
      */
     get lineEndingStyle(): PdfLineEndingStyle  {
-        this._lineEndingStyle = this._obtainLineEndingStyle();
+        if (this._isLoaded) {
+            this._lineEndingStyle = this._obtainLineEndingStyle();
+        } else if (typeof this._lineEndingStyle === 'undefined') {
+            this._lineEndingStyle = PdfLineEndingStyle.none;
+        }
         return this._lineEndingStyle;
     }
     /**
@@ -10969,27 +11001,17 @@ export class PdfFreeTextAnnotation extends PdfComment {
         if (!this._dictionary.has('C')) {
             this._isTransparentColor = true;
         }
-        this._updateCropBoxValues();
+        const cropOrMediaBox: number[] = this._getCropOrMediaBox();
+        if (cropOrMediaBox && cropOrMediaBox.length > 3 && typeof cropOrMediaBox[0] === 'number' && typeof cropOrMediaBox[1] === 'number' && (cropOrMediaBox[0] !== 0 || cropOrMediaBox[1] !== 0)) {
+            this._cropBoxValueX = cropOrMediaBox[0] as number;
+            this._cropBoxValueY = cropOrMediaBox[1] as number;
+        }
         if (isFlatten || this._setAppearance) {
             this._appearanceTemplate = this._createAppearance();
         }
         if (!isFlatten) {
             this._dictionary.update('Rect', _updateBounds(this));
             this._saveFreeTextDictionary();
-        }
-    }
-    _updateCropBoxValues(): void {
-        if (this._page) {
-            let cropOrMediaBox: number[];
-            if (this._page._pageDictionary.has('CropBox')) {
-                cropOrMediaBox = this._page._pageDictionary.getArray('CropBox');
-            } else if (this._page._pageDictionary.has('MediaBox')) {
-                cropOrMediaBox = this._page._pageDictionary.getArray('MediaBox');
-            }
-            if (cropOrMediaBox) {
-                this._cropBoxValueX = cropOrMediaBox[0] as number;
-                this._cropBoxValueY = cropOrMediaBox[1] as number;
-            }
         }
     }
     _doPostProcess(isFlatten: boolean = false): void {
@@ -11422,8 +11444,8 @@ export class PdfFreeTextAnnotation extends PdfComment {
                 }
                 path._addLines(pointArray);
             }
-            path._addRectangle(this.bounds.x - 2,
-                               (this._page.size[1] - (this.bounds.y + this.bounds.height)) - 2,
+            path._addRectangle((this.bounds.x + this._cropBoxValueX) - 2,
+                               ((this._page.size[1] + this._cropBoxValueY) - (this.bounds.y + this.bounds.height)) - 2,
                                this.bounds.width + (2 * 2),
                                this.bounds.height + (2 * 2));
             bounds = path._getBounds();
@@ -11437,17 +11459,17 @@ export class PdfFreeTextAnnotation extends PdfComment {
             const size: number[] = this._page.size;
             this._calloutsClone = [];
             for (let i: number = 0; i < this._calloutLines.length; i++) {
-                this._calloutsClone.push([this._calloutLines[Number.parseInt(i.toString(), 10)][0],
-                    size[1] - this._calloutLines[Number.parseInt(i.toString(), 10)][1]]);
+                this._calloutsClone.push([this._calloutLines[Number.parseInt(i.toString(), 10)][0] + this._cropBoxValueX,
+                    (size[1] + this._cropBoxValueY) - this._calloutLines[Number.parseInt(i.toString(), 10)][1]]);
             }
         }
     }
     _obtainLinePoints(): number[] {
         const pageHeight: number = this._page.size[1];
-        return [this.calloutLines[1][0],
-            pageHeight - this.calloutLines[1][1],
-            this.calloutLines[0][0],
-            pageHeight - this.calloutLines[0][1]];
+        return [this.calloutLines[1][0] + this._cropBoxValueX,
+            (pageHeight + this._cropBoxValueY) - this.calloutLines[1][1],
+            this.calloutLines[0][0] + this._cropBoxValueX,
+            (pageHeight + this._cropBoxValueY) - this.calloutLines[0][1]];
     }
     _obtainLineEndingStyle(): PdfLineEndingStyle {
         let lineEndingStyle: PdfLineEndingStyle = PdfLineEndingStyle.square;
@@ -11535,8 +11557,11 @@ export class PdfFreeTextAnnotation extends PdfComment {
         return color;
     }
     _expandAppearance(pointArray: Array<number[]>): void {
-        const pointY: number = pointArray[0][1];
+        let pointY: number = pointArray[0][1];
         const pointX: number = pointArray[0][0];
+        if (!this._isLoaded) {
+            pointY = this._page.size[1] - pointY;
+        }
         if (pointY > this.bounds.y) {
             if (this.lineEndingStyle !== PdfLineEndingStyle.openArrow) {
                 pointArray[0][1] -= (this.border.width * 11);

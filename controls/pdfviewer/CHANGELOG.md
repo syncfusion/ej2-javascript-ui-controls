@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 26.1.42 (2024-07-16)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I592444` - Now, the size of the focused free text annotation remains unchanged when pressing the Alt key.
+- `#I609661` - Now, the Pages are rendered properly when navigating to the pages using the `goToBookmark` method.
+- `#I608331` - Now, the `formFieldRemove` event is not triggered when resizing the form field.
+- `#F189033` - Now, the print preview images are displayed properly on the Safari browser on an iPhone device.
+- `#I609398` - Now, the script error does not occurs when selecting the custom stamp with customized `stampSettings`.
+
 ## 26.1.41 (2024-07-09)
 
 ### PDF Viewer

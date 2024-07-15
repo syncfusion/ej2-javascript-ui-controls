@@ -202,6 +202,10 @@ export interface IResizeEventArgs {
      * Specifies the instance of linear gauge.
      */
     gauge: LinearGauge;
+    /**
+     * Specifies whether to cancel the resize event or not. The default value is false. If set to true, the event will be halted.
+     */
+    cancel: boolean;
 }
 /**
  * Specifies the event arguments for value change event in linear gauge.

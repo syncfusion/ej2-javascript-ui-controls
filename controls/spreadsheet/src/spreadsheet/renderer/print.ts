@@ -340,8 +340,9 @@ export class Print {
                                     !isNullOrUndefined(cell.hyperlink)) {
                                     let position: string;
                                     if (cell.formula && cell.format) {
-                                        this.parent.workbookFormulaModule.refreshCalculate(j, k, cell.formula, true,
-                                                                                           sheetIndex, false);
+                                        this.parent.workbookFormulaModule.refreshCalculate(
+                                            { rowIndex: j, colIndex: k, value: cell.formula, isFormula: true, sheetIndex: sheetIndex,
+                                                isRefreshing: false });
                                         const numberFormatArgs: NumberFormatArgs = {
                                             value: cell.value, format: cell.format,
                                             rowIndex: j, colIndex: k, sheetIndex: this.parent.activeSheetIndex as number,
@@ -361,8 +362,9 @@ export class Print {
                                             this.parent.workbookNumberFormatModule.getFormattedCell(numberFormatArgs) : cell.value;
                                         position = `${textAlign ? textAlign : numberFormatArgs.isRightAlign ? 'Right' : 'Left'}`;
                                     } else if (cell.formula) {
-                                        this.parent.workbookFormulaModule.refreshCalculate(j, k, cell.formula, true, sheetIndex,
-                                                                                           false);
+                                        this.parent.workbookFormulaModule.refreshCalculate(
+                                            { rowIndex: j, colIndex: k, value: cell.formula, isFormula: true, sheetIndex: sheetIndex,
+                                                isRefreshing: false });
                                         cellText = cell.value;
                                         position = `${textAlign ? textAlign : 'Left'}`;
                                     } else {

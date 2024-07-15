@@ -275,7 +275,7 @@ export class FormulaBar {
                     this.parent.notify(editOperation, eventArgs);
                     const formulaInp: HTMLTextAreaElement =
                         (<HTMLTextAreaElement>document.getElementById(this.parent.element.id + '_formula_input'));
-                    const previousVal = formulaInp.value;
+                    const previousVal: string = formulaInp.value;
                     formulaInp.value = value;
                     if (!eventArgs.editedValue || !checkIsFormula(eventArgs.editedValue.toString(), true)) {
                         this.parent.notify(editOperation, { action: 'refreshEditor', value: value, refreshEditorElem: true });

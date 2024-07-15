@@ -3562,8 +3562,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     && newProp.dataSourceSettings.groupSettings && this.dataType === 'pivot') {
                     this.updateGroupingReport(newProp.dataSourceSettings.groupSettings, 'Date');
                 }
-                if (newProp.dataSourceSettings && Object.keys(newProp.dataSourceSettings).length === 1
-                    && Object.keys(newProp.dataSourceSettings)[0] === 'dataSource') {
+                const changedProps: string[] = !isNullOrUndefined(newProp.dataSourceSettings) ? Object.keys(newProp.dataSourceSettings) : [];
+                if (changedProps.indexOf('dataSource') > -1) {
                     if (!isNullOrUndefined(this.savedDataSourceSettings) && (this.dataSourceSettings.dataSource as IDataSet[]).length > 0) {
                         PivotUtil.updateDataSourceSettings(this, this.savedDataSourceSettings);
                         this.savedDataSourceSettings = undefined;
@@ -5612,7 +5612,20 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 this.grid.width = this.renderModule.calculateGridWidth();
                 this.renderModule.calculateGridHeight(true);
                 if (this.gridSettings.allowAutoResizing) {
+                    let vSortColumn: ColumnModel; let vSortColumnWidth: string | number;
+                    if (this.renderModule.vSortColumnPos.length > 0) {
+                        vSortColumn = this.renderModule.getValueSortColumn(
+                            this.grid.columns as ColumnModel[],
+                            this.renderModule.vSortColumnPos.slice(1, this.renderModule.vSortColumnPos.length)
+                        ) as ColumnModel;
+                        if (!isNullOrUndefined(vSortColumn)) {
+                            vSortColumnWidth = vSortColumn.width;
+                        }
+                    }
                     this.setCommonColumnsWidth(this.grid.columns as ColumnModel[], colWidth);
+                    if (!isNullOrUndefined(vSortColumn) && !isNullOrUndefined(vSortColumnWidth)) {
+                        vSortColumn.width = vSortColumnWidth;
+                    }
                 }
                 this.pivotColumns = [];
                 this.totColWidth = 0;

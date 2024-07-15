@@ -594,7 +594,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private closePopupHandler(): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if ((this as any).isReact && !(this.opensOn === 'Click' && typeof (this.content) === 'function')) {
+        if ((this as any).isReact && !(this.opensOn === 'Click' || typeof (this.content) === 'function')) {
             this.clearTemplate(['content']);
         }
         this.clear();
@@ -1244,6 +1244,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             }
         } else {
             this.hideTooltip(this.animation.close, e, this.findTarget());
+            this.clear();
+        }
+        if (this.popupObj && !this.popupObj.element.classList.contains(POPUP_OPEN)) {
             this.clear();
         }
     }

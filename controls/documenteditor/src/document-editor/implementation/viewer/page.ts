@@ -4946,7 +4946,7 @@ export abstract class ElementBox {
             if (node instanceof FieldElementBox) {
                 if (node.fieldType === 1) {
                     if (isNullOrUndefined((node as FieldElementBox).fieldBegin)) {
-                        fieldBegin.fieldEnd = node as FieldElementBox;
+                    fieldBegin.fieldEnd = node as FieldElementBox;
                     }
                     if (fieldBegin.fieldEnd && isNullOrUndefined(fieldBegin.fieldEnd.fieldBegin)) {
                         fieldBegin.fieldEnd.fieldBegin = fieldBegin;

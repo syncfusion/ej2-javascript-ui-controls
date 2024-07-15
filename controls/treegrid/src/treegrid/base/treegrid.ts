@@ -2140,7 +2140,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             || (/[0-9]$/.test(this.height.toString()) && /[px]$/.test(this.height.toString()))) {
             failureCases.push('column width and height should be in pixels');
         }
-        if (!isNullOrUndefined(this.childMapping) && !isNullOrUndefined(this.idMapping)) {
+        if ((this.childMapping !== 'Children') && !isNullOrUndefined(this.idMapping)) {
             failureCases.push('Both IdMapping and ChildMapping should not be used together for tree grid rendering.');
         }
         if ((!isNullOrUndefined(this.idMapping) && (isNullOrUndefined(this.parentIdMapping))) ||

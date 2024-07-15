@@ -13700,3 +13700,78 @@ export let datapdf : object[] = [
       dependency: "14FF,20FF",
     },
   ];
+
+export let invalidPrdcessor : object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Project initiation',
+        StartDate: new Date('04/02/2024'),
+        EndDate: new Date('04/21/2024'),
+        subtasks: [
+            {
+                TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('04/02/2024'), Duration: 0,
+                Progress: 30, resources: [1], info: 'Measure the total property area alloted for construction'
+            },
+            {
+                TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2024'), Duration: 4, Predecessor: '2',
+                resources: [2, 3, 5], info: 'Obtain an engineered soil test of lot where construction is planned.' +
+                    'From an engineer or company specializing in soil testing'
+            },
+            { TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('04/02/2024'), Duration: 0, Predecessor: '3', Progress: 30 },
+        ]
+    }
+];
+export let Data893564: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Project initiation',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('04/02/2019'), Duration: 0,
+                Progress: 30, resources: [1], info: 'Measure the total property area alloted for construction'
+            },
+            {
+                TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2019'), Duration: 4, Predecessor: '2',
+                resources: [2, 3, 5], info: 'Obtain an engineered soil test of lot where construction is planned.' +
+                    'From an engineer or company specializing in soil testing'
+            },
+            { TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('04/02/2019'), Duration: 0, Predecessor: '3', Progress: 30 },
+        ]
+    },
+    {
+        TaskID: 5,
+        TaskName: 'Project estimation',
+        StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'),
+        subtasks: [
+            {
+                TaskID: 6, TaskName: 'Develop floor plan for estimation', StartDate: new Date('04/04/2019'),
+                Duration: 3, Predecessor: '4', Progress: 30, resources: 4,
+                info: 'Develop floor plans and obtain a materials list for estimations'
+            },
+            {
+                TaskID: 7, TaskName: 'List materials', StartDate: new Date('04/04/2019'),
+                Duration: 3, Predecessor: '6', resources: [4, 8], info: ''
+            },
+            {
+                TaskID: 8, TaskName: 'Estimation approval', StartDate: new Date('04/04/2019'),
+                Duration: 0, Predecessor: '7', resources: [12, 5], info: ''
+            }
+        ]
+    },
+    {
+        TaskID: 9, TaskName: 'Sign contract', StartDate: new Date('04/04/2019'), Duration: 1,
+        Predecessor: '8', Progress: 30, resources: [12],
+        info: 'If required obtain approval from HOA (homeowners association) or ARC (architectural review committee)'
+    },
+    {
+        TaskID: 10,
+        TaskName: 'Project approval and kick off',
+        StartDate: new Date('04/04/2019'),
+        EndDate: new Date('04/21/2019'),
+        Duration: 0,
+        Predecessor: '9'
+    }
+];

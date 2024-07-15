@@ -407,6 +407,9 @@ export function getClassMembers(node: Node, diagram: Diagram, classifier: UmlCla
                 if (text) {
                     methodText += text + ' ' + method.name + '(' + argumentText + ')' + ' ' + ':' + ' ' + method.type;
                 }
+                //893885: Parameter Name in UMLClass with multiple Methods are updated wrongly
+                //clear the value stored in parameter variable after each method initiaization
+                argumentText = '';
             }
             if (i !== methods.length) {
                 const style: TextStyleModel = getStyle(node, method);

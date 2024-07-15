@@ -294,10 +294,12 @@ export class HtmlEditor {
                         focusNode = currentChildNode[0] as Element;
                     }
                 }
-                this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
-                    this.parent.contentModule.getDocument(),
-                    focusNode,
-                    pointer);
+                if (range.startContainer !== focusNode) {
+                    this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
+                        this.parent.contentModule.getDocument(),
+                        focusNode,
+                        pointer);
+                }
             }
             const currentElem: Element = this.parent.inputElement.querySelector('.currentStartMark');
             if (!isNOU(currentElem)) {
@@ -614,6 +616,7 @@ export class HtmlEditor {
                         return;
                     } else if (brNode) {
                         detach(brNode);
+                        (e.args as KeyboardEventArgs).preventDefault();
                     }
                     if (!isNullOrUndefined(this.deleteRangeElement) && (this.deleteOldRangeElement.tagName !== 'OL' && this.deleteOldRangeElement.tagName !== 'UL')
                         && this.deleteOldRangeElement !== this.deleteRangeElement) {

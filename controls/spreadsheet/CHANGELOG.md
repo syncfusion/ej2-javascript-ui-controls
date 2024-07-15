@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 26.1.42 (2024-07-16)
+
+### Spreadsheet
+
+#### Bug fixes
+
+- `#I600955` - Issue with "hyperlink navigation action is not prevented when the `cancel` argument of the `beforeHyperlinkClick` event is set to `true`" has been resolved.
+- `#I600874` - Issue with "script error occurs when inserting rows using the `insertRow` method after inserting an image and freezing rows" has been resolved.
+
 ## 26.1.41 (2024-07-09)
 
 ### Spreadsheet

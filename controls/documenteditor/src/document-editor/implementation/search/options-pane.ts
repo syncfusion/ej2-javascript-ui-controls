@@ -274,6 +274,7 @@ export class OptionsPane {
     public dataForTreeview(): { [key: string]: Object; }[] {
         this.data = [];
         let datas: ParagraphWidget[] = this.createDataSourceForTreeview();
+        this.documentHelper.blockToShift = undefined;
         const data: { [key: string]: Object }[] = [];
         if (!isNullOrUndefined(this.treeviewDiv)) {
             let index = 1;
@@ -345,6 +346,8 @@ export class OptionsPane {
             includeOutlineLevels: true,
             includeHyperlink: true,
         };
+        let startPosition : TextPosition = this.documentHelper.selection.start.clone();
+        let endPosition : TextPosition = this.documentHelper.selection.end.clone();
         this.documentHelper.owner.editor.initComplexHistory('TOC');
         let code: string = undefined;
         // Build TOC field code based on parameter
@@ -357,6 +360,7 @@ export class OptionsPane {
                 this.documentHelper.owner.editorHistory.undoStack.pop();
             }
         }
+        this.documentHelper.selection.selectPosition(startPosition,endPosition);
         return widgets;
     }
     private validateHeadingSettings(navigationSettings: TableOfContentsSettings): TableOfContentsSettings {
@@ -778,6 +782,12 @@ export class OptionsPane {
         } else {
             (this.replaceButton as HTMLButtonElement).disabled = true;
             (this.replaceAllButton as HTMLButtonElement).disabled = true;
+        }
+        if (!isNullOrUndefined(this.searchInput.value) && !this.searchInput.value.match(/^[a-zA-Z0-9]+$/) && this.searchInput.value !== "") {
+            this.wholeWord.checked = false;
+            this.wholeWord.disabled = true;
+        } else {
+            this.wholeWord.disabled = false;
         }
     }
     /**
@@ -1307,6 +1317,12 @@ export class OptionsPane {
                 }
                 textBox.value = selectedText;
                 textBox.select();
+                if (!isNullOrUndefined(textBox.value) && !textBox.value.match(/^[a-zA-Z0-9]+$/) && textBox.value !== "") {
+                    this.wholeInput.checked = false;
+                    this.wholeWord.disabled = true;
+                } else {
+                    this.wholeWord.disabled = false;
+                }
                 this.messageDiv.innerHTML = '';
                 if (this.searchIcon.classList.contains('e-de-op-search-close-icon')) {
                     this.searchIcon.classList.add('e-de-op-search-icon');

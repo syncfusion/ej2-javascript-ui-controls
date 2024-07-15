@@ -317,6 +317,32 @@ describe('Wrap ->', () => {
                 done();
             });
         });
+        describe('EJ2-892817->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{
+                        rows: [{ index: 1, cells: [{ wrap: true }], height: 16 },
+                        { index: 2, cells: [{ wrap: true }], height: 16 },
+                        { index: 3, cells: [{ wrap: true }], height: 16 },
+                        { index: 4, cells: [{ wrap: true }], height: 16 },
+                        { index: 5, cells: [{ wrap: true }] },
+                        { index: 6, cells: [{ wrap: true }] }]
+                    }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Selection misalignment occurs after importing an excel file that contains wrap text and small row height in it.->', (done: Function) => {
+                expect(helper.invoke('getCell', [1, 0]).children[0].classList).toContain('e-wrap-content');
+                expect(helper.invoke('getCell', [2, 0]).children[0].classList).toContain('e-wrap-content');
+                expect(helper.invoke('getCell', [3, 0]).children[0].classList).toContain('e-wrap-content');
+                expect(helper.invoke('getCell', [4, 0]).children[0].classList).toContain('e-wrap-content');
+                expect(helper.invoke('getCell', [5, 0]).children.length).toBe(0);
+                expect(helper.invoke('getCell', [6, 0]).children.length).toBe(0);
+                done();
+            });
+        });
     });
     describe('EJ2-60694->', () => {
         beforeEach((done: Function) => {

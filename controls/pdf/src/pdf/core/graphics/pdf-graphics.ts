@@ -1330,7 +1330,7 @@ export class PdfGraphics {
     }
     _applyStringSettings(font: PdfFont, pen: PdfPen, brush: PdfBrush, format: PdfStringFormat): void {
         let tm: _TextRenderingMode = _TextRenderingMode.fill;
-        if (pen !== null && brush !== null) {
+        if (pen && brush) {
             tm = _TextRenderingMode.fillStroke;
         } else if (pen) {
             tm = _TextRenderingMode.stroke;

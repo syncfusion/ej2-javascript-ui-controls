@@ -12,6 +12,141 @@
 
 ### Maps
 
+#### Bug fixes
+
+- `#I605665` - The star shapes in the marker will now be rendered correctly.
+
+## 25.2.5 (2024-05-21)
+
+### Maps
+
+#### Bug fixes
+
+- `#I585591` - When setting different sizes for the Maps, the `latitude` and `longitude` values from the `tooltipRender` event will now be proper.
+- `#I584215` - Markers will now be rendered properly when the left mouse click is on hold and mouse wheel action is performed.
+- `#I584211` - Markers will now be in proper position when the panning action is performed in the Maps when the marker animation is in progress.
+
+## 25.2.4 (2024-05-14)
+
+### Maps
+
+#### Bug Fixes
+
+- `#I583752` - Legends for the markers will now maintain the toggled state when zoomed in or out.
+- `#I584887` - Exceptions will no longer be thrown when toggling the legend by enabling the `removeDuplicateLegend` property in the Maps.
+- `#I584215` - Panning will now work properly when the Maps is zoomed to the maximum level using keyboard interaction.
+
+## 25.2.3 (2024-05-08)
+
+### Maps
+
+#### Bug Fixes
+
+- `#I561947` - The duration of the tooltip in the Maps on the mobile device can be changed using the `duration` property in `tooltipSettings`. When the value is set to **0**, the tooltip will not be removed.
+- `#I580579` - Script errors will no longer be thrown when the markers in the Maps are disabled.
+
+## 25.1.41 (2024-04-23)
+
+### Maps
+
+#### Bug Fixes
+
+- `#I576422` - Script errors will no longer occur when rendering data labels with "Normal" geometry type maps, and the data labels will be rendered properly with the provided labels without trimming.
+- `#I566503` - The flickering in the tile images of the online maps will no longer occur while panning.
+
+## 25.1.40 (2024-04-16)
+
+### Maps
+
+#### Bug Fixes
+
+- `#I566503` - The slight variation between the sublayer shape map and tile images of the online map in the base layer is now properly synchronized when panning the Maps.
+- `#F186927` - The pinch zooming will now work properly for the online maps, which zoom in and out by a factor of 1.
+
+## 25.1.37 (2024-03-26)
+
+### Maps
+
+#### Bug Fixes
+
+- `#I566503` - The shape map in the sublayer is now properly synchronized with the tile images in the base layer when panning the Maps.
+
+## 25.1.35 (2024-03-15)
+
+### Maps
+
+#### New Features
+
+- `#I544447` - Maps will display data labels with improved performance when multiple layers are set.
+- `#I524572` - The threshold limit for rendering the markers and marker clusters has now been increased, with improved performance to a decent extent. Nearly 6,000 markers can now be rendered and clustered, with enhanced rendering, zooming, and panning functionalities.
+- The tooltip and its template can now be displayed over the polygon shapes in the Maps. Tooltip templates can include custom items such as images, text, and HTML elements.
+
+## 24.2.4 (2024-02-06)
+
+### Maps
+
+#### Bug Fixes
+
+- `#I545401`, `#I547542` - Markers will be rendered properly in the correct location when they are added dynamically by clicking over a custom shape map.
+- `#I545484` - Exceptions will no longer be thrown when the markers are dragged at the maximum zoom level.
+
+## 24.1.47 (2024-01-23)
+
+### Maps
+
+#### New Features
+
+- `#I524572` - The threshold limit for rendering the markers and marker clusters has now been increased, with improved performance to a decent extent. Nearly 6,000 markers can now be rendered and clustered, with enhanced rendering, zooming, and panning functionalities.
+
+## 24.1.41 (2023-12-18)
+
+### Maps
+
+#### New Features
+
+- `#I492437` - `minLatitude`, `maxLatitude`, `minLongitude` and `maxLongitude` properties are now available in the event arguments of `zoom` and `pan` events to provide the coordinates of the visible area of the Maps. `getMinMaxLatitudeLongitude` method is also available to provide these coordinate values dynamically.
+- Polygon shapes can now be displayed over map layers by using the appropriate data source. Polygon shapes in Maps can be customized, selected, and highlighted using the properties available.
+
+#### Bug Fixes
+
+- `#523327` - The Maps no longer zooms when clicked on the tooltip template in the Maps component with the `zoomOnClick` property set to true.
+
+## 23.2.7 (2023-12-05)
+
+### Maps
+
+#### Bug Fixes
+
+- `#519916` - When set as an object in the array, the `navigationLineSettings` property will now be updated.
+
+## 23.1.42 (2023-10-24)
+
+### Maps
+
+#### Bug Fixes
+
+- `#I511944` - When the marker template is clicked, the `markerClick` event will now work properly.
+
+## 23.1.40 (2023-10-10)
+
+### Maps
+
+#### Bug Fixes
+
+- `#I504008` - The zoom factor of the Maps will now be properly updated when the `zoomByPosition` method is called in the `zoom` event.
+
+## 23.1.38 (2023-09-26)
+
+### Maps
+
+#### Bug Fixes
+
+- `#I497871` - After adding a marker using the `addMarker` method, marker locations will now be correct when zooming and panning is performed on the Maps.
+
+## 23.1.36 (2023-09-15)
+
+### Maps
+
 #### New Features
 
 - An animation transition will now occur when the data labels are first rendered.

@@ -1685,6 +1685,52 @@ describe('Data validation ->', () => {
                 });
             });
         });
+        describe('EJ2-893509 ->', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('The list validation does not work properly with formatted numbers when entering a value in a cell through editing', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                helper.edit('I6', '12%');
+                helper.edit('I7', '$20');
+                helper.edit('I8', '50%');
+                helper.edit('I9', '$100');
+                helper.invoke('addDataValidation', [{ type: 'List', value1: '12%,17%,20%,$45,$50' }, 'I:I']);
+                helper.edit('I1', '12%');
+                expect(spreadsheet.sheets[0].rows[0].cells[8].value).toBe('0.12');
+                helper.edit('I2', '17%');
+                expect(spreadsheet.sheets[0].rows[1].cells[8].value).toBe('0.17');
+                helper.edit('I3', '20%');
+                expect(spreadsheet.sheets[0].rows[2].cells[8].value).toBe('0.2');
+                helper.edit('I4', '$45');
+                expect(spreadsheet.sheets[0].rows[3].cells[8].value).toBe('45');
+                helper.edit('I5', '$50');
+                expect(spreadsheet.sheets[0].rows[4].cells[8].value).toBe('50');
+                helper.edit('I6', '$50');
+                expect(spreadsheet.sheets[0].rows[5].cells[8].value).toBe('$50');
+                helper.edit('I7', '12%');
+                expect(parseFloat(spreadsheet.sheets[0].rows[6].cells[8].value)).toBe(0.12);
+                helper.edit('I8', '$45');
+                expect(spreadsheet.sheets[0].rows[7].cells[8].value).toBe('$45');
+                helper.edit('I9', '20%');
+                expect(parseFloat(spreadsheet.sheets[0].rows[8].cells[8].value)).toBe(0.2);
+                helper.invoke('addDataValidation', [{ type: 'List', value1: '=I1:I6' }, 'J1:J5']);
+                helper.edit('J1', '12%');
+                expect(spreadsheet.sheets[0].rows[0].cells[9].value).toBe('0.12');
+                helper.edit('J2', '17%');
+                expect(spreadsheet.sheets[0].rows[1].cells[9].value).toBe('0.17');
+                helper.edit('J3', '20%');
+                expect(spreadsheet.sheets[0].rows[2].cells[9].value).toBe('0.2');
+                helper.edit('J4', '$45');
+                expect(spreadsheet.sheets[0].rows[3].cells[9].value).toBe('45');
+                helper.edit('J5', '$50');
+                expect(spreadsheet.sheets[0].rows[4].cells[9].value).toBe('50');
+                done();
+            });
+        });
     });
 
         

@@ -7,7 +7,7 @@ import { getInstance, addClass, removeClass, rippleEffect, detach, classList } f
 import { Internationalization, DateFormatOptions, KeyboardEventArgs, getUniqueID, select } from '@syncfusion/ej2-base';
 import { QueryBuilderModel, ShowButtonsModel, ColumnsModel, RuleModel, ValueModel } from './query-builder-model';
 import { Button, CheckBox, RadioButton, ChangeEventArgs as ButtonChangeEventArgs, RadioButtonModel } from '@syncfusion/ej2-buttons';
-import { DropDownList, ChangeEventArgs as DropDownChangeEventArgs, FieldSettingsModel, CheckBoxSelection, DropDownTreeModel, DropDownTree } from '@syncfusion/ej2-dropdowns';
+import { DropDownList, ChangeEventArgs as DropDownChangeEventArgs, FieldSettingsModel, CheckBoxSelection, DropDownTreeModel, DropDownTree, DdtFilteringEventArgs } from '@syncfusion/ej2-dropdowns';
 import { MultiSelect, MultiSelectChangeEventArgs, PopupEventArgs, MultiSelectModel, DropDownListModel } from '@syncfusion/ej2-dropdowns';
 import { EmitType, Event, EventHandler, getValue, Animation, BaseEventArgs } from '@syncfusion/ej2-base';
 import { Query, Predicate, DataManager, Deferred } from '@syncfusion/ej2-data';
@@ -392,6 +392,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private dragElement: HTMLElement;
     private prvtEvtTgrDaD: boolean;
     private isDragEventPrevent: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private ddTree: any;
 
     /**
      * Triggers when the component is created.
@@ -1318,7 +1320,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         popupHeight: ((this.columns.length > 5) ? height : 'auto'), changeOnBlur: false,
                         change: this.changeField.bind(this), value: !isNullOrUndefined(ddlValue) ? [ddlValue] : null,
                         open: this.popupOpen.bind(this, false), treeSettings: { expandOn: 'Click' },
-                        cssClass: 'e-qb-ddt'
+                        cssClass: 'e-qb-ddt', filtering: this.dropdownTreeFiltering.bind(this), close: this.dropdownTreeClose.bind(this)
                     };
                     if (this.fieldModel) {
                         ddlField = {...ddlField, ...this.fieldModel as DropDownTreeModel};
@@ -1385,6 +1387,71 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
             this.setMultiConnector(ruleElem);
         }
+    }
+
+    private dropdownTreeFiltering(args: DdtFilteringEventArgs): void {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const proxy: QueryBuilder = this;
+        let ruleElemID: string = '';
+        const srcElement: HTMLElement = args.event.srcElement as HTMLElement;
+        const isClearIcon: boolean = srcElement.classList.contains('e-clear-icon');
+        const inputElem: HTMLElement = isClearIcon ? srcElement.parentElement.querySelector('.e-textbox') : srcElement;
+        ruleElemID = inputElem.id.split('_filterkey')[0];
+        const ruleElem: HTMLElement = document.getElementById(ruleElemID);
+        this.ddTree = getComponent(ruleElem.querySelector('input.e-dropdowntree') as HTMLElement, 'dropdowntree');
+        const hierarchicalData: ColumnsModel[] = extend([], this.columns, [], true) as ColumnsModel[];
+        // Cancel the default filtering.
+        args.cancel = true;
+        if (args.text === '') {
+            this.changeDataSource(hierarchicalData as { [key: string]: Object }[]);
+        } else {
+            const matchedDataSource: { [key: string]: Object }[] = hierarchicalData
+                .map((data: ColumnsModel): { [key: string]: Object } => this.nestedChildFilter(args.text, data as { [key: string]: Object }))
+                .filter((filteredChild: { [key: string]: Object } | null): boolean => filteredChild !== null);
+            this.changeDataSource(matchedDataSource);
+            setTimeout(() => {
+                proxy.ddTree.treeObj.expandAll();
+            }, 100);
+        }
+    }
+
+    private changeDataSource(data: { [key: string]: Object }[]): void {
+        this.ddTree.treeObj.fields = {
+            dataSource: data,
+            value: 'field',
+            text: 'label',
+            child: 'columns',
+            expanded: 'expanded'
+        };
+        this.ddTree.treeObj.refresh();
+    }
+
+    private nestedChildFilter(value: string, node: { [key: string]: Object }): { [key: string]: Object } {
+        const children: { [key: string]: Object }[] = node[this.ddTree.fields.child] as { [key: string]: Object }[];
+        if (!children) {
+            return this.isMatchedNode(value, node) ? node : null;
+        }
+        const matchedChildren: { [key: string]: Object }[] = children
+            .map((child: ColumnsModel): { [key: string]: Object } => this.nestedChildFilter(value, child as { [key: string]: Object }))
+            .filter((filteredChild: { [key: string]: Object } | null): boolean => filteredChild !== null);
+        if (matchedChildren.length) {
+            node[this.ddTree.fields.child] = matchedChildren;
+            return node;
+        } else {
+            node[this.ddTree.fields.child] = children;
+            return this.isMatchedNode(value, node) ? node : null;
+        }
+    }
+
+    private isMatchedNode(value: string, node: { [key: string]: Object }): boolean {
+        const checkValue: string = (node[this.ddTree.fields.text] as string).toLowerCase();
+        value = value ? value.toLowerCase() : '';
+        return checkValue.indexOf(value) !== -1;
+    }
+
+    private dropdownTreeClose(): void {
+        if (this.ddTree) { this.changeDataSource(this.columns as { [key: string]: Object }[]); }
+        this.ddTree = null;
     }
 
     private updateDropdowntreeDS(columns: { [key: string]: Object }[]): void {

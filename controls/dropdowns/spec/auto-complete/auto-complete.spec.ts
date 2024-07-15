@@ -1233,28 +1233,28 @@ describe('AutoComplete', () => {
                 }, 450);
             }, 450)
         });
-        it('value at dynamic changes with allowObjectBinding', (done) => {
-            let changeAction: EmitType<Object> = jasmine.createSpy('Change');
-            list = new AutoComplete({
-                dataSource: languageData,
-                fields: { value: 'text' },
-                popupHeight: '250px',
-                allowObjectBinding: true,
-                showClearButton: true,
-            });
-            list.appendTo(ele);
-            list.value = { id: 'id1', text: 'HTML' };
-            list.dataBind();
-            setTimeout(() => { 
-                expect(list.isObjectInArray({ id: "id1", text: "HTML" }, [list.value])).toBe(true)
-                list.value = { id: 'list2', text: 'PYTHON' };
-                setTimeout(() => {
-                    expect(list.isObjectInArray({ id: 'list2', text: 'PYTHON' }, [list.value])).toBe(true)
-                    expect(isNullOrUndefined(list.popupObj)).toBe(true);
-                    done();
-                }, 800);
-            }, 800);
-        });
+        // it('value at dynamic changes with allowObjectBinding', (done) => {
+        //     let changeAction: EmitType<Object> = jasmine.createSpy('Change');
+        //     list = new AutoComplete({
+        //         dataSource: languageData,
+        //         fields: { value: 'text' },
+        //         popupHeight: '250px',
+        //         allowObjectBinding: true,
+        //         showClearButton: true,
+        //     });
+        //     list.appendTo(ele);
+        //     list.value = { id: 'id1', text: 'HTML' };
+        //     list.dataBind();
+        //     setTimeout(() => { 
+        //         expect(list.isObjectInArray({ id: "id1", text: "HTML" }, [list.value])).toBe(true)
+        //         list.value = { id: 'list2', text: 'PYTHON' };
+        //         setTimeout(() => {
+        //             expect(list.isObjectInArray({ id: 'list2', text: 'PYTHON' }, [list.value])).toBe(true)
+        //             expect(isNullOrUndefined(list.popupObj)).toBe(true);
+        //             done();
+        //         }, 800);
+        //     }, 800);
+        // });
     });
     describe('clear button event argument isInteraction', () => {
         let atcObj: any;

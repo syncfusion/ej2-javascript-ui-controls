@@ -969,23 +969,25 @@ export class FreeTextAnnotation {
      */
     public onKeyDownInputBox(event: KeyboardEvent): void {
         // eslint-disable-next-line
-        const inuptEleObj: FreeTextAnnotation = this;
-        if (event.which === 9 || (isNullOrUndefined(this.pdfViewer.selectedItems.annotations[0]) && !this.isNewFreeTextAnnot)) {
-            event.preventDefault();
-        }
-        this.selectedAnnotation = this.pdfViewer.selectedItems.annotations &&
-         this.isNewFreeTextAnnot ? this.pdfViewer.selectedItems.annotations[0]
-            : this.selectedAnnotation;
-        setTimeout(() => {
-            if (inuptEleObj.defaultHeight < inuptEleObj.inputBoxElement.scrollHeight
-
-                && parseInt(inuptEleObj.inputBoxElement.style.height, 10) < inuptEleObj.inputBoxElement.scrollHeight) {
-                inuptEleObj.updateFreeTextAnnotationSize(true);
-            } else {
-                inuptEleObj.updateFreeTextAnnotationSize(false);
+        if (event.which !== 18) {
+            const inuptEleObj: FreeTextAnnotation = this;
+            if (event.which === 9 || (isNullOrUndefined(this.pdfViewer.selectedItems.annotations[0]) && !this.isNewFreeTextAnnot)) {
+                event.preventDefault();
             }
+            this.selectedAnnotation = this.pdfViewer.selectedItems.annotations &&
+                this.isNewFreeTextAnnot ? this.pdfViewer.selectedItems.annotations[0]
+                : this.selectedAnnotation;
+            setTimeout(() => {
+                if (inuptEleObj.defaultHeight < inuptEleObj.inputBoxElement.scrollHeight
 
-        }, 0);
+                    && parseInt(inuptEleObj.inputBoxElement.style.height, 10) < inuptEleObj.inputBoxElement.scrollHeight) {
+                    inuptEleObj.updateFreeTextAnnotationSize(true);
+                } else {
+                    inuptEleObj.updateFreeTextAnnotationSize(false);
+                }
+
+            }, 0);
+        }
     }
 
     private updateFreeTextAnnotationSize(isSize: boolean): void {

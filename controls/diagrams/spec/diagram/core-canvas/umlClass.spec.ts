@@ -967,3 +967,78 @@ describe('887625: UML class nodes cloned in diagram canvas while dragging nodes 
         done();
     });
 });
+describe('893885: Parameter Name in UMLClass with multiple Methods are updated wrongly', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagram35' });
+        document.body.appendChild(ele);
+        let node1: NodeModel = {
+                id: 'DesignBackendComponent1',
+                shape: {
+                    type: 'UmlClassifier',
+                    classShape: {
+                        name: 'DesignBackendComponent',
+                        attributes: [],
+                        methods: [
+                            {
+                                name: 'generateDraftBackendComponent',
+                                type: 'ObjectOrientedComponent',
+                                style: {},
+                                parameters: [
+                                    {
+                                        name: 'int componentId',
+                                        style: {},
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'prepareBackendComponent',
+                                type: 'Verification',
+                                style: {},
+                                parameters: [
+                                    {
+                                        name: 'ObjectOrientedComponent',
+                                        style: {},
+                                    },
+                                ],
+                            },
+                            {
+                                name: 'prepareFrontEndComponent',
+                                type: 'Verification',
+                                style: {},
+                                parameters: [
+                                    {
+                                        name: 'WebOrientedComponent',
+                                        style: {},
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                    classifier: 'Class',
+                } as UmlClassifierShapeModel,
+                offsetX: 300,
+                offsetY: 100,
+            };
+
+        diagram = new Diagram({ width: '1000px', height: '500px', nodes: [node1]} as DiagramModel);
+        diagram.appendTo('#diagram35');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('Checking Parameter Name in Each Methods', (done: Function) => {
+        expect(diagram.nodes[4].annotations[0].content == ' + prepareBackendComponent(ObjectOrientedComponent) : Verification').toBe(true);
+        expect(diagram.nodes[5].annotations[0].content == ' + prepareFrontEndComponent(WebOrientedComponent) : Verification').toBe(true);
+        done();
+    });
+});

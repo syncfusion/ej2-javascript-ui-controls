@@ -487,6 +487,9 @@ export class RibbonGallery {
                 id: item.id
             });
             itemEle.appendChild(buttonEle);
+            if (itemEle.querySelector('.e-ribbon-gallery-wrapper').classList.contains('e-disabled')) {
+                buttonEle.classList.add('e-disabled');
+            }
             itemEle.querySelector('.e-ribbon-gallery-wrapper').classList.add('e-hidden');
             itemEle.querySelectorAll('.e-ribbon-gallery-container').forEach((ele: HTMLElement) => {
                 ele.classList.add('e-hidden');

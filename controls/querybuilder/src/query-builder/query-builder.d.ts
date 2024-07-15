@@ -346,6 +346,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private dragElement;
     private prvtEvtTgrDaD;
     private isDragEventPrevent;
+    private ddTree;
     /**
      * Triggers when the component is created.
      *
@@ -621,6 +622,11 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private appendRuleElem;
     private addRuleElement;
     private addRuleSuccessCallBack;
+    private dropdownTreeFiltering;
+    private changeDataSource;
+    private nestedChildFilter;
+    private isMatchedNode;
+    private dropdownTreeClose;
     private updateDropdowntreeDS;
     private updateAddedRule;
     private changeRuleTemplate;

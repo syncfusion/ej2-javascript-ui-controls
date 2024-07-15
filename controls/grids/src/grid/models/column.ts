@@ -1092,7 +1092,7 @@ export interface ColumnModel {
     /**
      *  Defines the filter options to customize filtering for the particular column.
      *
-     *  @default null
+     *  @default {}
      */
 
     filter?: IFilter;

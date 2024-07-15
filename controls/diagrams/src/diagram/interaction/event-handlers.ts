@@ -71,6 +71,8 @@ import { isBlazor } from '@syncfusion/ej2-base';
 import { BlazorTooltip } from '../blazor-tooltip/blazor-Tooltip';
 import { PathPort, PointPort } from '../objects/port';
 import { Overview } from '../../overview/overview';
+import { FixedUserHandleModel } from '../objects/fixed-user-handle-model';
+import { UserHandleModel } from '../interaction/selector-model';
 
 /**
  * This module handles the mouse and touch events
@@ -163,6 +165,8 @@ export class DiagramEventHandler {
     private lastObjectUnderMouse: NodeModel | ConnectorModel;
 
     private hoverElement: NodeModel | ConnectorModel | PointPortModel;
+
+    private isUserHandleHover: UserHandleModel | FixedUserHandleModel;
 
     private hoverNode: NodeModel;
 
@@ -432,7 +436,9 @@ export class DiagramEventHandler {
                 else {
                     targetEle = document.getElementById(this.diagram.selectedItems.userHandles[parseInt(i.toString(), 10)].name + '_shape_html_element');
                 }
-                if ( arg.element.tooltip.openOn === 'Auto') {
+                //892828: Flickering of tooltip while hovering userhandle
+                if (arg.element.tooltip.openOn === 'Auto' && (arg.element !== this.isUserHandleHover)) {
+                    this.isUserHandleHover = arg.element;
                     (this.diagram.tooltipObject as Tooltip).open(targetEle);
                 }
             }
@@ -458,6 +464,7 @@ export class DiagramEventHandler {
         }
         if (eventName === DiagramEvent.onUserHandleMouseLeave || eventName === DiagramEvent.onFixedUserHandleMouseLeave){
             if (this.diagram.tooltipObject && (this.diagram.tooltipObject as DiagramTooltipModel).openOn !== 'Custom') {
+                this.isUserHandleHover = null;
                 this.diagram.tooltipObject.close();
             }
             this.diagram.triggerEvent(eventName, arg);

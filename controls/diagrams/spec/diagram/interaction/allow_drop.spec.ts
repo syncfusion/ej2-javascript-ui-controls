@@ -451,7 +451,6 @@ var connector5 = {
     });
     
     it('Dropping node on Connector', (done: Function) => {
- 
         let highlighter:HTMLElement = null;
         let diagramCanvas:HTMLElement = document.getElementById(diagram.element.id + 'content');     
         mouseEvents.mouseDownEvent(diagramCanvas, 490,290);
@@ -513,3 +512,57 @@ var connector5 = {
     });
 });
 
+describe('Connector Allow Drop', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'AllowDrop' });
+        document.body.appendChild(ele);
+
+        let port1 = { id: "port1", shape: "square", offset: { x: 0, y: 0.5 } }
+        let port2 = { id: "port2", shape: "square", offset: { x: 1, y: 0.5 } }
+        let node1: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 150, offsetY: 150, annotations: [{ content: 'node1' }], };
+        let node2: NodeModel = {
+            id: 'node2', width: 100, height: 100, offsetX: 650, offsetY: 150, annotations: [{ content: 'node2' }],
+            constraints: NodeConstraints.Default | NodeConstraints.AllowDrop
+        };
+        let node3 = {
+            id: 'node3', width: 100, height: 100, offsetX: 490, offsetY: 290, annotations: [{ content: 'node3' }],
+            constraints: NodeConstraints.Default | NodeConstraints.AllowDrop
+        };
+        let connector1: ConnectorModel = {
+            id: 'connector1', sourceID: "node1", targetID: "node2",
+            constraints: ConnectorConstraints.Default | ConnectorConstraints.AllowDrop
+        };
+        diagram = new Diagram({
+            enableConnectorSplit: true,
+            width: 700, height: 600, nodes: [node1, node2, node3],
+            connectors: [connector1]
+        });
+        diagram.appendTo('#AllowDrop');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it("895314 - dropping node away from connector after the highlighter is activated", function (done) {
+        let highlighter: HTMLElement = null;
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseDownEvent(diagramCanvas, 490, 290);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 150);
+        highlighter = document.getElementById(diagram.element.id + '_diagramAdorner_svg_highlighter');
+        expect(highlighter !== null).toBe(true);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 450);
+        mouseEvents.mouseUpEvent(diagramCanvas, 400, 450);
+        expect(diagram.connectors.length === 1).toBe(true);
+        done();
+    });
+});

@@ -693,5 +693,62 @@ describe('Diagram Control', () => {
             done();
         });
     });
+    describe('Flip Operation for node', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
 
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'flipDiagram' });
+            document.body.appendChild(ele);
+            let selArray: (NodeModel | ConnectorModel)[] = [];
+            let node: NodeModel = {
+                id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100, shape: { type: 'Basic', shape: 'RightTriangle' },
+
+            };
+            diagram = new Diagram({
+                width: '600', height: '530px', nodes: [node],
+                snapSettings: { constraints: SnapConstraints.ShowLines }
+            });
+
+            diagram.appendTo('#flipDiagram');
+
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('895070-Checking horizontally flipped node is able to move or not', (done: Function) => {
+            debugger;
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.nodes[0].flip= "Horizontal";
+            diagram.dataBind();
+            mouseEvents.mouseDownEvent(diagramCanvas, 120, 120);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 220, 350);
+            mouseEvents.mouseUpEvent(diagramCanvas, 220, 350);
+            expect(diagram.selectedItems.nodes[0].id === 'node1').toBe(true);
+            done();
+        });
+        it('895070-Checking vertically flipped node is able to move or not', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.nodes[0].flip= "Vertical";
+            diagram.dataBind();
+            mouseEvents.mouseDownEvent(diagramCanvas, 240, 360);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 120, 120);
+            mouseEvents.mouseUpEvent(diagramCanvas, 120, 120);
+            expect(diagram.selectedItems.nodes[0].id === 'node1').toBe(true);
+            done();
+        });
+        it('895070-Checking Both horizontally and vertically flipped node is able to move or not', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.nodes[0].flip= "Both";
+            diagram.dataBind();
+            mouseEvents.mouseDownEvent(diagramCanvas, 90, 60);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 200, 300);
+            mouseEvents.mouseUpEvent(diagramCanvas, 200, 300);
+            expect(diagram.selectedItems.nodes[0].id === 'node1').toBe(true);
+            done();
+        });
+    });
 });

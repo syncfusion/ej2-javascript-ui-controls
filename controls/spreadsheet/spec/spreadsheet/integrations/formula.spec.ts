@@ -1,7 +1,7 @@
 import { SpreadsheetModel, Spreadsheet, DialogBeforeOpenEventArgs, CellSaveEventArgs } from '../../../src/spreadsheet/index';
 import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, reportedBugData, EJ2_53702_SUBTOTALS, EJ2_53702_INDEX, EJ2_53702_UNIQUE, EJ2_53702_SLOPE_SHEET1, EJ2_53702_SLOPE_SHEET2 } from '../util/datasource.spec';
-import { CellModel, getCell, getRangeAddress, DefineNameModel, RowModel, SheetModel, getFormatFromType } from '../../../src/index';
+import { CellModel, getCell, getRangeAddress, DefineNameModel, RowModel, SheetModel, getFormatFromType, setCell } from '../../../src/index';
 
 /**
  *  Formula spec
@@ -247,7 +247,9 @@ describe('Spreadsheet formula module ->', () => {
 
     describe('Formula - Checking ->', () => {
         beforeAll((done: Function) => {
-            helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            helper.initializeSpreadsheet(
+                { sheets: [{ ranges: [{ dataSource: defaultData }], rows: [{ index: 1499, cells: [{ index: 2, formula: '=SUM(D2:D10)' }] }] },
+                { rows: [{ index: 14, cells: [{ index: 3, formula: '=Sheet1!C1500' }] }], }] }, done);
         });
         afterAll(() => {
             helper.invoke('destroy');
@@ -424,6 +426,125 @@ describe('Spreadsheet formula module ->', () => {
             helper.click('.e-validation-error-dlg.e-dialog .e-btn.e-primary');
             helper.edit('J13', '=ROUNDUP(23.457,1);');
             done();
+        });
+        it ('Calculate sheet', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            expect(spreadsheet.sheets[0].rows[1499].cells[2].value).toBeUndefined();
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getDependentFormulaCells().get('!0!C1500')).toBeUndefined();
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!0!C1500')).toBeUndefined();
+            helper.invoke('calculateNow');
+            expect(spreadsheet.sheets[0].rows[1499].cells[2].value).toBe('228.5');
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getDependentFormulaCells().get('!0!C1500').size).toBe(9);
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!0!C1500').formulaValue).toBe('228.5');
+            done();
+        });
+        it ('Calculate workbook', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            expect(spreadsheet.sheets[1].rows[14].cells[3].value).toBeUndefined();
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getDependentFormulaCells().get('!1!D15')).toBeUndefined();
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!1!D15')).toBeUndefined();
+            helper.invoke('calculateNow', ['Workbook']);
+            expect(spreadsheet.sheets[1].rows[14].cells[3].value).toBe('228.5');
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getDependentFormulaCells().get('!1!D15').size).toBe(1);
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!1!D15').formulaValue).toBe('228.5');
+            done();
+        });
+        it ('Calculate the formulas in which the dependencies are not added and uncalculated', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            setCell(1, 10, spreadsheet.sheets[0], { formula: '=AVERAGE(E2:E11)', value: '#VALUE!' });
+            expect(spreadsheet.sheets[0].rows[1].cells[10].value).toBe('#VALUE!');
+            helper.invoke('updateCell', [{ value: '40' }, 'E2']);
+            expect(spreadsheet.sheets[0].rows[1].cells[10].value).toBe('#VALUE!');
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getDependentFormulaCells().get('!0!K2')).toBeUndefined();
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!0!K2')).toBeUndefined();
+            helper.invoke('updateCell', [{ formula: '=K2' }, 'K3']);
+            expect(spreadsheet.sheets[0].rows[2].cells[10].value).toBe('#VALUE!');
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getDependentFormulaCells().get('!0!K3').size).toBe(1);
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!0!K3').formulaValue).toBe('#VALUE!');
+            helper.invoke('calculateNow', ['Sheet', 'Sheet1']);
+            expect(spreadsheet.sheets[0].rows[1].cells[10].value).toBe('19.5');
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getDependentFormulaCells().get('!0!K2').size).toBe(10);
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!0!K2').formulaValue).toBe('19.5');
+            expect(spreadsheet.sheets[0].rows[2].cells[10].value).toBe('19.5');
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!0!K3').formulaValue).toBe('19.5');
+            helper.invoke('updateCell', [{ value: '20' }, 'E2']);
+            expect(spreadsheet.sheets[0].rows[1].cells[10].value).toBe('17.5');
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!0!K2').formulaValue).toBe('17.5');
+            expect(spreadsheet.sheets[0].rows[2].cells[10].value).toBe('17.5');
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!0!K3').formulaValue).toBe('17.5');
+            setCell(1, 4, spreadsheet.sheets[0], { value: '500' }, true);
+            setCell(3, 11, spreadsheet.sheets[0], { formula: '=K2' });
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!0!L4')).toBeUndefined();
+            helper.invoke('calculateNow');
+            expect(spreadsheet.sheets[0].rows[1].cells[10].value).toBe('65.5');
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!0!K2').formulaValue).toBe('65.5');
+            expect(spreadsheet.sheets[0].rows[2].cells[10].value).toBe('65.5');
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!0!K3').formulaValue).toBe('65.5');
+            expect(spreadsheet.sheets[0].rows[3].cells[11].value).toBe('65.5');
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!0!L4').formulaValue).toBe('65.5');
+            helper.invoke('updateCell', [{ value: '20' }, 'E2']);
+            done();
+        });
+        it ('Calculate non active sheet', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            setCell(3, 10, spreadsheet.sheets[1], { formula: '=AVERAGE(Sheet1!E2:E11)' });
+            helper.invoke(
+                'insertSheet', [[{ index: 2, rows: [{ index: 2, hidden: true, cells:
+                    [{ index: 2, formula: '=Sheet2!D15+Sheet2!K4', value: null }, { formula: '=ROUND(C3, 0)', value: '200' }] }] }]]);
+            expect(spreadsheet.sheets[2].rows[2].cells[2].value).toBeNull();
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getDependentFormulaCells().get('!2!C3')).toBeUndefined();
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!2!C3')).toBeUndefined();
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!1!K4')).toBeUndefined();
+            expect(spreadsheet.sheets[2].rows[2].cells[3].value).toBe('200');
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getDependentFormulaCells().get('!2!D3')).toBeUndefined();
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!2!D3')).toBeUndefined();
+            helper.invoke('calculateNow', ['Sheet', 2]);
+            expect(spreadsheet.sheets[2].rows[2].cells[2].value).toBe('246');
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getDependentFormulaCells().get('!2!C3').size).toBe(2);
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!2!C3').formulaValue).toBe('246');
+            expect(spreadsheet.sheets[1].rows[3].cells[10].value).toBe('17.5');
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!1!K4').formulaValue).toBe('17.5');
+            expect(spreadsheet.sheets[2].rows[2].cells[3].value).toBe('246');
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getDependentFormulaCells().get('!2!D3').size).toBe(1);
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!2!D3').formulaValue).toBe('246');
+            done();
+        });
+        it ('Calculate formulas from sheets where the data source is not loaded', (done: Function) => {
+            const spreadsheet: any = helper.getInstance();
+            helper.invoke('insertSheet', [3]);
+            spreadsheet.setSheetPropertyOnMute(spreadsheet.sheets[3], 'ranges', [{}, { dataSource: defaultData, startCell: 'A2', showFieldAsHeader: false }]);
+            setCell(12, 3, spreadsheet.sheets[3], { formula: '=IF(F13, "Number", "Not a number")', value: 'Not a number' });
+            setCell(12, 4, spreadsheet.sheets[3], { formula: '=SUM(Sheet5!E2:E11)' });
+            setCell(12, 5, spreadsheet.sheets[3], { formula: '=ISNUMBER(D2)' });
+            helper.invoke('insertSheet', [4]);
+            setCell(12, 0, spreadsheet.sheets[4], { formula: '=CONCAT(A2:A3)' });
+            helper.invoke('calculateNow', ['Sheet', 3]).then(() => {
+                expect(spreadsheet.sheets[3].rows[12].cells[3].value).toBe('Number');
+                expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!3!D13').formulaValue).toBe('Number');
+                expect(spreadsheet.sheets[3].rows[12].cells[4].value).toBe(0);
+                expect(spreadsheet.workbookFormulaModule.calculateInstance.getDependentFormulaCells().get('!3!E13').size).toBe(10);
+                expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!3!E13').formulaValue).toBe(0);
+                expect(spreadsheet.sheets[3].rows[12].cells[5].value).toBeTruthy();
+                expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!3!F13').formulaValue).toBeTruthy();
+                spreadsheet.setSheetPropertyOnMute(
+                    spreadsheet.sheets[4], 'ranges', [{ dataSource: defaultData, startCell: 'A1', showFieldAsHeader: true, info: { loadedRange: [] } }]);
+                helper.invoke('calculateNow', ['Workbook']).then(() => {
+                    expect(spreadsheet.sheets[4].rows[12].cells[0].value).toBe('Casual ShoesSports Shoes');
+                    expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!4!A13').formulaValue).toBe('Casual ShoesSports Shoes');
+                    expect(spreadsheet.sheets[3].rows[12].cells[4].value).toBe(175);
+                    expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!3!E13').formulaValue).toBe(175);
+                    done();
+                });
+                expect(spreadsheet.sheets[4].rows[12].cells[0].value).toBeUndefined();
+                expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!4!A13')).toBeUndefined();
+            });
+            expect(spreadsheet.sheets[3].rows[12].cells[3].value).toBe('Not a number');
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!3!D13')).toBeUndefined();
+            expect(spreadsheet.sheets[3].rows[12].cells[4].value).toBeUndefined();
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getDependentFormulaCells().get('!3!E13')).toBeUndefined();
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!3!E13')).toBeUndefined();
+            expect(spreadsheet.sheets[3].rows[12].cells[5].value).toBeUndefined();
+            expect(spreadsheet.workbookFormulaModule.calculateInstance.getFormulaInfoTable().get('!3!F13')).toBeUndefined();
         });
     });
 
@@ -12430,7 +12551,7 @@ describe('Spreadsheet formula module ->', () => {
                     helper.triggerKeyNativeEvent(38);
                     helper.triggerKeyNativeEvent(40);
                     helper.triggerKeyNativeEvent(9);
-                    helper.getElement('.e-spreadsheet-edit').textContent = '=SUM(H2:H11)';
+                    helper.getInstance().notify('editOperation', { action: 'refreshEditor', value: '=SUM(H2:H11)', refreshCurPos: true, refreshEditorElem: true });
                     helper.triggerKeyNativeEvent(13);
                     setTimeout(() => {
                         expect(JSON.stringify(helper.getInstance().sheets[0].rows[2].cells[9])).toBe('{"value":554,"formula":"=SUM(H2:H11)"}');

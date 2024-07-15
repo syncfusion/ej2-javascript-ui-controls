@@ -92,7 +92,7 @@ export class CellRenderer implements ICellRenderer {
             args.colIdx, needHeightCheck: false, row: args.row };
         this.parent.trigger('beforeCellRender', evtArgs);
         if (!sheet.rows[args.rowIdx] || !sheet.rows[args.rowIdx].customHeight) {
-            if (evtArgs.needHeightCheck || (evtArgs.element && evtArgs.element.children.length)) {
+            if (evtArgs.needHeightCheck || (evtArgs.element && evtArgs.element.children.length && !args.cell.wrap)) {
                 const clonedCell: HTMLElement = evtArgs.element.cloneNode(true) as HTMLElement;
                 clonedCell.style.width = getColumnWidth(sheet, args.colIdx, true) + 'px';
                 this.tableRow.appendChild(clonedCell);
@@ -215,8 +215,10 @@ export class CellRenderer implements ICellRenderer {
                 this.parent.notify(deleteNote, {rowIndex: args.rowIdx, columnIndex: args.colIdx});
             }
             if (args.cell.isNoteEditable) {
-                this.parent.notify(showNote,
-                                   {rowIndex: args.rowIdx, columnIndex: args.colIdx, isNoteEditable: true, isScrollWithNote: true, cellElement: args.td});
+                this.parent.notify(showNote, {
+                    rowIndex: args.rowIdx, columnIndex: args.colIdx,
+                    isNoteEditable: true, isScrollWithNote: true, cellElement: args.td
+                });
             }
         }
         if (args.isRefresh && isNullOrUndefined(args.cell) && !isNullOrUndefined(args.td) && args.td.children.length > 0 && args.td.children[args.td.childElementCount - 1].className.indexOf('e-addNoteIndicator') > -1) {

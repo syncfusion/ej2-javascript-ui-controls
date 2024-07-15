@@ -1196,10 +1196,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private originalElement: HTMLElement;
     private clickPoints: { [key: string]: number };
     private initialValue: string;
+    private isSelectAll: boolean;
 
     public constructor(options?: RichTextEditorModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
         this.needsID = true;
+        this.isSelectAll = false;
     }
     /**
      * To provide the array of modules needed for component rendering
@@ -1966,6 +1968,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (!isNOU(this.placeholder)) {
             this.setPlaceHolder();
         }
+        if (!isNOU(e) && !isNOU(e.code) && (e.code === 'Backspace' || e.code === 'Delete')) {
+            const range : Range = this.contentModule.getDocument().getSelection().getRangeAt(0);
+            const div: HTMLElement = document.createElement('div');
+            div.appendChild(range.cloneContents());
+            const selectedHTML: string = div.innerHTML;
+            if (selectedHTML === this.inputElement.innerHTML) {
+                this.isSelectAll = true;
+            }
+        }
     }
 
     private keyUp(e: KeyboardEvent): void {
@@ -1976,6 +1987,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 const currentRange: Range = this.getRange();
                 const selection: Selection = this.iframeSettings.enable ? this.contentModule.getPanel().ownerDocument.getSelection() :
                     this.contentModule.getDocument().getSelection();
+                if (this.isSelectAll) {
+                    this.inputElement.innerHTML = this.enterKey !== 'BR' ? '<' + this.enterKey + '><br></' + this.enterKey + '>' : '<br>';
+                    this.isSelectAll = false;
+                }
                 if (selection.rangeCount > 0) {
                     selection.removeAllRanges();
                     selection.addRange(currentRange);
@@ -2274,7 +2289,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
             removeClass([this.element], classes.CLS_RTE_HIDDEN);
         } else {
-            remove(this.inputElement);
             if (this.originalElement.innerHTML.trim() !== '') {
                 this.element.innerHTML = this.originalElement.innerHTML.trim();
                 this.setProperties({ value: (!isNOU(this.initialValue) ? this.initialValue : null) }, true);
@@ -2296,9 +2310,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     removeClass([this.element], allClassName[i as number]);
                 }
             }
-        }
-        if (this.inputElement) {
-            this.inputElement = null;
         }
         if (this.rootContainer) {
             this.rootContainer = null;

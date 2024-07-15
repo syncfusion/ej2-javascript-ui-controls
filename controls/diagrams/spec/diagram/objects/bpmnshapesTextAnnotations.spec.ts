@@ -753,5 +753,78 @@ describe('Diagram Control', () => {
             done();
         });
     });
+    describe('Bug 892767-Unable to update BPMN text annotation direction dynamically', () => {
 
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
+            ele = createElement('div', { id: 'diagramBpmnTextDirection' });
+            document.body.appendChild(ele);
+
+            let nodes: NodeModel[] = [
+                {
+                    id: 'bpmn1', width: 100, height: 100, offsetX: 450, offsetY: 240,
+                    shape: {
+                        type: 'Bpmn', shape: 'DataObject',
+                        dataObject: { collection: false, type: 'Input' },
+                    } as BpmnShapeModel,
+                },
+            
+                {
+                    id: 'bpmn2', width: 100, height: 100, offsetX: 750, offsetY: 240,
+                    shape: {
+                        type: 'Bpmn', shape: 'DataObject',
+                        dataObject: { collection: false, type: 'Input' },
+                    },
+                },
+                {
+                    id:'node1',
+                    offsetX: 300,
+                    offsetY: 300,
+                    width: 100,
+                    height: 100,
+                    annotations:[{content:'Node1'}],
+                    shape:{type:'Bpmn',shape:'TextAnnotation',textAnnotation:{textAnnotationDirection:'Left'}}
+                }
+            ];
+            diagram = new Diagram({
+                width: 1500, height: 1000, nodes: nodes
+            });
+            diagram.appendTo('#diagramBpmnTextDirection');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Changing text annotation direction at runtime', (done: Function) => {
+            let textAnnotation = diagram.nameTable['node1'];
+            (textAnnotation.shape as BpmnShape).textAnnotation.textAnnotationDirection = 'Right';
+            diagram.dataBind();
+            let path = document.getElementById('node1_textannotation_path_groupElement').getBoundingClientRect() as DOMRect;
+            expect(path.x > 340 && path.x < 360).toBe(true);
+            diagram.undo();
+            let path2 = document.getElementById('node1_textannotation_path_groupElement').getBoundingClientRect() as DOMRect;
+            expect(path2.x > 250 && path2.x < 270).toBe(true);
+            diagram.redo();
+            let path3 = document.getElementById('node1_textannotation_path_groupElement').getBoundingClientRect() as DOMRect;
+            expect(path3.x > 340 && path3.x < 360).toBe(true);
+            done();
+        });
+        it('Changing text annotation target at runtime', (done: Function) => {
+            let textAnnotation = diagram.nameTable['node1'];
+            (textAnnotation.shape as BpmnShape).textAnnotation.textAnnotationTarget = 'bpmn1';
+            diagram.dataBind();
+            let connector = diagram.connectors[0];
+            expect(connector.sourceID === 'bpmn1').toBe(true);
+            done();
+        });
+    });
 });

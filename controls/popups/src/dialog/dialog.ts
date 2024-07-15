@@ -1338,6 +1338,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.buttonContent = [];
             this.btnObj = [];
             for (let i: number = 0; i < this.buttons.length; i++) {
+                if (isNullOrUndefined(this.buttons[i as number].buttonModel)) {
+                    continue;
+                }
                 const buttonType: string = !isNullOrUndefined(this.buttons[i as number].type) ?
                     this.buttons[i as number].type.toLowerCase() : 'button';
                 const btn: HTMLElement =
@@ -1354,6 +1357,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
 
         for (let i: number = 0; i < this.buttons.length; i++) {
+            if (isNullOrUndefined(this.buttons[i as number].buttonModel)) {
+                continue;
+            }
             if (!this.isBlazorServerRender()) {
                 this.btnObj[i as number] = new Button(this.buttons[i as number].buttonModel);
             }
@@ -1819,17 +1825,16 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             case 'cssClass':
                 this.setCSSClass(oldProp.cssClass); break;
             case 'buttons': {
-                const buttonCount : number = this.buttons.length;
+                this.unWireButtonEvents();
+                this.destroyButtons();
                 if (!isNullOrUndefined(this.ftrTemplateContent) && !this.isBlazorServerRender()) {
                     detach(this.ftrTemplateContent);
                     this.ftrTemplateContent = null;
                 }
-                for (let i : number = 0; i < buttonCount; i++) {
-                    if (!isNullOrUndefined(this.buttons[i as number].buttonModel)) {
-                        this.footerTemplate = '';
-                        this.setButton();
-                    }
-                } break; }
+                this.footerTemplate = '';
+                this.setButton();
+                break;
+            }
             case 'allowDragging':
                 if (this.allowDragging && (!isNullOrUndefined(this.headerContent))) {
                     this.setAllowDragging();
@@ -1968,11 +1973,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             removeClass([(!isNullOrUndefined(this.targetEle) ? this.targetEle : document.body)], SCROLL_DISABLED);
         }
         this.unWireEvents();
-        if (!isNullOrUndefined(this.btnObj)) {
-            for (let i: number = 0; i < this.btnObj.length; i++) {
-                this.btnObj[i as number].destroy();
-            }
-        }
+        this.unWireButtonEvents();
+        this.destroyButtons();
         if (!isNullOrUndefined(this.closeIconBtnObj)) {
             this.closeIconBtnObj.destroy();
         }
@@ -2065,10 +2067,24 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.isModal) {
             EventHandler.remove(this.dlgOverlay, 'click', this.dlgOverlayClickEventHandler);
         }
-        if (this.buttons.length > 0 && !isNullOrUndefined(this.buttons[0].buttonModel) && this.footerTemplate === '') {
+    }
+
+    private unWireButtonEvents(): void {
+        if (this.buttons.length > 0 && this.footerTemplate === '' && this.ftrTemplateContent) {
             for (let i: number = 0; i < this.buttons.length; i++) {
-                if (typeof (this.buttons[i as number].click) === 'function') {
+                if (this.buttons[i as number].click && typeof (this.buttons[i as number].click) === 'function'
+                && this.ftrTemplateContent.children[i as number]) {
                     EventHandler.remove(this.ftrTemplateContent.children[i as number], 'click', this.buttons[i as number].click);
+                }
+            }
+        }
+    }
+
+    private destroyButtons(): void {
+        if (!isNullOrUndefined(this.btnObj)) {
+            for (let i: number = 0; i < this.btnObj.length; i++) {
+                if (this.btnObj[i as number] && !this.btnObj[i as number].isDestroyed) {
+                    this.btnObj[i as number].destroy();
                 }
             }
         }

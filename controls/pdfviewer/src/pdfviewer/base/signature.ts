@@ -1271,7 +1271,7 @@ export class Signature {
         uploadButton.element.style.left = ((uploadCanvas.width / 2) - 50) + 'px';
         uploadButton.element.style.top = ((parseFloat(uploadCanvas.style.height) / 2) + 20) + 'px';
         uploadCanvas.style.border = '1px dotted #bdbdbd';
-        uploadCanvas.style.backgroundColor = 'white';
+        uploadCanvas.style.backgroundColor = 'transparent';
         uploadCanvas.style.boxSizing = 'border-box';
         uploadCanvas.style.borderRadius = '2px';
         uploadCanvas.style.zIndex = '0';

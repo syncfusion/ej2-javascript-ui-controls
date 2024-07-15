@@ -1767,6 +1767,37 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
+     * The `calculateNow` method is used to calculate any uncalculated formulas in a spreadsheet.
+     * This method accepts an option to specify whether the calculation should be performed for the entire workbook or a specific sheet.
+     *
+     * @param {string} [scope] - Specifies the scope of the calculation. Acceptable values are `Sheet` or `Workbook`.
+     * If not provided, the default scope is `Sheet`.
+     * * `Sheet`: Calculates formulas only on the current sheet or a specified sheet.
+     * * `Workbook`: Calculates formulas across the entire workbook.
+     * @param {number | string} [sheet] - The index or name of the sheet to calculate if the scope is set to `Sheet`.
+     * If not provided and the scope is `Sheet`, the current active sheet will be used.
+     * @returns {Promise<void>} - A promise that resolves when the calculation is complete.
+     * The promise does not return a specific value, but it can be used to perform actions after the calculation has finished.
+     */
+    public calculateNow(scope?: string, sheet?: number | string): Promise<void> {
+        let sheets: SheetModel[];
+        if (scope === 'Workbook') {
+            sheets = this.sheets;
+        } else {
+            if (typeof sheet === 'string') {
+                sheet = getSheetIndex(this, sheet);
+            } else {
+                sheet = isNullOrUndefined(sheet) ? this.activeSheetIndex : sheet;
+            }
+            sheets = [getSheet(this, <number>sheet)];
+        }
+        const calcArgs: { action: string, sheets: SheetModel[], promise: Promise<void> } = { action: 'calculateNow', sheets: sheets,
+            promise: new Promise((resolve: Function) => { resolve((() => { /** */ })()); }) };
+        this.notify(events.workbookFormulaOperation, calcArgs);
+        return calcArgs.promise;
+    }
+
+    /**
      * @param {number} top - Specifies the top.
      * @param {number} left - Specifies the fleft.
      * @param {string} model - Specifies the model.

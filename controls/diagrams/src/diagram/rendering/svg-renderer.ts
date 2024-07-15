@@ -655,12 +655,24 @@ export class SvgRenderer implements IRenderer {
                 'class': 'foreign-object'
             };
             htmlElement = createHtmlElement('div', attr);
+            const diagram : any = (document.getElementById(element.diagramId) as any).ej2_instances[0];
             let isOverviewLayer: boolean = false;
             if (canvas.parentNode && canvas.parentNode.parentNode && canvas.parentNode.parentNode.parentNode && (canvas.parentNode.parentNode.parentNode as any).classList.contains('e-overview')) {
                 isOverviewLayer = true;
             }
             if (isOverviewLayer) {
-                htmlElement.appendChild(element.template.cloneNode(true));
+                //893685: HTML node with node Template not shown in Overview in React.
+                if (diagram.isReact)
+                {
+                    diagram.renderReactTemplates(()=>
+                    {
+                        htmlElement.appendChild(element.template.cloneNode(true));
+                    });
+                }
+                else
+                {
+                    htmlElement.appendChild(element.template.cloneNode(true));
+                }
             } else {
                 //Bug 852259: User handle template not working properly after saving and loading the diagram.
                 // After serialization the template will be in string format, so we need to convert it to element.
@@ -668,7 +680,6 @@ export class SvgRenderer implements IRenderer {
                     const temp: HTMLDivElement = document.createElement('div');
                     temp.innerHTML = element.template;
                     element.template = temp;
-                    const diagram: Diagram = (document.getElementById(element.diagramId) as any).ej2_instances[0];
                     const handle: UserHandleModel[] = diagram.selectedItems.userHandles.filter((x: UserHandleModel) => {
                         return x.name === (element.id.split('_shape')[0]) && (x.template as any) !== '';
                     });

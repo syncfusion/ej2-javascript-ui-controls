@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.1.42 (2024-07-16)
+
+### PivotTable
+
+#### Bug fixes
+
+- When using value sorting with autofit in the pivot table with the Grouping Bar UI, the column header text will now be visible.
+
 ## 26.1.41 (2024-07-09)
 
 ### PivotTable

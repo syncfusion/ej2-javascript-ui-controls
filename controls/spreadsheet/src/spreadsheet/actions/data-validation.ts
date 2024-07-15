@@ -1178,7 +1178,7 @@ export class DataValidation {
                         value = args.value = this.getDateAsNumber(args, args.value);
                     } else {
                         let format: string = cell && cell.format; let numVal: string | number;
-                        if (format) {
+                        if (format && type !== 'List') {
                             if (format !== '@') {
                                 try {
                                     let colorCode: string = getColorCode(format);
@@ -1236,15 +1236,29 @@ export class DataValidation {
                         if (value1.indexOf('=') !== -1) {
                             this.data = !isNullOrUndefined(this.data) && !this.data.length ?
                                 this.updateDataSource(cell, validation) : this.data;
+                            let value: string;
                             for (let idx: number = 0; idx < this.data.length; idx++) {
-                                if (args.value.toString() === this.data[idx as number].text) {
+                                value = (this.data[idx as number].text).toString();
+                                const formatArgs: NumberFormatArgs = {
+                                    formattedText: value, value: value, format: 'General',
+                                    cell: { value: value, format: 'General' }
+                                };
+                                this.parent.notify(getFormattedCellObject, formatArgs);
+                                if (args.value.toString() === formatArgs.value.toString()) {
                                     isValidate = true;
                                 }
                             }
                         } else {
                             const values: string[] = (value1 as string).split(',');
+                            let value: string;
                             for (let idx: number = 0; idx < values.length; idx++) {
-                                if (args.value.toString() === values[idx as number]) {
+                                value = values[idx as number];
+                                const formatArgs: NumberFormatArgs = {
+                                    formattedText: value, value: value, format: 'General',
+                                    cell: { value: value, format: 'General' }
+                                };
+                                this.parent.notify(getFormattedCellObject, formatArgs);
+                                if (args.value.toString() === formatArgs.value.toString()) {
                                     isValidate = true;
                                 }
                             }

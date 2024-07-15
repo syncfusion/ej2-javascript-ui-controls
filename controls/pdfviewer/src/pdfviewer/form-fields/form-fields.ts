@@ -21,7 +21,10 @@ export class FormFields {
     private maintainTabIndex: any = {};
     private maintanMinTabindex: any = {};
     private isSignatureField: boolean = false;
-    private  paddingDifferenceValue : number = 10;
+    /**
+     * @private
+     */
+    public paddingDifferenceValue : number = 10;
     private indicatorPaddingValue : number = 4;
     private isKeyDownCheck: boolean = false;
     private signatureFontSizeConstent: number = 1.35;

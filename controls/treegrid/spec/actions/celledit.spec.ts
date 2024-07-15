@@ -1336,4 +1336,32 @@ describe('Bug 871546: Action Complete with args.requestType Cancel not passed on
         destroy(gridObj);
     });
 });
-
+describe('Without bind EditSettings', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: sampleData,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 60, textAlign: 'Right' },
+                    { field: 'taskName', headerText: 'Task Name', width: 180, textAlign: 'Left' },
+                    {
+                        field: 'startDate', headerText: 'Start Date', width: 90, textAlign: 'Right', type: 'date', format: 'yMd'
+                    },
+                    { field: 'duration', headerText: 'Duration', width: 80, textAlign: 'Right' }
+                ]
+            },
+            done
+        );
+    });
+    it('Checking data without any script error', () => {
+        gridObj.setCellValue(1, 'taskName', 'test');
+        expect(gridObj.dataSource[0].taskName === 'test').toBe(true);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+  });

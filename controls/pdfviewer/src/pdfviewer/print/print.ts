@@ -3,6 +3,7 @@ import { PdfViewerBase, PdfAnnotationBaseModel } from '../index';
 import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { AjaxHandler } from '../index';
 import { DiagramHtmlElement } from '../drawing/html-element';
+import { Size } from '@syncfusion/ej2-drawings';
 /**
  * Print module
  */
@@ -13,6 +14,8 @@ export class Print {
     private printCanvas: HTMLCanvasElement;
     private printHeight: number = 1056;
     private printWidth: number = 816 ;
+    private maximumPixels: number = 16777216;
+    
     /**
      * @private
      */
@@ -244,6 +247,12 @@ export class Print {
                     this.printCanvas.height = this.printHeight * printScaleValue * window.devicePixelRatio;
                     this.printCanvas.width = this.printWidth * printScaleValue * window.devicePixelRatio;
                 }
+                if (this.pdfViewerBase.isDeviceiOS) {
+                    const size: Size = new Size(this.printCanvas.width, this.printCanvas.height);
+                    const newSize: Size = this.limitSize(size, this.maximumPixels);
+                    this.printCanvas.width = newSize.width;
+                    this.printCanvas.height = newSize.height;
+                }
                 const context: CanvasRenderingContext2D = this.printCanvas.getContext('2d');
                 const pageImage: HTMLImageElement = new Image();
                 const annotationImage: HTMLImageElement = new Image();
@@ -277,6 +286,16 @@ export class Print {
             }
         }
         this.pdfViewerBase.isPrint = false;
+    }
+
+    private limitSize(size: Size, maximumPixels: number): Size {
+        const { width, height } = size;
+        const requiredPixels: number = width * height;
+        if (requiredPixels <= maximumPixels) {
+            return new Size(size.width, size.height);
+        }
+        const scalar: number = Math.sqrt(maximumPixels) / Math.sqrt(requiredPixels);
+        return new Size(Math.floor(width * scalar), Math.floor(height * scalar));
     }
 
     private renderFieldsForPrint(pageIndex: number, heightRatio: number, widthRatio: number): void {

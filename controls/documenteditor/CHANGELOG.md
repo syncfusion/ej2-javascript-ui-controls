@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## 26.1.42 (2024-07-16)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I597193` - DocumentEditor properly edited table cell that sprawls multiple pages.
+- `#I600466` - Resolved the table overlapping issue.
+- `#F188884` - Resolved the type error cannot read properties of undefined (reading 'paragraph') when switching layout modes.
+- `#I602758`, `I607110` - Resolved the issue that bullet points disappearing when adding new lines before.
+- `#I605797` - Resolved the Alt text missing when copy/paste the title *Impression:*.
+- `#I605542` - Resolved the issue that adding time stamp parameter to image URLs Causing 403 Error.
+- `#I607449` - Resolved the issue that inserting footnotes in headings trigger layout issues when navigation pane is open.
+- `#I609613` - Resolved the issue that script error occurs while switching from web layout to print layout.
+- `#I604994` - Resolved the issue of selected content isn't deleted properly.
+- `#I598395` - Resolved the script error issue when exporting attached document as SFDT.
+- `#I603179`, `I604479` - Resolved the issue that Added the revision with text table of content while clicking the find button.
+- `#I604994` - Resolved the improper deletion when track changes enabled.
+
 ## 26.1.41 (2024-07-09)
 
 ### DocumentEditor

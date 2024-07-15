@@ -178,7 +178,7 @@ export class WorkbookSave extends SaveWorker {
                 const context: { scrollSettings?: { isFinite: boolean } } = <{ scrollSettings?: { isFinite: boolean } }>this.parent;
                 this.parent.notify(
                     updateSheetFromDataSource, { sheet: sheet, sheetIndex: sheetIdx, loadComplete: loadCompleteHandler.bind(this, sheetIdx),
-                        isFinite: context.scrollSettings && context.scrollSettings.isFinite, isSaveAction: true,
+                        isFinite: context.scrollSettings && context.scrollSettings.isFinite, loadFromStartCell: true,
                         autoDetectFormat: autoDetectFormat });
             } else {
                 executeTaskAsync(

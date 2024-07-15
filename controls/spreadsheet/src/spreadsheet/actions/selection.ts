@@ -371,7 +371,7 @@ export class Selection {
                                 const updateFormulaCurPos: Function = (e: MouseEvent & TouchEvent): void => {
                                     EventHandler.remove(document, getEndEvent(), updateFormulaCurPos);
                                     this.updateFormulaCursorPosition(e);
-                                }
+                                };
                                 EventHandler.add(document, getEndEvent(), updateFormulaCurPos, this);
                             }
                         } else {
@@ -408,7 +408,7 @@ export class Selection {
         if (isFormulaEdit && ((e.target as HTMLElement).classList.contains('e-cell') || (e.target as HTMLElement).classList.contains('e-wrap-content') ||
             (e.target as HTMLElement).classList.contains('e-header-cell')) && this.parent.isEdit) {
             let range: string = this.parent.getActiveSheet().selectedRange;
-            let lastRange: string[] = range.split(' ');
+            const lastRange: string[] = range.split(' ');
             range = isSingleCell(getIndexesFromAddress(lastRange[lastRange.length - 1])) ? lastRange[lastRange.length - 1].split(':')[0] : lastRange[lastRange.length - 1];
             this.parent.notify(addressHandle, { range: range, isSelect: false, isMouseDown: e.ctrlKey });
         }
@@ -529,7 +529,7 @@ export class Selection {
             } else {
                 range = this.parent.getActiveSheet().selectedRange;
             }
-            let lastRange: string[] = range.split(' ');
+            const lastRange: string[] = range.split(' ');
             this.parent.notify(addressHandle, { range: lastRange[lastRange.length - 1], isSelect: false });
         }
     }

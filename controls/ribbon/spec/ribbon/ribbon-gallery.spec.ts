@@ -2079,5 +2079,384 @@ describe('Ribbon', () => {
                 }, 450);
             }, 450);
         });
+        it('update item method', () => {
+            ribbon = new Ribbon({
+                tabs: [{
+                    id: "tab1",
+                    header: "tab1",
+                    groups: [{
+                        id: "group1",
+                        header: "group1Header",
+                        orientation: 'Row',
+                        collections: [{
+                            id: "collection1",
+                            items: [{
+                                id: "item1",
+                                type: RibbonItemType.Gallery,
+                                gallerySettings: {
+                                    selectedItemIndex: 2,
+                                    groups: [{
+                                        header: 'Group 1',
+                                        items: [{
+                                            content: 'Cut',
+                                            iconCss: 'e-icons e-cut'
+                                        },{
+                                            content: 'Copy',
+                                            iconCss: 'e-icons e-copy'
+                                        },{
+                                            content: 'Paste',
+                                            iconCss: 'e-icons e-paste'
+                                        },{
+                                            content: 'Format Painter',
+                                            iconCss: 'e-icons e-format-painter'
+                                        }]
+                                    },{
+                                        header: 'Group 2',
+                                        items: [{
+                                            content: 'Cut',
+                                            iconCss: 'e-icons e-cut'
+                                        },{
+                                            content: 'Copy',
+                                            iconCss: 'e-icons e-copy'
+                                        },{
+                                            content: 'Paste',
+                                            iconCss: 'e-icons e-paste'
+                                        },{
+                                            content: 'Format Painter',
+                                            iconCss: 'e-icons e-format-painter'
+                                        }]
+                                    }]
+                                }
+                            }]
+                        }]
+                    }, {
+                        id: "group2",
+                        header: "group2Header",
+                        collections: [{
+                            id: "collection2",
+                            items: [{
+                                id: "item2",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    iconCss: 'e-print e-icons',
+                                    content: 'Read Mode'
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            let item: RibbonItemModel = {
+                id: 'item1',
+                type: RibbonItemType.Gallery,
+                gallerySettings: {
+                    selectedItemIndex: 1,
+                    groups: [{
+                        header: 'Gallery header ',
+                        items: [{
+                            content: 'Cut',
+                            iconCss: 'e-icons e-cut'
+                        },{
+                            content: 'Copy',
+                            iconCss: 'e-icons e-copy',
+                            disabled: true
+                        },{
+                            content: 'Paste',
+                            iconCss: 'e-icons e-paste'
+                        },{
+                            content: 'Format Painter',
+                            iconCss: 'e-icons e-format-painter'
+                        }]
+                    }]
+                }
+            }
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.groups.length).toBe(2);
+            expect(document.querySelector('#item1_galleryContainer0_gallery1').classList.contains('e-disabled')).toBe(false);
+            expect(document.querySelector('#item1_galleryContainer0_gallery2').classList.contains('e-ribbon-gallery-selected')).toBe(true);
+            ribbon.updateItem(item);
+            expect(ribbon.tabs[0].groups[0].collections[0].items[0].gallerySettings.groups.length).toBe(1);
+            expect(document.querySelector('#item1_galleryContainer0_gallery1').classList.contains('e-disabled')).toBe(true);
+            expect(document.querySelector('#item1_galleryContainer0_gallery2').classList.contains('e-ribbon-gallery-selected')).toBe(false);
+            expect(document.querySelector('#item1_galleryContainer0_gallery1').classList.contains('e-ribbon-gallery-selected')).toBe(true);
+            ribbon.ribbonGalleryModule.showGalleryPopup('item1');
+            expect(document.querySelector('#item1_galleryPopup').classList.contains('e-popup-open')).toBe(true);
+            expect(document.querySelector('#item1_popupButton').classList.contains('e-gallery-button-active')).toBe(true);
+            ribbon.ribbonGalleryModule.hideGalleryPopup('item1');
+            expect(document.querySelector('#item1_galleryPopup').classList.contains('e-popup-open')).toBe(false);
+            expect(document.querySelector('#item1_popupButton').classList.contains('e-gallery-button-active')).toBe(false);
+        });
+        it('update item method in overflow popup', () => {
+            ribbon = new Ribbon({
+                activeLayout: 'Simplified',
+                tabs: [{
+                    id: "tabGallery",
+                    header: "tabGallery",
+                    groups: [{
+                        id: "group2Button",
+                        header: "group2ButtonHeader",
+                        collections: [{
+                            id: "collection2Button",
+                            items: [{
+                                id: "item2Button",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    iconCss: 'e-print e-icons',
+                                    content: 'Read Mode'
+                                }
+                            }]
+                        }]
+                    },{
+                        id: "group3",
+                        header: "group3",
+                        collections: [{
+                            id: "collection3",
+                            items: [{
+                                id: "item3",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    iconCss: 'e-print e-icons',
+                                    content: 'Read Mode'
+                                }
+                            }]
+                        }]
+                    },{
+                        id: "group4",
+                        header: "group4",
+                        collections: [{
+                            id: "collection4",
+                            items: [{
+                                id: "item4",
+                                type: RibbonItemType.Button,
+                                buttonSettings: {
+                                    iconCss: 'e-print e-icons',
+                                    content: 'Read Mode'
+                                }
+                            }]
+                        }]
+                    },{
+                        header: 'Large items',
+                        groupIconCss: 'e-icons e-paste',
+                        showLauncherIcon: true,
+                        orientation: ItemOrientation.Row,
+                        id: 'large',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.SplitButton,
+                                allowedSizes: RibbonItemSize.Large ,
+                                splitButtonSettings: {
+                                    content: 'Paste',
+                                    cssClass: 'test-css',
+                                    iconCss: 'e-icons e-paste',
+                                    items: [{ text: 'Keep Source Format' }, { text: 'Merge format' }, { text: 'Keep text only' }]
+                                }
+                            }, {
+                                type: RibbonItemType.DropDown,
+                                allowedSizes: RibbonItemSize.Large ,
+                                id: 'largetable',
+                                dropDownSettings: {
+                                    content: 'Table',
+                                    iconCss: 'e-icons e-table',
+                                    cssClass: 'test-css',
+                                    items: [
+                                        { text: 'Insert Table' }, { text: 'Draw Table' },
+                                        { text: 'Convert Table' }, { text: 'Excel SpreadSheet' }
+                                    ]
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                id: 'largecut',
+                                allowedSizes: RibbonItemSize.Large ,
+                                cssClass: 'test-css',
+                                buttonSettings: {
+                                    content: 'cut',
+                                    iconCss: 'e-icons e-cut',
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: 'Font',
+                        orientation: 'Row',
+                        groupIconCss: 'e-icons e-bold',
+                        cssClass: 'font-group',
+                        id: 'font',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.CheckBox,
+                                id: 'fontbold',
+                                checkBoxSettings: {
+                                    cssClass: 'test-css',
+                                    label: 'Ruler',
+                                    checked: false
+                                }
+                            }, {
+                                type: RibbonItemType.ColorPicker,
+                                id: 'fontcolor',
+                                colorPickerSettings: {
+                                    cssClass: 'test-css',
+                                    value: '#123456'
+                                }
+                            } ]
+                        }]
+                    }, {
+                        header: 'GroupOverflow btn',
+                        groupIconCss: 'e-icons e-paste',
+                        showLauncherIcon: true,
+                        orientation: ItemOrientation.Row,
+                        enableGroupOverflow: true,
+                        id: 'groupoverflow1',
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.SplitButton,
+                                id: 'groupoverflowpaste',
+                                allowedSizes: RibbonItemSize.Large ,
+                                splitButtonSettings: {
+                                    content: 'Paste',
+                                    iconCss: 'e-icons e-paste',
+                                    items: [{ text: 'Keep Source Format' }, { text: 'Merge format' }, { text: 'Keep text only' }],
+                                }
+                            }, {
+                                type: RibbonItemType.DropDown,
+                                displayOptions: DisplayMode.Overflow,
+                                id: 'groupoverflowtable',
+                                allowedSizes: RibbonItemSize.Large ,
+                                dropDownSettings: {
+                                    content: 'Table',
+                                    iconCss: 'e-icons e-table',
+                                    items: [
+                                        { text: 'Insert Table' }, { text: 'Draw Table' },
+                                        { text: 'Convert Table' }, { text: 'Excel SpreadSheet' }
+                                    ]
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                id: 'groupoverflowcut',
+                                allowedSizes: RibbonItemSize.Large ,
+                                buttonSettings: {
+                                    content: 'cut',
+                                    iconCss: 'e-icons e-cut'
+                                }
+                            }]
+                        }]
+                    }, {
+                        header: 'CmnOverflow btn',
+                        groupIconCss: 'e-icons e-paste',
+                        id: 'CmnOverflow1',
+                        showLauncherIcon: true,
+                        orientation: ItemOrientation.Row,
+                        collections: [{
+                            items: [{
+                                type: RibbonItemType.SplitButton,
+                                id: 'commonoverflowpaste',
+                                allowedSizes: RibbonItemSize.Large ,
+                                splitButtonSettings: {
+                                    content: 'Paste',
+                                    iconCss: 'e-icons e-paste',
+                                    items: [{ text: 'Keep Source Format' }, { text: 'Merge format' }, { text: 'Keep text only' }],
+                                }
+                            }, {
+                                type: RibbonItemType.DropDown,
+                                displayOptions: DisplayMode.Overflow,
+                                id: 'commonoverflowtable',
+                                allowedSizes: RibbonItemSize.Large ,
+                                dropDownSettings: {
+                                    content: 'Table',
+                                    iconCss: 'e-icons e-table',
+                                    items: [
+                                        { text: 'Insert Table' }, { text: 'Draw Table' },
+                                        { text: 'Convert Table' }, { text: 'Excel SpreadSheet' }
+                                    ]
+                                }
+                            }, {
+                                type: RibbonItemType.Button,
+                                id: 'commonoverflowcut',
+                                allowedSizes: RibbonItemSize.Large ,
+                                buttonSettings: {
+                                    content: 'cut',
+                                    iconCss: 'e-icons e-cut'
+                                }
+                            }]
+                        }]
+                    }, {
+                        id: "groupGallery",
+                        orientation: 'Row',
+                        groupIconCss: 'e-icons e-paste',
+                        collections: [{
+                            id: "collectionGallery",
+                            items: [{
+                                id: "itemGallery",
+                                type: RibbonItemType.Gallery,
+                                gallerySettings: {
+                                    selectedItemIndex: 2,
+                                    groups: [{
+                                        header: 'Group 1',
+                                        items: [{
+                                            content: 'Cut',
+                                            iconCss: 'e-icons e-cut'
+                                        },{
+                                            content: 'Copy',
+                                            iconCss: 'e-icons e-copy'
+                                        },{
+                                            content: 'Paste',
+                                            iconCss: 'e-icons e-paste'
+                                        },{
+                                            content: 'Format Painter',
+                                            iconCss: 'e-icons e-format-painter'
+                                        }]
+                                    },{
+                                        header: 'Group 2',
+                                        items: [{
+                                            content: 'Cut',
+                                            iconCss: 'e-icons e-cut'
+                                        },{
+                                            content: 'Copy',
+                                            iconCss: 'e-icons e-copy'
+                                        },{
+                                            content: 'Paste',
+                                            iconCss: 'e-icons e-paste'
+                                        },{
+                                            content: 'Format Painter',
+                                            iconCss: 'e-icons e-format-painter'
+                                        }]
+                                    }]
+                                }
+                            }]
+                        }]
+                    }]
+                }]
+            }, ribbonEle);
+            let item: RibbonItemModel = {
+                id: 'itemGallery',
+                type: RibbonItemType.Gallery,
+                disabled: true,
+                gallerySettings: {
+                    selectedItemIndex: 1,
+                    groups: [{
+                        header: 'Gallery header ',
+                        items: [{
+                            content: 'Cut',
+                            iconCss: 'e-icons e-cut'
+                        },{
+                            content: 'Copy',
+                            iconCss: 'e-icons e-copy',
+                            disabled: true
+                        },{
+                            content: 'Paste',
+                            iconCss: 'e-icons e-paste'
+                        },{
+                            content: 'Format Painter',
+                            iconCss: 'e-icons e-format-painter'
+                        }]
+                    }]
+                }
+            }
+            containerEle.style.width = '300px';
+            ribbon.refreshLayout();
+            expect(document.querySelector('#itemGallery_galleryWrapper').classList.contains('e-disabled')).toBe(false);
+            expect(document.querySelector('#itemGallery_popupButton').classList.contains('e-disabled')).toBe(false);
+            ribbon.updateItem(item);
+            expect(document.querySelector('#itemGallery_popupButton').classList.contains('e-disabled')).toBe(true);
+            expect(document.querySelector('#itemGallery_galleryWrapper').classList.contains('e-disabled')).toBe(true);
+            expect(document.querySelector('#itemGallery').classList.contains('e-disabled')).toBe(true);
+        });
     });
 });

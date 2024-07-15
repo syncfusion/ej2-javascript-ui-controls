@@ -2,7 +2,7 @@ import { DataManager, Query, Deferred, ReturnOption, QueryOptions } from '@syncf
 import { Workbook, getCell, CellModel, RowModel, SheetModel, setCell, isFilterHidden } from '../base/index';
 import { getRangeIndexes, checkIsFormula, updateSheetFromDataSource, dataSourceChanged } from '../common/index';
 import { ExtendedSheet, ExtendedRange, getCellIndexes, dataChanged, getCellAddress, isInRange } from '../common/index';
-import { triggerDataChange, UsedRangeModel, getAutoDetectFormatParser } from '../index';
+import { triggerDataChange, UsedRangeModel, getAutoDetectFormatParser, updateView } from '../index';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
@@ -46,13 +46,19 @@ export class DataBind {
      * @param {number} args.sheetIndex - Specify the sheetIndex.
      * @param {boolean} args.dataSourceChange - Specify the dataSourceChange.
      * @param {boolean} args.isFinite - Specify the isFinite.
+     * @param {boolean} args.resolveAfterFullDataLoaded - Specify the resolveAfterFullDataLoaded.
+     * @param {Function} args.loadComplete - Specify the callback function that will be invoked once all the data are updated.
+     * @param {boolean} args.loadFromStartCell - Specify the whether to load the data from the range startCell address.
+     * @param {boolean} args.autoDetectFormat - Specify whether to auto detect format based on the cell value.
+     * @param {Function} args.updateDependentCellsCallback - Specify a callback function to update the dependent cells address to refresh
+     * after the data binding.
      * @returns {void} - Update given data source to sheet.
      */
-
     private updateSheetFromDataSourceHandler(
         args: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>, rangeSettingCount?: number[], formulaCellRef?: string,
             sheetIndex?: number, dataSourceChange?: boolean, isFinite?: boolean, resolveAfterFullDataLoaded?: boolean,
-            loadComplete?: Function, isSaveAction?: boolean, autoDetectFormat?: boolean }): void {
+            loadComplete?: Function, loadFromStartCell?: boolean, autoDetectFormat?: boolean,
+            updateDependentCellsCallback?: Function }): void {
         let cell: CellModel; let flds: string[]; let sCellIdx: number[];
         let result: Object[]; let remoteUrl: string; let isLocal: boolean; let dataManager: DataManager;
         const requestedRange: boolean[] = []; const sRanges: number[] = []; let rowIdx: number; let colIdx: number;
@@ -62,10 +68,11 @@ export class DataBind {
         const autoDetectFormat: boolean = args.autoDetectFormat;
         const autoDetectFormatFn: (cell: CellModel) => void = autoDetectFormat && getAutoDetectFormatParser(this.parent);
         if (args.sheet && args.sheet.ranges.length) {
+            let prevVal: string;
             for (let k: number = args.sheet.ranges.length - 1; k >= 0; k--) {
                 const range: ExtendedRange = args.sheet.ranges[k as number];
                 startCellIndexes = getRangeIndexes(range.startCell);
-                if (args.isSaveAction) {
+                if (args.loadFromStartCell) {
                     args.indexes = startCellIndexes;
                 }
                 let sRange: number = args.indexes[0]; let eRange: number = args.indexes[2];
@@ -151,15 +158,20 @@ export class DataBind {
                                     colIdx = sColIdx + idx;
                                     cell = getCell(rowIdx, colIdx, args.sheet, true);
                                     if (cell) {
+                                        prevVal = cell.value;
                                         if (!field.includes('emptyCell')) {
                                             setCell(rowIdx, colIdx, args.sheet, this.getCellDataFromProp(item[field as string]), true);
                                         }
                                     } else {
+                                        prevVal = undefined;
                                         cell = args.sheet.rows[rowIdx as number].cells[colIdx as number] =
                                             field.includes('emptyCell') ? {} : this.getCellDataFromProp(item[field as string]);
                                     }
                                     if (autoDetectFormat) {
                                         autoDetectFormatFn(cell);
+                                    }
+                                    if (args.updateDependentCellsCallback && prevVal !== cell.value) {
+                                        args.updateDependentCellsCallback(rowIdx, colIdx);
                                     }
                                 });
                             });
@@ -239,6 +251,9 @@ export class DataBind {
                         }
                     });
                 } else if (k === 0 && requestedRange.indexOf(false) === -1) {
+                    if (args.loadComplete) {
+                        args.loadComplete();
+                    }
                     this.checkResolve(args.indexes);
                 }
             }
@@ -247,7 +262,7 @@ export class DataBind {
 
     private notfyFormulaCellRefresh(formulaCellRef: string, sheetIndex: number): void {
         this.parent.formulaRefCell = null;
-        this.parent.notify('updateView', { indexes: getRangeIndexes(formulaCellRef), sheetIndex: sheetIndex, refreshing: true });
+        this.parent.notify(updateView, { indexes: getRangeIndexes(formulaCellRef), sheetIndex: sheetIndex, refreshing: true });
     }
 
     private checkResolve(indexes: number[]): void {
@@ -394,7 +409,7 @@ export class DataBind {
                 this.parent.trigger(
                     'dataSourceChanged', { data: args.changedData, action: 'dataSourceChanged', rangeIndex: args.rangeIdx,
                         sheetIndex: args.sheetIdx });
-                this.parent.notify('updateView', { indexes: refreshRange, checkWrap: true, checkCF: true });
+                this.parent.notify(updateView, { indexes: refreshRange, checkWrap: true, checkCF: true });
             });
         }
     }

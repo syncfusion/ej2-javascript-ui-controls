@@ -856,22 +856,25 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                     this.availableSize.height
                 ),
                 name: resized,
-                currentSize: new Size(0, 0)
+                currentSize: new Size(0, 0),
+                cancel: false
             };
-            this.gaugeResized = true;
-            if (this.resizeTo) {
-                clearTimeout(this.resizeTo);
-            }
-            if (!isNullOrUndefined(this.element) && this.element.classList.contains('e-lineargauge')) {
-                this.resizeTo = window.setTimeout(
-                    (): void => {
-                        this.createSvg();
-                        args.currentSize = new Size(this.availableSize.width, this.availableSize.height);
-                        this.trigger(resized, args);
-                        this.allowLoadingAnimation = false;
-                        this.renderElements();
-                    },
-                    500);
+            args.currentSize = new Size(this.availableSize.width, this.availableSize.height);
+            this.trigger(resized, args);
+            if (!args.cancel) {
+                if (this.resizeTo) {
+                    clearTimeout(this.resizeTo);
+                }
+                if (!isNullOrUndefined(this.element) && this.element.classList.contains('e-lineargauge')) {
+                    this.resizeTo = window.setTimeout(
+                        (): void => {
+                            this.gaugeResized = true;
+                            this.createSvg();
+                            this.allowLoadingAnimation = false;
+                            this.renderElements();
+                        },
+                        500);
+                }
             }
         }
         return false;

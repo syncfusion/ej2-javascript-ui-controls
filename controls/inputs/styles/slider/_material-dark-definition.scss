@@ -55,14 +55,14 @@ $slider-final-transform: scale(1) !default;
 $slider-handle-after-position: absolute !default;
 $slider-handle-normal-border-color: $accent !default;
 $slider-handle-hover-border-color: $accent !default;
-$tick-after-height: $slider-height !default;
-$tick-after-top: calc(50% - 10px) !default;
-$largetick-before-top: 0 !default;
-$largetick-before-height: $slider-height !default;
-$largetick-after-height: $slider-height !default;
-$largetick-after-top: 0 !default;
-$tick-before-height: $slider-height !default;
-$tick-before-top: 0 !default;
+$tick-after-height: 7px !default;
+$tick-after-top: 5px;
+$largetick-before-top: 5px !default;
+$largetick-before-height: 10px !default;
+$largetick-after-height: 10px !default;
+$largetick-after-top: 13px !default;
+$tick-before-height: 7px !default;
+$tick-before-top: 10px !default;
 $slider-btn-container-height: 2px !default;
 $slider-horizontal-btn-icon-prev: '\e981' !default;
 $slider-vertical-btn-icon-prev: '\e969' !default;
@@ -148,7 +148,8 @@ $slider-tick-font-color: $grey-dark-font !default;
 
 //enddefault
 //dimensions
-$slider-scale-tick-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAACXBIWXMAAAsSAAALEgHS3X78AAAAFElEQVQI12NkYGAIZ2BgYGBigAIABPgAW+yfXroAAAAASUVORK5CYII=');
+$slider-scale-tick-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAAHCAYAAAAie5yXAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAeSURBVHgBlcYxAQAACAJBNOlHMboMFOCmG+Bkq6jyZBgBrr7SD7YAAAAASUVORK5CYII=');
+$slider-scale-tick-image-dark: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAAKCAYAAACe5Y9JAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAfSURBVHgBrcYxAQAACAJBNOlHMboMROCmG+Bkq2jlAZHeAbRZSr3QAAAAAElFTkSuQmCC');
 
 // dummy variable declaration to avoid compilation issue in SASS
 $slider-handle-mobile-height: none !default;

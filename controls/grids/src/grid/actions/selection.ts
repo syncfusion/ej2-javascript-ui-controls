@@ -3711,7 +3711,8 @@ export class Selection implements IAction {
      */
     public ctrlPlusA(): void {
         if (this.isRowType() && !this.isSingleSel()) {
-            this.selectRowsByRange(0, this.getCurrentBatchRecordChanges().length - 1);
+            const rowObj: Row<Column>[] = this.parent.getRowsObject();
+            this.selectRowsByRange(rowObj[0].index, rowObj[rowObj.length-1].index);
         }
         if (this.isCellType() && !this.isSingleSel()) {
             this.selectCellsByRange(

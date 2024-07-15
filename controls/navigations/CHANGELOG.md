@@ -4,6 +4,13 @@
 
 ## 26.1.41 (2024-07-09)
 
+### TreeView
+
+#### Bug fixes
+
+- `#I607288` - The console issue with dragging and dropping a tree node that has a 0 ID value in the TreeView component has been resolved.
+- `#I607867` - The issue with the icon content in the TreeView component using the CDN style sheet link has been resolved.
+
 ### Toolbar
 
 #### Bug fixes

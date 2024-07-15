@@ -540,6 +540,7 @@
 
     .e-disabled {
       opacity: $ribbon-disabled-opacity;
+      pointer-events: none;
     }
 
     .e-input-group {

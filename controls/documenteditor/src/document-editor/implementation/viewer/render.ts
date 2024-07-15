@@ -994,7 +994,7 @@ export class Renderer {
         }
     }
     private renderTableCellWidget(page: Page, cellWidget: TableCellWidget): void {
-        if (!this.isPrinting) {
+        if (!this.isPrinting && !this.isExporting) {
             let cellTopMargin = 0;
             let cellBottomMargin = 0;
             cellTopMargin = cellWidget.margin.top - (cellWidget.containerWidget as TableRowWidget).topBorderWidth;
@@ -1476,7 +1476,9 @@ export class Renderer {
                             elementBox.ischangeDetected = true;
                         }
                     }
-                    continue;
+                    if (!this.isExporting) {
+                        continue;
+                    }
                 }
 
             }

@@ -9340,3 +9340,96 @@ describe('Edit date in RTL mode', () => {
             triggerMouseEvent(saveRecord, 'click');
         });
     });
+    describe('AditionalParams property not working properly', () => {
+        let ganttObj: Gantt;
+        const datas: Object = [
+            {
+                TaskID: 1,
+                TaskName: 'Project initiation',
+                StartDate: new Date('04/02/2019'),
+                EndDate: new Date('04/21/2019'),
+                subtasks: [
+                    {
+                        TaskID: 2,
+                        TaskName: 'Identify site location',
+                        StartDate: new Date('04/02/2019'),
+                        Duration: 0,
+                        Progress: 30,
+                        resources: [1],
+                        info: 'Measure the total property area alloted for construction',
+                    },
+                    {
+                        TaskID: 3,
+                        TaskName: 'Perform Soil test',
+                        StartDate: new Date('04/02/2019'),
+                        Duration: 4,
+                        Predecessor: '2',
+                        resources: [2, 3, 5],
+                        info:
+                            'Obtain an engineered soil test of lot where construction is planned.' +
+                            'From an engineer or company specializing in soil testing',
+                    },
+                    {
+                        TaskID: 4,
+                        TaskName: 'Soil test approval',
+                        StartDate: new Date('04/02/2019'),
+                        Duration: 0,
+                        Predecessor: '3',
+                        Progress: 30,
+                    },
+                ],
+            },
+        ];
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: datas,
+                dateFormat: 'MMM dd, y',
+                treeColumnIndex: 1,
+                allowSelection: true,
+                showColumnMenu: false,
+                highlightWeekends: true,
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('07/28/2019'),
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    notes: 'info',
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                    'PrevTimeSpan', 'NextTimeSpan'],
+                editDialogFields: [
+                    { type: 'Dependency', additionalParams: { columns: [{ field: 'id', visible: false, headerText: "Iv value" }] } },
+                ],
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('AditionalParams dependency tab editing', () => {
+            debugger
+            ganttObj.openEditDialog(1);
+            let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+            tab.selectedItem = 1;
+            tab.dataBind();
+            const dialog: any = document.getElementById(ganttObj.element.id + 'DependencyTabContainer')['ej2_instances'][0];
+            expect(dialog.columnModel[0].visible).toBe(false);
+            expect(dialog.columnModel[0].field).toBe("id");
+            expect(dialog.columnModel[0].headerText).toBe("Iv value");
+        });
+    });

@@ -632,7 +632,8 @@ export class Edit {
                                         this.endEdit(false, e);
                                         return;
                                     }
-                                } else if (validCharacters.indexOf(editorElem.textContent.substring(selectionStart - 1, selectionStart)) === -1) {
+                                } else if (validCharacters.indexOf(
+                                    editorElem.textContent.substring(selectionStart - 1, selectionStart)) === -1) {
                                     if (formulaRefIndicator) {
                                         formulaRefIndicator.parentElement.removeChild(formulaRefIndicator);
                                     }

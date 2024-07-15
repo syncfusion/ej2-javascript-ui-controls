@@ -28,6 +28,7 @@ export class DataManipulation {
     private isSelfReference: boolean;
     private isSortAction: boolean;
     private infiniteScrollData: Object[];
+    private preCurrentPage: number;
     constructor(grid: TreeGrid) {
         this.parent = grid;
         this.parentItems = [];
@@ -35,6 +36,7 @@ export class DataManipulation {
         this.hierarchyData = [];
         this.storedIndex = -1;
         this.sortedData = [];
+        this.preCurrentPage = -1;
         this.isSortAction = false;
         this.addEventListener();
         this.dataResults =  <ReturnOption>{};
@@ -364,7 +366,7 @@ export class DataManipulation {
             idMappingValue = rowDetails.record[this.parent.idMapping].toString();
         }
         if (this.parent.enableVirtualization && rowDetails.action === 'remoteExpand') {
-            qry.take(this.parent.pageSettings.pageSize);
+            qry.take(this.parent.grid.pageSettings.pageSize);
             const expandDetail: Object[] = [];
             expandDetail.push('ExpandingAction', idMappingValue.toString());
             qry.expand(expandDetail);
@@ -551,6 +553,17 @@ export class DataManipulation {
                     }
                 }
                 datas.splice(inx + r + 1, 0, result[parseInt(r.toString(), 10)]);
+            }
+            if (datas.length > result.length &&
+                datas.length !== this.parent.grid.pageSettings.pageSize + (this.parent.grid.contentModule).getBlockSize() &&
+                this.parent.enableVirtualization && rowDetails.action === 'remoteExpand') {
+                if ((this.preCurrentPage > 1 || this.parent.grid.pageSettings.currentPage > 1)) {
+                    datas = datas.slice(0, this.parent.grid.pageSettings.pageSize + (this.parent.grid.contentModule).getBlockSize());
+                }
+                else {
+                    datas = datas.slice(0, this.parent.grid.pageSettings.pageSize);
+                }
+                this.preCurrentPage = this.parent.grid.pageSettings.currentPage;
             }
             setValue('result', datas, e); setValue('action', 'beforecontentrender', e);
             this.parent.trigger(events.actionComplete, e);

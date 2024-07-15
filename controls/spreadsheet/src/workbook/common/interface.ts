@@ -679,3 +679,18 @@ export interface SerializationOptions {
     ignoreImage?: boolean;
     ignoreNote?: boolean;
 }
+
+/** @hidden */
+export interface FormulaCalculateArgs {
+    rowIndex?: number;
+    colIndex?: number;
+    value?: string;
+    isFormula?: boolean;
+    sheetIndex?: number;
+    isRefreshing?: boolean;
+    isDependentRefresh?: boolean;
+    isRandomFormula?: boolean;
+    isClipboard?: boolean
+    isFormulaDependent?: boolean;
+    sheet?: SheetModel;
+}

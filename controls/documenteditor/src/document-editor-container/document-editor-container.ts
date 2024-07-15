@@ -864,6 +864,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.serverActionSettings.systemClipboard) {
             this.documentEditor.serverActionSettings.systemClipboard = HelperMethods.sanitizeString(this.serverActionSettings.systemClipboard);
         }
+        if (this.serverActionSettings.import) {
+            this.documentEditor.serverActionSettingsImport = HelperMethods.sanitizeString(this.serverActionSettings.import);
+        }
         if (this.headers) {
             this.documentEditor.headers = JSON.parse(HelperMethods.sanitizeString(JSON.stringify(this.headers)));
         }
@@ -1064,8 +1067,10 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     }
 
     private onWindowResize(): void {
-        this.documentEditor.isContainerResize = true;
-        this.resize();
+        if (!isNullOrUndefined(this.documentEditor)) {
+            this.documentEditor.isContainerResize = true;
+            this.resize();
+        }
     }
 
     private onOptionPaneChange(args: any): void {
@@ -1167,19 +1172,21 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     public resize(width?: number, height?: number): void {
         if (this.element) {
-            if (isNullOrUndefined(height) && this.element && this.element.parentElement) {
-                height = this.element.parentElement.clientHeight;
-            }
-            if (isNullOrUndefined(width) && this.element && this.element.parentElement) {
-                width = this.element.parentElement.clientWidth;
-            }
-            if (!isNullOrUndefined(width) && width > 200) {
-                this.width = width.toString();
-                this.element.style.width = width + 'px';
-            }
-            if (!isNullOrUndefined(height) && height > 200) {
-                this.height = height.toString();
-                this.element.style.height = height + 'px';
+            if (!this.documentEditor.isContainerResize) {
+                if (isNullOrUndefined(height) && this.element && this.element.parentElement) {
+                    height = this.element.parentElement.clientHeight;
+                }
+                if (isNullOrUndefined(width) && this.element && this.element.parentElement) {
+                    width = this.element.parentElement.clientWidth;
+                }
+                if (!isNullOrUndefined(width) && width > 200) {
+                    this.width = width.toString();
+                    this.element.style.width = width + 'px';
+                }
+                if (!isNullOrUndefined(height) && height > 200) {
+                    this.height = height.toString();
+                    this.element.style.height = height + 'px';
+                }
             }
             if (this.documentEditor) {
                 this.documentEditor.resize();

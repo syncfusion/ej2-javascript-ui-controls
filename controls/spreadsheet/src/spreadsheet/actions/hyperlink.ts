@@ -265,7 +265,7 @@ export class SpreadsheetHyperlink {
         this.hlOpenHandler(trgt);
     }
 
-    private hlOpenHandler(trgt: HTMLElement, isClick?: boolean): void {
+    private hlOpenHandler(trgt: HTMLElement, isClick?: boolean, event?: MouseEvent): void {
         if (trgt.classList.contains('e-hyperlink')) {
             const cellEle: HTMLElement = closest(trgt, '.e-cell') as HTMLElement;
             if (!cellEle) {
@@ -286,7 +286,12 @@ export class SpreadsheetHyperlink {
             let address: string;
             const befArgs: BeforeHyperlinkArgs = { hyperlink: rangeAddr, address: sheet.activeCell, target: '_blank', cancel: false };
             this.parent.trigger(beforeHyperlinkClick, befArgs);
-            if (befArgs.cancel) { return; }
+            if (befArgs.cancel) {
+                if (event) {
+                    event.preventDefault();
+                }
+                return;
+            }
             rangeAddr = befArgs.hyperlink;
             const aftArgs: AfterHyperlinkArgs = { hyperlink: rangeAddr, address: sheet.activeCell };
             if (typeof (rangeAddr) === 'string') { address = rangeAddr; }
@@ -475,7 +480,7 @@ export class SpreadsheetHyperlink {
                 insertBut.setAttribute('disabled', 'true');
             }
         } else {
-            this.hlOpenHandler(trgt, true);
+            this.hlOpenHandler(trgt, true, e);
         }
     }
 

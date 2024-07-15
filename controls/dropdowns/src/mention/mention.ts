@@ -1649,10 +1649,10 @@ export class Mention extends DropDownBase {
         }
         if (this.isContentEditable(this.inputElement)) {
             if(Browser.isAndroid) {
-                return '<span contenteditable="true" class="e-mention-chip">' + showChar + value + '</span>'.concat(typeof this.suffixText === 'string' ? this.suffixText : '');
+                return '<span contenteditable="true" class="e-mention-chip">' + showChar + value + '</span>'.concat(typeof this.suffixText === 'string' ? this.suffixText : ' ');
             }
             else {
-                return '<span contenteditable="false" class="e-mention-chip">' + showChar + value + '</span>'.concat(typeof this.suffixText === 'string' ? this.suffixText : '');
+                return '<span contenteditable="false" class="e-mention-chip">' + showChar + value + '</span>'.concat(typeof this.suffixText === 'string' ? this.suffixText : ' ');
             }
         } else {
             return showChar + value;

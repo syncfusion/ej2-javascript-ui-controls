@@ -10594,6 +10594,59 @@ describe('MultiSelect', () => {
             }, 450);
         });
     });
+    describe('Disable items', () => {      
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let listObj: any;
+        let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down', keyCode: 40 };
+        let vegetableData: { [key: string]: Object }[] = [
+            { Vegetable: 'Cabbage', Category: 'Leafy and Salad', Id: 'item1', State: true },
+            { Vegetable: 'Pumpkins', Category: 'Leafy and Salad', Id: 'item2', State: true },
+            { Vegetable: 'Spinach', Category: 'Leafy and Salad', Id: 'item3', State: true },
+            { Vegetable: 'Wheat grass', Category: 'Leafy and Salad', Id: 'item4', State: true },
+            { Vegetable: 'Yarrow', Category: 'Leafy and Salad', Id: 'item5', State: true },
+            { Vegetable: 'Chickpea', Category: 'Beans', Id: 'item6', State: true },
+            { Vegetable: 'Green bean', Category: 'Beans', Id: 'item7', State: false },
+            { Vegetable: 'Horse gram', Category: 'Beans', Id: 'item8', State: true },
+            { Vegetable: 'Garlic', Category: 'Bulb and Stem', Id: 'item9', State: false },
+            { Vegetable: 'Nopal', Category: 'Bulb and Stem', Id: 'item10', State: true },
+            { Vegetable: 'Onion', Category: 'Bulb and Stem', Id: 'item11', State: false },
+        ];
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: vegetableData,
+                fields: { groupBy: 'Category', text: 'Vegetable', value: 'Id', disabled: 'State' },
+                mode: 'CheckBox',
+                enableGroupCheckBox: true,
+                showSelectAll: true,
+            });
+            listObj.appendTo(element);
+        });
+        afterAll((done) => {
+            listObj.hidePopup();
+            setTimeout(() => {
+                listObj.destroy();
+                element.remove();
+                done();
+            }, 450)
+        });
+        /**
+       * Mouse click
+       */
+        it('with Grouping Checkbox', (done) => {         
+            listObj.showPopup();
+            setTimeout(() => {
+                expect(listObj.list.querySelector('.e-list-group-item').classList.contains('e-disabled')).toBe(true);
+                expect(listObj.list.querySelector('.e-list-group-item:not(.e-disabled)').innerText === 'Beans').toBe(true);
+                listObj.disableItem("item7");
+                expect(listObj.list.querySelector('.e-list-group-item:not(.e-disabled)').innerText === 'Bulb and Stem').toBe(true);
+                listObj.onKeyDown(keyEventArgs);
+                listObj.onKeyDown(keyEventArgs);
+                expect(listObj.list.querySelector('.e-item-focus').innerText === 'Bulb and Stem').toBe(true);
+                done();
+            }, 450);
+        });
+    });
 });
 function commonFun(arg0: string) {
     throw new Error('Function not implemented.');

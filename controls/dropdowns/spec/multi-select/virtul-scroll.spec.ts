@@ -133,25 +133,28 @@ describe('MultiSelect_Virtualization', () => {
         /**
          * HomeKey
          */
-        it('virtualization Home and End key pressed ', () => {
+        it('virtualization Home and End key pressed ', (done) => {
             multiObj.showPopup();
-            let li: Element[] = multiObj.list.querySelectorAll('li:not(.e-virtual-list)');
-            keyEventArgs.keyCode = 40;
-            multiObj.onKeyDown(keyEventArgs);
-            expect(li[1].classList.contains('e-item-focus')).toBe(true);
-            keyEventArgs.keyCode = 40;
-            multiObj.onKeyDown(keyEventArgs);
-            expect(li[1].classList.contains('e-item-focus')).toBe(false);
-            expect(li[2].classList.contains('e-item-focus')).toBe(true);
-            keyEventArgs.keyCode = 36;
-            multiObj.onKeyDown(keyEventArgs);
-            expect((multiObj.list.querySelectorAll('li:not(.e-virtual-list)')[0] as Element).classList.contains('e-item-focus')).toBe(true);
-            keyEventArgs.keyCode = 35;
-            multiObj.onKeyDown(keyEventArgs);
-            expect((multiObj.list.querySelectorAll('li:not(.e-virtual-list)')[li.length - 1] as Element).classList.contains('e-item-focus')).toBe(true);
-            keyEventArgs.keyCode = 36;
-            multiObj.onKeyDown(keyEventArgs); 
-            expect((multiObj.list.querySelectorAll('li:not(.e-virtual-list)')[0] as Element).classList.contains('e-item-focus')).toBe(true);
+            setTimeout(() => {
+                let li: Element[] = multiObj.list.querySelectorAll('li:not(.e-virtual-list)');
+                keyEventArgs.keyCode = 40;
+                multiObj.onKeyDown(keyEventArgs);
+                expect(li[1].classList.contains('e-item-focus')).toBe(true);
+                keyEventArgs.keyCode = 40;
+                multiObj.onKeyDown(keyEventArgs);
+                expect(li[1].classList.contains('e-item-focus')).toBe(false);
+                expect(li[2].classList.contains('e-item-focus')).toBe(true);
+                keyEventArgs.keyCode = 36;
+                multiObj.onKeyDown(keyEventArgs);
+                expect((multiObj.list.querySelectorAll('li:not(.e-virtual-list)')[0] as Element).classList.contains('e-item-focus')).toBe(true);
+                keyEventArgs.keyCode = 35;
+                multiObj.onKeyDown(keyEventArgs);
+                expect((multiObj.list.querySelectorAll('li:not(.e-virtual-list)')[li.length - 1] as Element).classList.contains('e-item-focus')).toBe(true);
+                keyEventArgs.keyCode = 36;
+                multiObj.onKeyDown(keyEventArgs); 
+                expect((multiObj.list.querySelectorAll('li:not(.e-virtual-list)')[0] as Element).classList.contains('e-item-focus')).toBe(true);
+                done();
+            }, 500)
         });
         /**
          * Page_up key
@@ -202,26 +205,29 @@ describe('MultiSelect_Virtualization', () => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
                 document.body.innerHTML = '';
             });
-            it('with key action.', () => {
+            it('with key action.', (done) => {
                 multiObj.showPopup();
-                (<any>multiObj).inputElement.value = "Item 30";
-                //open action validation
-                keyEventArgs.keyCode = 113;
-                (<any>multiObj).keyDownStatus = true;
-                (<any>multiObj).onInput();
-                (<any>multiObj).keyUp(keyEventArgs);
-                keyEventArgs.altKey = false;
-                keyEventArgs.keyCode = 70;
-                (<any>multiObj).keyDownStatus = true;
-                (<any>multiObj).onInput();
-                (<any>multiObj).keyUp(keyEventArgs);
-                //expect((<any>multiObj).liCollections.length).toBe(17);
-                //expect((<any>multiObj).liCollections[10].innerText).toBe("Item 30");
-                mouseEventArgs.target = (<any>multiObj).liCollections[16];
-                mouseEventArgs.type = 'click';
-                (<any>multiObj).onMouseClick(mouseEventArgs);
-                expect((<any>multiObj).value && (<any>multiObj).value.length).not.toBeNull();
-                multiObj.destroy();
+                setTimeout(() => {
+                    (<any>multiObj).inputElement.value = "Item 30";
+                    //open action validation
+                    keyEventArgs.keyCode = 113;
+                    (<any>multiObj).keyDownStatus = true;
+                    (<any>multiObj).onInput();
+                    (<any>multiObj).keyUp(keyEventArgs);
+                    keyEventArgs.altKey = false;
+                    keyEventArgs.keyCode = 70;
+                    (<any>multiObj).keyDownStatus = true;
+                    (<any>multiObj).onInput();
+                    (<any>multiObj).keyUp(keyEventArgs);
+                    //expect((<any>multiObj).liCollections.length).toBe(17);
+                    //expect((<any>multiObj).liCollections[10].innerText).toBe("Item 30");
+                    mouseEventArgs.target = (<any>multiObj).liCollections[16];
+                    mouseEventArgs.type = 'click';
+                    (<any>multiObj).onMouseClick(mouseEventArgs);
+                    expect((<any>multiObj).value && (<any>multiObj).value.length).not.toBeNull();
+                    multiObj.destroy();
+                    done();
+                }, 500)
             });
         });
         describe('virtualization mouse actions', () => {
@@ -311,39 +317,45 @@ describe('MultiSelect_Virtualization', () => {
                 multiObj.destroy();
                 document.body.innerHTML = '';
             });
-            it('filter a suggestion list', () => {
+            it('filter a suggestion list', (done) => {
                 multiObj.showPopup();
-                //expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
-                expect(multiObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
-                expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Group A');
-                (<any>multiObj).inputElement.value  = "Item 2";
-                //open action validation
-                keyEventArgs.keyCode = 113;
-                (<any>multiObj).keyDownStatus = true;
-                (<any>multiObj).onInput();
-                (<any>multiObj).keyUp(keyEventArgs);
-                let li: Element[] = multiObj.list.querySelectorAll('li:not(.e-virtual-list)');
-                expect(li[1].classList.contains('e-item-focus')).toBe(true);
-                keyEventArgs.keyCode = 40;
-                multiObj.onKeyDown(keyEventArgs);
-                expect(li[2].classList.contains('e-item-focus')).toBe(true);
-                //expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Group A');
-                keyEventArgs.keyCode = 40;
-                multiObj.onKeyDown(keyEventArgs);
-                //expect(li[3].classList.contains('e-item-focus')).toBe(true);
-                multiObj.inputElement.value = '';
+                setTimeout(() => {
+                    //expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)').length).toBe(10);
+                    expect(multiObj.list.querySelectorAll('.e-virtual-list').length).toBe(15);
+                    expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Group A');
+                    (<any>multiObj).inputElement.value  = "Item 2";
+                    //open action validation
+                    keyEventArgs.keyCode = 113;
+                    (<any>multiObj).keyDownStatus = true;
+                    (<any>multiObj).onInput();
+                    (<any>multiObj).keyUp(keyEventArgs);
+                    let li: Element[] = multiObj.list.querySelectorAll('li:not(.e-virtual-list)');
+                    expect(li[1].classList.contains('e-item-focus')).toBe(true);
+                    keyEventArgs.keyCode = 40;
+                    multiObj.onKeyDown(keyEventArgs);
+                    expect(li[2].classList.contains('e-item-focus')).toBe(true);
+                    //expect(multiObj.list.querySelectorAll('li:not(.e-virtual-list)')[0].textContent.trim()).toBe('Group A');
+                    keyEventArgs.keyCode = 40;
+                    multiObj.onKeyDown(keyEventArgs);
+                    //expect(li[3].classList.contains('e-item-focus')).toBe(true);
+                    multiObj.inputElement.value = '';
+                    done();
+                }, 500)
             });
-            it('With grouping', () => {
+            it('With grouping', (done) => {
                 (<any>multiObj).renderPopup();
                 multiObj.showPopup();
-                expect((<any>multiObj).isPopupOpen()).toBe(true);
-                mouseEventArgs.target = (multiObj as any).popupWrapper.querySelectorAll('.e-selectall-parent')[0];
-                mouseEventArgs.type = 'click'; 
-                //(<any>multiObj).selectAllItem(true, mouseEventArgs);
-                //expect((multiObj as any).list.querySelectorAll('.e-list-item.e-active').length == (multiObj as any).maximumSelectionLength).toBe(true);
-                //expect((multiObj as any).value.length == (multiObj as any).maximumSelectionLength).toBe(true);
-                multiObj.hidePopup();
-                multiObj.destroy();
+                setTimeout(() => {
+                    expect((<any>multiObj).isPopupOpen()).toBe(true);
+                    mouseEventArgs.target = (multiObj as any).popupWrapper.querySelectorAll('.e-selectall-parent')[0];
+                    mouseEventArgs.type = 'click'; 
+                    //(<any>multiObj).selectAllItem(true, mouseEventArgs);
+                    //expect((multiObj as any).list.querySelectorAll('.e-list-item.e-active').length == (multiObj as any).maximumSelectionLength).toBe(true);
+                    //expect((multiObj as any).value.length == (multiObj as any).maximumSelectionLength).toBe(true);
+                    multiObj.hidePopup();
+                    multiObj.destroy();
+                    done();
+                }, 500)
             });
         });
         describe('Virtualization Template support', () => {
@@ -469,50 +481,56 @@ describe('MultiSelect_Virtualization', () => {
                 multiObj.destroy();
                 document.body.innerHTML = '';
             });
-            it('allowCustomValue.', () => {
+            it('allowCustomValue.', (done) => {
                 multiObj.showPopup();
-                (<any>multiObj).inputElement.value = "custom";
-                //open action validation
-                keyEventArgs.keyCode = 113;
-                (<any>multiObj).keyDownStatus = true;
-                (<any>multiObj).onInput();
-                (<any>multiObj).keyUp(keyEventArgs);
-                keyEventArgs.altKey = false;
-                keyEventArgs.keyCode = 70;
-                (<any>multiObj).keyDownStatus = true;
-                (<any>multiObj).onInput();
-                (<any>multiObj).keyUp(keyEventArgs);
-                //expect((<any>multiObj).liCollections.length).toBe(17);
-                //expect((<any>multiObj).value.length).toBe(1);
-                mouseEventArgs.target = (<any>multiObj).liCollections[0];
-                mouseEventArgs.type = 'click';
-                (<any>multiObj).onMouseClick(mouseEventArgs);
-                expect((<any>multiObj).value && (<any>multiObj).value.length).not.toBeNull();
-                multiObj.destroy();
+                setTimeout(() => {
+                    (<any>multiObj).inputElement.value = "custom";
+                    //open action validation
+                    keyEventArgs.keyCode = 113;
+                    (<any>multiObj).keyDownStatus = true;
+                    (<any>multiObj).onInput();
+                    (<any>multiObj).keyUp(keyEventArgs);
+                    keyEventArgs.altKey = false;
+                    keyEventArgs.keyCode = 70;
+                    (<any>multiObj).keyDownStatus = true;
+                    (<any>multiObj).onInput();
+                    (<any>multiObj).keyUp(keyEventArgs);
+                    //expect((<any>multiObj).liCollections.length).toBe(17);
+                    //expect((<any>multiObj).value.length).toBe(1);
+                    mouseEventArgs.target = (<any>multiObj).liCollections[0];
+                    mouseEventArgs.type = 'click';
+                    (<any>multiObj).onMouseClick(mouseEventArgs);
+                    expect((<any>multiObj).value && (<any>multiObj).value.length).not.toBeNull();
+                    multiObj.destroy();
+                    done();
+                }, 500)
             });
-            it('allowCustomValue with filtering.', () => {
+            it('allowCustomValue with filtering.', (done) => {
                 multiObj = new MultiSelect({
                     dataSource: datasource, popupHeight:'200px', hideSelectedItem: false, enableVirtualization: true,allowFiltering: true, allowCustomValue: true, showClearButton:true, fields: { text: 'text', value: 'id' }
                 });
                 multiObj.appendTo(ele);
                 multiObj.showPopup();
-                (<any>multiObj).inputElement.value = "customvalue";
-                //open action validation
-                keyEventArgs.keyCode = 113;
-                (<any>multiObj).keyDownStatus = true;
-                (<any>multiObj).onInput();
-                (<any>multiObj).keyUp(keyEventArgs);
-                keyEventArgs.altKey = false;
-                keyEventArgs.keyCode = 70;
-                (<any>multiObj).keyDownStatus = true;
-                (<any>multiObj).onInput();
-                (<any>multiObj).keyUp(keyEventArgs);
-                expect((<any>multiObj).liCollections.length).toBe(1);
-                mouseEventArgs.target = (<any>multiObj).liCollections[0];
-                mouseEventArgs.type = 'click';
-                (<any>multiObj).onMouseClick(mouseEventArgs);
-                expect((<any>multiObj).value && (<any>multiObj).value.length).not.toBeNull();
-                multiObj.destroy();
+                setTimeout(() => {
+                    (<any>multiObj).inputElement.value = "customvalue";
+                    //open action validation
+                    keyEventArgs.keyCode = 113;
+                    (<any>multiObj).keyDownStatus = true;
+                    (<any>multiObj).onInput();
+                    (<any>multiObj).keyUp(keyEventArgs);
+                    keyEventArgs.altKey = false;
+                    keyEventArgs.keyCode = 70;
+                    (<any>multiObj).keyDownStatus = true;
+                    (<any>multiObj).onInput();
+                    (<any>multiObj).keyUp(keyEventArgs);
+                    expect((<any>multiObj).liCollections.length).toBe(1);
+                    mouseEventArgs.target = (<any>multiObj).liCollections[0];
+                    mouseEventArgs.type = 'click';
+                    (<any>multiObj).onMouseClick(mouseEventArgs);
+                    expect((<any>multiObj).value && (<any>multiObj).value.length).not.toBeNull();
+                    multiObj.destroy();
+                    done();
+                }, 500)
             });
         });
         describe('hideselecteditem false with Custom Value', () => {
@@ -833,9 +851,10 @@ describe('MultiSelect_Virtualization', () => {
                     }, 850);
                 }, 850);
             });
-            it('Removing chip using backspace key', () => {
+            it('Removing chip using backspace key', (done) => {
                 multiObj.value= ["id4"];
                 multiObj.showPopup();
+                setTimeout(() => {
                (<any>multiObj).focusAtFirstListItem();
                keyEventArgs.keyCode = 8;
                //(<any>multiObj).removelastSelection(keyEventArgs);
@@ -844,7 +863,9 @@ describe('MultiSelect_Virtualization', () => {
                     expect(getComputedStyle((<any>multiObj).searchWrapper).width).toBe('calc(100% - 20px)');
                 }
                 else
-                    expect(true).toBe(false);            
+                    expect(true).toBe(false);
+                done();
+            },300)
             });
         });
     });

@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 26.1.42 (2024-07-16)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I594182` - Tasks misaligned between grid and chart side with load on demand issue has been fixed.
+- `#I600292` - Mismatching dates between pdf file and UI when progress value set to 300 issue has been fixed.
+- `#I606401` - Empty space occur when height is dynamically changed with side bar issue has been fixed.
+- `#I605379` - Value modified in the post method doesn't reflect in UI issue has been fixed.
+- `#I605147` - The issue with triggering the `actionFailure` event when an invalid predecessor tries to connect has been fixed.
+- `#I604784`,`#I604753` - `AdditionalParams` property not working properly issue has been fixed.
+- `#I604864` - The issue of missing modified records and task data in the `actionComplete` argument when merging records via the context menu has been fixed.
+- `#I604120` - Milestone task `endDate` is not updating properly when using cell edit and dialog.
+- `#I603502` - Toolbar item is not working properly with virtualization issue has been fixed.
+- `#I603710` - Export properties not working properly issue has been fixed.
+- `#I603923` - Row selection toggling not working properly while `persistSelection` is enabled issue has been fixed.
+
 ## 26.1.41 (2024-07-09)
 
 ### GanttChart

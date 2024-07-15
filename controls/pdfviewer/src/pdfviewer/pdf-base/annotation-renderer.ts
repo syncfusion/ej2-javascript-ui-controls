@@ -3777,7 +3777,7 @@ export class AnnotationRenderer {
         case PdfFontFamily.helvetica:
             return 'Helvetica';
         case PdfFontFamily.timesRoman:
-            return 'Times new Roman';
+            return 'Times New Roman';
         case PdfFontFamily.courier:
             return 'Courier';
         case PdfFontFamily.symbol:

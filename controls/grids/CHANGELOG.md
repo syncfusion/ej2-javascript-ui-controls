@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 26.1.42 (2024-07-16)
+
+### Grid
+
+#### Bug fixes
+
+- `#I603505` - Resolved the issue where the keyboard interaction for `SelectAll` records not working properly.
+- `#I600155` - Resolved the issue where the script error is thrown when opening filter menu with filter template.
+- `#FB59205` - Unsubscribed `ResizeStop` event issue is resolved.
+
+## 26.1.41 (2024-07-09)
+
+### Grid
+
+#### Bug fixes
+
+- `#FB59206` - Resolved the issue where the column menu icons were overlapping with the column headers.
+- `#I590873` - Implemented tab key navigation functionality with the command column in edit mode.
+- `#I599720` - Resolved the issue where the click event triggers even if the page changes programmatically.
+- `#FB58882` - Fixed the issue where frozen columns with caption aggregates caused scrolling problems.
+- `#I601097` - The issue with Group by Format not working with Lazy Load Grouping has been resolved.
+
 ## 26.1.40 (2024-07-02)
 
 ### Grid

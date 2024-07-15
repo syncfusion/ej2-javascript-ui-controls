@@ -3288,10 +3288,18 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 for (let i: number = 0; i < galleryPopupEle.length; i++) {
                     galleryPopupEle[parseInt(i.toString(), 10)].remove();
                 }
+                const galleryPopupBtn: HTMLElement = document.querySelector('#' + item.id + '_popupButton');
+                if (galleryPopupBtn) {
+                    galleryPopupBtn.remove();
+                }
+                const galleryWrapper: HTMLElement = document.querySelector('#' + item.id + '_galleryWrapper');
+                if (galleryWrapper) {
+                    galleryWrapper.remove();
+                }
             }
             else {
                 const galleryEle: NodeListOf<Element> = ele.querySelectorAll('.e-ribbon-gallery-item');
-                const galleryPopupBtn: HTMLElement = ele.querySelector('#' + item.id + '_popupButton');
+                const galleryPopupBtn: HTMLElement = ele.parentElement.querySelector('#' + item.id + '_popupButton');
                 if (galleryPopupBtn) {
                     galleryPopupBtn.remove();
                 }
@@ -4513,6 +4521,17 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 } else {
                     itemContainer = groupContainer.querySelector('#' + itemId + constants.CONTAINER_ID);
                     itemEle = contentEle.querySelector('#' + itemId);
+                    if (!itemContainer) {
+                        itemContainer = dropdown ? (dropdown.target as HTMLElement).querySelector('#' + itemId + constants.CONTAINER_ID) : groupContainer.querySelector('#' + itemId + constants.CONTAINER_ID);
+                    }
+                    if (!itemEle) {
+                        itemEle = dropdown ? (dropdown.target as HTMLElement).querySelector('#' + itemId) : contentEle.querySelector('#' + itemId);
+                    }
+                    if (itemProp.item.type === 'Gallery') {
+                        if (!itemEle) {
+                            itemEle = contentEle.querySelector('#' + itemId + '_galleryWrapper');
+                        }
+                    }
                     if (itemProp.item.type === 'GroupButton' && this.activeLayout === RibbonLayout.Classic) {
                         itemEle = contentEle.querySelector('#' + itemId + constants.RIBBON_GROUP_BUTTON_ID);
                     }
@@ -4538,11 +4557,6 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
             ribbonItem.setProperties(item, true);
             this.validateItemSize();
             if (contentEle.innerHTML !== '') {
-                if (!(this.activeLayout === RibbonLayout.Simplified && ribbonItem.displayOptions === DisplayMode.Overflow)) {
-                    itemContainer = groupContainer.querySelector('#' + itemId + constants.CONTAINER_ID);
-                } else {
-                    itemContainer = (dropdown.target as HTMLElement).querySelector('#' + itemId + constants.CONTAINER_ID);
-                }
                 // To avoid undefined items condition is added
                 if (ribbonItem.ribbonTooltipSettings && isTooltipPresent(ribbonItem.ribbonTooltipSettings)) {
                     itemContainer.classList.add(constants.RIBBON_TOOLTIP_TARGET);
@@ -4566,6 +4580,10 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                     }
                 }
                 this.createRibbonItem(ribbonItem, itemContainer);
+                if (itemProp.item.type === 'Gallery' && document.querySelector('#' + itemId + '_container').closest('.e-ribbon-overflow-target') && item.displayOptions !== DisplayMode.Overflow) {
+                    this.createOverflowPopup(itemProp.item, itemProp.tabIndex, itemProp.group.enableGroupOverflow, itemProp.group.id,
+                        itemProp.group.header, itemContainer, groupContainer);
+                }
                 if (this.activeLayout === 'Simplified' && itemProp.group.enableGroupOverflow) {
                     if ((dropdown.target as HTMLElement).childElementCount === 0 ||
                     ((dropdown.target as HTMLElement).childElementCount === 1 &&
@@ -4644,12 +4662,22 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
 
     private enableDisableItem(itemId: string, isDisabled: boolean): void {
         let isUpdated: boolean = false;
+        let isOverflow: boolean = false;
         const itemProp: itemProps = getItem(this.tabs, itemId);
         if (!itemProp) { return; }
         (itemProp.item as RibbonItem).setProperties({ disabled: isDisabled }, true);
         let ele: HTMLElement;
         if (itemProp.item.type === 'GroupButton') {
             ele = getItemElement(this, itemId + constants.RIBBON_GROUP_BUTTON_ID, itemProp);
+        }
+        else if(itemProp.item.type === 'Gallery') {
+            ele = document.querySelector('#' + itemId);
+            if (!ele) {
+                ele = document.querySelector('#' + itemId + '_galleryWrapper');
+            }
+            else {
+                isOverflow = true;
+            }
         }
         else {
             ele = getItemElement(this, itemId, itemProp);
@@ -4672,6 +4700,14 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                         for (let i: number = 0; i < itemProp.item.groupButtonSettings.items.length; i++) {
                             const btnEle: HTMLElement = ele.querySelector('#' + itemId + constants.RIBBON_GROUP_BUTTON_ID + i);
                             updateControlDisabled(btnEle, 'btn', isDisabled);
+                        }
+                    }
+                    else if (moduleName === 'gallery') {
+                        ele.classList.toggle(constants.DISABLED_CSS, isDisabled);
+                        document.getElementById(itemId + '_popupButton').classList.toggle(constants.DISABLED_CSS, isDisabled);
+                        if (isOverflow) {
+                            const galleryEle: HTMLElement = document.getElementById(itemId + '_galleryWrapper');
+                            galleryEle.classList.toggle(constants.DISABLED_CSS, isDisabled);
                         }
                     }
                     else {

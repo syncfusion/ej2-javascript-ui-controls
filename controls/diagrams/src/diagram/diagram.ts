@@ -4644,16 +4644,14 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             // If angular then we do not remove the node html element wrapper to retain the HTML element in it.
                             let canUpdate: boolean = true;
                             const parent: NodeModel = this.nameTable[(currentObj as Node).parentId];
-                            if ((((this as any).isAngular || (this as any).isReact) || (this as any).isVue)
-                                && parent && (parent as Node).isLane) {
+                            if ((((this as any).isAngular || (this as any).isReact ) || (this as any).isVue ) && ((parent && (parent as Node).isLane) || ( this.constraints & DiagramConstraints.Virtualization)))  {
                                 canUpdate = false;
                             }
                             if (canUpdate) {
                                 this.clearTemplate(['nodeTemplate' + '_' + currentObj.id]);
-                            }
-                            if ((children[parseInt(i.toString(), 10)] as DiagramEventAnnotation).annotationId) {
-                                this.clearTemplate(
-                                    ['annotationTemplate' + '_' + currentObj.id + ((children[parseInt(i.toString(), 10)] as DiagramEventAnnotation).annotationId)]);
+                                if ((children[parseInt(i.toString(), 10)] as DiagramEventAnnotation).annotationId) {
+                                    this.clearTemplate(['annotationTemplate' + '_' + currentObj.id + ((children[parseInt(i.toString(), 10)] as DiagramEventAnnotation).annotationId)]);
+                                }
                             }
                         }
                     }
@@ -5158,7 +5156,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             if (node) {
                 //Removed isBlazor code
-                if (node.shape && node.shape.type === 'UmlClassifier') { node = this.nameTable[(node as Node).children[0]]; }
+                //893031: Exception throws while double click on UML Classifier connector
+                //Added the condition that the node is not an instance of a connector
+                if (node.shape && node.shape.type === 'UmlClassifier' && !(node instanceof Connector)) { node = this.nameTable[(node as Node).children[0]]; }
                 let bpmnAnnotation: boolean = false;
                 if (!textWrapper) {
                     if (node.shape.type !== 'Text' && node.annotations.length === 0) {
@@ -10235,6 +10235,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     actualObject.wrapper.offsetX = actualObject.wrapper.offsetX + offsetX;
                     this.updateFlipOffset(actualObject.wrapper, offsetX, 0, actualObject.wrapper.flip);
                 }
+                //EJ2-895070: Flipping and moving the node are not working properly
+                else {
+                    actualObject.wrapper.offsetX = node.offsetX;
+                }
             } else {
                 actualObject.wrapper.offsetX = node.offsetX;
             } update = true;
@@ -10249,6 +10253,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     const offsetY = node.offsetY - oldObject.offsetY;
                     actualObject.wrapper.offsetY = actualObject.wrapper.offsetY + offsetY;
                     this.updateFlipOffset(actualObject.wrapper, 0, offsetY, actualObject.wrapper.flip);
+                }
+                //EJ2-895070: Flipping and moving the node are not working properly
+                else {
+                    actualObject.wrapper.offsetY = node.offsetY;
                 }
             } else {
                 actualObject.wrapper.offsetY = node.offsetY;
@@ -12240,7 +12248,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 const arg: IDropEventArgs | IBlazorDropEventArgs = {
                     source: this.droppable[`${source}`],
                     element: this.currentSymbol,
-                    target: this.eventHandler['hoverNode'] || this.eventHandler['lastObjectUnderMouse'] || this, cancel: false,
+                //EJ2-895314: Connector splits while dropping node on diagram, even after moving node away from connector highlighter
+                    target: this.eventHandler['hoverNode'] || 
+                    (this.findObjectsUnderMouse(this.eventHandler.getMousePosition(args.event))[0]) || this, 
+                    cancel: false,
                     position: { x: this.currentSymbol.wrapper.offsetX, y: this.currentSymbol.wrapper.offsetY }
                 };
                 // Removed isBlazor code

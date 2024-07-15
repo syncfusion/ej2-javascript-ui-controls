@@ -4,7 +4,7 @@ import { Spreadsheet } from '../base/spreadsheet';
 import { ribbonClick, inView, setMaxHgt, getMaxHgt, WRAPTEXT, setRowEleHeight, rowHeightChanged, isReadOnlyCells, readonlyAlert } from '../common/index';
 import { completeAction, BeforeWrapEventArgs, getLines, getExcludedColumnWidth, getTextHeightWithBorder } from '../common/index';
 import { positionAutoFillElement, colWidthChanged, getLineHeight } from '../common/index';
-import { SheetModel, getCell, CellModel, wrap as wrapText, wrapEvent, getRow, getRowsHeight, Workbook, ApplyCFArgs, applyCF } from '../../workbook/index';
+import { SheetModel, getCell, CellModel, wrap as wrapText, wrapEvent, getRow, getRowsHeight, Workbook, ApplyCFArgs, applyCF, RowModel } from '../../workbook/index';
 import { getRowHeight, getAddressFromSelectedRange, beginAction, setRowHeight } from '../../workbook/index';
 
 
@@ -54,10 +54,11 @@ export class WrapText {
                 args.initial = false;
             }
             let ele: HTMLElement; let cell: CellModel; let colwidth: number; let maxHgt: number; let hgt: number;
-            let isCustomHgt: boolean; let rowCustomHeight: boolean; let lineHgt: number;
+            let isCustomHgt: boolean; let rowCustomHeight: boolean; let lineHgt: number; let row: RowModel;
             for (let i: number = args.range[0]; i <= args.range[2]; i++) {
                 maxHgt = 0;
-                rowCustomHeight = getRow(args.sheet, i).customHeight;
+                row = getRow(args.sheet, i);
+                rowCustomHeight = row.customHeight;
                 isCustomHgt = rowCustomHeight || args.isCustomHgt;
                 for (let j: number = args.range[1]; j <= args.range[3]; j++) {
                     cell = getCell(i, j, args.sheet, null, true);
@@ -71,7 +72,7 @@ export class WrapText {
                         } else {
                             ele.classList.remove(WRAPTEXT); lineHgt = null;
                         }
-                        if (isCustomHgt || isMerge) {
+                        if (isCustomHgt || isMerge || row.height < 20) { // Row height less than default row height(20)
                             this.updateWrapCell(i, j, args.sheet, ele);
                         }
                         if (Browser.isIE) {

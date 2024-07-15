@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.1.42 (2024-07-16)
+
+### DataManager
+
+#### Bug fixes
+
+- `#I601097` - The issue with Group by Format not working with Lazy Load Grouping has been resolved.
+
 ## 26.1.41 (2024-07-09)
 
 ### DataManager

@@ -597,6 +597,14 @@ export class NavigationPane {
         this.toolbar.isStringTemplate = true;
         this.toolbar.appendTo(this.toolbarElement);
         if (option === 'search') {
+            const toolbarContainer: HTMLElement = this.pdfViewerBase.getElement('_toolbarContainer');
+            if (toolbarContainer) {
+                let toolbarHeight: number = toolbarContainer.clientHeight;;
+                if (toolbarHeight === 0) {
+                    toolbarHeight = parseFloat(window.getComputedStyle(toolbarContainer)['height']) + 1;
+                }
+                this.pdfViewerBase.toolbarHeight = toolbarHeight;
+            }
             this.initiateSearchBox();
         } else {
             this.initiateBookmarks();

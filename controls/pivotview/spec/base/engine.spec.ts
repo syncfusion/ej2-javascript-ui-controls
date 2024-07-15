@@ -2240,6 +2240,60 @@ describe(' - VirtualScrolling', () => {
         });
     });
 
+    describe('AutoFit Value Sorting', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:1000px; width:900px' });
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            if (!document.getElementById(elem.id)) {
+                document.body.style.height = '500px';
+                document.body.appendChild(elem);
+            }
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotView.Inject(GroupingBar, VirtualScroll);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: [
+                        { row: 'row1', column1: 'column1', column2: 'column1', value: 1 },
+                        { row: 'row2', column1: 'column2', column2: 'column2', value: 2 },
+                        { row: 'row3', column1: 'column3', column2: 'column3', value: 3 },
+                        { row: 'row4', column1: 'column4', column2: 'column4', value: 4 },
+                    ],
+                    expandAll: false,
+                    rows: [{ name: 'row' }],
+                    columns: [{ name: 'column1' }, { name: 'column2' }],
+                    values: [{ name: 'value' }],
+                    valueSortSettings: {
+                        headerText: 'column1',
+                        sortOrder: 'Ascending'
+                    }
+                },
+                gridSettings: {
+                    columnWidth: 140,
+                    columnRender: function (args) {
+                        for (var i = 0; i < args.columns.length; i++) {
+                            args.columns[i as number].autoFit = true;
+                        }
+                    },
+                },
+                enableValueSorting: true,
+                dataBound: dataBound
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        it('Checking value sorting', function (done) {
+            setTimeout(() => {
+                expect(pivotGridObj.element.querySelectorAll('.e-columnheader .e-value-sort-icon').length > 0).toBeTruthy();
+                done();
+            }, 1000);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange);

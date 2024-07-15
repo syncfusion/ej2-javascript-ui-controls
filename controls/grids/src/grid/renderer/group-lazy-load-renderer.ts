@@ -1,6 +1,6 @@
 import { extend, remove, isNullOrUndefined, setStyleAttribute, removeClass, addClass } from '@syncfusion/ej2-base';
 import { Query, Predicate } from '@syncfusion/ej2-data';
-import { IRenderer, IGrid, LazyLoadArgs, LazyLoadGroupArgs, NotifyArgs, IRow, VirtualInfo } from '../base/interface';
+import { IRenderer, IGrid, LazyLoadArgs, LazyLoadGroupArgs, NotifyArgs, IRow, VirtualInfo, IValueFormatter } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { ContentRender } from './content-renderer';
 import { ReturnType } from '../base/type';
@@ -108,6 +108,13 @@ export class GroupLazyLoadRenderer extends ContentRender implements IRenderer {
         }
         const data: Row<Column> = rowsObject[parseInt(oriIndex.toString(), 10)];
         const key: { fields: string[], keys: string[] } = getGroupKeysAndFields(oriIndex, rowsObject);
+        for (let i: number = 0; i < key.fields.length; i++) {
+            const column: Column = this.parent.getColumnByField(key.fields[parseInt(i.toString(), 10)]);
+            if (column.enableGroupByFormat) {
+                key.keys[parseInt(i.toString(), 10)] = this.locator.getService<IValueFormatter>('valueFormatter').fromView(
+                    key.keys[parseInt(i.toString(), 10)], column.getParser(), (column.type === 'dateonly' ? 'date' : column.type)) as string;
+            }
+        }
         const e: LazyLoadGroupArgs = { captionRowElement: tr, groupInfo: data, enableCaching: true, cancel: false };
         this.parent.trigger(events.lazyLoadGroupExpand, e, (args: LazyLoadGroupArgs) => {
             if (args.cancel) {

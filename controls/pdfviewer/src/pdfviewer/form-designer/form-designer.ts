@@ -14,6 +14,7 @@ import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { Button, CheckBox } from '@syncfusion/ej2-buttons';
 import { DisplayMode, FontStyle, FormFieldType, Visibility } from '../base/types';
 import { cloneObject } from '../drawing/drawing-util';
+import { PdfBitmap } from '@syncfusion/ej2-pdf';
 
 /**
  * The `FormDesigner` module is used to handle form designer actions of PDF viewer.
@@ -2776,7 +2777,7 @@ export class FormDesigner {
             if (currentData.id === fieldId) {
                 this.updateFormFieldData(currentData, options);
                 const formFieldIndex: number = this.pdfViewer.formFieldCollections.findIndex(function (el: any): boolean
-                { return el.id === formFieldId; });
+                { return el.id === fieldId; });
                 this.pdfViewer.formFieldCollections[parseInt(formFieldIndex.toString(), 10)] = currentData;
             }
         }
@@ -4359,6 +4360,31 @@ export class FormDesigner {
             }
             for (let i: number = 0; i < formFieldsData.length; i++) {
                 const currentData: any = formFieldsData[parseInt(i.toString(), 10)].FormField;
+                if (!isNullOrUndefined(currentData) && isNullOrUndefined(currentData.signatureBound) && currentData.signatureType === "Image") {
+                    const imageUrl: string = (currentData.value.toString()).split(',')[1];
+                    let image: PdfBitmap = new PdfBitmap(imageUrl);
+                    let boundsObjects : any = {
+                        x: currentData.lineBound.X, y: currentData.lineBound.Y,
+                        width: currentData.lineBound.Width, height: currentData.lineBound.Height
+                    };
+                    //Draw image in page graphics
+                    if (this.pdfViewer.signatureFitMode === 'Default') {
+                        const padding: number = Math.min(boundsObjects.height / this.pdfViewer.formFieldsModule.paddingDifferenceValue, boundsObjects.width / this.pdfViewer.formFieldsModule.paddingDifferenceValue);
+                        const maxHeight: number = boundsObjects.height - padding;
+                        const maxWidth: number = boundsObjects.width - padding;
+                        const imageWidth: number = image.width;
+                        const imageHeight: number = image.height;
+                        const beforeWidth: number = boundsObjects.width;
+                        const beforeHeight: number = boundsObjects.height;
+                        const ratio: number = Math.min(maxWidth / imageWidth, maxHeight / imageHeight);
+                        boundsObjects.width = imageWidth * ratio;
+                        boundsObjects.height = imageHeight * ratio;
+                        boundsObjects.x = boundsObjects.x + (beforeWidth - boundsObjects.width) / 2;
+                        boundsObjects.y = boundsObjects.y + (beforeHeight - boundsObjects.height) / 2;
+                    }
+                    currentData.signatureBound = boundsObjects;
+                    image = null;
+                }
                 currentData.Multiline = currentData.isMultiline;
                 if (currentData.isRequired) {
                     if (currentData.formFieldAnnotationType === 'Textbox' || currentData.formFieldAnnotationType === 'PasswordField' || currentData.Multiline) {
@@ -4443,7 +4469,12 @@ export class FormDesigner {
                 const dropListData: any = this.formFieldsData.filter( (fieldData: any) => (currentData.name === fieldData.FieldName) );
                 if (dropListData.length > 0) {
                     dropListoptions = dropListData[0].TextList;
-                    selectedIndex.push(dropListData[0].selectedIndex);
+                    if (!isNullOrUndefined(dropListData[0].selectedIndex)) {
+                        selectedIndex.push(dropListData[0].selectedIndex);
+                    }
+                    else {
+                        selectedIndex.push(dropListData[0].SelectedList[0]);
+                    }
                     for (let i: number = 0; i < dropListoptions.length; i++) {
                         options.push({ itemName: dropListoptions[parseInt(i.toString(), 10)],
                             itemValue: dropListoptions[parseInt(i.toString(), 10)] });
@@ -4517,7 +4548,7 @@ export class FormDesigner {
             isReadOnly: currentData.isReadOnly ? currentData.isReadOnly : false,
             isRequired: currentData.isRequired ? currentData.isRequired : false, textAlign: currentData.alignment,
             formFieldAnnotationType: currentData.type,
-            zoomvalue: 1, option: options, maxLength: currentData.maxLength ? currentData.maxLength : 0,
+            zoomValue: 1, option: options, maxLength: currentData.maxLength ? currentData.maxLength : 0,
             visibility: currentData.visibility, font: { isItalic: false, isBold: false, isStrikeout: false, isUnderline: false }
         };
         if (finalSignBounds) {
@@ -4537,7 +4568,7 @@ export class FormDesigner {
                 fontColor: foreColor, borderColor: borderRGB, thickness: currentData.thickness, fontSize: currentData.fontSize, rotation: 0,
                 isReadOnly: currentData.isReadOnly ? currentData.isReadOnly : false, isRequired: currentData.isRequired ?
                     currentData.isRequired : false,
-                textAlign: currentData.alignment, formFieldAnnotationType: currentData.type, zoomvalue: 1,
+                textAlign: currentData.alignment, formFieldAnnotationType: currentData.type, zoomValue: 1,
                 maxLength: currentData.maxLength ? currentData.maxLength : 0, visibility: currentData.visibility,
                 font: { isItalic: false, isBold: false, isStrikeout: false, isUnderline: false }
             };

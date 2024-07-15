@@ -2772,7 +2772,9 @@ describe('Diagram Control', () => {
                 events.mouseMoveEvent(diagram.element, 500, 300, false, false);
                 events.mouseMoveEvent(diagram.element, 500, 305, false, false);
                 events.mouseMoveEvent(diagram.element, 500, 310, false, false);
-                events.mouseUpEvent(diagram.element, 500, 300, false, false);
+                events.mouseMoveEvent(diagram.element, 600, 310, false, false);
+                events.mouseMoveEvent(diagram.element, 650, 310, false, false);
+                events.mouseUpEvent(diagram.element, 650, 370, false, false);
                 done();
             });
             it('Drag and drop the node from palette to lane and ensure single selection', (done: Function) => {
@@ -2799,7 +2801,9 @@ describe('Diagram Control', () => {
                 events.mouseMoveEvent(diagram.element, 500, 300, false, false);
                 events.mouseMoveEvent(diagram.element, 500, 305, false, false);
                 events.mouseMoveEvent(diagram.element, 500, 310, false, false);
-                events.mouseUpEvent(diagram.element, 500, 300, false, false);
+                events.mouseMoveEvent(diagram.element, 600, 310, false, false);
+                events.mouseMoveEvent(diagram.element, 650, 310, false, false);
+                events.mouseUpEvent(diagram.element, 650, 370, false, false);
                 expect(diagram.selectedItems.nodes.length === 1).toBe(true);
                 done();
             });
@@ -2829,13 +2833,13 @@ describe('Diagram Control', () => {
                 events.mouseMoveEvent(palette.element, 100, 100, false, false);
                 events.mouseMoveEvent(palette.element, 200, 200, false, false);
                 expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
-                events.mouseMoveEvent(diagram.element, 50 + diagram.element.offsetLeft, 50 + diagram.element.offsetTop, false, false);
-                events.mouseMoveEvent(diagram.element, 55 + diagram.element.offsetLeft, 50 + diagram.element.offsetTop, false, false);
-                events.mouseMoveEvent(diagram.element, 60 + diagram.element.offsetLeft, 50 + diagram.element.offsetTop, false, false);
-                events.mouseUpEvent(diagram.element, 60 + diagram.element.offsetLeft, 50 + diagram.element.offsetTop, false, false);
+                events.mouseMoveEvent(diagram.element, 150 + diagram.element.offsetLeft, 150 + diagram.element.offsetTop, false, false);
+                events.mouseMoveEvent(diagram.element, 155 + diagram.element.offsetLeft, 150 + diagram.element.offsetTop, false, false);
+                events.mouseMoveEvent(diagram.element, 160 + diagram.element.offsetLeft, 150 + diagram.element.offsetTop, false, false);
+                events.mouseUpEvent(diagram.element, 160 + diagram.element.offsetLeft, 150 + diagram.element.offsetTop, false, false);
 
-                events.mouseDownEvent(diagram.element, 100 + diagram.element.offsetLeft, 100 + diagram.element.offsetTop, false, false);
-                events.mouseMoveEvent(diagram.element, 100 + diagram.element.offsetLeft, 100 + diagram.element.offsetTop, false, false);
+                events.mouseDownEvent(diagram.element, 200 + diagram.element.offsetLeft, 200 + diagram.element.offsetTop, false, false);
+                events.mouseMoveEvent(diagram.element, 200 + diagram.element.offsetLeft, 200 + diagram.element.offsetTop, false, false);
                 events.mouseMoveEvent(diagram.element, targetOffsetX + 10 + diagram.element.offsetLeft, targetOffsetY + diagram.element.offsetTop, false, false);
                 events.mouseMoveEvent(diagram.element, targetOffsetX + diagram.element.offsetLeft, targetOffsetY + diagram.element.offsetTop, false, false);
                 events.mouseUpEvent(diagram.element, targetOffsetX + diagram.element.offsetLeft, targetOffsetY + diagram.element.offsetTop, false, false);
@@ -3514,7 +3518,9 @@ describe('Diagram Control', () => {
                 events.mouseMoveEvent(diagram.element, 500, 300, false, false);
                 events.mouseMoveEvent(diagram.element, 500, 305, false, false);
                 events.mouseMoveEvent(diagram.element, 500, 310, false, false);
-                events.mouseUpEvent(diagram.element, 500, 300, false, false);
+                events.mouseMoveEvent(diagram.element, 600, 310, false, false);
+                events.mouseMoveEvent(diagram.element, 650, 310, false, false);
+                events.mouseUpEvent(diagram.element, 650, 370, false, false);
                 done();
             });
 
@@ -3545,13 +3551,12 @@ describe('Diagram Control', () => {
                 events.mouseMoveEvent(palette.element, 100, 100, false, false);
                 events.mouseMoveEvent(palette.element, 200, 200, false, false);
                 expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
-                events.mouseMoveEvent(diagram.element, 50 + diagram.element.offsetLeft, 50 + diagram.element.offsetTop, false, false);
-                events.mouseMoveEvent(diagram.element, 55 + diagram.element.offsetLeft, 50 + diagram.element.offsetTop, false, false);
-                events.mouseMoveEvent(diagram.element, 60 + diagram.element.offsetLeft, 50 + diagram.element.offsetTop, false, false);
-                events.mouseUpEvent(diagram.element, 60 + diagram.element.offsetLeft, 50 + diagram.element.offsetTop, false, false);
-
-                events.mouseDownEvent(diagram.element, 100 + diagram.element.offsetLeft, 100 + diagram.element.offsetTop, false, false);
-                events.mouseMoveEvent(diagram.element, 100 + diagram.element.offsetLeft, 100 + diagram.element.offsetTop, false, false);
+                events.mouseMoveEvent(diagram.element, 150 + diagram.element.offsetLeft, 150 + diagram.element.offsetTop, false, false);
+                events.mouseMoveEvent(diagram.element, 155 + diagram.element.offsetLeft, 150 + diagram.element.offsetTop, false, false);
+                events.mouseMoveEvent(diagram.element, 160 + diagram.element.offsetLeft, 150 + diagram.element.offsetTop, false, false);
+                events.mouseUpEvent(diagram.element, 160 + diagram.element.offsetLeft, 150 + diagram.element.offsetTop, false, false);
+                events.mouseDownEvent(diagram.element, 200 + diagram.element.offsetLeft, 200 + diagram.element.offsetTop, false, false);
+                events.mouseMoveEvent(diagram.element, 200 + diagram.element.offsetLeft, 200 + diagram.element.offsetTop, false, false);
                 events.mouseMoveEvent(diagram.element, targetOffsetX + 10 + diagram.element.offsetLeft, targetOffsetY + diagram.element.offsetTop, false, false);
                 events.mouseMoveEvent(diagram.element, targetOffsetX + diagram.element.offsetLeft, targetOffsetY + diagram.element.offsetTop, false, false);
                 events.mouseUpEvent(diagram.element, targetOffsetX + diagram.element.offsetLeft, targetOffsetY + diagram.element.offsetTop, false, false);

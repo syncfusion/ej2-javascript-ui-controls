@@ -42,11 +42,11 @@ export class WorkbookProtectSheet {
 
     private unprotectsheetHandler(args: UnprotectArgs): void {
         let sheet: SheetModel = this.parent.getActiveSheet();
+        if (!isNullOrUndefined(args.sheet)) {
+            sheet = this.parent.sheets[args.sheet];
+        }
         if ((sheet as ExtendedSheet).isImportProtected) {
             (sheet as ExtendedSheet).isImportProtected = false;
-        }
-        if (args.sheet) {
-            sheet = this.parent.sheets[args.sheet];
         }
         sheet.protectSettings.formatCells = sheet.protectSettings.formatColumns = false;
         sheet.protectSettings.formatRows = sheet.protectSettings.selectCells = false;

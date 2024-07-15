@@ -910,5 +910,41 @@ describe('Hyperlink ->', () => {
                 });
             });
         });
+        describe('CR-894015 ->', () => {
+            let spreadsheet: Spreadsheet;
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('The beforeHyperlinkClick event is not preventing the hyperlink navigation action', (done: Function) => {
+                spreadsheet = helper.getInstance();
+                spreadsheet.beforeHyperlinkClick = (args: BeforeHyperlinkArgs): void => {
+                    args.cancel = true;
+                };
+                let afterHyperlinkClickSpy = jasmine.createSpy('afterHyperlinkClick');
+                spreadsheet.afterHyperlinkClick = afterHyperlinkClickSpy;
+                spreadsheet.addHyperlink('www.syncfusion.com', 'A1');
+                spreadsheet.dataBind();
+                helper.invoke('selectRange', ['A1']);
+                const td = helper.invoke('getCell', [0, 0]).children[0];
+                td.click();
+                expect(afterHyperlinkClickSpy).not.toHaveBeenCalled();
+                done();
+            });
+            it('UI -> The beforeHyperlinkClick event is not preventing the hyperlink navigation action', (done: Function) => {
+                spreadsheet = helper.getInstance();
+                spreadsheet.beforeHyperlinkClick = (args: BeforeHyperlinkArgs): void => {
+                    args.cancel = true;
+                };
+                let afterHyperlinkClickSpy = jasmine.createSpy('afterHyperlinkClick');
+                spreadsheet.afterHyperlinkClick = afterHyperlinkClickSpy;
+                helper.setAnimationToNone('#' + helper.id + '_contextmenu');
+                helper.openAndClickCMenuItem(0, 0, [12]);
+                expect(afterHyperlinkClickSpy).not.toHaveBeenCalled();
+                done();
+            });
+        });
     });
 });

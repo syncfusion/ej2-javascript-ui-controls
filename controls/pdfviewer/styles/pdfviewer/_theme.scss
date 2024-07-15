@@ -513,7 +513,9 @@ $lg-desktop: 1399.98;
   .e-pv-formdesigner-toolbar.e-toolbar .e-toolbar-items .e-toolbar-item .e-pv-tbar-btn.e-btn {
     height: $pv-toolbar-btn-height;
     min-width: $pv-toolbar-btn-width;
-    width: $pv-toolbar-btn-width;
+    @if ($skin-name != 'fluent2') {
+      width: $pv-toolbar-btn-width;
+    }
     @if $skin-name == 'FluentUI' {
       line-height: $pv-toolbar-btn-height;
       min-width: 40px;
@@ -1431,7 +1433,8 @@ $lg-desktop: 1399.98;
     padding: $pv-thumbnail-view-button-selection-padding;
   }
 
-  .e-pv-tbar-btn.e-pv-thumbnail-view-button.e-btn:focus
+  .e-pv-tbar-btn.e-pv-thumbnail-view-button.e-btn:focus,
+  .e-pv-tbar-btn.e-pv-organize-view-button.e-btn:focus
   {
     background: $pv-thumbnail-view-button-selection-background;
     border: $pv-thumbnail-view-button-selection-border;
@@ -1794,7 +1797,9 @@ $lg-desktop: 1399.98;
   .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item .e-menu-icon,
   .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item.e-focused .e-menu-icon,
   .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item.e-focused .e-caret,
-  .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item .e-caret {
+  .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item .e-caret,
+  .e-pv-annotation-comment-panel-container .e-pv-tbar-btn,
+  .e-pv-comment-panel-title-container .e-pv-annotation-tools-close-icon.e-pv-icon {
     color: $pv-icon-color;
     @if ($skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark') {
       box-shadow: none;
@@ -1858,12 +1863,17 @@ $lg-desktop: 1399.98;
   .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item.e-focused .e-menu-icon:focus,
   .e-input-group.e-control-wrapper.e-pv-prop-dropdown.e-ddl.e-valid-input:not(.e-input-focus):hover,
   .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item.e-focused .e-caret:focus,
-  .e-input-group.e-control-wrapper.e-pv-prop-dropdown-rtl.e-ddl.e-valid-input:not(.e-input-focus):hover {
+  .e-input-group.e-control-wrapper.e-pv-prop-dropdown-rtl.e-ddl.e-valid-input:not(.e-input-focus):hover,
+  .e-pv-annotation-comment-panel-container .e-pv-tbar-btn:hover,
+  .e-pv-annotation-comment-panel-container .e-pv-tbar-btn:focus {
     @if $skin-name == 'bootstrap4' {
       color: $pv-icon-color-hover;
     }
     @if $skin-name == 'bootstrap5' {
       color: $white;
+    }
+    @if $skin-name == 'fluent2' {
+      color: var(--color-sf-toolbar-icon-color);
     }
     @if $skin-name == 'FluentUI' {
       color: $pv-item-selection-color;
@@ -1876,11 +1886,19 @@ $lg-desktop: 1399.98;
     @if $skin-name == 'bootstrap4' {
       color: $pv-icon-color-hover;
     }
-    @if $skin-name == 'bootstrap5' {
+    @if ($skin-name == 'bootstrap5') {
       color: $pv-icon-color;
     }
     @if $skin-name == 'FluentUI' {
       color: $pv-item-selection-color;
+    }
+  }
+
+  .e-pv-toolbar .e-pv-tbar-btn.e-pv-tbar-btn:focus-visible,
+  .e-pv-annotation-toolbar .e-pv-tbar-btn.e-pv-tbar-btn:focus-visible,
+  .e-pv-formdesigner-toolbar .e-pv-tbar-btn.e-pv-tbar-btn:focus-visible {
+    @if ($skin-name == 'fluent2') {
+      color: $pv-icon-color;
     }
   }
 
@@ -1889,6 +1907,9 @@ $lg-desktop: 1399.98;
   .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item.e-focused:hover .e-caret {
     @if $skin-name == 'bootstrap4' {
       color: $pv-icon-color-hover;
+    }
+    @if $skin-name == 'fluent2' {
+      color: var(--color-sf-toolbar-icon-color);
     }
   }
 
@@ -2241,8 +2262,11 @@ $lg-desktop: 1399.98;
     border-bottom: 2px solid;
     margin-top: 0;
     padding-top: 5px;
-    @if ($skin-name=='bootstrap5'or $theme-name=='fluent2') {
+    @if ($skin-name=='bootstrap5') {
       margin-top: -4px;
+      padding-top: 0;
+    }
+    @if ($theme-name=='fluent2') {
       padding-top: 0;
     }
     @if $skin-name == 'FluentUI' {
@@ -2256,7 +2280,12 @@ $lg-desktop: 1399.98;
       line-height: 1.71em;
     }
     border-bottom: 2px solid;
-    margin-top: 0;
+    @if ($skin-name == 'fluent2') {
+      margin-top: 5px;
+    }
+    @else {
+      margin-top: 0;
+    }
     padding-top: 1px;
     vertical-align: initial;
     @if $skin-name == 'FluentUI' {
@@ -2268,8 +2297,11 @@ $lg-desktop: 1399.98;
   .e-pv-properties-color-container-style-prop .e-btn-icon.e-pv-annotation-thickness-icon.e-pv-icon {
     margin-top: 0;
     padding-top: 7px;
-    @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' or $theme-name == 'fluent2' {
+    @if $skin-name == 'bootstrap5' or $skin-name == 'FluentUI' {
       padding-top: 0;
+    }
+    @if ( or $theme-name == 'fluent2'){
+      padding-top: 5px;
     }
     vertical-align: initial;
   }
@@ -2280,6 +2312,13 @@ $lg-desktop: 1399.98;
       padding-top: 0;
     }
     vertical-align: initial;
+  }
+
+  .e-pv-annotation-thickness-popup-container-mobile,
+  .e-pv-annotation-opacity-popup-container-mobile {
+    @if $skin-name != 'Material3' {
+      background-color: $pv-annotation-opacity-popup-background-color;
+    }
   }
 
   .e-pv-annotation-opacity-popup-container,
@@ -2640,13 +2679,6 @@ $lg-desktop: 1399.98;
     }
   }
 
-  .e-template.e-toolbar-item:not(.e-pv-shape-template-container) .e-pv-annotation-shapes-container,
-  .e-template.e-toolbar-item:not(.e-pv-calibrate-template-container) .e-pv-annotation-calibrate-container {
-    @if ($theme-name == 'fluent2') {
-      line-height: 28px;
-    }
-  }
-
   .e-pv-custom-annotation-stamp-container.e-menu-container ul .e-menu-item .e-menu-icon .e-caret,
   .e-pv-custom-annotation-stamp-container.e-menu-container ul .e-menu-item.e-focused .e-menu-icon .e-caret {
     @if ($skin-name == 'bootstrap5') {
@@ -2729,7 +2761,6 @@ $lg-desktop: 1399.98;
     line-height: $pv-prop-color-picker-line-height;
     @if ($skin-name == 'bootstrap5') {
       background: $transparent;
-      border: 1px solid $border-light;
       border-radius: 4px;
       box-sizing: border-box;
       color: $content-text-color;
@@ -2741,6 +2772,13 @@ $lg-desktop: 1399.98;
       width: 54px;
       padding: 4px;
       padding-left: 7px;
+    }
+  }
+
+  .e-pv-properties-line-fill-color-container .e-dropdown-btn.e-btn:disabled,
+  .e-pv-properties-line-stroke-color-container .e-dropdown-btn.e-btn:disabled{
+    @if ($skin-name == 'bootstrap5') {
+      color: $pv-icon-color;
     }
   }
 
@@ -3275,7 +3313,7 @@ $lg-desktop: 1399.98;
   .e-pv-annotation-stamp-container .e-menu-parent.e-menu .e-menu-item,
   .e-pv-annotation-stamp-container .e-menu-parent.e-menu .e-menu-item .e-pv-stamp-icon,
   .e-pv-annotation-stamp-container .e-menu-parent.e-menu .e-menu-item .e-caret {
-    @if $skin-name != 'Material3' {
+    @if ($skin-name != 'Material3' and $skin-name != 'fluent2') {
       line-height: $pv-annot-toolbar-dropdown-btn-line-height;
     }
   }
@@ -3377,14 +3415,6 @@ $lg-desktop: 1399.98;
   .e-pv-mobile-view .e-pv-password-popup.e-dialog .e-dlg-header-content .e-btn.e-dlg-closeicon-btn,
   .e-pv-mobile-view .e-pv-corrupted-popup.e-dialog .e-dlg-header-content .e-btn.e-dlg-closeicon-btn {
     padding-top: $pv-dialog-pop-close-icon-padding-top-mobile;
-  }
-
-  .e-pv-properties-form-field-window .e-dlg-header-content .e-btn.e-dlg-closeicon-btn,
-  .e-pv-signature-window .e-dlg-header-content .e-btn.e-dlg-closeicon-btn {
-    @if $theme-name == 'fluent2' {
-      padding-left: 24px !important;/* stylelint-disable-line declaration-no-important */
-      padding-top: 24px !important;/* stylelint-disable-line declaration-no-important */
-    }
   }
 
   .e-pv-organize-window .e-dlg-header-content .e-btn.e-dlg-closeicon-btn{
@@ -3729,6 +3759,8 @@ $lg-desktop: 1399.98;
     padding-right: 7px;
     @if $skin-name == 'Material3' {
       font-size: $text-xs;
+      padding-left: 12px;
+      padding-right: 12px;
     }
   }
 
@@ -3871,7 +3903,7 @@ $lg-desktop: 1399.98;
   .e-pv-comments-panel-text {
     font-size: 15px;
     padding-left: 85px;
-    color: rgba(var(--color-sf-on-surface-variant));
+    color: var(--color-sf-content-text-color-alt1);
   }
 
   .e-pv-comments-content-container {
@@ -4059,8 +4091,34 @@ $lg-desktop: 1399.98;
     }
   }
 
+  .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item .e-caret {
+    @if ($skin-name == 'fluent2') {
+      margin-top: -4px;
+    }
+  }
+
+  .e-pv-custom-annotation-stamp-container.e-menu-container ul .e-menu-item .e-pv-stamp-icon,
+  .e-pv-custom-annotation-stamp-container.e-menu-container ul .e-menu-item .e-caret {
+    @if ($skin-name == 'fluent2') {
+      margin-top: -5px;
+    }
+  }
+
+  .e-pv-annotation-shapes-container.e-btn.e-icon-btn,
+  .e-pv-annotation-calibrate-container.e-btn.e-icon-btn,
+  .e-pv-annotation-handwritten-container.e-btn.e-icon-btn {
+    @if ($skin-name == 'fluent2') {
+      padding-top: 8px;
+    }
+  }
+
   .e-menu-icon.e-pv-stamp-icon.e-pv-icon {
-    margin-top: $pv-stamp-icon-margin-top;
+    @if ($skin-name == 'fluent2') {
+      margin-top: -4px;
+    }
+    @else {
+      margin-top: $pv-stamp-icon-margin-top;
+    }
     @if $theme-name != 'fluent2'{
       padding-left: 7px;
     }
@@ -4384,7 +4442,9 @@ $lg-desktop: 1399.98;
     @if $skin-name == 'bootstrap5' {
       color: $pv-icon-color;
       height: 32px;
-      line-height: 32px;
+      @if ($theme-name != 'fluent2') {
+        line-height: 32px;
+      }
     }
     @else {
       color: $pv-icon-color;
@@ -4439,13 +4499,6 @@ $lg-desktop: 1399.98;
   .e-pv-stamp-template-container .e-menu-container .e-menu {
     background-color: $pv-annotation-dropdown-background-color;
     border-color: $pv-annotation-dropdown-border-color;
-  }
-
-  .e-bigger .e-pv-custom-annotation-stamp-container.e-menu-container ul .e-menu-item .e-pv-stamp-icon,
-  .e-bigger .e-pv-custom-annotation-stamp-container.e-menu-container ul .e-menu-item .e-caret {
-    @if $theme-name == 'fluent2' {
-      margin-top: -10px;
-    }
   }
 
   .e-pv-custom-annotation-stamp-container.e-menu-container .e-ul .e-menu-item.e-selected,
@@ -5016,6 +5069,7 @@ $lg-desktop: 1399.98;
 
   .e-pv-properties-form-field-group-btn-div {
     display: grid;
+    align-content: space-between;
   }
 
   .e-pv-properties-form-field-option-dropdown-list-div {
@@ -5374,7 +5428,6 @@ $lg-desktop: 1399.98;
     }
     @if $theme-name == 'fluent2'{
       font-family: $font-family;
-      margin-left: 7px;
     }
   }
 

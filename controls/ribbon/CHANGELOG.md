@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.1.42 (2024-07-16)
+
+### Ribbon
+
+#### Bug Fixes
+
+- `#I606110` - Now the issue with programmatically updating the Gallery item using `updateItem` method has been resolved.
+
 ## 26.1.41 (2024-07-09)
 
 ### Ribbon

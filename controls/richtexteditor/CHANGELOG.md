@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 26.1.42 (2024-07-16)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I609924` - Now, the console error while closing the Grid Edit dialog with Rich Text Editor has now been resolved..
+
+- `#I607525` - Now, the placeholder properly shows up after cleaning all the content in the Rich Text Editor.
+
 ## 26.1.41 (2024-07-09)
 
 ### RichTextEditor

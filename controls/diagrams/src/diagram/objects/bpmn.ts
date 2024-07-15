@@ -1261,6 +1261,38 @@ export class BpmnDiagrams {
         const elementWrapper: DiagramElement = actualObject.wrapper.children[0];
         const actualShape: BpmnShapes = (actualObject.shape as BpmnShapeModel).shape ||
         ((actualObject.shape as DiagramShape).bpmnShape);
+        //Bug 892767: Unable to update BPMN text annotation direction dynamically
+        //To update the text annotation direction and target dynamically.
+        if(newShape.textAnnotation && actualShape === 'TextAnnotation'){
+            if(newShape.textAnnotation.textAnnotationDirection !== undefined){
+            //Modify text annotation path based on text annotation direction
+            this.setAnnotationPath(actualObject.wrapper.bounds, actualObject.wrapper.children[0] as Canvas, actualObject, actualObject.shape as BpmnShape, (actualObject.shape as BpmnShape).textAnnotation.textAnnotationDirection, diagram);
+            //Reset the id of path element
+            (actualObject.wrapper.children[0] as Canvas).children[0].id = actualObject.id+'_textannotation_path';
+            let newValue:Node = {ports:{0:{offset:actualObject.ports[0].offset}} as PointPortModel} as Node;
+            diagram.nodePropertyChange(actualObject, {} as Node, newValue);
+            }
+            if(newShape.textAnnotation.textAnnotationTarget !== undefined){
+                const sourceNode = diagram.nameTable[newShape.textAnnotation.textAnnotationTarget];
+                if(sourceNode && sourceNode.shape.type === 'Bpmn'){
+                    const textAnnotationConnector = diagram.nameTable[actualObject.inEdges[0]]
+                    if (textAnnotationConnector){
+                        //To modify the sourceID of text annotation connector
+                        textAnnotationConnector.sourceID = sourceNode.id;
+                        diagram.connectorPropertyChange(textAnnotationConnector, {} as Connector, {sourceID:sourceNode.id} as Connector);
+                    }
+                }else if (newShape.textAnnotation.textAnnotationTarget === ''){
+                    const textAnnotationConnector = diagram.nameTable[actualObject.inEdges[0]];
+                    if (textAnnotationConnector) {
+                        const oldParent = diagram.nameTable[(oldObject.shape as BpmnShape).textAnnotation.textAnnotationTarget];
+                        const index = oldParent.outEdges.indexOf(textAnnotationConnector.id);
+                        oldParent.outEdges.splice(index, 1);
+                        textAnnotationConnector.sourceID = '';
+                        diagram.connectorPropertyChange(textAnnotationConnector, {} as Connector, { sourceID: '' } as Connector);
+                    }
+                }
+            }
+        }
         const sizeChanged: boolean = changedProp.width !== undefined || changedProp.height !== undefined;
         if ((newShape.shape === 'Gateway') &&
             newShape.gateway) {

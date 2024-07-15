@@ -100,32 +100,38 @@ export class MapsTooltip {
                     layer.shapePropertyPath : [layer.shapePropertyPath]) as string[];
                 if (!isNullOrUndefined(properties)) {
                     for (let k: number = 0; k < properties.length; k++) {
-                        for (let i: number = 0; i < layer['dataSource']['length']; i++) {
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            const data: any[] = layer.dataSource[i as number];
-                            const dataPath: string = (layer.shapeDataPath.indexOf('.') > -1 ) ?
-                                (getValueFromObject(data, layer.shapeDataPath)) : data[layer.shapeDataPath];
-                            const dataPathValue: string = !isNullOrUndefined(dataPath) && isNaN(data[layer.shapeDataPath])
-                                ? dataPath.toLowerCase() : dataPath;
-                            const propertyValue: string = !isNullOrUndefined(value[properties[k as number]])
-                                && isNaN(value[properties[k as number]]) ? value[properties[k as number]].toLowerCase() :
-                                value[properties[k as number]];
-                            if (dataPathValue === propertyValue) {
-                                isShape = true; index = i;
-                                k = properties.length;
-                                break;
+                        if (!isNullOrUndefined(layer.dataSource)) {
+                            for (let i: number = 0; i < layer['dataSource']['length']; i++) {
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                const data: any[] = layer.dataSource[i as number];
+                                const dataPath: string = (layer.shapeDataPath.indexOf('.') > -1) ?
+                                    (getValueFromObject(data, layer.shapeDataPath)) : data[layer.shapeDataPath];
+                                const dataPathValue: string = !isNullOrUndefined(dataPath) && isNaN(data[layer.shapeDataPath])
+                                    ? dataPath.toLowerCase() : dataPath;
+                                const propertyValue: string = !isNullOrUndefined(value[properties[k as number]])
+                                    && isNaN(value[properties[k as number]]) ? value[properties[k as number]].toLowerCase() :
+                                    value[properties[k as number]];
+                                if (dataPathValue === propertyValue) {
+                                    isShape = true; index = i;
+                                    k = properties.length;
+                                    break;
+                                }
                             }
                         }
                     }
                     index = isShape ? index : null;
-                    if (!isNullOrUndefined(layer.dataSource[index as number])) {
-                        templateData = JSON.parse(JSON.stringify(layer.dataSource[index as number]));
-                        for (keyString in value) {
-                            // eslint-disable-next-line no-prototype-builtins
-                            if (!templateData.hasOwnProperty(keyString)) {
-                                templateData[keyString as string] = value[keyString as string];
+                    if (layer['dataSource'] && layer['dataSource']['length'] > 0) {
+                        if (!isNullOrUndefined(layer.dataSource[index as number])) {
+                            templateData = JSON.parse(JSON.stringify(layer.dataSource[index as number]));
+                            for (keyString in value) {
+                                // eslint-disable-next-line no-prototype-builtins
+                                if (!templateData.hasOwnProperty(keyString)) {
+                                    templateData[keyString as string] = value[keyString as string];
+                                }
                             }
                         }
+                    } else {
+                        templateData = value;
                     }
                 }
                 if (option.visible && ((!isNullOrUndefined(index) && !isNaN(index)) || (!isNullOrUndefined(value)))) {

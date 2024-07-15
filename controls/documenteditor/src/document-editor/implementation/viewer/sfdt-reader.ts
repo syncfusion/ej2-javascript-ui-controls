@@ -1336,7 +1336,12 @@ export class SfdtReader {
                     this.viewer.documentHelper.getBase64(imgStr,image.width, image.height).then((imageUrlString: string) => {
                         this.viewer.documentHelper.images.get(parseInt(image.imageString))[1] =imageUrlString;
                     });
-                    imgStr += `?t=${new Date().getTime()}`;
+                    const url = new URL(imgStr);
+                    if (url.search.length > 0) {
+                        imgStr += `&t=${new Date().getTime()}`;
+                    } else {
+                        imgStr += `?t=${new Date().getTime()}`;
+                    }
                 }
                 image.element.src = imgStr;
                 image.top = inline[topProperty[this.keywordIndex]];

@@ -100,7 +100,7 @@ export class Selection {
         const rowIndexes: string = 'rowIndexes';
         const index: number[] = (this.parent.selectionSettings.type === 'Multiple' && !isNullOrUndefined(args[rowIndexes as string])) ?
             args[rowIndexes as string] : [args.rowIndex];
-        this.addRemoveClass(index);
+        this.addRemoveClass(index ,args['name']);
         this.selectedRowIndexes = extend([], this.getSelectedRowIndexes(), [], true) as number[];
         this.parent.setProperties({ selectedRowIndex: this.parent.treeGrid.grid.selectedRowIndex }, true);
         if (this.isMultiShiftRequest) {
@@ -368,7 +368,7 @@ export class Selection {
                     this.parent.treeGrid.grid.selectionModule.addRowsToSelection([rIndex]);
                     const isUnSelected: boolean = this.selectedRowIndexes.indexOf(rIndex) > -1;
                     if (isUnSelected) {
-                        this.addRemoveClass([rIndex]);
+                        this.addRemoveClass([rIndex],e['name']);
                     }
                 }
             }
@@ -402,26 +402,32 @@ export class Selection {
         this.selectRows(this.selectedRowIndexes);
     }
 
-    private addRemoveClass(records: number[]): void {
+    private addRemoveClass(records: number[], request? : string): void {
         if (typeof(records) == 'number') {
             records = [records];
         }
-        const selectedRecords: any = this.parent.treeGrid.grid.getSelectedRecords();
-        const flatRecords: any = this.parent.enableVirtualization && ((this.parent.sortSettings.columns.length !== 0 || this.parent.filterSettings.columns.length !== 0) || this.parent.isCollapseAll) ?
-            this.parent.currentViewData : this.parent.flatData;
-        let indexes: any = this.parent.selectionSettings.persistSelection ? selectedRecords.map((record: any) => flatRecords.indexOf(record)) : this.getSelectedRowIndexes();
-        indexes = this.parent.enableVirtualization && (this.parent.sortSettings.columns.length !== 0 || this.parent.filterSettings.columns.length !== 0)
-            ? this.getSelectedRowIndexes() : indexes; 
         const ganttRow: HTMLElement[] = [].slice.call(this.parent.ganttChartModule.chartBodyContent.querySelector('tbody').children);
         for (let i: number = 0; i < records.length; i++) {
             const selectedRow: HTMLElement = ganttRow.filter((e: HTMLElement) =>
                 parseInt(e.getAttribute('data-rowindex'), 10) === records[parseInt(i.toString(), 10)])[0];
             if (!isNullOrUndefined(selectedRow)) {
-                if (indexes.indexOf(records[parseInt(i.toString(), 10)]) > -1) {
+                let persist: boolean = false;
+                const index: number = this.getSelectedRowIndexes().indexOf(records[parseInt(i.toString(), 10)]);
+                const selectedRecordLen: number = this.getSelectedRecords().length;
+                if (this.parent.selectionSettings.persistSelection && this.parent.selectionSettings.enableToggle && !isNullOrUndefined(request) &&
+                    this.parent.selectionSettings.type !== 'Multiple' && selectedRecordLen > 0) {
+                    persist = true;
+                }
+                if (this.parent.selectionSettings.enableToggle && this.parent.selectionSettings.persistSelection &&
+                    (index > -1 && this.parent.selectionSettings.type === 'Single' && persist) ||
+                    (index > -1 && ((!isNullOrUndefined(request) && this.parent.selectionSettings.type === 'Multiple')))) {
                     this.addClass(selectedRow);
                 }
-                else {
+                else if (isNullOrUndefined(request)) {
                     this.removeClass(selectedRow);
+                }
+                else if (index > -1) {
+                    this.addClass(selectedRow);
                 }
             }
         }

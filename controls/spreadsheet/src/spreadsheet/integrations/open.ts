@@ -179,11 +179,11 @@ export class Open {
             return;
         }
         if (openError[5] !== response.data) {
+            this.parent.notify(clearFormulaDependentCells, { cellRef: null, isOpen: true });
             if (!response.isOpenFromJson) {
                 this.parent.trigger('openComplete', { response: response });
                 this.parent.notify(completeAction, { response: response, action: 'import' });
             }
-            this.parent.notify(clearFormulaDependentCells, { cellRef: null, isOpen: true });
             if (this.parent.isProtected && this.parent.showSheetTabs && response.isOpenFromJson) {
                 this.parent.element.querySelector('.e-add-sheet-tab').setAttribute('disabled', 'true');
                 this.parent.element.querySelector('.e-add-sheet-tab').classList.add('e-disabled');

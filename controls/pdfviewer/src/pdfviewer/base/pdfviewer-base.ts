@@ -1091,6 +1091,7 @@ export class PdfViewerBase {
         } else {
             this.updateViewerContainerSize();
         }
+        this.viewerContainer.style.height = this.updatePageHeight(this.pdfViewer.element.getBoundingClientRect().height, 0);
         const toolbarModule: any = this.pdfViewer.toolbarModule;
         if (toolbarModule) {
             if (isBlazor()) {
@@ -1777,21 +1778,21 @@ export class PdfViewerBase {
             const waitingPopup: HTMLElement = this.getElement('_pageDiv_' + pageNumber).firstChild.firstChild as HTMLElement;
             if (pageCurrentRect.top < 0) {
                 if (this.toolbarHeight + (this.viewerContainer.clientHeight / 2) - pageCurrentRect.top < pageCurrentRect.height) {
-                    waitingPopup.style.top = ((this.viewerContainer.clientHeight / 2) - pageCurrentRect.top) - this.toolbarHeight + 'px';
+                    waitingPopup.style.top = ((this.getElement('_pageDiv_' + pageNumber).clientHeight / 2) - this.getElement('_pageDiv_' + pageNumber).clientTop) - this.toolbarHeight + 'px';
                 } else {
                     if (this.toolbarHeight + (pageCurrentRect.bottom / 2) - pageCurrentRect.top < pageCurrentRect.height) {
-                        waitingPopup.style.top = ((pageCurrentRect.bottom / 2) - pageCurrentRect.top) - this.toolbarHeight + 'px';
+                        waitingPopup.style.top = ((pageCurrentRect.bottom / 2) - this.getElement('_pageDiv_' + pageNumber).clientTop) - this.toolbarHeight + 'px';
                     }
                 }
             } else {
-                waitingPopup.style.top = this.viewerContainer.clientHeight / 2 + 'px';
+                waitingPopup.style.top = this.getElement('_pageDiv_' + pageNumber).clientHeight / 2 + 'px';
             }
             if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && pageCurrentRect.width > this.viewerContainer.clientWidth) {
-                waitingPopup.style.left = (this.viewerContainer.clientWidth / 2) + (this.viewerContainer.scrollLeft) + 'px';
+                waitingPopup.style.left = (this.getElement('_pageDiv_' + pageNumber).clientWidth / 2) + (this.viewerContainer.scrollLeft) + 'px';
             } else if (this.getZoomFactor() > 1.25 && pageCurrentRect.width > this.viewerContainer.clientWidth) {
-                waitingPopup.style.left = this.viewerContainer.clientWidth / 2 + 'px';
+                waitingPopup.style.left = this.getElement('_pageDiv_' + pageNumber).clientWidth / 2 + 'px';
             } else {
-                waitingPopup.style.left = pageCurrentRect.width / 2 + 'px';
+                waitingPopup.style.left = this.getElement('_pageDiv_' + pageNumber).clientWidth / 2 + 'px';
             }
         }
     }
@@ -1876,7 +1877,9 @@ export class PdfViewerBase {
             } else {
                 hideSpinner(waitingPopup);
             }
-            this.updateWaitingPopup(pageIndex);
+            if(!this.pdfViewer.magnificationModule.isWaitingPopupUpdated) {
+                this.updateWaitingPopup(pageIndex);
+            }
         }
     }
 
@@ -1912,12 +1915,36 @@ export class PdfViewerBase {
      * @returns {void}
      * @private
      */
-    public updateScrollTop(pageNumber: number): void {
+    public updateScrollTop(pageNumber: number, needToScroll?: boolean): void {
         if (this.pageSize[parseInt(pageNumber.toString(), 10)] != null) {
             this.renderElementsVirtualScroll(pageNumber);
-            this.viewerContainer.scrollTop = this.getPageTop(pageNumber);
+            if (isNullOrUndefined(needToScroll)) {
+                this.viewerContainer.scrollTop = this.getPageTop(pageNumber);
+            }
             if (this.renderedPagesList.indexOf(pageNumber) === -1) {
                 this.createRequestForRender(pageNumber);
+            }
+            let pageIndex: number = pageNumber + 1;
+            if (pageIndex < this.pdfViewer.pageCount) {
+                if (this.renderedPagesList.indexOf(pageIndex) === -1) {
+                    this.createRequestForRender(pageIndex);
+                }
+            }
+            if (this.pageSize[parseInt(pageIndex.toString(), 10)]) {
+                let pageTop: number = this.getPageTop(pageIndex);
+                const viewerHeight: number = this.viewerContainer.clientHeight + this.getPageTop(pageIndex - 1);
+                while (viewerHeight > pageTop) {
+                    if (this.pageSize[parseInt(pageIndex.toString(), 10)]) {
+                        this.renderPageElement(pageIndex);
+                        if (this.renderedPagesList.indexOf(pageIndex) === -1) {
+                            this.createRequestForRender(pageIndex);
+                        }
+                        pageTop = this.getPageTop(pageIndex);
+                        pageIndex = pageIndex + 1;
+                    } else {
+                        break;
+                    }
+                }
             }
             setTimeout(
                 () => {
@@ -6488,7 +6515,7 @@ export class PdfViewerBase {
         if (currentPage) {
             currentPage.style.visibility = 'visible';
         }
-        if (this.isViewerMouseDown || this.isViewerMouseWheel) {
+        if (this.isViewerMouseDown || (!this.isViewerMouseDown && !this.getPinchZoomed() && !this.getPinchScrolled() && !this.getPagesPinchZoomed() || this.isViewerMouseWheel)) {
             if (this.getRerenderCanvasCreated() && !this.isPanMode) {
                 this.pdfViewer.magnificationModule.clearIntervalTimer();
             }

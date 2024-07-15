@@ -1,7 +1,7 @@
 import { createElement, isNullOrUndefined, extend, compile, getValue, setValue, SanitizeHtmlHelper, append } from '@syncfusion/ej2-base';
 import { formatUnit, addClass } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
-import { isScheduledTask } from '../base/utils';
+import { isScheduledTask, getTaskData } from '../base/utils';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import * as cls from '../base/css-constants';
 import { DateProcessor } from '../base/date-processor';
@@ -503,7 +503,9 @@ export class ChartRows extends DateProcessor {
         const tr: Element = this.ganttChartTableBody.querySelectorAll('tr')[this.parent.currentViewData.indexOf(data)];
         const args: CObject = {
             requestType: requestType,
-            rowData: data
+            rowData: data,
+            modifiedRecords: this.parent.editedRecords,
+            modifiedTaskData: getTaskData(this.parent.editedRecords, true)     
         };
         this.triggerQueryTaskbarInfoByIndex(tr, data);
         if (this.parent.selectionModule) {
@@ -1078,14 +1080,20 @@ export class ChartRows extends DateProcessor {
         const className: string = (this.parent.gridLines === 'Horizontal' || this.parent.gridLines === 'Both') ?
             'e-chart-row-border' : '';
         /* eslint-disable-next-line */
-        const rows: any = this.parent.treeGrid.grid.contentModule.getRows()[i as number];
-        let activecls: string;
-        if (rows && rows.isSelected) {
-            activecls = 'e-active';
-        }
-        else {
-            activecls = '';
-        }
+         let activecls: string;
+         let rows: any;
+         setTimeout(() => {
+             if (!isNullOrUndefined(this.parent.treeGrid.grid) && !isNullOrUndefined(this.parent.treeGrid.grid.contentModule) && 
+                 !isNullOrUndefined(this.parent.treeGrid.grid.contentModule.getRows())) {
+                 rows = this.parent.treeGrid.grid.contentModule.getRows()[i as number];
+                 if (rows && rows.isSelected) {
+                     activecls = 'e-active';
+                 }
+                 else {
+                     activecls = '';
+                 }
+             }
+         }, 0);
         table.innerHTML = '<tr class="' + this.getRowClassName(this.templateData) + ' ' + cls.chartRow + ' ' + (activecls) + '"' +
         'style="display:' + this.getExpandDisplayProp(this.templateData) + ';height:' +
         this.parent.rowHeight + 'px;">' +

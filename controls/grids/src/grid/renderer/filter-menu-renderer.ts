@@ -80,9 +80,6 @@ export class FilterMenuRenderer {
 
     private closeDialog(target?: Element): void {
         if (!this.dlgObj) { return; }
-        if (this.parent.isReact || this.parent.isVue) {
-            clearReactVueTemplates(this.parent, ['filterTemplate']);
-        }
         const elem: Element = document.getElementById(this.dlgObj.element.id);
         if (this.dlgObj && !this.dlgObj.isDestroyed && elem) {
             const argument: Object = { cancel: false, column: this.col, target: target, element: elem };
@@ -94,8 +91,15 @@ export class FilterMenuRenderer {
                 this.parent.off(events.cBoxFltrComplete, this.actionComplete);
                 this.isMenuCheck = false;
             }
-            this.dlgObj.destroy();
-            remove(elem);
+            if ((this.parent.isReact || this.parent.isVue) && this.col.filterTemplate && this.col.filterTemplate instanceof Function) {
+                (this.parent as any).clearTemplate(['filterTemplate'], undefined, () => {
+                    this.dlgObj.destroy();
+                });
+            }
+            else {
+                this.dlgObj.destroy();
+                remove(elem);
+            }
         }
         this.parent.notify(events.filterDialogClose, {});
     }
@@ -171,7 +175,10 @@ export class FilterMenuRenderer {
             && !isNullOrUndefined(column.filter.ui.create as Function)))) {
             this.afterRenderFilterUI();
         }
-        if (!isNullOrUndefined(column.filterTemplate)) {
+        const isReactCompiler: boolean = this.parent.isReact && typeof (column.filterTemplate) !== 'string';
+        const isReactChild: boolean = this.parent.parentDetails && this.parent.parentDetails.parentInstObj &&
+                this.parent.parentDetails.parentInstObj.isReact;
+        if (!isNullOrUndefined(column.filterTemplate) && !(isReactCompiler || isReactChild)) {
             (this.dlgDiv.querySelector('.e-flmenu-valuediv').firstElementChild as HTMLElement).focus();
             this.dlgDiv.querySelector('.e-flmenu-valuediv').firstElementChild.classList.add('e-input-focus');
         }

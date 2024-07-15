@@ -2,6 +2,38 @@
 
 ## [Unreleased]
 
+## 26.1.42 (2024-07-16)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#I606210` - Fixed issue with the `GroupCheckBox` not being disabled properly.
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I607846` - Issue with "`actionComplete`event is not properly triggered in the dual listbox sample" has been resolved.
+- `#I548014` - Issue with "Performance issue with dual list box component with large records" has been improved.
+- `#I608380` - Issue with "listbox script error thrown when navigating to another page" has been resolved.
+- `#I600939` - Resolved the `Flickering` issue occurred in listbox while drag and drop.
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I605652` - Resolved the issue where updating the `value` was not working properly.
+
+### DropdownList
+
+#### Bug Fixes
+
+- `#I606941` - Fixed issue with ItemTemplate causing console error when changing dataSource in beforeOpen event.
+- `#I606285` - The text alignment issue in the Dropdown Tree component has been resolved.
+
+- `#I600290` - Fixed issue where the index property was not updating when changing the data source dynamically.
+
 ## 26.1.41 (2024-07-09)
 
 ### DropDownTree

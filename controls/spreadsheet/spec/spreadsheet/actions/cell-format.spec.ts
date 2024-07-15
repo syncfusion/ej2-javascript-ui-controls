@@ -79,7 +79,7 @@ describe('Cell Format ->', () => {
         });
     });
 
-    fdescribe('Set Border Method->', () => {
+    describe('Set Border Method->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
         });
