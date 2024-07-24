@@ -4360,30 +4360,43 @@ export class FormDesigner {
             }
             for (let i: number = 0; i < formFieldsData.length; i++) {
                 const currentData: any = formFieldsData[parseInt(i.toString(), 10)].FormField;
-                if (!isNullOrUndefined(currentData) && isNullOrUndefined(currentData.signatureBound) && currentData.signatureType === "Image") {
-                    const imageUrl: string = (currentData.value.toString()).split(',')[1];
-                    let image: PdfBitmap = new PdfBitmap(imageUrl);
-                    let boundsObjects : any = {
-                        x: currentData.lineBound.X, y: currentData.lineBound.Y,
-                        width: currentData.lineBound.Width, height: currentData.lineBound.Height
-                    };
-                    //Draw image in page graphics
-                    if (this.pdfViewer.signatureFitMode === 'Default') {
-                        const padding: number = Math.min(boundsObjects.height / this.pdfViewer.formFieldsModule.paddingDifferenceValue, boundsObjects.width / this.pdfViewer.formFieldsModule.paddingDifferenceValue);
-                        const maxHeight: number = boundsObjects.height - padding;
-                        const maxWidth: number = boundsObjects.width - padding;
-                        const imageWidth: number = image.width;
-                        const imageHeight: number = image.height;
-                        const beforeWidth: number = boundsObjects.width;
-                        const beforeHeight: number = boundsObjects.height;
-                        const ratio: number = Math.min(maxWidth / imageWidth, maxHeight / imageHeight);
-                        boundsObjects.width = imageWidth * ratio;
-                        boundsObjects.height = imageHeight * ratio;
-                        boundsObjects.x = boundsObjects.x + (beforeWidth - boundsObjects.width) / 2;
-                        boundsObjects.y = boundsObjects.y + (beforeHeight - boundsObjects.height) / 2;
+                if (!isNullOrUndefined(currentData)) {
+                    if ((currentData.formFieldAnnotationType === "SignatureField" || currentData.formFieldAnnotationType === "InitialField") && (isNullOrUndefined(currentData.signatureBound))) {
+                        const filteredField: FormFieldModel[] = this.pdfViewer.formFieldCollections.filter(function (field) {
+                            return field.id === currentData.id.split('_')[0];
+                        });
+                        if (!isNullOrUndefined(currentData.signatureType) && currentData.signatureType === "") {
+                            currentData.signatureType = filteredField[0].signatureType;
+                        }
+                        if (!isNullOrUndefined(currentData.value) && currentData.value === "") {
+                            currentData.value = filteredField[0].value;
+                        }
+                        if (currentData.signatureType === "Image") {
+                            const imageUrl: string = (currentData.value.toString()).split(',')[1];
+                            let image: PdfBitmap = new PdfBitmap(imageUrl);
+                            let boundsObjects: any = {
+                                x: currentData.lineBound.X, y: currentData.lineBound.Y,
+                                width: currentData.lineBound.Width, height: currentData.lineBound.Height
+                            };
+                            //Draw image in page graphics
+                            if (this.pdfViewer.signatureFitMode === 'Default') {
+                                const padding: number = Math.min(boundsObjects.height / this.pdfViewer.formFieldsModule.paddingDifferenceValue, boundsObjects.width / this.pdfViewer.formFieldsModule.paddingDifferenceValue);
+                                const maxHeight: number = boundsObjects.height - padding;
+                                const maxWidth: number = boundsObjects.width - padding;
+                                const imageWidth: number = image.width;
+                                const imageHeight: number = image.height;
+                                const beforeWidth: number = boundsObjects.width;
+                                const beforeHeight: number = boundsObjects.height;
+                                const ratio: number = Math.min(maxWidth / imageWidth, maxHeight / imageHeight);
+                                boundsObjects.width = imageWidth * ratio;
+                                boundsObjects.height = imageHeight * ratio;
+                                boundsObjects.x = boundsObjects.x + (beforeWidth - boundsObjects.width) / 2;
+                                boundsObjects.y = boundsObjects.y + (beforeHeight - boundsObjects.height) / 2;
+                            }
+                            currentData.signatureBound = boundsObjects;
+                            image = null;
+                        }
                     }
-                    currentData.signatureBound = boundsObjects;
-                    image = null;
                 }
                 currentData.Multiline = currentData.isMultiline;
                 if (currentData.isRequired) {

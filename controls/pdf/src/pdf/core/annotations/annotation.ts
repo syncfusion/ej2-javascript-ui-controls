@@ -11450,7 +11450,8 @@ export class PdfFreeTextAnnotation extends PdfComment {
                                this.bounds.height + (2 * 2));
             bounds = path._getBounds();
         } else {
-            bounds = [this.bounds.x, (this._page.size[1] - (this.bounds.y + this.bounds.height)), this.bounds.width, this.bounds.height];
+            bounds = [this.bounds.x + this._cropBoxValueX, ((this._page.size[1] + this._cropBoxValueY) -
+                (this.bounds.y + this.bounds.height)), this.bounds.width, this.bounds.height];
         }
         return bounds;
     }

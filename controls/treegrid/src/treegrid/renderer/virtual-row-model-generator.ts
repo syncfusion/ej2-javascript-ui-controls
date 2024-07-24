@@ -67,7 +67,7 @@ export class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
         const clear: boolean = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'reorder',
             'save', 'delete'].some((value: string) => action === value);
         if ((this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
-            && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent)) {
+        && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent)) {
             const model: string = 'model';
             const currentPage: number = this[`${model}`].currentPage;
             if (clear) {
@@ -77,14 +77,9 @@ export class TreeVirtualRowModelGenerator extends VirtualRowModelGenerator {
                 this.data = {};
                 this.groups = {};
             } else if (action === 'virtualscroll' && this.cache[parseInt(currentPage.toString(), 10)] &&
-                this.cache[parseInt(currentPage.toString(), 10)].length >
-                (((this.parent as Grid).contentModule) as VirtualContentRenderer).getBlockSize()) {
-                if (this.cache[parseInt(currentPage.toString(), 10)].length > (this.parent.contentModule).getBlockSize()) {
-                    this.cache[parseInt(currentPage.toString(), 10)] =
-                        this.cache[parseInt(currentPage.toString(), 10)].slice(0, (this.parent.contentModule).getBlockSize());
-                } else {
-                    delete this.cache[parseInt(currentPage.toString(), 10)];
-                }
+                    this.cache[parseInt(currentPage.toString(), 10)].length >
+                     (((this.parent as Grid).contentModule) as VirtualContentRenderer).getBlockSize()) {
+                delete this.cache[parseInt(currentPage.toString(), 10)];
             }
         } else {
             if (clear || action === 'virtualscroll') {

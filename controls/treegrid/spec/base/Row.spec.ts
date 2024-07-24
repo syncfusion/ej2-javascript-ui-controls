@@ -42,6 +42,7 @@ describe('TreeGrid Row module', () => {
             destroy(gridObj);
         });
     });
+
     it('memory leak', () => {
         profile.sample();
         const average: any = inMB(profile.averageChange);

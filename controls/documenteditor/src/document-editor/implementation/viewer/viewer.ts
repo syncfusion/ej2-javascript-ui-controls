@@ -3471,6 +3471,9 @@ export class DocumentHelper {
             this.viewerContainer.scrollLeft = scrollLeft + (this.pageContainer.offsetWidth / 100) * 15 + scrollBarWidth;
             while (x < this.owner.viewer.containerWidth && this.viewerContainer.scrollLeft + this.visibleBounds.width < x + scrollBarWidth) {
                 this.viewerContainer.scrollLeft = this.viewerContainer.scrollLeft + (this.pageContainer.offsetWidth / 100) * 15 + scrollBarWidth;
+                if (this.viewerContainer.scrollLeft === 0) {
+                    break;
+                }
             }
         }
     }
@@ -3864,8 +3867,29 @@ export class DocumentHelper {
                 if (j === this.pages.length - 1 && this.owner.viewer instanceof PageLayoutViewer && this.owner.viewer.visiblePages.indexOf(this.pages[j]) !== -1) {
                     scrollToLastPage = true;
                 }
-               this.removePage(this.pages[j]);
-               j--;
+                if (!isNullOrUndefined(page.endnoteWidget) && page.endnoteWidget.bodyWidgets.length > 0) {
+                    const endnote: FootNoteWidget = page.endnoteWidget;
+                    const previousPage: Page = page.previousPage;
+                    if (!isNullOrUndefined(previousPage)) {
+                        if (isNullOrUndefined(previousPage.endnoteWidget)) {
+                            previousPage.endnoteWidget = new FootNoteWidget();
+                            previousPage.endnoteWidget.footNoteType = 'Endnote';
+                            previousPage.endnoteWidget.page = previousPage;
+                        }
+                        for (let k: number = 0; k < endnote.bodyWidgets.length; k++) {
+                            let bodyWidget: BlockContainer = endnote.bodyWidgets[k];
+                            endnote.bodyWidgets.splice(k, 1);
+                            previousPage.endnoteWidget.bodyWidgets.push(bodyWidget);
+                            bodyWidget.containerWidget = previousPage.endnoteWidget;
+                            bodyWidget.page = previousPage;
+                            k--;
+                        }
+                        this.layout.isRelayoutEndnote = true;
+                        scrollToLastPage = false;
+                    }
+                }
+                this.removePage(this.pages[j]);
+                j--;
             }
             
         }

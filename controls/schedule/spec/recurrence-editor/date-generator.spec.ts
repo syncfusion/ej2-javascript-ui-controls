@@ -382,6 +382,34 @@ describe('Recurrence Date Generator Specs', () => {
                     new Date('Mon Jul 28 2014').getTime(), new Date('Tue Jul 29 2014').getTime()
                 ]));
         });
+        it('893683 - Weekly recurrence appointment date generation testing with repeat interval of 2', () => {
+            //FREQ=WEEKLY;INTERVAL=2;BYDAY=MO
+            expect(JSON.stringify(generate(new Date('Sat Jul 13 2024'), 'FREQ=WEEKLY;INTERVAL=2;BYDAY=MO', null, 0)))
+                .toBe(JSON.stringify([
+                    new Date('Mon Jul 22 2024').getTime(), new Date('Mon Aug 05 2024').getTime(),
+                    new Date('Mon Aug 19 2024').getTime(), new Date('Mon Sep 02 2024').getTime(),
+                    new Date('Mon Sep 16 2024').getTime(),
+                    new Date('Mon Sep 30 2024').getTime(), new Date('Mon Oct 14 2024').getTime(),
+                    new Date('Mon Oct 28 2024').getTime(), new Date('Mon Nov 11 2024').getTime(),
+                    new Date('Mon Nov 25 2024').getTime(), new Date('Mon Dec 09 2024').getTime(),
+                    new Date('Mon Dec 23 2024').getTime(), new Date('Mon Jan 06 2025').getTime(),
+                    new Date('Mon Jan 20 2025').getTime(), new Date('Mon Feb 03 2025').getTime(),
+                    new Date('Mon Feb 17 2025').getTime(), new Date('Mon Mar 03 2025').getTime(),
+                    new Date('Mon Mar 17 2025').getTime(), new Date('Mon Mar 31 2025').getTime(),
+                    new Date('Mon Apr 14 2025').getTime(), new Date('Mon Apr 28 2025').getTime(),
+                    new Date('Mon May 12 2025').getTime(), new Date('Mon May 26 2025').getTime(),
+                    new Date('Mon Jun 09 2025').getTime(), new Date('Mon Jun 23 2025').getTime(),
+                    new Date('Mon Jul 07 2025').getTime(), new Date('Mon Jul 21 2025').getTime(),
+                    new Date('Mon Aug 04 2025').getTime(), new Date('Mon Aug 18 2025').getTime(),
+                    new Date('Mon Sep 01 2025').getTime(), new Date('Mon Sep 15 2025').getTime(),
+                    new Date('Mon Sep 29 2025').getTime(), new Date('Mon Oct 13 2025').getTime(),
+                    new Date('Mon Oct 27 2025').getTime(), new Date('Mon Nov 10 2025').getTime(),
+                    new Date('Mon Nov 24 2025').getTime(), new Date('Mon Dec 08 2025').getTime(),
+                    new Date('Mon Dec 22 2025').getTime(), new Date('Mon Jan 05 2026').getTime(),
+                    new Date('Mon Jan 19 2026').getTime(), new Date('Mon Feb 02 2026').getTime(),
+                    new Date('Mon Feb 16 2026').getTime(), new Date('Mon Mar 02 2026').getTime()
+                ]));
+        });
         it('Default - BYMONTH', () => {
             const rule: string = 'FREQ=WEEKLY;BYDAY=SU,MO,TU,WE,TH,FR,SA;BYMONTH=7;INTERVAL=1;UNTIL=20140801T000000Z';
             expect(JSON.stringify(generate(startDate, rule, null, 0)))

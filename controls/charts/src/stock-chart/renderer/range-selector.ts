@@ -57,7 +57,6 @@ export class RangeSelector {
             tooltip: { enable: stockChart.tooltip.enable, displayMode: 'OnDemand' },
             labelPlacement: 'OnTicks',
             labelPosition: 'Inside',
-            width: (stockChart.availableSize.width - ((stockChart.chart.axisCollections[1].labelPosition === 'Outside' ? stockChart.chart.axisCollections[1].maxLabelSize.width + padding : 0))).toString(),
             dataSource: stockChart.dataSource,
             intervalType : stockChart.primaryXAxis.intervalType,
             enableRtl: stockChart.enableRtl,

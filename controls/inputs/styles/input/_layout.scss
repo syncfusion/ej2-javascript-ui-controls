@@ -2975,7 +2975,11 @@
   .e-input-group.e-input-focus input.e-input,
   .e-input-group.e-control-wrapper.e-input-focus input.e-input,
   .e-float-input.e-control-wrapper.e-input-focus input,
-  .e-float-input.e-input-focus input,
+  .e-float-input.e-input-focus input {
+    padding-left: $input-text-indent;
+    text-indent: 0;
+  }
+
   textarea.e-input#{$css},
   .e-input-group textarea.e-input,
   .e-input-group textarea,
@@ -2989,7 +2993,12 @@
   .e-input-group.e-control-wrapper textarea.e-input:focus,
   .e-float-input.e-control-wrapper textarea:focus,
   .e-float-input textarea:focus {
-    padding-left: $input-text-indent;
+    @if $input-skin-name == 'fluent2' {
+      padding-left: 12px;
+    }
+    @else {
+      padding-left: $input-text-indent;
+    }
     text-indent: 0;
   }
 
@@ -3316,7 +3325,12 @@
   .e-bigger .e-input-group.e-control-wrapper textarea.e-input:focus,
   .e-bigger .e-float-input.e-control-wrapper textarea:focus,
   .e-bigger .e-float-input textarea:focus {
-    padding-left: $input-bigger-text-indent;
+    @if $input-skin-name == 'fluent2' {
+      padding: $textarea-bigger-padding;
+    }
+    @else {
+      padding-left: $input-bigger-text-indent;
+    }
     text-indent: 0;
   }
 
@@ -4216,18 +4230,18 @@
     }
   }
 
-  .e-input-group:hover:not(.e-disabled):not(.e-float-icon-left),
-  .e-input-group.e-control-wrapper:hover:not(.e-disabled):not(.e-float-icon-left),
-  .e-float-input:hover:not(.e-disabled):not(.e-float-icon-left),
-  .e-float-input:hover:not(.e-input-group):not(.e-disabled) input:not([disabled]),
-  .e-float-input:hover:not(.e-input-group):not(.e-disabled) textarea:not([disabled]),
-  .e-float-input:hover:not(.e-input-group):not(.e-disabled) input:not([disabled]),
-  .e-float-input:hover:not(.e-input-group):not(.e-disabled) textarea:not([disabled]),
-  .e-float-input.e-control-wrapper:hover:not(.e-disabled):not(.e-float-icon-left),
-  .e-float-input.e-control-wrapper:hover:not(.e-input-group):not(.e-disabled) input:not([disabled]),
-  .e-float-input.e-control-wrapper:hover:not(.e-input-group):not(.e-disabled) textarea:not([disabled]),
-  .e-float-input.e-control-wrapper:hover:not(.e-input-group):not(.e-disabled) input:not([disabled]),
-  .e-float-input.e-control-wrapper:hover:not(.e-input-group):not(.e-disabled) textarea:not([disabled]) {
+  .e-input-group:hover:not(.e-disabled):not(.e-success):not(.e-warning):not(.e-error):not(.e-float-icon-left),
+  .e-input-group.e-control-wrapper:hover:not(.e-disabled):not(.e-success):not(.e-warning):not(.e-error):not(.e-float-icon-left),
+  .e-float-input:hover:not(.e-disabled):not(.e-success):not(.e-warning):not(.e-error):not(.e-float-icon-left),
+  .e-float-input:hover:not(.e-input-group):not(.e-disabled):not(.e-success):not(.e-warning):not(.e-error) input:not([disabled]),
+  .e-float-input:hover:not(.e-input-group):not(.e-disabled):not(.e-success):not(.e-warning):not(.e-error) textarea:not([disabled]),
+  .e-float-input:hover:not(.e-input-group):not(.e-disabled):not(.e-success):not(.e-warning):not(.e-error) input:not([disabled]),
+  .e-float-input:hover:not(.e-input-group):not(.e-disabled):not(.e-success):not(.e-warning):not(.e-error) textarea:not([disabled]),
+  .e-float-input.e-control-wrapper:hover:not(.e-disabled):not(.e-success):not(.e-warning):not(.e-error):not(.e-float-icon-left),
+  .e-float-input.e-control-wrapper:hover:not(.e-input-group):not(.e-disabled):not(.e-success):not(.e-warning):not(.e-error) input:not([disabled]),
+  .e-float-input.e-control-wrapper:hover:not(.e-input-group):not(.e-disabled):not(.e-success):not(.e-warning):not(.e-error) textarea:not([disabled]),
+  .e-float-input.e-control-wrapper:hover:not(.e-input-group):not(.e-disabled):not(.e-success):not(.e-warning):not(.e-error) input:not([disabled]),
+  .e-float-input.e-control-wrapper:hover:not(.e-input-group):not(.e-disabled):not(.e-success):not(.e-warning):not(.e-error) textarea:not([disabled]) {
     @if $input-skin-name == 'material' or $input-skin-name == 'Material3' {
       border-bottom-width: $input-group-border-width-hover;
     }

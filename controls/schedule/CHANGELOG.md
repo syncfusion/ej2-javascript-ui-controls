@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 26.2.4 (2024-07-24)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I605064` - An issue with the weekly recurrence appointment rendering while using the repeat interval value of more than 1 has been fixed.
+- `#I600060` - The issue where the drag clone fails to follow the cursor position during dragging, with cell widths set to auto, has been resolved.
+
 ## 26.1.41 (2024-07-09)
 
 ### Schedule

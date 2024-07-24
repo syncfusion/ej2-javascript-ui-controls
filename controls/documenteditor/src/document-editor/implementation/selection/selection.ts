@@ -9825,17 +9825,19 @@ export class Selection {
 
     private async copyToClipboard(htmlContent: string): Promise<boolean> {
         const navigator: any = window.navigator;
+        const textContent: string = this.text;
         if (navigator.clipboard && navigator.clipboard['write']) {
             try {
-                let blob: Blob = new Blob([htmlContent], { type: 'text/html' });
+                let htmlBlob: Blob = new Blob([htmlContent], { type: 'text/html' });
+                let textBlob: Blob = new Blob([textContent], { type: 'text/plain' });
                 if (!document.hasFocus()) {
                     document.body.focus();
                 }
                 await new Promise(resolve => window.requestAnimationFrame(resolve));
-                await navigator.clipboard.write([new ClipboardItem({ 'text/html': blob })])
-                .catch(() => {
-                    return this.copyExecCommand(htmlContent);
-                });
+                await navigator.clipboard.write([new ClipboardItem({ 'text/html': htmlBlob, 'text/plain': textBlob })])
+                    .catch(() => {
+                        return this.copyExecCommand(htmlContent);
+                    });
                 return true;
             } catch (e) {
                 return false;
@@ -11199,6 +11201,16 @@ export class Selection {
         let startPosition: TextPosition = positionInfo.startPosition;
         let endPosition: TextPosition = positionInfo.endPosition;
         this.highlight(editRangeStart.line.paragraph, startPosition, endPosition, editRangeStart);
+        let currentParagraph : ParagraphWidget = editRangeStart.line.paragraph;
+        while(currentParagraph !== endPosition.paragraph){
+            if(currentParagraph.nextRenderedWidget instanceof ParagraphWidget){
+                currentParagraph = currentParagraph.nextRenderedWidget;
+                this.highlight(currentParagraph,startPosition,endPosition,editRangeStart);
+            }
+            else{
+                return;
+            }
+        }
     }
     /**
      * @private
@@ -11505,7 +11517,8 @@ export class Selection {
             endElement = element.comment.commentEnd;
         }
         let endPosition: TextPosition;
-        if(!isNullOrUndefined(endElement.line)) {
+        let line: LineWidget = endElement.line as LineWidget;
+        if(!isNullOrUndefined(endElement.line) && !isNullOrUndefined(line.children)) {
             offset = endElement.line.getOffset(endElement, 1);
             endPosition = new TextPosition(this.owner);
             endPosition.setPositionParagraph(endElement.line, offset);

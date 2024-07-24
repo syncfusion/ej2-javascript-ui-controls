@@ -1,4 +1,4 @@
-import { Property, Event, Component, EmitType, Internationalization, extend, Fetch } from '@syncfusion/ej2-base';
+import { Property, Event, Component, EmitType, Internationalization, extend, Fetch, select } from '@syncfusion/ej2-base';
 import { L10n, remove, addClass, Browser, Complex, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DataManager, ReturnOption, Query } from '@syncfusion/ej2-data';
@@ -1400,7 +1400,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             pivotEngine: this.dataType === 'olap' ? this.olapEngineModule : this.engineModule,
             dataSourceSettings: this.dataSourceSettings as IDataOptions,
             id: this.element.id,
-            element: document.getElementById(this.element.id + '_Container'),
+            element: this.renderMode === 'Popup' ? this.dialogRenderer.fieldListDialog.element : select('#' + this.element.id + '_Container', this.element),
             moduleName: this.getModuleName(),
             enableRtl: this.enableRtl,
             enableHtmlSanitizer: this.enableHtmlSanitizer,

@@ -48,7 +48,7 @@ export class FocusModule {
         const targetElement: Element = this.parent.focusModule.getActiveElement();
         if (e.action === 'home' || e.action === 'end' || e.action === 'downArrow' || e.action === 'upArrow' || e.action === 'delete' ||
             e.action === 'rightArrow' || e.action === 'leftArrow' || e.action === 'focusTask' || e.action === 'focusSearch' ||
-            e.action === 'expandAll' || e.action === 'collapseAll' || e.action === 'undo' || e.action === 'redo') {
+            e.action === 'expandAll' || e.action === 'collapseAll' || e.action === 'undo' || e.action === 'redo' || e.action === 'selectAll') {
             if (!isNullOrUndefined(ganttObj.editModule) && !isNullOrUndefined(ganttObj.editModule.cellEditModule) &&
                 ganttObj.editModule.cellEditModule.isCellEdit === true) {
                 return;
@@ -267,6 +267,25 @@ export class FocusModule {
             }
             break;
         }
+        case 'selectAll':
+            {   
+                e.preventDefault();
+                const ganttRow: HTMLElement[] = [].slice.call(this.parent.ganttChartModule.chartBodyContent.querySelector('tbody').children);
+                if (ganttRow.length > 0) {
+                    let firstRowIndex: any = ganttRow[0].getAttribute('data-rowindex');
+                    let lastRowIndex: any = ganttRow[ganttRow.length - 1].getAttribute('data-rowindex');
+                    if (!isNullOrUndefined(firstRowIndex)) {
+                        firstRowIndex = Number(firstRowIndex);
+                    }
+                    if (!isNullOrUndefined(lastRowIndex)) {
+                        lastRowIndex = Number(lastRowIndex);
+                    }
+                    if(!isNullOrUndefined(firstRowIndex) && !isNullOrUndefined(lastRowIndex)){
+                        this.parent.selectionModule.selectRowsByRange(firstRowIndex, lastRowIndex);
+                    }
+                }
+                break;
+            }
         default:
         {
             const eventArgs: IKeyPressedEventArgs = {

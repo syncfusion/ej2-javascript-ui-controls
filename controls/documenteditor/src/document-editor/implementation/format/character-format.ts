@@ -602,95 +602,95 @@ export class WCharacterFormat {
         return this.hasValue(property) ? this.getPropertyValue(property) : undefined;
     }
     public mergeFormat(format: WCharacterFormat): void {
-        if (isNullOrUndefined(this.getValue('bold'))) {
+        if (isNullOrUndefined(this.getValue('bold')) && !isNullOrUndefined(format.getValue('bold'))) {
             this.bold = format.getValue('bold') as boolean;
         }
-        if (isNullOrUndefined(this.getValue('italic'))) {
+        if (isNullOrUndefined(this.getValue('italic')) && !isNullOrUndefined((format.getValue('italic')))) {
             this.italic = format.getValue('italic') as boolean;
         }
-        if (isNullOrUndefined(this.getValue('fontSize'))) {
+        if (isNullOrUndefined(this.getValue('fontSize')) && !isNullOrUndefined(format.getValue('fontSize'))) {
             this.fontSize = format.getValue('fontSize') as number;
         }
-        if (isNullOrUndefined(this.getValue('characterSpacing'))) {
+        if (isNullOrUndefined(this.getValue('characterSpacing')) && !isNullOrUndefined(format.getValue('characterSpacing'))) {
             this.characterSpacing = format.getValue('characterSpacing') as number;
         }
-        if (isNullOrUndefined(this.getValue('scaling'))) {
+        if (isNullOrUndefined(this.getValue('scaling')) && !isNullOrUndefined(format.getValue('scaling'))) {
             this.scaling = format.getValue('scaling') as number;
         }
-        if (isNullOrUndefined(this.getValue('fontFamily'))) {
+        if (isNullOrUndefined(this.getValue('fontFamily')) && !isNullOrUndefined(format.getValue('fontFamily'))) {
             this.fontFamily = format.getValue('fontFamily') as string;
         } else {
-            if (isNullOrUndefined(this.getValue('fontFamilyAscii'))) {
+            if (isNullOrUndefined(this.getValue('fontFamilyAscii')) && !isNullOrUndefined(format.getValue('fontFamily'))) {
                 this.fontFamilyAscii = format.getValue('fontFamily') as string;
             }
-            if (isNullOrUndefined(this.getValue('fontFamilyFarEast'))) {
+            if (isNullOrUndefined(this.getValue('fontFamilyFarEast')) && !isNullOrUndefined(format.getValue('fontFamily'))) {
                 this.fontFamilyFarEast = format.getValue('fontFamily') as string;
             }
-            if (isNullOrUndefined(this.getValue('fontFamilyNonFarEast'))) {
+            if (isNullOrUndefined(this.getValue('fontFamilyNonFarEast')) && !isNullOrUndefined(format.getValue('fontFamily'))) {
                 this.fontFamilyNonFarEast = format.getValue('fontFamily') as string;
             }
         }
-        if (isNullOrUndefined(this.getValue('underline'))) {
+        if (isNullOrUndefined(this.getValue('underline')) && !isNullOrUndefined(format.getValue('underline'))) {
             this.underline = format.getValue('underline') as Underline;
         }
-        if (isNullOrUndefined(this.getValue('strikethrough'))) {
+        if (isNullOrUndefined(this.getValue('strikethrough')) && !isNullOrUndefined(format.getValue('strikethrough'))) {
             this.strikethrough = format.getValue('strikethrough') as Strikethrough;
         }
-        if (isNullOrUndefined(this.getValue('baselineAlignment'))) {
+        if (isNullOrUndefined(this.getValue('baselineAlignment')) && !isNullOrUndefined(format.getValue('baselineAlignment'))) {
             this.baselineAlignment = format.getValue('baselineAlignment') as BaselineAlignment;
         }
-        if (isNullOrUndefined(this.getValue('highlightColor'))) {
+        if (isNullOrUndefined(this.getValue('highlightColor')) && !isNullOrUndefined(format.getValue('highlightColor'))) {
             this.highlightColor = format.getValue('highlightColor') as HighlightColor;
         }
-        if (isNullOrUndefined(this.getValue('fontColor'))) {
+        if (isNullOrUndefined(this.getValue('fontColor')) && !isNullOrUndefined(format.getValue('fontColor'))) {
             this.fontColor = format.getValue('fontColor') as string;
         }
-        if (isNullOrUndefined(this.getValue('bidi'))) {
+        if (isNullOrUndefined(this.getValue('bidi')) && !isNullOrUndefined(format.getValue('bidi'))) {
             this.bidi = format.getValue('bidi') as boolean;
         }
-        if (isNullOrUndefined(this.getValue('bdo'))) {
+        if (isNullOrUndefined(this.getValue('bdo')) && !isNullOrUndefined(format.getValue('bdo'))) {
             this.bdo = format.getValue('bdo') as BiDirectionalOverride;
         }
-        if (isNullOrUndefined(this.getValue('allCaps'))) {
+        if (isNullOrUndefined(this.getValue('allCaps')) && !isNullOrUndefined(format.getValue('allCaps'))) {
             this.allCaps = format.getValue('allCaps') as boolean;
         }
-        if (isNullOrUndefined(this.getValue('Lowercase'))) {
+        if (isNullOrUndefined(this.getValue('Lowercase')) && !isNullOrUndefined(format.getValue('Lowercase'))) {
             this.Lowercase = format.getValue('Lowercase') as boolean;
         }
-        if (isNullOrUndefined(this.getValue('SentenceCase'))) {
-            this.SentenceCase = format.getValue('SentenceCase')as boolean;
+        if (isNullOrUndefined(this.getValue('SentenceCase')) && !isNullOrUndefined(format.getValue('SentenceCase'))) {
+            this.SentenceCase = format.getValue('SentenceCase') as boolean;
         }
-        if (isNullOrUndefined(this.getValue('ToggleCase'))) {
-            this.ToggleCase = format.getValue('ToggleCase')as boolean;
+        if (isNullOrUndefined(this.getValue('ToggleCase')) && !isNullOrUndefined(format.getValue('ToggleCase'))) {
+            this.ToggleCase = format.getValue('ToggleCase') as boolean;
         }
-        if (isNullOrUndefined(this.getValue('CapitalizeEachWord'))) {
-            this.CapitalizeEachWord = format.getValue('CapitalizeEachWord')as boolean;
+        if (isNullOrUndefined(this.getValue('CapitalizeEachWord')) && !isNullOrUndefined(format.getValue('CapitalizeEachWord'))) {
+            this.CapitalizeEachWord = format.getValue('CapitalizeEachWord') as boolean;
         }
-        if (isNullOrUndefined(this.getValue('Uppercase'))) {
-            this.Uppercase = format.getValue('Uppercase')as boolean;
+        if (isNullOrUndefined(this.getValue('Uppercase')) && !isNullOrUndefined(format.getValue('Uppercase'))) {
+            this.Uppercase = format.getValue('Uppercase') as boolean;
         }
-        if (isNullOrUndefined(this.getValue('localeIdBidi'))) {
+        if (isNullOrUndefined(this.getValue('localeIdBidi')) && !isNullOrUndefined(format.getValue('localeIdBidi'))) {
             this.localeIdBidi = format.getValue('localeIdBidi') as number;
         }
-        if (isNullOrUndefined(this.getValue('localeIdAscii'))) {
+        if (isNullOrUndefined(this.getValue('localeIdAscii')) && !isNullOrUndefined(format.getValue('localeIdAscii'))) {
             this.localeIdAscii = format.getValue('localeIdAscii') as number;
         }
-        if (isNullOrUndefined(this.getValue('localeIdFarEast'))) {
+        if (isNullOrUndefined(this.getValue('localeIdFarEast')) && !isNullOrUndefined(format.getValue('localeIdFarEast'))) {
             this.localeIdFarEast = format.getValue('localeIdFarEast') as number;
         }
-        if (isNullOrUndefined(this.getValue('complexScript'))) {
+        if (isNullOrUndefined(this.getValue('complexScript')) && !isNullOrUndefined(format.getValue('complexScript'))) {
             this.complexScript = format.getValue('complexScript') as boolean;
         }
-        if (isNullOrUndefined(this.getValue('fontFamilyAscii'))) {
+        if (isNullOrUndefined(this.getValue('fontFamilyAscii')) && !isNullOrUndefined(format.getValue('fontFamilyAscii'))) {
             this.fontFamilyAscii = format.getValue('fontFamilyAscii') as string;
         }
-        if (isNullOrUndefined(this.getValue('fontFamilyBidi'))) {
+        if (isNullOrUndefined(this.getValue('fontFamilyBidi')) && !isNullOrUndefined(format.getValue('fontFamilyBidi'))) {
             this.fontFamilyBidi = format.getValue('fontFamilyBidi') as string;
         }
-        if (isNullOrUndefined(this.getValue('fontFamilyFarEast'))) {
+        if (isNullOrUndefined(this.getValue('fontFamilyFarEast')) && !isNullOrUndefined(format.getValue('fontFamilyFarEast'))) {
             this.fontFamilyFarEast = format.getValue('fontFamilyFarEast') as string;
         }
-        if (isNullOrUndefined(this.getValue('fontFamilyNonFarEast'))) {
+        if (isNullOrUndefined(this.getValue('fontFamilyNonFarEast')) && !isNullOrUndefined(format.getValue('fontFamilyNonFarEast'))) {
             this.fontFamilyNonFarEast = format.getValue('fontFamilyNonFarEast') as string;
         }
     }

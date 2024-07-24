@@ -2042,5 +2042,34 @@ describe('Filter ->', () => {
                 });
             });
         });
+        describe('EJ2-896267 ->', () => {
+            beforeEach((done: Function) => {
+                helper.initializeSpreadsheet({
+                    sheets: [{ ranges: [{ dataSource: defaultData }] }, { ranges: [{ dataSource: defaultData }] }]
+                }, done);
+            });
+            afterEach(() => {
+                helper.invoke('destroy');
+            });
+            it('Provide options in clearFilter() public method to clear filter collections based on sheet index', (done: Function) => {
+                const spreadsheet: any = helper.getInstance();
+                helper.invoke('applyFilter', [[{ field: 'E', predicate: 'or', operator: 'equal', value: '10' }], 'A1:H1']);
+                setTimeout(() => {
+                    expect(spreadsheet.filterModule.filterCollection.get(0).length).toBe(1);
+                    spreadsheet.goTo('Sheet2!A1');
+                    setTimeout(() => {
+                        helper.invoke('clearFilter', [null, 0]);
+                        expect(spreadsheet.filterModule.filterCollection.get(0).length).toBe(0);
+                        helper.invoke('applyFilter', [[{ field: 'E', predicate: 'or', operator: 'equal', value: '10' }], 'A1:H1']);
+                        setTimeout(() => {
+                            expect(spreadsheet.filterModule.filterCollection.get(1).length).toBe(1);
+                            helper.invoke('clearFilter', [null, null]);
+                            expect(spreadsheet.filterModule.filterCollection.get(1).length).toBe(0);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
     });
 });

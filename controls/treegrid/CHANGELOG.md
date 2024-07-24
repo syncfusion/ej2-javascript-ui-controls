@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.2.4 (2024-07-24)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#F59092` - Fixed issue where wrong data was returning in `rowDeselected` event when both `persistSelection` and `filterSettings` were enabled with remote data.
+
 ## 26.1.42 (2024-07-16)
 
 ### Tree Grid
@@ -18,7 +26,6 @@
 
 - `#F58804` - Fixed an issue where an exception was being thrown when dragging and dropping between the tree grid and detail template.
 - `#F603044` - Resolved a console error that occurred when clicking the checkbox of child records.
-- `#F58676` - Fixed white space issue that occurred when using remote data with virtualization.
 
 ## 26.1.40 (2024-07-02)
 

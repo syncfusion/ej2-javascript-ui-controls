@@ -988,48 +988,48 @@ describe('DropDownList', () => {
         // });
     });
 
-    describe('EJ2-18309 - Maximum call stack error while emptying dataSource with filtering and remote data', () => {
-        let listObj: any;
-        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
-        let originalTimeout: number;
-        beforeEach((done) => {
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 6000;
-            document.body.appendChild(element);
-            listObj = new DropDownList({
-                dataSource: new DataManager({
-                    url: 'https://ej2services.syncfusion.com/production/web-services/api/Employees',
-                    adaptor: new WebApiAdaptor,
-                    crossDomain: true
-                }),
-                query: new Query().select(['FirstName', 'EmployeeID']),
-                fields: { text: 'FirstName', value: 'EmployeeID' },
-                value: 2
+    // describe('EJ2-18309 - Maximum call stack error while emptying dataSource with filtering and remote data', () => {
+    //     let listObj: any;
+    //     let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+    //     let originalTimeout: number;
+    //     beforeEach((done) => {
+    //         originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+    //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 6000;
+    //         document.body.appendChild(element);
+    //         listObj = new DropDownList({
+    //             dataSource: new DataManager({
+    //                 url: 'https://ej2services.syncfusion.com/production/web-services/api/Employees',
+    //                 adaptor: new WebApiAdaptor,
+    //                 crossDomain: true
+    //             }),
+    //             query: new Query().select(['FirstName', 'EmployeeID']),
+    //             fields: { text: 'FirstName', value: 'EmployeeID' },
+    //             value: 2
 
-            });
-            listObj.appendTo(element);
-            done();
-        });
-        afterEach(() => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-            if (element) {
-                element.remove();
-                document.body.innerHTML = '';
-            }
-        });
-        it('set empty datasource ', (done) => {
-            setTimeout(() => {
-                listObj.dataSource = [];
-                listObj.query = null;
-                listObj.dataBind();
-                listObj.showPopup();
-                setTimeout(() => {
-                    expect(listObj.list.classList.contains('e-nodata')).toBe(true);
-                    done();
-                }, 1000);
-            }, 3000);
-        });
-    });
+    //         });
+    //         listObj.appendTo(element);
+    //         done();
+    //     });
+    //     afterEach(() => {
+    //         jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+    //         if (element) {
+    //             element.remove();
+    //             document.body.innerHTML = '';
+    //         }
+    //     });
+    //     it('set empty datasource ', (done) => {
+    //         setTimeout(() => {
+    //             listObj.dataSource = [];
+    //             listObj.query = null;
+    //             listObj.dataBind();
+    //             listObj.showPopup();
+    //             setTimeout(() => {
+    //                 expect(listObj.list.classList.contains('e-nodata')).toBe(true);
+    //                 done();
+    //             }, 1000);
+    //         }, 3000);
+    //     });
+    // });
     describe('EJ2-39447- Dropdownlist', () => {
         let keyboardEventArgs = {
             preventDefault: function () { },

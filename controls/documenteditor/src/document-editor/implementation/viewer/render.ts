@@ -946,13 +946,16 @@ export class Renderer {
                         this.renderSolidLine(ctx, this.getScaledValue(xPos, 1), this.getScaledValue(footnote.y + (footnote.margin.top / 2) + 1, 2), 210 * this.documentHelper.zoomFactor, '#000000');
                     }
                 }
-                if (j === 0 && !isNullOrUndefined(footNoteReference) && (widget.childWidgets[0] as LineWidget).children[0] instanceof TextElementBox && !this.documentHelper.owner.editorModule.isFootNoteInsert) {
+                if (j === 0 && !isNullOrUndefined(footNoteReference) && !this.documentHelper.owner.editorModule.isFootNoteInsert) {
                     //if (j < 1 || (j > 0 && widget.footNoteReference !== (bodyWidget.childWidgets[j - 1] as BlockWidget).footNoteReference)) {
-                    let footNoteElement: TextElementBox = (widget.childWidgets[0] as LineWidget).children[0] as TextElementBox;
-                    if (footNoteElement.text === '\u0002') {
-                        footNoteElement.text = footNoteElement.text.replace(footNoteElement.text, footNoteReference.text);
+                    const paragraph: ParagraphWidget = this.documentHelper.getFirstParagraphBlock(widget);
+                    if ((paragraph.firstChild as LineWidget).children[0] instanceof TextElementBox) {
+                        let footNoteElement: TextElementBox = (paragraph.firstChild as LineWidget).children[0] as TextElementBox;
+                        if (footNoteElement.text === '\u0002') {
+                            footNoteElement.text = footNoteElement.text.replace(footNoteElement.text, footNoteReference.text);
+                        }
+                        footNoteElement.width = footNoteReference.width;
                     }
-                    footNoteElement.width = footNoteReference.width;
                     //}
                 }
                 this.renderWidget(page, widget);
@@ -1075,28 +1078,29 @@ export class Renderer {
         return undefined;
     }
     private renderEditregionContentHighlight(page: Page, lineWidget: LineWidget, top: number): void {
-        if (!isNullOrUndefined(this.documentHelper.owner.editor) && page.documentHelper.selection && !isNullOrUndefined(page.documentHelper.selection.contentControleditRegionHighlighters)) {
-            // let renderHighlight: boolean = this.documentHelper.selection.contentControleditRegionHighlighters.containsKey(lineWidget);
-            // let widgetInfo: SelectionWidgetInfo[] = this.documentHelper.selection.contentControleditRegionHighlighters.
-            let contenControl: ContentControl = this.documentHelper.owner.editor.getContentControl();
+        if (!isNullOrUndefined(this.documentHelper.owner.editorModule) && page.documentHelper.selection && !isNullOrUndefined(page.documentHelper.selection.contentControleditRegionHighlighters)) {
+            let contenControl: ContentControl = this.documentHelper.owner.editorModule.getContentControl();
             if (!isNullOrUndefined(contenControl)) {
                 let widgetInfo: Dictionary<LineWidget, SelectionWidgetInfo[]> = this.documentHelper.selection.contentControleditRegionHighlighters.get(contenControl);
+                let totalHeight: number = top;
                 if (!isNullOrUndefined(widgetInfo) && lineWidget == contenControl.line) {
                     for (var i = 0; i < widgetInfo.length; i++) {
-                        let color : string = contenControl.contentControlProperties.color;
-                        if(color === '#00000000'){
+                        let color: string = contenControl.contentControlProperties.color;
+                        if (color === '#00000000') {
                             //Change color to grey if color is transparent
                             color = '#939393'
                         }
                         let widget: SelectionWidgetInfo[] = widgetInfo.get(widgetInfo.keys[i]);
+                        let previousHeight: number = totalHeight;
+                        totalHeight += widgetInfo.keys[i].height;
                         for (var j = 0; j < widget.length; j++) {
                             let startX = widget[j].left - 2;
                             let endX = widget[j].left + widget[j].width + 2;
-                            if ( widgetInfo.length - 1 > i) {
+                            if (widgetInfo.length - 1 > i) {
                                 endX = this.documentHelper.getParagraphLeftPosition(lineWidget.paragraph) + this.getContainerWidth(lineWidget.paragraph, page) + HelperMethods.convertPointToPixel(lineWidget.paragraph.paragraphFormat.borders.right.space);
                             }
-                            let startY = top;
-                            let endY = startY + lineWidget.height;
+                            let startY = previousHeight;
+                            let endY = totalHeight;
                             if (i == 0) {
                                 //left
                                 this.renderSingleBorder(color, startX, startY, startX, endY, 1, 'single');
@@ -1106,36 +1110,28 @@ export class Renderer {
                                 this.renderSingleBorder(color, endX, startY, endX, endY, 1, 'single');
                             }
                             if (i > 0 && i < widgetInfo.length - 1) {
-                                startY = top + lineWidget.height * i;
-                                endY = startY + lineWidget.height;
                                 //left
                                 this.renderSingleBorder(color, startX, startY, startX, endY, 1, 'single');
                                 //right
                                 this.renderSingleBorder(color, endX, startY, endX, endY, 1, 'single');
                                 //top
-                                let widget1: SelectionWidgetInfo[] = widgetInfo.get(widgetInfo.keys[i - 1]);
-                                let startUpdated = widget1[j].left;
-                                this.renderSingleBorder(color, startX, startY, startUpdated, startY, 1, 'single');
-
+                                let widgets: SelectionWidgetInfo[] = widgetInfo.get(widgetInfo.keys[i - 1]);
+                                this.renderSingleBorder(color, startX, startY, widgets[j].left - 2, startY, 1, 'single');
                             }
                             if (i == widgetInfo.length - 1) {
-                                startY = top + lineWidget.height * (widgetInfo.length - 1);
-                                endY = startY + lineWidget.height;
                                 // left
                                 this.renderSingleBorder(color, startX, startY, startX, endY, 1, 'single');
                                 //bottom
                                 this.renderSingleBorder(color, startX, endY, endX, endY, 1, 'single');
                                 //top
                                 if (widgetInfo.length > 1) {
-                                    
+
                                     let widgets: SelectionWidgetInfo[] = widgetInfo.get(widgetInfo.keys[i - 1]);
-                                    // let endUpdated = widgets[j].width + widgets[j].left;
                                     let endUpdated = this.documentHelper.getParagraphLeftPosition(lineWidget.paragraph) + this.getContainerWidth(lineWidget.paragraph, page) + HelperMethods.convertPointToPixel(lineWidget.paragraph.paragraphFormat.borders.right.space);
                                     this.renderSingleBorder(color, endX, startY, endUpdated, startY, 1, 'single');
-                                    if(startX < widgets[j].left)
-                                        {
-                                            this.renderSingleBorder(color, widgets[j].left, startY, startX, startY, 1, 'single');
-                                        }
+                                    if (startX < widgets[j].left) {
+                                        this.renderSingleBorder(color, widgets[j].left - 2, startY, startX, startY, 1, 'single');
+                                    }
                                 }
                                 //right
                                 this.renderSingleBorder(color, endX, startY, endX, endY, 1, 'single');
@@ -1150,7 +1146,7 @@ export class Renderer {
                                         element.style.border = '0.5px solid #7F7F7F';
                                         element.style.backgroundColor = '#D3D3D3'
                                         element.style.height = lineWidget.height + 'px';
-                                        element.addEventListener('click', this.documentHelper.owner.editor.contentControlDropDownChange.bind(this));
+                                        element.addEventListener('click', this.documentHelper.owner.editorModule.contentControlDropDownChange.bind(this));
                                     }
                                     else {
                                         let contentMark = document.createElement('div');
@@ -1170,7 +1166,7 @@ export class Renderer {
                                         span.classList.add('e-chevron-down-fill');
                                         contentMark.appendChild(span);
                                         this.documentHelper.pageContainer.appendChild(contentMark);
-                                        contentMark.addEventListener('click', this.documentHelper.owner.editor.contentControlDropDownChange.bind(this));
+                                        contentMark.addEventListener('click', this.documentHelper.owner.editorModule.contentControlDropDownChange.bind(this));
                                     }
                                 }
 

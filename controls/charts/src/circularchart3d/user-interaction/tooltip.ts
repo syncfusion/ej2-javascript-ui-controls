@@ -537,8 +537,8 @@ export class CircularChartTooltip3D extends ChildProperty<CircularChartTooltip3D
         extraPoints: CircularChart3DPointData[] = null,
         templatePoint: CircularChart3DPoints | CircularChart3DPoints[] = null, customTemplate?: string | Function
     ): void {
-        const module: CircularChartTooltip3D = chart.circularChartTooltip3DModule;
-        if (!module || location === null) { // For the tooltip enable is false.
+        const tooltipModule: CircularChartTooltip3D = chart.circularChartTooltip3DModule;
+        if (!tooltipModule || location === null) { // For the tooltip enable is false.
             removeElement(this.control.element.id + '_tooltip');
             return;
         }
@@ -578,13 +578,13 @@ export class CircularChartTooltip3D extends ChildProperty<CircularChartTooltip3D
                     controlName: 'Chart',
                     allowHighlight: false,
                     tooltipRender: () => {
-                        module.removeHighlight();
-                        module.highlightPoints();
-                        module.updatePreviousPoint(extraPoints);
+                        tooltipModule.removeHighlight();
+                        tooltipModule.highlightPoints();
+                        tooltipModule.updatePreviousPoint(extraPoints);
                     },
                     animationComplete: (args: ITooltipAnimationCompleteArgs) => {
                         if (args.tooltip.fadeOuted) {
-                            module.fadeOut();
+                            tooltipModule.fadeOut();
                         }
                     }
                 });

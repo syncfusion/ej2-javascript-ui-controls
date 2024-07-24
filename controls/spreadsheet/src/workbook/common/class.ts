@@ -862,7 +862,7 @@ export class Image extends ChildProperty<CellModel> {
      * Specifies the height of the image.
      *
      * @default 300
-     * @asptype int
+     * @asptype double
      */
     @Property(300)
     public height: number;
@@ -871,7 +871,7 @@ export class Image extends ChildProperty<CellModel> {
      * Specifies the width of the image.
      *
      * @default 400
-     * @asptype int
+     * @asptype double
      */
     @Property(400)
     public width: number;
@@ -880,7 +880,7 @@ export class Image extends ChildProperty<CellModel> {
      * Specifies the height of the image.
      *
      * @default 0
-     * @asptype int
+     * @asptype double
      */
     @Property(0)
     public top: number;
@@ -889,7 +889,7 @@ export class Image extends ChildProperty<CellModel> {
      * Specifies the width of the image.
      *
      * @default 0
-     * @asptype int
+     * @asptype double
      */
     @Property(0)
     public left: number;

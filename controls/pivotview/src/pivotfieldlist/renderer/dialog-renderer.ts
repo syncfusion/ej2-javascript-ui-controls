@@ -98,12 +98,12 @@ export class DialogRenderer {
             addClass([fieldListWrappper], cls.STATIC_FIELD_LIST_CLASS);
             if (this.parent.allowDeferLayoutUpdate) {
                 fieldListWrappper.appendChild(this.createDeferUpdateButtons());
-                this.renderDeferUpdateButtons();
+                this.renderDeferUpdateButtons(fieldListWrappper);
             }
         }
     }
 
-    private renderDeferUpdateButtons(): void {
+    private renderDeferUpdateButtons(fieldListWrappper: HTMLElement): void {
         if (this.parent.allowDeferLayoutUpdate) {
             this.deferUpdateCheckBox = new CheckBox({
                 label: this.parent.localeObj.getConstant('deferLayoutUpdate'),
@@ -118,7 +118,7 @@ export class DialogRenderer {
                 cssClass: this.parent.cssClass
             });
             this.deferUpdateCheckBox.isStringTemplate = true;
-            this.deferUpdateCheckBox.appendTo('#' + this.parent.element.id + 'DeferUpdateCheckBox');
+            this.deferUpdateCheckBox.appendTo(select('#' + this.parent.element.id + 'DeferUpdateCheckBox', fieldListWrappper) as HTMLElement);
             this.deferUpdateApplyButton = new Button({
                 cssClass: cls.DEFER_APPLY_BUTTON + ' ' + cls.DEFER_UPDATE_BUTTON + (this.parent.renderMode === 'Popup' ?
                     (' ' + cls.BUTTON_FLAT_CLASS) : '') + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''),
@@ -133,7 +133,7 @@ export class DialogRenderer {
                     (!isNullOrUndefined(this.parent.isDeferLayoutUpdate) ? !this.parent.isDeferLayoutUpdate : false)
             });
             this.deferUpdateApplyButton.isStringTemplate = true;
-            this.deferUpdateApplyButton.appendTo('#' + this.parent.element.id + '_DeferUpdateButton1');
+            this.deferUpdateApplyButton.appendTo(select('#' + this.parent.element.id + '_DeferUpdateButton1', fieldListWrappper) as HTMLElement);
             this.deferUpdateApplyButton.element.onclick = this.parent.renderMode === 'Fixed' ? this.applyButtonClick.bind(this) :
                 this.onDeferUpdateClick.bind(this);
         }
@@ -151,7 +151,7 @@ export class DialogRenderer {
                     !this.parent.isDeferLayoutUpdate : false)
         });
         this.deferUpdateCancelButton.isStringTemplate = true;
-        this.deferUpdateCancelButton.appendTo('#' + this.parent.element.id + '_DeferUpdateButton2');
+        this.deferUpdateCancelButton.appendTo(select('#' + this.parent.element.id + '_DeferUpdateButton2', fieldListWrappper) as HTMLElement);
         if (this.parent.allowDeferLayoutUpdate && ((!this.parent.isDeferLayoutUpdate && this.parent.renderMode === 'Popup' &&
             this.parent['refreshing']) || (this.parent.isPopupView && this.parent.pivotGridModule &&
                 !this.parent.pivotGridModule.pivotDeferLayoutUpdate && this.parent.pivotGridModule['refreshing']))) {
@@ -396,7 +396,7 @@ export class DialogRenderer {
             this.fieldListDialog.appendTo(fieldListWrappper);
             // this.fieldListDialog.element.querySelector('.e-dlg-header').innerHTML = headerTemplate;
             // this.fieldListDialog.element.querySelector('.e-footer-content').innerHTML = template;
-            this.renderDeferUpdateButtons();
+            this.renderDeferUpdateButtons(fieldListWrappper);
             setStyleAttribute(select('#' + fieldListWrappper.id + '_title', fieldListWrappper) as HTMLElement, { 'width': '100%' });
             fieldListWrappper.querySelector('.' + cls.TITLE_HEADER_CLASS).appendChild(this.createCalculatedButton());
         }

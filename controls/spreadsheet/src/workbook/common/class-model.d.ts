@@ -769,7 +769,7 @@ export interface ImageModel {
      * Specifies the height of the image.
      *
      * @default 300
-     * @asptype int
+     * @asptype double
      */
     height?: number;
 
@@ -777,7 +777,7 @@ export interface ImageModel {
      * Specifies the width of the image.
      *
      * @default 400
-     * @asptype int
+     * @asptype double
      */
     width?: number;
 
@@ -785,7 +785,7 @@ export interface ImageModel {
      * Specifies the height of the image.
      *
      * @default 0
-     * @asptype int
+     * @asptype double
      */
     top?: number;
 
@@ -793,7 +793,7 @@ export interface ImageModel {
      * Specifies the width of the image.
      *
      * @default 0
-     * @asptype int
+     * @asptype double
      */
     left?: number;
 

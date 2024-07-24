@@ -729,9 +729,8 @@ export class Paragraph {
     private applyStyleValue(args: any): void {
         if (!this.documentEditor.isReadOnly && this.documentEditor.editorModule) {
             let styleName: string = this.documentEditor.stylesDialogModule.getStyleName(SanitizeHtmlHelper.sanitize(args.itemData.StyleName));
-            let styleObj: Object = this.documentEditor.documentHelper.styles.findByName(styleName);
-            if (!isNullOrUndefined(styleObj)) {
-                this.documentEditor.editorModule.applyStyle(styleName, (styleObj as WStyle).type === 'Paragraph');
+            if (!isNullOrUndefined(this.documentEditor.documentHelper.styles.findByName(styleName))) {
+                this.documentEditor.editorModule.applyStyle(styleName, true);
                 let treeViewResult: HTMLElement = document.getElementById(this.documentEditor.containerId + '_treeDiv');
                 if (!isNullOrUndefined(treeViewResult) && !isNullOrUndefined(this.documentEditor.optionsPaneModule) && this.documentEditor.optionsPaneModule.isOptionsPaneShow) {
                     treeViewResult.innerHTML = '';

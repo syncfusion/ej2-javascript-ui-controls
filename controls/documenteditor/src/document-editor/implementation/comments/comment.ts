@@ -956,13 +956,7 @@ export class CommentView {
 
     private initCommentView(localObj: L10n): void {
         this.commentText = createElement('div', { className: 'e-de-cmt-readonly e-mention' });
-        let text : string = this.comment.text;
-        if(this.comment.mentions  && this.comment.mentions.length > 0){
-            let comment : any = this.comment;
-            text = comment.mentions[0].Span ? comment.mentions[0].Span + this.comment.text.replace(comment.mentions[0].Name,"") : comment.text;
-        }
-        this.comment.text = text ;
-        this.commentText.innerHTML = text;
+        this.commentText.innerHTML = this.comment.text;
         this.commentView.appendChild(this.commentText);
         this.initEditView(localObj);
     }
@@ -970,6 +964,9 @@ export class CommentView {
     private initEditView(localObj: L10n): void {
         this.textAreaContainer = createElement('div', { styles: 'display:none' });
         this.textArea = createElement('div', { className: 'e-de-cmt-textarea e-input'});
+        this.textArea.addEventListener('paste', (event) => {
+            this.updatePastedText(event, this.textArea);
+        });
         this.textArea.style.borderWidth = '0 0 2px 0';
         this.textArea.setAttribute('placeholder', localObj.getConstant('Type your comment here'));
         this.editMention = new Mention({
@@ -1003,6 +1000,32 @@ export class CommentView {
         this.editMention.appendTo(this.textArea);
     }
 
+    private updatePastedText(event: ClipboardEvent, element: HTMLElement): void {
+        // Prevent the default paste action
+        event.preventDefault();
+        // Get the pasted content from the clipboard
+        let clipboardData = (event.clipboardData);
+        let plainText = clipboardData.getData('text/plain');
+        if (plainText) {
+            let htmlString = this.convertToHtml(plainText);
+            element.innerHTML = element.innerHTML + htmlString;
+        }
+        this.enableDisableReplyPostButton();
+    }
+
+    private convertToHtml(input: string): string {
+        // Split the input string by \r\n or \r
+        const lines = input.split(/(?:\r?\n|\r)/);
+
+        // Map each line to a <div> element, adding <br> if the line is empty
+        const htmlLines = lines.map(line => line ? `<div>${line}</div>` : `<div><br></div>`);
+
+        // Join the array back into a single string
+        const output = htmlLines.join('');
+
+        return output;
+    }
+
     private onSelect(e: MentionSelectEventArgs): void {
         this.itemData.push(e.itemData);
         
@@ -1032,6 +1055,9 @@ export class CommentView {
             this.replyViewContainer.style.display = 'none';
         }
         this.replyViewTextBox = createElement('div', { className: 'e-de-cmt-textarea e-input' });
+        this.replyViewTextBox.addEventListener('paste', (event) => {
+            this.updatePastedText(event, this.replyViewTextBox);
+        });
         this.replyViewTextBox.style.borderWidth = '0 0 1px 0';
         this.replyViewTextBox.setAttribute("placeholder" , localObj.getConstant('Reply'));
         this.replyViewTextBox.addEventListener('click', this.enableReplyView.bind(this));
@@ -1117,14 +1143,64 @@ export class CommentView {
         }
     }
 
-    private updateReplyTextAreaHeight(): void {
+    private updateReplyTextAreaHeight(event?: KeyboardEvent): void {
+        if (event) {
+            this.preventKeyboardShortcuts(event);
+        }
         setTimeout(() => {
             if (!isNullOrUndefined(this.replyViewTextBox)) {
-            this.replyViewTextBox.style.height = 'auto';
-            const scrollHeight: number = this.replyViewTextBox.scrollHeight;
-            this.replyViewTextBox.style.height = scrollHeight + 'px';
+                this.replyViewTextBox.style.height = 'auto';
+                const scrollHeight: number = this.replyViewTextBox.scrollHeight;
+                this.replyViewTextBox.style.height = scrollHeight + 'px';
             }
         });
+    }
+    private preventKeyboardShortcuts(event: KeyboardEvent): void {
+        let key: number = event.which || event.keyCode;
+        let ctrl: boolean = (event.ctrlKey || event.metaKey) ? true : ((key === 17) ? true : false); // ctrl detection       
+        let shift: boolean = event.shiftKey ? event.shiftKey : ((key === 16) ? true : false); // Shift Key detection        
+        let alt: boolean = event.altKey ? event.altKey : ((key === 18) ? true : false); // alt key detection
+
+        // Define the keyboard shortcuts to prevent
+        let prevent = false;
+
+        // Bold: Ctrl + B or Cmd + B (Mac)
+        if (ctrl && key === 66) prevent = true;
+        // Italic: Ctrl + I or Cmd + I (Mac)
+        else if (ctrl && key === 73) prevent = true;
+        // Underline: Ctrl + U or Cmd + U (Mac)
+        else if (ctrl && key === 85) prevent = true;
+        // Strikethrough: Alt + Shift + 5 (may vary by browser)
+        else if (alt && shift && key === 53) prevent = true;
+        // Superscript: Ctrl + . or Cmd + . (Mac)
+        else if (ctrl && key === 190) prevent = true;
+        // Subscript: Ctrl + , or Cmd + , (Mac)
+        else if (ctrl && key === 188) prevent = true;
+        // Insert Unordered List: Ctrl + Shift + L or Cmd + Shift + L (Mac)
+        else if (ctrl && shift && key === 76) prevent = true;
+        // Insert Ordered List: Ctrl + Shift + 7 or Cmd + Shift + 7 (Mac)
+        else if (ctrl && shift && key === 55) prevent = true;
+        // Remove Formatting: Ctrl + \ or Cmd + \ (Mac)
+        else if (ctrl && key === 220) prevent = true;
+        // Align Left: Ctrl + Shift + L or Cmd + Shift + L (Mac)
+        else if (ctrl && shift && key === 76) prevent = true;
+        // Align Center: Ctrl + Shift + E or Cmd + Shift + E (Mac)
+        else if (ctrl && shift && key === 69) prevent = true;
+        // Align Right: Ctrl + Shift + R or Cmd + Shift + R (Mac)
+        else if (ctrl && shift && key === 82) prevent = true;
+        // Align Justify: Ctrl + Shift + J or Cmd + Shift + J (Mac)
+        else if (ctrl && shift && key === 74) prevent = true;
+        // Outdent: Shift + Tab (may vary by browser)
+        else if (shift && key === 9) prevent = true;
+        // Heading Levels: Ctrl + Alt + 1 to Ctrl + Alt + 6 (may vary by browser) or Cmd + Alt + 1 to Cmd + Alt + 6 (Mac)
+        else if (ctrl && alt && (key >= 49 && key <= 54)) prevent = true;
+        // Quote: Ctrl + Shift + Q or Cmd + Shift + Q (Mac) (may vary by browser)
+        else if (ctrl && shift && key === 81) prevent = true;
+
+        if (prevent) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
     }
     private enableDisableReplyPostButton(): void {
         this.replyPostButton.disabled = this.replyViewTextBox.innerText === '';
@@ -1178,7 +1254,10 @@ export class CommentView {
         this.replyFooter.style.display = 'none';
 
     }
-    private updateTextAreaHeight(): void {
+    private updateTextAreaHeight(event?: KeyboardEvent): void {
+        if (event) {
+            this.preventKeyboardShortcuts(event);
+        }
         setTimeout(() => {
             if (!isNullOrUndefined(this.textArea)) {
                 this.textArea.style.height = 'auto';
@@ -1279,7 +1358,7 @@ export class CommentView {
         if (eventArgs.cancel && eventArgs.type === 'Post') {
             return;
         }
-        const updatedText: string = (this.textArea.innerHTML);
+        const updatedText: string = this.textArea.innerHTML;
         if (this.owner.editorModule && this.comment.text != '' && (this.comment.text != updatedText)) {
             this.owner.editorModule.initHistory('EditComment');
             let modifiedObject: CommentEditInfo = {

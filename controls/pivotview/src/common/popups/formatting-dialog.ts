@@ -227,7 +227,7 @@ export class NumberFormatting implements IAction {
                 open: this.customUpdate.bind(this)
             });
             valuesDropDown.isStringTemplate = true;
-            valuesDropDown.appendTo('#' + this.parent.element.id + '_FormatValueDrop');
+            valuesDropDown.appendTo(select('#' + this.parent.element.id + '_FormatValueDrop', this.dialog.element));
         }
         if (select('#' + this.parent.element.id + '_FormatDrop', this.dialog.element)) {
             const fields: { [key: string]: Object }[] = [
@@ -242,7 +242,7 @@ export class NumberFormatting implements IAction {
                 cssClass: cls.FORMATTING_FORMAT_DROP + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%'
             });
             formatDropDown.isStringTemplate = true;
-            formatDropDown.appendTo('#' + this.parent.element.id + '_FormatDrop');
+            formatDropDown.appendTo(select('#' + this.parent.element.id + '_FormatDrop', this.dialog.element));
         }
         if (select('#' + this.parent.element.id + '_GroupingDrop', this.dialog.element)) {
             const fields: { [key: string]: Object }[] = [
@@ -254,7 +254,7 @@ export class NumberFormatting implements IAction {
                 index: 0, cssClass: cls.FORMATTING_GROUPING_DROP + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), width: '100%', change: this.groupingChange.bind(this)
             });
             groupingDropDown.isStringTemplate = true;
-            groupingDropDown.appendTo('#' + this.parent.element.id + '_GroupingDrop');
+            groupingDropDown.appendTo(select('#' + this.parent.element.id + '_GroupingDrop', this.dialog.element));
         }
         if (select('#' + this.parent.element.id + '_DecimalDrop', this.dialog.element)) {
             const fields: { [key: string]: Object }[] = [
@@ -275,7 +275,7 @@ export class NumberFormatting implements IAction {
                 index: 0, cssClass: cls.FORMATTING_DECIMAL_DROP + (this.parent.cssClass ? (' ' + this.parent.cssClass) : ''), popupHeight: 150, width: '100%', change: this.decimalChange.bind(this)
             });
             decimalDropDown.isStringTemplate = true;
-            decimalDropDown.appendTo('#' + this.parent.element.id + '_DecimalDrop');
+            decimalDropDown.appendTo(select('#' + this.parent.element.id + '_DecimalDrop', this.dialog.element));
         }
         if (formatDropDown.value !== this.parent.localeObj.getConstant('Custom')) {
             this.customText.disabled = true;

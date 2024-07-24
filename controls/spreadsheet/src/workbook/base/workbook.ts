@@ -1767,7 +1767,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * The `calculateNow` method is used to calculate any uncalculated formulas in a spreadsheet.
+     * The `calculateNow` method is used to calculate any `uncalculated formulas` in a spreadsheet.
      * This method accepts an option to specify whether the calculation should be performed for the entire workbook or a specific sheet.
      *
      * @param {string} [scope] - Specifies the scope of the calculation. Acceptable values are `Sheet` or `Workbook`.

@@ -3548,7 +3548,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             case 'hyperlinkSettings':
             case 'allowDrillThrough':
             case 'editSettings':
-            case 'allowDataCompression':
+            case 'allowDataCompression': {
                 if (newProp.dataSourceSettings && ((!isNullOrUndefined(newProp.dataSourceSettings.dataSource) &&
                     !isNullOrUndefined(this.clonedDataSet) && this.clonedDataSet !== newProp.dataSourceSettings.dataSource &&
                     !isNullOrUndefined(newProp.dataSourceSettings.groupSettings) &&
@@ -3562,13 +3562,14 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     && newProp.dataSourceSettings.groupSettings && this.dataType === 'pivot') {
                     this.updateGroupingReport(newProp.dataSourceSettings.groupSettings, 'Date');
                 }
-                const changedProps: string[] = !isNullOrUndefined(newProp.dataSourceSettings) ? Object.keys(newProp.dataSourceSettings) : [];
-                if (changedProps.indexOf('dataSource') > -1) {
+                const changedProps: string[] = !isNullOrUndefined(newProp.dataSourceSettings) ? Object.keys(newProp.dataSourceSettings)
+                    : [];
+                if (changedProps.indexOf('dataSource') > -1 && newProp.dataSourceSettings.type !== 'CSV') {
                     if (!isNullOrUndefined(this.savedDataSourceSettings) && (this.dataSourceSettings.dataSource as IDataSet[]).length > 0) {
                         PivotUtil.updateDataSourceSettings(this, this.savedDataSourceSettings);
                         this.savedDataSourceSettings = undefined;
                     }
-                    if ((newProp.dataSourceSettings.dataSource && newProp.dataSourceSettings.dataSource as IDataSet[]).length === 0) {
+                    if (newProp.dataSourceSettings.dataSource && (newProp.dataSourceSettings.dataSource as IDataSet[]).length === 0) {
                         this.savedDataSourceSettings = PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings);
                         this.setProperties({ dataSourceSettings: { rows: [] } }, true);
                         this.setProperties({ dataSourceSettings: { columns: [] } }, true);
@@ -3621,6 +3622,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                                         this.engineModule.fieldList = null;
                                         this.engineModule.isEmptyData = true;
                                         this.engineModule.data = [];
+                                        this.engineModule.groupingFieldsInfo = {};
                                     } else if (this.dataType === 'olap') {
                                         this.olapEngineModule.fieldList = {};
                                         this.olapEngineModule.fieldListData = undefined;
@@ -3634,6 +3636,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     }
                 }
                 break;
+            }
             case 'height':
             case 'width':
                 this.layoutRefresh();

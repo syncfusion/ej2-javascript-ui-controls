@@ -394,58 +394,71 @@ export class SfdtReader {
     }
     private parseCommentText(blocks: any): string {
         let text: string = '';
+        let isFieldDisplayText: boolean = false;
         for (let i: number = 0; i < blocks.length; i++) {
             if (i !== 0) {
-                text += '\n';
+                text += '<div>';
             }
-            if (blocks[i][inlinesProperty[this.keywordIndex]].length == 6) {
-                for (let j: number = 0; j < blocks[i][inlinesProperty[this.keywordIndex]].length; j++) {
-                    let cmtText: string = blocks[i][inlinesProperty[this.keywordIndex]][j][textProperty[this.keywordIndex]]
-                    // Added the below line to fix the breaking issue to preserve the mentions in docx.
-                    if (cmtText && (cmtText.indexOf('span') !== -1 || j === blocks[i][inlinesProperty[this.keywordIndex]].length - 1)) {
-                        text = text + blocks[i][inlinesProperty[this.keywordIndex]][j][textProperty[this.keywordIndex]];
+            if (blocks[i][inlinesProperty[this.keywordIndex]].length > 0) {
+                const inlines: any = blocks[i][inlinesProperty[this.keywordIndex]];
+                for (let j: number = 0; j < inlines.length; j++) {
+                    const inline: any = inlines[j];
+                    if ((inline[fieldTypeProperty[this.keywordIndex]] === 0) || (inline[fieldTypeProperty[this.keywordIndex]] === 1) || (inline[fieldTypeProperty[this.keywordIndex]] === 2)) {
+                        if (inline[fieldTypeProperty[this.keywordIndex]] === 0) {
+                            j++;
+                        } else if (inline[fieldTypeProperty[this.keywordIndex]] === 2) {
+                            isFieldDisplayText = true;
+                        }
+                        continue;
+                    }
+                    let textValue: string = inline[textProperty[this.keywordIndex]];
+                    if (isFieldDisplayText) {
+                        text = text + '<span contenteditable="false" class="e-mention-chip">' + textValue + '</span>';
+                        isFieldDisplayText = false;
+                    } else {
+                        text = text + textValue;
                     }
                 }
+            } else {
+                text += i === 0 ? '<div><br></div>' : '<br>';
             }
-            else {
-                for (let j: number = 0; j < blocks[i][inlinesProperty[this.keywordIndex]].length; j++) {
-                    text = text + blocks[i][inlinesProperty[this.keywordIndex]][j][textProperty[this.keywordIndex]];
-                }
+            if (i !== 0) {
+                text += '</div>';
             }
         }
         return text;
     }
 
     private parseCommentMentions(blocks: any): any {
-        let text: any = [];
+        let data: any = [];
+        let isFieldCode: boolean = false;
+        let isFieldDisplayText: boolean = false;
         for (let i = 0; i < blocks.length; i++) {
-            if(blocks[i][inlinesProperty[this.keywordIndex]].length == 6){
-                var emailText = blocks[i][inlinesProperty[this.keywordIndex]][1][textProperty[this.keywordIndex]];
-                var url = emailText.substring(12, emailText.length - 2);
-                var nameData = blocks[i][inlinesProperty[this.keywordIndex]][3][textProperty[this.keywordIndex]]
-                text = [{
-                    Name: nameData,
-                    Value: url,
-                    Span: '<span contenteditable="false" class="e-mention-chip">' + nameData + '</span>'
-                }];
-            }
-            else{
-                for (let j: number = 0; j < blocks[i][inlinesProperty[this.keywordIndex]].length; j++) {
-                    var emailText = blocks[i][inlinesProperty[this.keywordIndex]][j][textProperty[this.keywordIndex]];
-                    var url = emailText.substring(12, emailText.length - 2);
-                    var nameData = blocks[i][inlinesProperty[this.keywordIndex]][j][textProperty[this.keywordIndex]];
-                    if (emailText && emailText.indexOf('@') !== -1 && emailText.indexOf('.com') === -1) {
-                        text = [{
-                            Name: nameData,
-                            Value: url,
-                            Span: '<span contenteditable="false" class="e-mention-chip">' + nameData + '</span>'
-                        }];
+            const inlines: any = blocks[i][inlinesProperty[this.keywordIndex]];
+            for (let j: number = 0; j < inlines.length; j++) {
+                const inline: any = inlines[j];
+                if ((inline[fieldTypeProperty[this.keywordIndex]] === 0) || (inline[fieldTypeProperty[this.keywordIndex]] === 1) || (inline[fieldTypeProperty[this.keywordIndex]] === 2)) {
+                    if (inline[fieldTypeProperty[this.keywordIndex]] === 0) {
+                        isFieldCode = true;
+                    } else if (inline[fieldTypeProperty[this.keywordIndex]] === 2) {
+                        isFieldDisplayText = true;
                     }
+                    continue;
+                }
+                let textValue: string = inline[textProperty[this.keywordIndex]];
+                let mention: any = {};
+                if (isFieldCode) {
+                    let updatedText: string = textValue.replace(/.*"(.*)".*/, '$1');
+                    mention.EmailId = updatedText;
+                    isFieldCode = false;
+                } else if (isFieldDisplayText) {
+                    mention.Name = textValue;
+                    isFieldDisplayText = false;
+                    data.push(mention);
                 }
             }
-            
         }
-        return text;
+        return data;
     }
     public parseStyle(data: any, style: any, styles: WStyles, resetKeyIndex?: boolean): void {
         let wStyle: any;
@@ -2267,6 +2280,7 @@ export class SfdtReader {
     }
     // Bug 864876: Here, we have checking whether the font is installed or not. If not installed, then we have changed the font name from the font substitution table.
     // The below code is implemented by refering the following link. (https://www.samclarke.com/javascript-is-font-available/#:~:text=Then%20to%20check%20a%20font,otherwise%20another%20fallback%20is%20tried.)
+    
     private isFontInstalled(fontFamily: string): boolean {
         const monoWidth: number = this.getWidth('monospace');
         const sansWidth: number = this.getWidth('sans-serif');

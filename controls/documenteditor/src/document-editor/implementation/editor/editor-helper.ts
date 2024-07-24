@@ -17,8 +17,10 @@ import {
     lineSpacingTypeProperty, outlineLevelProperty, listFormatProperty, tabsProperty,
     keepLinesTogetherProperty, keepWithNextProperty, contextualSpacingProperty, widowControlProperty,
     topProperty, leftProperty, rightProperty, bottomProperty, horizontalProperty, verticalProperty,
-    colorProperty, hasNoneStyleProperty, lineStyleProperty, lineWidthProperty, shadowProperty, spaceProperty
+    colorProperty, hasNoneStyleProperty, lineStyleProperty, lineWidthProperty, shadowProperty, spaceProperty, inlinesProperty,
+    characterFormatProperty, textProperty
 } from '../../index';
+import { FieldSettingsModel } from '@syncfusion/ej2-navigations';
 
 /**
  * @private
@@ -885,6 +887,78 @@ export class HelperMethods {
         // and used unicodes in DocumentEditor \f | \v | \r | \u000E
         const invalidXMLChars = /[^\x09\x0A\x0C\x0D\v\f\r\u000E\x20-\uD7FF\uE000-\uFFFD\u{10000}-\u{10FFFF}]/ug;
         return text.replace(invalidXMLChars, '');
+    }
+
+    public static commentInlines(ctext: string, mentions: FieldSettingsModel[], keywordIndex: number): any {
+        const blocks: any = [];
+        let outputArray = ctext.split(/<\/?div>/).filter(Boolean).map(function (item) { return item.trim(); });
+        outputArray = (outputArray.filter(Boolean).map(function (item) { return item === "<br>" ? item : item.split(/<br\s*\/?>/) }) as any).flat();
+        outputArray.forEach(text => {
+            let block: any = {};
+            block[inlinesProperty[keywordIndex]] = [];
+            if (text !== "" && text !== "<br>") {
+                // Replace &nbsp; with a space
+                text = text.replace(/&nbsp;/g, " ");
+                // Extracting parts into an array
+                let parts = text.match(/(<[^>]+>[^<]*<\/[^>]+>|[^<]+)/g);
+                // Iterate through the parts array
+                parts.forEach((content) => {
+                    if (content.indexOf("<span") === 0) {
+                        // Regular expression to match the content inside the span tag
+                        const regex = /<span[^>]*>([^<]*)<\/span>/;
+                        // Extract the text
+                        const match = content.match(regex);
+                        const name = match ? match[1].trim() : '';
+                        const email = this.getEmailIdByName(name, mentions);
+                        block = this.serializeMentions(name, email, block, keywordIndex);
+                    } else {
+                        const inlines: any = {};
+                        inlines[textProperty[keywordIndex]] = content;
+                        block[inlinesProperty[keywordIndex]].push(inlines);
+                    }
+                });
+            }
+            blocks.push(block);
+        });
+        return blocks;
+    }
+
+    private static getEmailIdByName(name: string, mentions: FieldSettingsModel[]): string {
+        for (let item of mentions) {
+            if (item["Name"] === name) {
+                return item["EmailId"];
+            }
+        }
+        return "";
+    }
+
+    private static serializeMentions(name: string, email: string, block: string, keywordIndex: number): any {
+        var inlines = {};
+        inlines[characterFormatProperty[keywordIndex]] = {};
+        inlines["fieldType"] = 0;
+        inlines["hasFieldEnd"] = true;
+        block[inlinesProperty[keywordIndex]].push(inlines);
+        var inlines2 = {};
+        inlines2[characterFormatProperty[keywordIndex]] = {};
+        inlines2[textProperty[keywordIndex]] = ' HYPERLINK \"' + email + '\" ';
+        block[inlinesProperty[keywordIndex]].push(inlines2);
+        var inlines3 = {};
+        inlines3[characterFormatProperty[keywordIndex]] = {};
+        inlines3["fieldType"] = 2;
+        block[inlinesProperty[keywordIndex]].push(inlines3);
+        var inlines4 = {};
+        inlines4[characterFormatProperty[keywordIndex]] = {
+            "underline": "Single",
+            "fontColor": "#0563c1",
+            "bidi": false
+        };
+        inlines4[textProperty[keywordIndex]] = name;
+        block[inlinesProperty[keywordIndex]].push(inlines4);
+        var inlines5 = {};
+        inlines5[characterFormatProperty[keywordIndex]] = {};
+        inlines5["fieldType"] = 1;
+        block[inlinesProperty[keywordIndex]].push(inlines5);
+        return block;
     }
     public static reverseString(text: string): string {
         if (!isNullOrUndefined(text) && text !== '') {

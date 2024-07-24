@@ -1419,7 +1419,8 @@ export class Transform {
             if (freehandObj['bool']) {
                 parent.notify('toolbar', { prop: 'destroy-qa-toolbar', onPropertyChange: false});
             }
-            if (parent.activeObj.shape !== undefined) {
+            const actPoint: ActivePoint = extend({}, parent.activeObj.activePoint, {}, true) as ActivePoint;
+            if (parent.activeObj.shape && (actPoint.width !== 0 || actPoint.height !== 0)) {
                 isActiveObj = true;
                 if (parent.textArea.style.display === 'block' || parent.textArea.style.display === 'inline-block') {
                     parent.notify('shape', { prop: 'redrawActObj', onPropertyChange: false,

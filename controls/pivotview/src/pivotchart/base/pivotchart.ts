@@ -159,7 +159,7 @@ export class PivotChart {
                 else {
                     tmpChart = new Chart({ width: width, height: height });
                 }
-                tmpChart.appendTo('#' + this.parent.element.id + '_chart');
+                tmpChart.appendTo(select('#' + this.parent.element.id + '_chart', this.parent.element) as HTMLElement);
                 if (this.parent.showToolbar) {
                     if (this.parent.displayOption.view === 'Both' && this.parent.currentView === 'Chart') {
                         this.parent.grid.element.style.display = 'none';
@@ -854,9 +854,9 @@ export class PivotChart {
             }
         }
         if (this.parent.chartSettings.enableScrollOnMultiAxis && this.parent.chartSettings.enableMultipleAxis) {
-            this.parent.chart.appendTo('#' + this.parent.element.id + '_chartInner');
+            this.parent.chart.appendTo(select('#' + this.parent.element.id + '_chartInner', this.parent.element) as HTMLElement);
         } else {
-            this.parent.chart.appendTo('#' + this.parent.element.id + '_chart');
+            this.parent.chart.appendTo(select('#' + this.parent.element.id + '_chart', this.parent.element) as HTMLElement);
         }
     }
 

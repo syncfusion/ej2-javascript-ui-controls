@@ -123,6 +123,10 @@ export class Layout {
     /**
      * @private
      */
+    public isRelayoutEndnote: boolean = false;
+    /**
+     * @private
+     */
     public startat: number;
     public isLayoutWhole: boolean = false;
 
@@ -1642,15 +1646,26 @@ export class Layout {
                     (block.containerWidget as BodyWidget).page = footnote.page;
                     block.containerWidget.containerWidget = footnote;
                     // paragraph.index = i > 1 ? i - 1 : 0;
+                    if (footnote.footNoteType === 'Endnote') {
+                        let paragraph: ParagraphWidget = this.documentHelper.getFirstParagraphBlock(block);
+                        const height: number = this.documentHelper.textHelper.getParagraphMarkSize(paragraph.characterFormat).Height;
+                        if (this.viewer.clientActiveArea.height < height) {
+                            let endnote: FootNoteWidget = this.moveEndnoteToNextPage(footnote, footnote.bodyWidgets[i]);
+                            this.layoutfootNote(endnote);
+                            return endnote;
+                        }
+                    }
                     this.viewer.updateClientAreaForBlock(block, true);
                     if (block instanceof TableWidget) {
                         this.clearTableWidget(block, true, true, true);
                         this.isRelayoutFootnote = true;
-                        this.viewer.clientArea.height = Number.POSITIVE_INFINITY;
-                        this.viewer.clientActiveArea.height = Number.POSITIVE_INFINITY;
+                        if (footnote.footNoteType === 'Footnote') {
+                            this.viewer.clientArea.height = Number.POSITIVE_INFINITY;
+                            this.viewer.clientActiveArea.height = Number.POSITIVE_INFINITY;
+                        }
                     }
                     this.layoutBlock(block, 0);
-                    if (footnote.footNoteType === 'Footnote' && footnote.bodyWidgets[i].columnIndex === footBody.columnIndex) {
+                    if (footnote.bodyWidgets[i].columnIndex === footBody.columnIndex) {
                         footnote.height += block.height;
                     }
                     this.viewer.updateClientAreaForBlock(block, false);
@@ -1687,6 +1702,27 @@ export class Layout {
         }
         this.footnoteHeight = 0;
         return footnote;
+    }
+    private moveEndnoteToNextPage(endnote: FootNoteWidget, bodyWidget: BodyWidget): FootNoteWidget {     
+        const page: Page = endnote.page;
+        const pageIndex: number = page.index + 1;
+        const newBodyWidget: BodyWidget = this.createSplitBody(bodyWidget);
+        let nextPage: Page = this.viewer.createNewPage(newBodyWidget, pageIndex);
+        this.viewer.updateClientArea(newBodyWidget, newBodyWidget.page);
+        let currentIndex: number = endnote.bodyWidgets.indexOf(bodyWidget);
+        let newEndnote: FootNoteWidget = new FootNoteWidget();
+        newEndnote.footNoteType = 'Endnote';
+        newEndnote.page = nextPage;
+        for (let i: number = currentIndex; i < endnote.bodyWidgets.length; i++) {
+            let currentBodyWidget: BodyWidget = endnote.bodyWidgets[i];
+            endnote.bodyWidgets.splice(i, 1);
+            newEndnote.bodyWidgets.push(currentBodyWidget);
+            currentBodyWidget.containerWidget = newEndnote;
+            currentBodyWidget.page = nextPage;
+            i--;
+        }
+        nextPage.endnoteWidget = newEndnote;
+        return newEndnote;
     }
     private getFootNoteBodyHeight(section: BodyWidget): number {
         let height: number = 0;
@@ -2291,7 +2327,8 @@ export class Layout {
         }
         // Here field code width and height update need to skipped based on the hidden property.
         if (element instanceof TextElementBox) {
-            if (!element.isWidthUpdated || element.width === 0 || this.isInitialLoad) {
+            if (!element.isWidthUpdated || element.width === 0 || this.isInitialLoad
+                || (this.viewer.owner.editorModule && this.viewer.owner.editorModule.isMeasureParaWidth)) {
                 width = this.documentHelper.textHelper.getTextSize(element as TextElementBox, element.characterFormat);
                 element.isWidthUpdated = true;
             } else {
@@ -9920,8 +9957,8 @@ export class Layout {
     public shiftLayoutedItems(reLayout: boolean, isMultiColumnShift?: boolean): void {
         if (isNullOrUndefined(this.documentHelper.blockToShift) || isNullOrUndefined(this.documentHelper.blockToShift.containerWidget)) {
             this.documentHelper.blockToShift = undefined;
-            this.checkAndShiftEndnote();
             this.documentHelper.removeEmptyPages();
+            this.checkAndShiftEndnote();
             return;
         }
         let block: BlockWidget = this.documentHelper.blockToShift;
@@ -10061,8 +10098,23 @@ export class Layout {
         if (((!this.documentHelper.owner.enableLockAndEdit && !this.documentHelper.owner.enableHeaderAndFooter) || !reLayout) && !this.isMultiColumnSplit) {
             viewer.updateScrollBars();
         }
-        if (!(block.bodyWidget instanceof FootNoteWidget) && !this.isRelayoutFootnote && block.bodyWidget.page.endnoteWidget) {
-            this.layoutfootNote(block.bodyWidget.page.endnoteWidget);
+        if (!(block.bodyWidget instanceof FootNoteWidget) && !this.isRelayoutFootnote) {
+            if (block.bodyWidget.page.endnoteWidget) {
+                this.layoutfootNote(block.bodyWidget.page.endnoteWidget);
+            } else if (this.isRelayoutEndnote) {
+                const lastPage = this.documentHelper.pages[this.documentHelper.pages.length - 1];
+                if (!isNullOrUndefined(lastPage) && !isNullOrUndefined(lastPage.endnoteWidget)) {
+                    let clientActiveArea: Rect = this.viewer.clientActiveArea.clone();
+                    const bodyWidget: BodyWidget = this.getBodyWidget(lastPage.bodyWidgets[lastPage.bodyWidgets.length - 1], true);
+                    this.viewer.updateClientArea(bodyWidget, bodyWidget.page);
+                    const height: number = this.getNextWidgetHeight(bodyWidget);
+                    this.viewer.clientActiveArea.height -= height - this.viewer.clientActiveArea.y;
+                    this.viewer.clientActiveArea.y = height;
+                    this.layoutfootNote(lastPage.endnoteWidget);
+                    this.viewer.clientActiveArea = clientActiveArea;
+                }
+                this.isRelayoutEndnote = false;
+            }
         }
         // }
     }

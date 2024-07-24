@@ -710,7 +710,7 @@
     border-color: $input-box-border-color;
   }
 
-  .e-bigger .e-input#{$css}:focus:not(.e-success):not(.e-warning):not(.e-error) {
+  .e-bigger .e-input#{$css}:focus:not(.e-success):not(.e-warning):not(.e-error):not(.e-textarea) {
     @if $input-skin-name == 'fluent2' {
       padding-bottom: 0;
     }
@@ -742,6 +742,20 @@
       border-bottom-color: $input-active-border-color;
       padding-bottom: 2px;
       border-bottom-width: 2px;
+    }
+  }
+
+  textarea.e-input#{$css}:focus:not(.e-success):not(.e-warning):not(.e-error) {
+    @if $input-skin-name == 'fluent2' {
+      border-bottom-color: $input-active-border-color;
+      padding-bottom: 4px;
+      border-bottom-width: 0;
+    }
+  }
+
+  .e-bigger textarea.e-input#{$css}:focus:not(.e-success):not(.e-warning):not(.e-error) {
+    @if $input-skin-name == 'fluent2' {
+      padding-bottom: 6px;
     }
   }
 
@@ -860,14 +874,10 @@
     @if $input-skin-name == 'bootstrap4'  {
       transition: $input-transition-shadow;
     }
-    @if $input-skin-name == 'tailwind' or $input-skin-name == 'bootstrap5' {
+    @if $input-skin-name == 'tailwind' or $input-skin-name == 'bootstrap5' or $input-skin-name == 'FluentUI'  {
       border-color: $input-group-border-color-focus;
       border-radius: $input-groupo-focus-border-radius;
       box-shadow: $input-group-focus-box-shadow;
-    }
-    @if $input-skin-name == 'FluentUI' {
-      border-radius: $input-groupo-focus-border-radius;
-      border-width: 2px;
     }
   }
 

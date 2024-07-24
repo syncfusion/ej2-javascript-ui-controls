@@ -2038,11 +2038,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     private doCheckBoxAction(nodes: string[] | Element[], doCheck: boolean): void {
         if (!isNOU(nodes)) {
+            nodes.reverse();
             for (let len: number = nodes.length - 1; len >= 0; len--) {
                 const liEle: Element = this.getElement(nodes[parseInt(len.toString(), 10)]);
                 if (isNOU(liEle)) {
-                    const node: string = nodes[len - (nodes.length - 1)]
-                        ? nodes[len - (nodes.length - 1)].toString()
+                    const node: string = nodes[len - nodes.length] ? nodes[len - nodes.length].toString()
                         : nodes[parseInt(len.toString(), 10)]
                             ? nodes[parseInt(len.toString(), 10)].toString()
                             : null;

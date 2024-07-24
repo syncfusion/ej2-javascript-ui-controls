@@ -1995,7 +1995,7 @@ export class Filter {
      * @returns {void} - Clear filter from the field.
      */
     private clearFilterHandler(args?: { field?: string, isAction?: boolean, preventRefresh?: boolean, sheetIndex?: number }): void {
-        const sheetIndex: number = args && args.sheetIndex !== undefined ? args.sheetIndex : this.parent.activeSheetIndex;
+        const sheetIndex: number = args && !isNullOrUndefined(args.sheetIndex) ? args.sheetIndex : this.parent.activeSheetIndex;
         if (args && args.field) {
             const predicates: PredicateModel[] = [].slice.call(this.filterCollection.get(sheetIndex));
             if (predicates && predicates.length) {

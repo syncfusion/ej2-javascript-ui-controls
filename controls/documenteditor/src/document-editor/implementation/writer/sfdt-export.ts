@@ -2066,71 +2066,13 @@ export class SfdtExport {
         comment[commentIdProperty[this.keywordIndex]] = comments.commentId;
         comment[authorProperty[this.keywordIndex]] = comments.author;
         comment[dateProperty[this.keywordIndex]] = comments.date;
-        comment[blocksProperty[this.keywordIndex]] = [];
-        comment[blocksProperty[this.keywordIndex]].push(this.commentInlines(comments.text, comments.mentions));
+        comment[blocksProperty[this.keywordIndex]] = HelperMethods.commentInlines(comments.text, comments.mentions, this.keywordIndex);
         comment[doneProperty[this.keywordIndex]] = HelperMethods.getBoolInfo(comments.isResolved, this.keywordIndex);
         comment[replyCommentsProperty[this.keywordIndex]] = [];
         for (let i: number = 0; i < comments.replyComments.length; i++) {
             comment[replyCommentsProperty[this.keywordIndex]].push(this.writeComment(comments.replyComments[i]));
         }
         return comment;
-    }
-    private commentInlines(ctext: string, mentions: FieldSettingsModel[]): any {
-        let blocks: any = {};
-        blocks[inlinesProperty[this.keywordIndex]] = [];
-        let inlines: any = {};
-        let dataName: string = "";
-        let text: string = "";
-        let url: string = "";
-        if (mentions && mentions.length > 0) {
-            for (var i = 0; i < mentions.length; i++) {
-                dataName = (mentions[i] as any).Name;
-                if (ctext.indexOf(dataName) !== -1 && (mentions[i] as any).Name) {
-                    let temp: string[] = ctext.split("&nbsp;");
-                    text = temp.length > 1 ? temp[1] : temp[0];
-                    dataName = (mentions[i] as any).Name;
-                    url = (mentions[i] as any).EmailId;
-                }
-            }
-            blocks = this.serializeMentions(dataName, url, blocks);
-        }
-        if (ctext.indexOf('span') !== -1) {
-            let email = ctext.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-            ctext = email? email + " " : ctext;
-        }
-        inlines[textProperty[this.keywordIndex]] = mentions.length > 0 ? text : ctext;
-        blocks[inlinesProperty[this.keywordIndex]].push(inlines);
-        return blocks;
-    }
-
-
-    private serializeMentions(dataName: string, url: string, blocks: string): any {
-        var inlines = {};
-        inlines[characterFormatProperty[this.keywordIndex]] = {};
-        inlines["fieldType"] = 0;
-        inlines["hasFieldEnd"] = true;
-        blocks[inlinesProperty[this.keywordIndex]].push(inlines);
-        var inlines2 = {};
-        inlines2[characterFormatProperty[this.keywordIndex]] = {};
-        inlines2[textProperty[this.keywordIndex]] = ' HYPERLINK \"' + url + '\" ';
-        blocks[inlinesProperty[this.keywordIndex]].push(inlines2);
-        var inlines3 = {};
-        inlines3[characterFormatProperty[this.keywordIndex]] = {};
-        inlines3["fieldType"] = 2;
-        blocks[inlinesProperty[this.keywordIndex]].push(inlines3);
-        var inlines4 = {};
-        inlines4[characterFormatProperty[this.keywordIndex]] = {
-            "underline": "Single",
-            "fontColor": "#0563c1",
-            "bidi": false
-        };
-        inlines4[textProperty[this.keywordIndex]] = dataName;
-        blocks[inlinesProperty[this.keywordIndex]].push(inlines4);
-        var inlines5 = {};
-        inlines5[characterFormatProperty[this.keywordIndex]] = {};
-        inlines5["fieldType"] = 1;
-        blocks[inlinesProperty[this.keywordIndex]].push(inlines5);
-        return blocks;
     }
 
     private writeLists(documentHelper: DocumentHelper): void {

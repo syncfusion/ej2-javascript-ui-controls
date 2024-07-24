@@ -911,6 +911,10 @@ export class Selection {
         for (let i: number = 0, len: number = obj.length; i < len; i++) {
             if (parent.cursor === 'move') {return; }
             const actObj: SelectionPoint = extend({}, obj[i as number], {}, true) as SelectionPoint;
+            if (actObj.activePoint.width === 0 && actObj.activePoint.height === 0) {
+                obj.splice(i, 1);
+                return;
+            }
             this.cursorTargetId = actObj.currIndex;
             if (actObj.shape === 'line' || actObj.shape === 'arrow') {
                 this.setCursorForLineArrow(actObj, x, y, upperCanvas);
@@ -3229,7 +3233,6 @@ export class Selection {
                         const tempObj: SelectionPoint = extend({}, parent.objColl[parent.objColl.length - 1], {}, true) as SelectionPoint;
                         parent.objColl.pop();
                         this.redrawShape(tempObj);
-                        parent.objColl.push(tempObj);
                         this.tempObjColl = undefined;
                     }
                     if (!this.isFhdEditing) {
@@ -3872,7 +3875,7 @@ export class Selection {
     private focusRatioBtn(): void {
         const id: string = this.parent.element.id;
         if (this.parent.isKBDNavigation) {
-            setTimeout(function () {
+            setTimeout(() => {
                 if (document.getElementById(id + '_aspectratio')) {
                     document.getElementById(id + '_aspectratio').focus();
                 } else if (document.getElementById(id + '_nonaspectratio')) {

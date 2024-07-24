@@ -352,6 +352,17 @@ export class InsertHtml {
         } else {
             this.cursorPos(lastSelectionNode, node, nodeSelection, docElement, editNode, enterAction);
         }
+        const spanAligns: NodeListOf<HTMLElement> = editNode.querySelectorAll('span[style*="text-align"]');
+        if (spanAligns.length > 0) {
+            spanAligns.forEach((spanAlign: HTMLElement) => {
+                if (!isNOU(spanAlign)) {
+                    const blockAlign: Node = this.getImmediateBlockNode(spanAlign, null);
+                    if (blockAlign && (blockAlign as HTMLElement).textContent.trim() === spanAlign.textContent.trim()) {
+                        (blockAlign as HTMLElement).style.textAlign = spanAlign.style.textAlign;
+                    }
+                }
+            });
+        }
     }
     private static placeCursorEnd(
         lastSelectionNode: Node, node: Node, nodeSelection: NodeSelection, docElement: Document, editNode?: Element): void {

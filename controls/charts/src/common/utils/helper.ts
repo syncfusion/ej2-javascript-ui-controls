@@ -208,7 +208,7 @@ export function logBase(value: number, base: number): number {
  */
 export function showTooltip(
     text: string, x: number, y: number, areaWidth: number, id: string, element: Element,
-    isTouch?: boolean, isTitleOrLegendEnabled?: boolean
+    isTouch?: boolean, isTitleOrLegendEnabled?: boolean, bound?: Rect
 ): void {
     //let id1: string = 'EJ2_legend_tooltip';
     let tooltip: HTMLElement = document.getElementById(id);
@@ -218,6 +218,9 @@ export function showTooltip(
     });
     const width: number = size.width + 5;
     x = (x + width > areaWidth) ? x - (width + 15) : x;
+    if (bound && x < bound.x) {
+        x = bound.x;
+    }
     y = isTitleOrLegendEnabled ? (y - size.height / 2) : y + 15;
     if (!tooltip) {
         tooltip = createElement('div', {
@@ -2604,6 +2607,10 @@ export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator 
         if (range.disableRangeSelector) {
             height = periodHeight;
         }
+        if ((chart as RangeNavigator).stockChart && (chart as RangeNavigator).stockChart.chart.axisCollections[1].labelPosition === 'Outside') {
+            const padding: number = (chart as RangeNavigator).stockChart.chart.axisCollections[1].labelPadding + (chart as RangeNavigator).stockChart.chart.axisCollections[1].lineStyle.width * 0.5;
+            chart.width = ((chart as RangeNavigator).stockChart.availableSize.width - ((chart as RangeNavigator).stockChart.chart.axisCollections[1].maxLabelSize.width + padding)).toString();
+        }
     }
     chart.availableSize = new Size(
         stringToNumber(chart.width, containerWidth) || containerWidth || 600,
@@ -2614,8 +2621,12 @@ export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator 
         if (chart.width === '' || chart.width === null || chart.width === '100%') {
             scaleX = chart.element.getBoundingClientRect().width > 0 ?
                 chart.element.getBoundingClientRect().width / chart.availableSize.width : 1;
-            scaleY = chart.element.getBoundingClientRect().height > 0 ?
-                chart.element.getBoundingClientRect().height / chart.availableSize.height : 1;
+            if (containerHeight && chart.element.parentElement.style.transform.indexOf('scale') > -1) {
+                scaleY = 1;
+            } else {
+                scaleY = chart.element.getBoundingClientRect().height > 0 ?
+                    chart.element.getBoundingClientRect().height / chart.availableSize.height : 1;
+            }
             const transformValue: string = chart.element.style.transform;
             if (transformValue) {
                 const scaleValue: number = parseFloat(transformValue.match(/scale\((.*?)\)/)[1]);

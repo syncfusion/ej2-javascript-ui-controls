@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.2.4 (2024-07-24)
+
+### PivotTable
+
+#### New features
+
+- `#F188060` - Implemented support for rendering all pivot table features within the "Ant Design" modal.
+
 ## 26.1.42 (2024-07-16)
 
 ### PivotTable

@@ -125,6 +125,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     private isAddedFromGantt: boolean;
     private isIndentEnabled: boolean;
     private indentOutdentAction: string = 'indentOutdentAction';
+    private parentQuery: any;
     // A boolean flag indicating whether the collapsed event has been triggered.
     private isCollapsedEventTriggered: boolean;
     // A boolean flag indicating whether the collapsing event has been triggered.
@@ -2303,10 +2304,24 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     private bindGridEvents(): void {
         this.grid.rowSelecting = (args: RowDeselectingEventArgs): void => {
             this.IsExpandCollapseClicked(args);
+            if (!isNullOrUndefined((args.data as any)) && this.selectionSettings.persistSelection
+                && this.columnModel.filter((col: any) => col.type === 'checkbox').length > 0 && isRemoteData(this)) {
+                if (!isNullOrUndefined((args.data as any).parentItem)) {
+                    this.parentQuery = this.query.queries.filter((q: any) => q.e.field === this.parentIdMapping);
+                    this.query.queries = this.query.queries.slice(0, 0);
+                }
+            }
             this.trigger(events.rowSelecting, args);
         };
         this.grid.rowDeselecting = (args: RowDeselectingEventArgs): void => {
             this.IsExpandCollapseClicked(args);
+            if (isNullOrUndefined((args.data as any)) && this.selectionSettings.persistSelection
+                && this.columnModel.filter((col: any) => col.type === 'checkbox').length > 0 && isRemoteData(this)) {
+                if (isNullOrUndefined((args.data as any).parentItem)) {
+                    this.parentQuery = this.query.queries.filter((q: any) => q.e.field === this.parentIdMapping);
+                    this.query.queries = this.query.queries.slice(0, 0);
+                }
+            }
             this.trigger(events.rowDeselecting, args);
         };
         this.grid.rowSelected = (args: RowDeselectEventArgs): void => {
@@ -3059,7 +3074,8 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     public onPropertyChanged(newProp: TreeGridModel): void {
         const properties: string[] = Object.keys(newProp);
         let requireRefresh: boolean = false;
-        if (properties.indexOf('columns') > -1 && !isNullOrUndefined(newProp.columns)) {
+        if (properties.indexOf('columns') > -1 && !isNullOrUndefined(newProp.columns) && this.frozenColumns === 0
+            && this.frozenRows === 0 && !this.columnModel.some((col: any) => col.isFrozen || col.freeze)) {
             this.grid.columns = this.getGridColumns(newProp.columns as Column[]);
             this.grid['updateColumnObject']();
             requireRefresh = true;
@@ -4275,12 +4291,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             record = this.flatData.filter((e: ITreeData) => {
                 return e.hasChildRecords;
             });
-        } else if (isNullOrUndefined(record)) {
+        } else if (isNullOrUndefined(record) && !isNullOrUndefined(row)) {
             if (this.detailTemplate) {
                 record = <ITreeData>this.grid.getCurrentViewRecords()[row.getAttribute('data-rowindex')];
             } else {
-                if (this.enableVirtualization && this.isCollapseAll) {
-                    if (this.isExpandAll && row.rowIndex === -1) {
+                if (this.enableVirtualization && (this.isCollapseAll || this.isExpandAll)) {
+                    if (row.rowIndex === -1) {
                         record = <ITreeData>this.grid.getCurrentViewRecords()[parseInt(row.getAttribute('data-rowindex'), 10)];
                     }
                     else {
@@ -4627,9 +4643,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
     }
     private expandCollapse(action: string, row: HTMLTableRowElement, record?: ITreeData, isChild?: boolean): void {
         const expandingArgs: DataStateChangeEventArgs = { row: row, data: record, childData: [], requestType: action };
-        const childRecords: ITreeData[] = this.grid.currentViewData.filter((e: ITreeData) => {
-            return e.parentUniqueID === record.uniqueID ;
-        });
+        let childRecords: ITreeData[];
+        if (!isNullOrUndefined(record)) {
+            childRecords = this.grid.currentViewData.filter((e: ITreeData) => {
+                return e.parentUniqueID === record.uniqueID;
+            });
+        }
         let targetEle: Element;
         if ((!isRemoteData(this) && action === 'expand' && this.isSelfReference && isCountRequired(this) && !childRecords.length) || (action === 'collapse' || (this.isExpandAll && this.loadChildOnDemand) && !isRemoteData(this) && this.isSelfReference && isCountRequired(this))) {
             this.updateChildOnDemand(expandingArgs);
@@ -4656,7 +4675,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             let displayAction: string;
             if (action === 'expand') {
                 displayAction = 'table-row';
-                if (!isChild) {
+                if (!isChild && !isNullOrUndefined(record)) {
                     record.expanded = true;
                     this.uniqueIDCollection[record.uniqueID].expanded = record.expanded;
                 }
@@ -4676,7 +4695,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 removeClass([targetEle], 'e-treegridcollapse');
             } else {
                 displayAction = 'none';
-                if (!isChild || isCountRequired(this)) {
+                if ((!isChild || isCountRequired(this)) && !isNullOrUndefined(row)) {
                     record.expanded = false;
                     this.uniqueIDCollection[record.uniqueID].expanded = record.expanded;
                 }

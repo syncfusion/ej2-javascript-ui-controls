@@ -338,7 +338,11 @@ export class VerticalView extends ViewBase implements IRenderer {
             curTimeWrap[parseInt(i.toString(), 10)].appendChild(createElement('div', { className: cls.PREVIOUS_TIMELINE_CLASS, styles: 'top:' + topInPx }));
         }
         for (const day of currentDateIndex) {
-            curTimeWrap[parseInt(day.toString(), 10)].appendChild(createElement('div', { className: cls.CURRENT_TIMELINE_CLASS, styles: 'top:' + topInPx }));
+            if (curTimeWrap.length > day) {
+                curTimeWrap[parseInt(day.toString(), 10)].appendChild(createElement('div', {
+                    className: cls.CURRENT_TIMELINE_CLASS, styles: 'top:' + topInPx
+                }));
+            }
         }
         const currentTimeEle: HTMLElement = createElement('div', {
             innerHTML: this.parent.getTimeString(this.parent.getCurrentTime()),

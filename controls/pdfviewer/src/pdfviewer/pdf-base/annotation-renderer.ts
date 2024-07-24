@@ -1132,8 +1132,9 @@ export class AnnotationRenderer {
             if (isDynamic !== 'true') {
                 isIconExists = this.getIconName(stampAnnotation, icon, rubberStampAnnotation);
             }
+            let graphicsPath: _PdfPath;
             if (icon.trim() === 'Accepted' || icon.trim() === 'Rejected') {
-                this.drawStampAsPath(stampAnnotation.stampAnnotationPath, rubberStampAnnotation, textBrush, stampBrush);
+                graphicsPath = this.drawStampAsPath(stampAnnotation.stampAnnotationPath, rubberStampAnnotation, textBrush, stampBrush);
             }
             else if (isIconExists) {
                 if (page.rotation === PdfRotationAngle.angle90 || page.rotation === PdfRotationAngle.angle270) {
@@ -1184,7 +1185,7 @@ export class AnnotationRenderer {
                     this.retriveDefaultWidth(icon.trim());
                     const state: PdfGraphicsState = appearance.graphics.save();
                     appearance.graphics.setTransparency(opacity);
-                    this.renderSignHereStamp(rubberStampAnnotation, rectangle, icon, textBrush, page, pens);
+                    this.renderSignHereStamp(rubberStampAnnotation, rectangle, icon, textBrush, page, pens, graphicsPath);
                     appearance.graphics.restore(state);
                 }
                 rubberStampAnnotation.rotationAngle = this.getRubberStampRotateAngle(page.rotation, rotateAngle);
@@ -1752,7 +1753,7 @@ export class AnnotationRenderer {
 
 
     private renderSignHereStamp(rubberStampAnnotation: PdfRubberStampAnnotation, rectangle: Rect, icon: string, textBrush:
-    PdfBrush, page: PdfPage, pens: PdfPen): void {
+    PdfBrush, page: PdfPage, pens: PdfPen, graphicsPath: _PdfPath): void {
         const stringFormat: PdfStringFormat = new PdfStringFormat();
         const font: PdfFont = new PdfStandardFont(PdfFontFamily.helvetica, 20, PdfFontStyle.bold | PdfFontStyle.italic);
         stringFormat.alignment = PdfTextAlignment.center;
@@ -1768,7 +1769,28 @@ export class AnnotationRenderer {
         point2 = [0, 0];
         drawingPath._addLine(point1[0], point1[1], point2[0], point2[1]);
         const pointValues: number[] = [drawingPath._points[0][0], drawingPath._points[0][1], 0, 0];
-        appearance.graphics.drawString(icon.toUpperCase(), font, pointValues, pens, textBrush, stringFormat);
+        if (graphicsPath) {
+            let minX: number = Number.MAX_VALUE;
+            let minY: number = Number.MAX_VALUE;
+            let maxX: number = Number.MIN_VALUE;
+            let maxY: number = Number.MIN_VALUE;
+            for (let i: number = 0; i < graphicsPath._points.length; i++) {
+                let point: number[] = graphicsPath._points[parseInt(i.toString(), 10)];
+                minX = Math.min(minX, point[0]);
+                minY = Math.min(minY, point[1]);
+                maxX = Math.max(maxX, point[0]);
+                maxY = Math.max(maxY, point[1]);
+            }
+            let offsetX: number = (rectangle.width - (maxX - minX)) / 2 - minX;
+            let offsetY: number = (rectangle.height - (maxY - minY)) / 2 - minY;
+            for (let i: number = 0; i < graphicsPath._points.length; i++) {
+                graphicsPath._points[parseInt(i.toString(), 10)][0] += offsetX;
+                graphicsPath._points[parseInt(i.toString(), 10)][1] += offsetY;
+            }
+            rubberStampAnnotation.appearance.normal.graphics._drawPath(graphicsPath, pens, textBrush);
+        } else {
+            appearance.graphics.drawString(icon.toUpperCase(), font, pointValues, pens, textBrush, stringFormat);
+        }
     }
 
     private retriveDefaultWidth(subject: string): void {
@@ -1942,7 +1964,7 @@ export class AnnotationRenderer {
     }
 
     private drawStampAsPath(resultObjects: string, rubberStampAnnotation: PdfRubberStampAnnotation, textBrush: PdfBrush,
-                            stampBrush: PdfBrush): void {
+                            stampBrush: PdfBrush): _PdfPath {
         let currentPoint: PointBase = { x: 0, y: 0 };
         const graphicsPath: _PdfPath = new _PdfPath();
         const stampObjects: string = resultObjects;
@@ -1961,7 +1983,7 @@ export class AnnotationRenderer {
                 const array1: PointBase[] = [
                     { x: array[0].x, y: array[0].y }, { x: array[1].x, y: array[1].y }
                 ];
-                graphicsPath._addLine(array1[0].x, array1[0].y, array1[1].x, array1[1].y);
+                graphicsPath._addLine(this.convertPixelToPoint(array1[0].x), this.convertPixelToPoint(array1[0].y), this.convertPixelToPoint(array1[1].x), this.convertPixelToPoint(array1[1].y));
                 currentPoint = { x: val.x, y: val.y };
             }
             if (path === 'C') {
@@ -1978,15 +2000,15 @@ export class AnnotationRenderer {
                     { x: array2[2].x, y: array2[2].y },
                     { x: array2[3].x, y: array2[3].y }
                 ];
-                graphicsPath._addBezier(array21[0].x, array21[0].y, array21[1].x, array21[1].y, array21[2].x,
-                                        array21[2].y, array21[3].x, array21[3].y);
+                graphicsPath._addBezier(this.convertPixelToPoint(array21[0].x), this.convertPixelToPoint(array21[0].y), this.convertPixelToPoint(array21[1].x), this.convertPixelToPoint(array21[1].y), this.convertPixelToPoint(array21[2].x), this.convertPixelToPoint(array21[2].y), this.convertPixelToPoint(array21[3].x), this.convertPixelToPoint(array21[3].y));
                 currentPoint = { x: val.x, y: val.y };
             }
-            if (path === 'Z') {
+            if (path === 'Z' || path === 'z') {
                 graphicsPath._closeFigure();
             }
 
         }
+        return graphicsPath;
     }
 
     private transformPoints(points: any[]): void {

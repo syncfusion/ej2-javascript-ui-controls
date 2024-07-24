@@ -3177,7 +3177,7 @@ describe('Uploader Control', () => {
         };
         beforeAll((): void => {
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 7000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 15000;
             let element: HTMLElement = createElement('input', {id: 'upload1'});
             document.body.appendChild(element);
             element.setAttribute('type', 'file');

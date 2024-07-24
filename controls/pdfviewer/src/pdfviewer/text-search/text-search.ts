@@ -1739,7 +1739,12 @@ export class TextSearch {
                     this.pdfViewerBase.textLayer.createNotificationPopup(value);
                 });
             } else {
-                this.pdfViewerBase.textLayer.createNotificationPopup(this.pdfViewer.localeObj.getConstant('No matches'));
+                if (this.searchMatches.length > 0) {
+                    this.pdfViewerBase.textLayer.createNotificationPopup(this.pdfViewer.localeObj.getConstant('No More Matches'));
+                }
+                else {
+                    this.pdfViewerBase.textLayer.createNotificationPopup(this.pdfViewer.localeObj.getConstant('No Matches'));
+                }
             }
         } else {
             if (isBlazor()) {
@@ -1748,7 +1753,12 @@ export class TextSearch {
                     this.pdfViewerBase.navigationPane.createTooltipMobile(value);
                 });
             } else {
-                this.pdfViewerBase.navigationPane.createTooltipMobile(this.pdfViewer.localeObj.getConstant('No Text Found'));
+                if (this.searchMatches.length > 0) {
+                    this.pdfViewerBase.navigationPane.createTooltipMobile(this.pdfViewer.localeObj.getConstant('No More Search Matches'));
+                }
+                else {
+                    this.pdfViewerBase.navigationPane.createTooltipMobile(this.pdfViewer.localeObj.getConstant('No Search Matches'));
+                }
             }
         }
     }

@@ -2566,7 +2566,7 @@ export class DialogEdit {
             }
         }
         inputModel.actionBegin = (args: any): void => {
-            if (args.columnName === this.parent.resourceFields.unit && this.editedRecord.ganttProperties.resourceInfo) {
+            if (args.rowData && args.columnName === this.parent.resourceFields.unit && this.editedRecord.ganttProperties.resourceInfo) {
                 for (let i:number = 0; i < this.editedRecord.ganttProperties.resourceInfo.length; i++) {
                     if (this.editedRecord.ganttProperties.resourceInfo[i as number][this.parent.resourceFields.id] ===
                         args.rowData[this.parent.resourceFields.id]) {

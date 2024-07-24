@@ -12,7 +12,7 @@ import * as events from '../base/constant';
 import { MouseEventArgs, Draggable, Droppable, DropEventArgs } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 import { ColumnWidthService } from '../services/width-controller';
-import { parentsUntil, wrap, measureColumnDepth, appendChildren, addFixedColumnBorder } from '../base/util';
+import { parentsUntil, wrap, measureColumnDepth, appendChildren, addFixedColumnBorder, clearReactVueTemplates } from '../base/util';
 import { AriaService } from '../services/aria-service';
 import * as literals from '../base/string-literals';
 
@@ -356,6 +356,9 @@ export class HeaderRender implements IRenderer {
             for (let i: number = 0, len: number = rows.length; i < len; i++) {
                 rows[parseInt(i.toString(), 10)].cells.push(this.generateCell({} as Column, CellType.RowDragHIcon));
             }
+        }
+        if ((this.parent.isReact || this.parent.isVue)) {
+            clearReactVueTemplates(this.parent, ['headerTemplate']);
         }
         for (let i: number = 0, len: number = this.colDepth; i < len; i++) {
             headerRow = rowRenderer.render(rows[parseInt(i.toString(), 10)], columns);

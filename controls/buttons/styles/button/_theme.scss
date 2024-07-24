@@ -1081,7 +1081,7 @@
           @if $skin-name == 'fluent2' {
             background: transparent;
             border-color: $secondary-border-color-hover;
-            color: $secondary-text-color-hover;
+            color: $secondary-outline-button-text-color-pressed;
           }
 
           @if $skin-name == 'bootstrap5' {
@@ -1114,7 +1114,7 @@
           @include outline-active;
           @if $skin-name == 'fluent2' {
             background: transparent;
-            color: $secondary-text-color-selected;
+            color: $secondary-outline-button-text-color-pressed;
             outline: 2px solid;
             outline-offset: -2px;
           }

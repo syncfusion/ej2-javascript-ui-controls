@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.2.4 (2024-07-24)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved an issue with the appearance preservation of free text annotations with a negative value.
+
 ## 26.1.42 (2024-07-16)
 
 ### PDF Parser

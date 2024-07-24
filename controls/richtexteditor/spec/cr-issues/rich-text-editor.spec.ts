@@ -4680,4 +4680,50 @@ describe('RTE CR issues ', () => {
             done();
         });
     });
+    describe('896578 - Copy and pasting justified content from Word web app is not working properly in RichTextEditor', () => {
+        let rteObject : RichTextEditor ;
+        let innerHTML: string =`\n\n\x3C!--StartFragment--><span style="color: rgb(28, 27, 31); font-family: Roboto, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">hello world this is a sample made for editor to check that alignment is working&nbsp; properly or not for the feature that is checking to work that how it is working in real time sb sample to check that it is working properly or not so that it could be working effectively. this has to be the sample for that it should be working proeperly or not formagt option denied tags denied attributes , allowed style propertied</span>\x3C!--EndFragment-->\n\n`; 
+        beforeEach( () => {
+            rteObject = renderRTE({
+                pasteCleanupSettings: {
+                    prompt: true
+                }, value: ''
+        });
+        });
+        afterEach( (done: DoneFn) => {
+            destroy(rteObject);
+            done();
+        });
+        it('test for pasting image in pasteCleanup in empty RTE ', (done : Function) => {
+            let keyBoardEvent: any = {
+                preventDefault: () => { },
+                type: 'keydown',
+                stopPropagation: () => { },
+                ctrlKey: false,
+                shiftKey: false,
+                action: null,
+                which: 64,
+                key: ''
+              };
+            rteObject.dataBind();
+            keyBoardEvent.clipboardData = {
+            getData: () => {
+                return innerHTML;
+            },
+            items: []
+            };
+            setCursorPoint((rteObject as any).inputElement.firstElementChild, 0);
+            rteObject.onPaste(keyBoardEvent);
+            setTimeout(() => {
+                if (rteObject.pasteCleanupSettings.prompt) {
+                    let keepFormat: any = document.getElementById(rteObject.getID() + '_pasteCleanupDialog').getElementsByClassName('e-rte-keepformat');
+                    keepFormat[0].click();
+                    let pasteOK: any = document.getElementById(rteObject.getID() + '_pasteCleanupDialog').getElementsByClassName('e-rte-pasteok');
+                    pasteOK[0].click();
+                }
+                expect(rteObject.inputElement.innerHTML === `<p style="text-align: center;"><span style="color: rgb(28, 27, 31); font-family: Roboto, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: 14px; font-style: normal; font-weight: 400; text-align: center; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); display: inline !important; float: none;">hello world this is a sample made for editor to check that alignment is working&nbsp; properly or not for the feature that is checking to work that how it is working in real time sb sample to check that it is working properly or not so that it could be working effectively. this has to be the sample for that it should be working proeperly or not formagt option denied tags denied attributes , allowed style propertied</span><br></p>`).toEqual(true);
+                done();
+            }, 400);
+        });
+    });
 });

@@ -2428,4 +2428,31 @@ describe('Chart ->', () => {
             });
         });
     });
+    describe('EJ2-896138 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    ranges: [{ dataSource: defaultData }], rows: [{
+                        index: 0, cells: [{
+                            index: 6, chart: [{ type: 'Pie', range: 'A1:E8', top: 50, left: 20 },
+                            { type: 'Column', range: 'H7:J10', top: 60, left: 25 },
+                            { type: 'Bar', range: 'E5:H9', top: 70, left: 30 },
+                            { type: 'Line', range: 'H7:J10', top: 80, left: 100 }]
+                        }]
+                    }]
+                }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Handle the script error occurs when rendering multiple charts in a different cell due to their top and left properties. ->', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            expect(spreadsheet.sheets[0].rows[0].cells[6].chart.length).toBe(0);
+            expect(spreadsheet.sheets[0].rows[2].cells[0].chart.length).toBe(1);
+            expect(spreadsheet.sheets[0].rows[3].cells[0].chart.length).toBe(2);
+            expect(spreadsheet.sheets[0].rows[4].cells[1].chart.length).toBe(1);
+            done();
+        });
+    });
 });

@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 26.1.42 (2024-07-16)
+## 26.2.4 (2024-07-24)
+
+### Image Editor
+
+#### Bug Fixes
+
+- The issue with "Finetune slider keyboard focus not proper" has been resolved.
+
+## 26.1.41 (2024-07-09)
 
 ### Image Editor
 

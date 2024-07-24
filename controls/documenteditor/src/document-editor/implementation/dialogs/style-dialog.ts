@@ -2,7 +2,7 @@ import { createElement, isNullOrUndefined, L10n, initializeCSPTemplate, attribut
 import { DropDownList, ComboBox, SelectEventArgs, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { RadioButton, Button } from '@syncfusion/ej2-buttons';
 import { WStyle, WCharacterStyle, WParagraphStyle } from '../../implementation/format/style';
-import { internalStyleCollectionChange, StyleType } from '../../base/index';
+import { internalStyleCollectionChange, StyleType, TextAlignment } from '../../base/index';
 import { BulletsAndNumberingDialog } from './index';
 import { WList } from '../list/list';
 import { Query } from '@syncfusion/ej2-data';
@@ -37,6 +37,11 @@ export class StyleDialog {
     private fontSize: ComboBox = undefined;
     private characterFormat: WCharacterFormat = undefined;
     private paragraphFormat: WParagraphFormat = undefined;
+    private textAlignment : TextAlignment = undefined; 
+    private lineSpacing: number = undefined;
+    private leftIndent: number = undefined;
+    private beforeSpacing: number = undefined;
+    private afterSpacing: number = undefined;
     private localObj: L10n;
 
     //Font Properties
@@ -403,20 +408,20 @@ export class StyleDialog {
         this.singleLineSpacing = this.createButtonElement(lineSpacingDiv, 'e-de-single-spacing', 'e-de-style-icon-button-first-size');
         this.singleLineSpacing.setAttribute('aria-label','singleLineSpacing');
         this.singleLineSpacing.addEventListener('click', () => {
-            this.paragraphFormat.lineSpacing = 1;
+            this.lineSpacing = 1;
             this.updateParagraphFormat();
         });
 
         this.onePointFiveLineSpacing = this.createButtonElement(lineSpacingDiv, 'e-de-one-point-five-spacing', 'e-de-style-icon-button-size');
         this.onePointFiveLineSpacing.setAttribute('aria-label','onePointFiveLineSpacing');
         this.onePointFiveLineSpacing.addEventListener('click', () => {
-            this.paragraphFormat.lineSpacing = 1.5;
+            this.lineSpacing = 1.5;
             this.updateParagraphFormat();
         });
         this.doubleLineSpacing = this.createButtonElement(lineSpacingDiv, 'e-de-double-spacing', 'e-de-style-icon-button-last-size');
         this.doubleLineSpacing.setAttribute('aria-label','doubleLineSpacing');
         this.doubleLineSpacing.addEventListener('click', () => {
-            this.paragraphFormat.lineSpacing = 2;
+            this.lineSpacing = 2;
             this.updateParagraphFormat();
         });
         let spacingDiv: HTMLElement = createElement('div', { className: 'e-de-style-paragraph-group-button' });
@@ -432,16 +437,16 @@ export class StyleDialog {
         let decreaseIndent: HTMLElement = this.createButtonElement(indentingDiv, 'e-de-indent', 'e-de-style-icon-button-first-size');
         decreaseIndent.setAttribute('aria-label','decreaseIndent');
         decreaseIndent.addEventListener('click', () => {
-            if (this.paragraphFormat.leftIndent >= 36) {
-                this.paragraphFormat.leftIndent -= 36;
+            if (this.leftIndent >= 36) {
+                this.leftIndent -= 36;
             } else {
-                this.paragraphFormat.leftIndent = 0;
+                this.leftIndent = 0;
             }
         });
         let increaseindent: HTMLElement = this.createButtonElement(indentingDiv, 'e-de-outdent', 'e-de-style-icon-button-size');
         increaseindent.setAttribute('aria-label','increaseindent');
         increaseindent.addEventListener('click', () => {
-            this.paragraphFormat.leftIndent += 36;
+            this.leftIndent += 36;
         });
     }
     /**
@@ -449,10 +454,10 @@ export class StyleDialog {
      * @returns {void}
      */
     private setLeftAlignment = (): void => {
-        if (this.paragraphFormat.textAlignment === 'Left') {
-            this.paragraphFormat.textAlignment = 'Justify';
+        if (this.textAlignment === 'Left') {
+            this.textAlignment = 'Justify';
         } else {
-            this.paragraphFormat.textAlignment = 'Left';
+            this.textAlignment = 'Left';
         }
         this.updateParagraphFormat();
     }
@@ -461,10 +466,10 @@ export class StyleDialog {
      * @returns {void}
      */
     private setRightAlignment = (): void => {
-        if (this.paragraphFormat.textAlignment === 'Right') {
-            this.paragraphFormat.textAlignment = 'Left';
+        if (this.textAlignment === 'Right') {
+            this.textAlignment = 'Left';
         } else {
-            this.paragraphFormat.textAlignment = 'Right';
+            this.textAlignment = 'Right';
         }
         this.updateParagraphFormat();
     }
@@ -473,10 +478,10 @@ export class StyleDialog {
      * @returns {void}
      */
     private setCenterAlignment = (): void => {
-        if (this.paragraphFormat.textAlignment === 'Center') {
-            this.paragraphFormat.textAlignment = 'Left';
+        if (this.textAlignment === 'Center') {
+            this.textAlignment = 'Left';
         } else {
-            this.paragraphFormat.textAlignment = 'Center';
+            this.textAlignment = 'Center';
         }
         this.updateParagraphFormat();
     }
@@ -485,10 +490,10 @@ export class StyleDialog {
      * @returns {void}
      */
     private setJustifyAlignment = (): void => {
-        if (this.paragraphFormat.textAlignment === 'Justify') {
-            this.paragraphFormat.textAlignment = 'Left';
+        if (this.textAlignment === 'Justify') {
+            this.textAlignment = 'Left';
         } else {
-            this.paragraphFormat.textAlignment = 'Justify';
+            this.textAlignment = 'Justify';
         }
         this.updateParagraphFormat();
     }
@@ -509,23 +514,23 @@ export class StyleDialog {
      * @returns {void}
      */
     private increaseBeforeAfterSpacing = (): void => {
-        this.paragraphFormat.beforeSpacing += 6;
-        this.paragraphFormat.afterSpacing += 6;
+        this.beforeSpacing += 6;
+        this.afterSpacing += 6;
     }
     /**
      * @private
      * @returns {void}
      */
     private decreaseBeforeAfterSpacing = (): void => {
-        if (this.paragraphFormat.beforeSpacing >= 6) {
-            this.paragraphFormat.beforeSpacing -= 6;
+        if (this.beforeSpacing >= 6) {
+            this.beforeSpacing -= 6;
         } else {
-            this.paragraphFormat.beforeSpacing = 0;
+            this.beforeSpacing = 0;
         }
-        if (this.paragraphFormat.afterSpacing >= 6) {
-            this.paragraphFormat.afterSpacing -= 6;
+        if (this.afterSpacing >= 6) {
+            this.afterSpacing -= 6;
         } else {
-            this.paragraphFormat.afterSpacing = 0;
+            this.afterSpacing = 0;
         }
     }
     private toggleDisable(): void {
@@ -696,6 +701,7 @@ export class StyleDialog {
                     let listId: number = style instanceof WParagraphStyle ? (style as WParagraphStyle).paragraphFormat.listFormat.listId : -1;
                     let styleObject = this.documentHelper.owner.getStyleObject(style, listId);
                     this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo.modifiedProperties.push(styleObject);
+                    this.applyParagraphFormat();
                 }
                 this.documentHelper.owner.editorHistoryModule.updateHistory();
                 this.style.type = this.getTypeValue();
@@ -751,6 +757,7 @@ export class StyleDialog {
                     let styleObject = this.documentHelper.owner.getStyleObject(tmpStyle, listId);
                     styleObject["isNew"] = true;
                     this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo.modifiedProperties.push(styleObject);
+                    this.applyParagraphFormat();
                 }
                 this.documentHelper.owner.editorHistoryModule.updateHistory();
                 let listId: number = this.style instanceof WParagraphStyle ? (this.style as WParagraphStyle).paragraphFormat.listFormat.listId : -1;
@@ -847,7 +854,28 @@ export class StyleDialog {
         this.fontColor.value = (color === 'empty' || color === '#00000000') ? '#000000' : color;
         this.fontButtonClicked();
     }
-
+    
+    private applyParagraphFormat = (): void => {
+        if (isNullOrUndefined(this.paragraphFormat)) {
+            this.paragraphFormat = new WParagraphFormat();
+        }
+        if (!isNullOrUndefined(this.textAlignment)) {
+            this.paragraphFormat.textAlignment = this.textAlignment;
+        }
+        if (!isNullOrUndefined(this.beforeSpacing)) {
+            this.paragraphFormat.beforeSpacing = this.beforeSpacing;
+        }
+        if (!isNullOrUndefined(this.afterSpacing)) {
+            this.paragraphFormat.afterSpacing = this.afterSpacing;
+        }
+        if (!isNullOrUndefined(this.leftIndent)) {
+            this.paragraphFormat.leftIndent = this.leftIndent;
+        }
+        if (!isNullOrUndefined(this.lineSpacing)) {
+            this.paragraphFormat.lineSpacing = this.lineSpacing;
+        }
+        this.updateParagraphFormat();
+    }
     /**
      * @private
      * @returns {void}
@@ -855,11 +883,13 @@ export class StyleDialog {
     public updateParagraphFormat(paragraphFOrmat?: WParagraphFormat): void {
         if (!isNullOrUndefined(paragraphFOrmat)) {
             this.paragraphFormat = paragraphFOrmat.cloneFormat();
+            this.textAlignment = paragraphFOrmat.textAlignment;
+            this.lineSpacing = paragraphFOrmat.lineSpacing;
         }
         if (isNullOrUndefined(this.paragraphFormat)) {
             return;
         }
-        if (this.paragraphFormat.textAlignment === 'Left') {
+        if (this.textAlignment === 'Left') {
             if (!this.leftAlign.classList.contains('e-active')) {
                 this.leftAlign.classList.add('e-active');
             }
@@ -872,7 +902,7 @@ export class StyleDialog {
             if (this.justify.classList.contains('e-active')) {
                 this.justify.classList.remove('e-active');
             }
-        } else if (this.paragraphFormat.textAlignment === 'Right') {
+        } else if (this.textAlignment === 'Right') {
             if (this.leftAlign.classList.contains('e-active')) {
                 this.leftAlign.classList.remove('e-active');
             }
@@ -885,7 +915,7 @@ export class StyleDialog {
             if (this.justify.classList.contains('e-active')) {
                 this.justify.classList.remove('e-active');
             }
-        } else if (this.paragraphFormat.textAlignment === 'Center') {
+        } else if (this.textAlignment === 'Center') {
             if (this.leftAlign.classList.contains('e-active')) {
                 this.leftAlign.classList.remove('e-active');
             }
@@ -898,7 +928,7 @@ export class StyleDialog {
             if (this.justify.classList.contains('e-active')) {
                 this.justify.classList.remove('e-active');
             }
-        } else if (this.paragraphFormat.textAlignment === 'Justify') {
+        } else if (this.textAlignment === 'Justify') {
             if (this.leftAlign.classList.contains('e-active')) {
                 this.leftAlign.classList.remove('e-active');
             }
@@ -912,15 +942,15 @@ export class StyleDialog {
                 this.justify.classList.add('e-active');
             }
         }
-        if (this.paragraphFormat.lineSpacing === 1) {
+        if (this.lineSpacing === 1) {
             this.singleLineSpacing.classList.add('e-active');
             this.onePointFiveLineSpacing.classList.remove('e-active');
             this.doubleLineSpacing.classList.remove('e-active');
-        } else if (this.paragraphFormat.lineSpacing === 1.5) {
+        } else if (this.lineSpacing === 1.5) {
             this.singleLineSpacing.classList.remove('e-active');
             this.onePointFiveLineSpacing.classList.add('e-active');
             this.doubleLineSpacing.classList.remove('e-active');
-        } else if (this.paragraphFormat.lineSpacing === 2) {
+        } else if (this.lineSpacing === 2) {
             this.singleLineSpacing.classList.remove('e-active');
             this.onePointFiveLineSpacing.classList.remove('e-active');
             this.doubleLineSpacing.classList.add('e-active');
@@ -1031,6 +1061,11 @@ export class StyleDialog {
             this.style = undefined;
             this.characterFormat = undefined;
             this.paragraphFormat = undefined;
+            this.textAlignment = undefined;
+            this.lineSpacing = undefined;
+            this.leftIndent = undefined;
+            this.beforeSpacing = undefined;
+            this.afterSpacing = undefined;
         // }
         this.documentHelper.dialog2.hide();
         this.documentHelper.updateFocus();
@@ -1041,6 +1076,11 @@ export class StyleDialog {
      */
     public closeStyleDialog = (): void => {
         this.documentHelper.updateFocus();
+        this.textAlignment = undefined;
+        this.lineSpacing = undefined;
+        this.leftIndent = undefined;
+        this.beforeSpacing = undefined;
+        this.afterSpacing = undefined;
     }
     /**
      * @private
@@ -1112,6 +1152,21 @@ export class StyleDialog {
         if (this.styleDropdwn) {
             this.styleDropdwn.destroy();
             this.styleDropdwn = undefined;
+        }
+        if (this.textAlignment) {
+            this.textAlignment = undefined;
+        }
+        if (this.lineSpacing) {
+            this.lineSpacing = undefined;
+        }
+        if (this.leftIndent) {
+            this.leftIndent = undefined;
+        }
+        if (this.beforeSpacing) {
+            this.beforeSpacing = undefined;
+        }
+        if (this.afterSpacing) {
+            this.afterSpacing = undefined;
         }
         this.documentHelper = undefined;
     }

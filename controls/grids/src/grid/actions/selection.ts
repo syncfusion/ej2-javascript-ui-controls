@@ -95,7 +95,10 @@ export class Selection implements IAction {
     private checkedTarget: HTMLInputElement;
     private primaryKey: string;
     private chkField: string;
-    private selectedRowState: { [key: number]: boolean } = {};
+    /**
+     * @hidden
+     */
+    public selectedRowState: { [key: number]: boolean } = {};
     private unSelectedRowState: { [key: number]: boolean } = {};
     private totalRecordsCount: number = 0;
     private chkAllCollec: Object[] = [];

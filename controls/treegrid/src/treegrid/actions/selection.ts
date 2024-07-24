@@ -90,6 +90,14 @@ export class Selection {
             this.triggerChkChangeEvent(checkBox, checkBoxvalue, target.closest('tr'));
 
         }
+        if (!isNullOrUndefined(this.parent['parentQuery']) && this.parent.selectionSettings.persistSelection
+            && this.parent['columnModel'].filter((col: { type: string }) => { return col.type === 'checkbox'; }).length > 0
+            && isRemoteData(this.parent)) {
+            if (this.parent['parentQuery'].length > 0) {
+                this.parent.query.queries.push(...this.parent['parentQuery']);
+                this.parent['parentQuery'] = [];
+            }
+        }
     }
 
     private triggerChkChangeEvent(checkBox: HTMLInputElement, checkState: boolean, rowElement: HTMLTableRowElement): void {

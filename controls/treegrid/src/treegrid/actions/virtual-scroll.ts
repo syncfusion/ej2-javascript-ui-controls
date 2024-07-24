@@ -110,7 +110,7 @@ export class VirtualScroll {
             pageingDetails.result = dm.executeLocal(query);
         } else {
             const requestType: string = pageingDetails.actionArgs.requestType;
-            if (requestType === 'filtering' || requestType === 'collapseAll' || requestType === 'searching' ||
+            if (requestType === 'filtering' || requestType === 'collapseAll' || requestType === 'searching' || (requestType === 'refresh' && getValue('isExpandAll', this.parent)) ||
                 (requestType === 'refresh' && this.parent.enableCollapseAll && endIndex > visualData.length && isNullOrUndefined(this.expandCollapseRec))) {
                 startIndex = 0;
                 endIndex = this.parent.grid.pageSettings.pageSize - 1;
@@ -150,7 +150,7 @@ export class VirtualScroll {
                 }
             }
             //}
-            if (this.prevrequestType === 'collapseAll' && pageingDetails.actionArgs.requestType === 'virtualscroll') {
+            if (this.prevrequestType === 'collapseAll' && pageingDetails.actionArgs.requestType === 'virtualscroll' && !isNullOrUndefined(this.parent.idMapping)) {
                 startIndex = 0;
                 endIndex = this.parent.grid.pageSettings.pageSize - 1;
                 this.parent.grid.notify(events.virtualActionArgs, { setTop: true });

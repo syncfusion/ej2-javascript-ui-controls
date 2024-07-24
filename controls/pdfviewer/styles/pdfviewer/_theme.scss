@@ -198,14 +198,14 @@ $lg-desktop: 1399.98;
   }
   
   .e-pv-diagram-resize-handle{
-    @if $theme-name == 'fluent2' {
+    @if $theme-name == 'fluent2' or $theme-name == 'bootstrap5.3' {
       fill: $pv-selection-touch-element-background-color !important/* stylelint-disable-line declaration-no-important */
     }
   }
 
   .e-pv-diagram-border,
   .e-pv-diagram-resize-handle {
-    @if $theme-name=='fluent2' {
+    @if $theme-name == 'fluent2' or $theme-name == 'bootstrap5.3' {
       stroke: $pv-selection-touch-element-background-color !important;/* stylelint-disable-line declaration-no-important */
     }
   }
@@ -1880,6 +1880,15 @@ $lg-desktop: 1399.98;
     }
   }
 
+  .e-pv-shapes-toolbar .e-toolbar-items .e-toolbar-item .e-tbar-btn:hover{
+    @if $theme-name == 'bootstrap5.3' {
+      color: var(--color-sf-secondary-text-color-pressed);
+    }
+    @if $theme-name == 'bootstrap5' {
+      color: $pv-item-selection-color;
+    }
+  }
+
   .e-pv-toolbar .e-pv-tbar-btn.e-pv-tbar-btn:focus,
   .e-pv-annotation-toolbar .e-pv-tbar-btn.e-pv-tbar-btn:focus,
   .e-pv-formdesigner-toolbar .e-pv-tbar-btn.e-pv-tbar-btn:focus {
@@ -2091,6 +2100,17 @@ $lg-desktop: 1399.98;
 
   .e-pv-search-input-mobile {
     height: $pv-search-input-height;
+    max-height: 150px !important;/* stylelint-disable-line declaration-no-important */
+  }
+
+  .e-pdfviewer.e-pv-mobile-view .e-pv-nav-toolbar.e-toolbar .e-toolbar-items:not(.e-tbar-pos):not(.e-toolbar-multirow) .e-toolbar-item:first-child,
+  .e-bigger .e-pdfviewer.e-pv-mobile-view .e-pv-nav-toolbar.e-toolbar .e-toolbar-items:not(.e-tbar-pos):not(.e-toolbar-multirow) .e-toolbar-item:first-child {
+    margin-left: 3px;
+  }
+ 
+  .e-pdfviewer.e-pv-mobile-view .e-pv-nav-toolbar.e-toolbar .e-toolbar-items:not(.e-tbar-pos):not(.e-toolbar-multirow) .e-toolbar-item:last-child,
+  .e-bigger .e-pdfviewer.e-pv-mobile-view .e-pv-nav-toolbar.e-toolbar .e-toolbar-items:not(.e-tbar-pos):not(.e-toolbar-multirow) .e-toolbar-item:last-child {
+    margin-right: 3px;
   }
 
   .e-pv-match-case-container {
@@ -2188,13 +2208,11 @@ $lg-desktop: 1399.98;
   }
 
   .e-pv-notification-popup {
-    height: $pv-notification-popup-height;
     margin: 0 10px;
     max-width: $pv-notification-popup-width;
   }
 
   .e-pv-notification-popup.e-pv-notification-large-content {
-    height: $pv-notification-popup-height-large-content;
     max-width: $pv-notification-popup-width-large-content;
   }
 
@@ -2600,6 +2618,13 @@ $lg-desktop: 1399.98;
     }
   }
 
+  .e-pv-annotation-toolbar .e-dropdown-btn.e-btn.e-active:not(:hover) {
+    @if $skin-name == 'fluent2' {
+      background-color: $pv-annotation-dd-background-color-active;
+      color: $pv-icon-color;
+    }
+  }
+
   .e-pv-annotation-color-container.e-dropdown-btn.e-btn,
   .e-pv-annotation-opacity-container.e-dropdown-btn.e-btn,
   .e-pv-annotation-stroke-container.e-dropdown-btn.e-btn,
@@ -2761,6 +2786,7 @@ $lg-desktop: 1399.98;
     line-height: $pv-prop-color-picker-line-height;
     @if ($skin-name == 'bootstrap5') {
       background: $transparent;
+      border: 1px solid $border-light;
       border-radius: 4px;
       box-sizing: border-box;
       color: $content-text-color;
@@ -2989,6 +3015,9 @@ $lg-desktop: 1399.98;
   .e-bigger .e-pv-properties-line-stroke-color-container {
     @if $skin-name == 'FluentUI' {
       margin-left: 195px;
+    }
+    @if ($skin-name == 'bootstrap5') {
+      margin-left: 145px !important;/* stylelint-disable-line declaration-no-important */
     }
   }
 
@@ -3319,8 +3348,18 @@ $lg-desktop: 1399.98;
   }
 
   .e-pv-annotation-stamp-container .e-menu-parent.e-menu .e-menu-item.e-selected {
-    @if $skin-name == 'bootstrap5' {
+    @if $skin-name == 'bootstrap5' or $theme-name == 'bootstrap5.3' {
       background: $secondary-bg-color-pressed;
+    }
+  }
+
+  .e-pv-annotation-stamp-container .e-menu-parent.e-menu .e-menu-item.e-selected .e-pv-stamp-icon,
+  .e-pv-annotation-stamp-container .e-menu-parent.e-menu .e-menu-item.e-selected .e-caret {
+    @if $theme-name == 'bootstrap5.3' {
+      color: var(--color-sf-secondary-text-color-pressed);
+    }
+    @if $theme-name == 'bootstrap5' {
+      color: $pv-item-selection-color;
     }
   }
 
@@ -3419,7 +3458,7 @@ $lg-desktop: 1399.98;
 
   .e-pv-organize-window .e-dlg-header-content .e-btn.e-dlg-closeicon-btn{
     @if $theme-name == 'fluent2' {
-      padding: 8px !important;/* stylelint-disable-line declaration-no-important */
+      color: var(--color-sf-secondary-text-color);
     }
   }
 
@@ -3765,7 +3804,7 @@ $lg-desktop: 1399.98;
   }
 
   .e-pdfviewer .e-btn-save.e-outline.e-primary:disabled {
-    @if ($skin-name != 'bootstrap5' and $skin-name != 'Material3') {
+    @if ($skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' and $skin-name != 'Material3') {
       background-color: $pv-save-button-bg-color;
       border-radius: 2px;
       color: $pv-save-button-color;
@@ -3874,6 +3913,9 @@ $lg-desktop: 1399.98;
     box-shadow: $pv-title-close-box-shadow;
     @if $skin-name == 'bootstrap4' {
       color: $pv-title-close-color;
+    }
+    @if $skin-name == 'fluent2' {
+      color: var(--color-sf-secondary-text-color);
     }
     height: $pv-title-close-height;
     position: $pv-title-close-position;
@@ -4172,7 +4214,7 @@ $lg-desktop: 1399.98;
 
   .e-pdfviewer .e-inplaceeditor .e-editable-value-container {
     background: transparent;
-    width: 229px;
+    max-width: 229px;
   }
 
   .e-pv-status-div {
@@ -4188,7 +4230,7 @@ $lg-desktop: 1399.98;
   }
 
   .e-pdfviewer .e-input-group.e-control-wrapper.e-editable-elements.e-input-focus {
-    @if $skin-name != 'bootstrap5' {
+    @if $skin-name != 'bootstrap5' and $skin-name != 'bootstrap5.3' {
       caret-color: $pv-comment-text-cursor-color;
     }
   }
@@ -4308,9 +4350,13 @@ $lg-desktop: 1399.98;
   .e-tbar-btn.e-control.e-btn.e-lib.e-icon-btn.e-pv-right-align.e-pv-tbar-btn.e-tooltip.textprop-option-active,
   .e-tbar-btn.e-control.e-btn.e-lib.e-icon-btn.e-pv-center-align.e-pv-tbar-btn.e-tooltip.textprop-option-active,
   .e-tbar-btn.e-control.e-btn.e-lib.e-icon-btn.e-pv-justfiy-align.e-pv-tbar-btn.e-tooltip.textprop-option-active {
-    @if $skin-name != 'bootstrap5' {
+    @if $skin-name != 'bootstrap5' and $skin-name != 'fluent2' {
       background: $pv-signature-footer-color;
       border-color: $pv-signature-footer-color;
+    }
+    @else if ($skin-name == 'fluent2'){
+      background: $pv-item-selection-background-color;
+      border-color: $pv-annotation-dropdown-border-color-hover;
     }
     @else {
       background: $secondary-bg-color-pressed;

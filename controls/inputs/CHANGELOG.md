@@ -2,13 +2,13 @@
 
 ## [Unreleased]
 
-## 26.1.42 (2024-07-16)
+## 26.2.4 (2024-07-24)
 
-### Slider
+### TextBox
 
 #### Bug Fixes
 
-- `#I605471` - The issue with Range Slider component in material dark theme has been resolved.
+- `#I609281` - Fixed issue where the aria-label attribute was not set properly.
 
 ## 26.1.41 (2024-07-09)
 

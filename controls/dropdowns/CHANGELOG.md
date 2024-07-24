@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 26.2.4 (2024-07-24)
+
+### Mention
+
+#### Bug Fixes
+
+- `#I608248` - Mention popup value not updating in textbox when using mouse interaction has been resolved.
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I610232` - The issue where the for attribute was missing in the label element of the Dropdown Tree component has been resolved.
+
 ## 26.1.42 (2024-07-16)
 
 ### MultiSelect

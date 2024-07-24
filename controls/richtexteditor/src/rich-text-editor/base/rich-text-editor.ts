@@ -1925,7 +1925,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         let preventingMention = false;
         if (this.editorMode === 'HTML') {
             const range: Range = this.getRange();
-            preventingMention = !isNOU(range.startContainer) && range.startContainer === range.endContainer && range.endContainer.childNodes.length > 1 && !isNOU(range.startContainer.childNodes[range.startOffset - 1]) && range.startContainer.childNodes[range.startOffset - 1].nodeName === '#text' && !isNOU(range.startContainer.childNodes[range.startOffset - 1].previousSibling) && range.startContainer.childNodes[range.startOffset - 1].textContent.charCodeAt(0) === 32 && (range.startContainer.childNodes[1].previousSibling as HTMLElement).classList.contains("e-mention-chip");
+            preventingMention = !isNOU(range.startContainer) && range.startContainer === range.endContainer && range.endContainer.childNodes.length > 1 && !isNOU(range.startContainer.childNodes[range.startOffset - 1]) && range.startContainer.childNodes[range.startOffset - 1].nodeName === '#text' && !isNOU(range.startContainer.childNodes[range.startOffset - 1].previousSibling) && range.startContainer.childNodes[range.startOffset - 1].textContent.charCodeAt(0) === 32 && (range.startContainer.childNodes[range.startOffset - 1].previousSibling as HTMLElement).classList.contains("e-mention-chip");
         }
         const keyboardEventAction: string[] = ['insert-link', 'format-copy', 'format-paste', 'insert-image', 'insert-table', 'insert-audio', 'insert-video'];
         if (keyboardEventAction.indexOf((e as KeyboardEventArgs).action) === -1 &&

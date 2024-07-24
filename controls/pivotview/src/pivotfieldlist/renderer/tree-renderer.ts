@@ -593,7 +593,7 @@ export class TreeViewRenderer implements IAction {
             isChecked = false;
             const getNodeDetails: { [key: string]: Object } = this.fieldTable.getNode(node);
             if (args.event && args.event.target &&
-                !(args.event.target as HTMLElement).classList.contains(cls.CHECK_BOX_FRAME_CLASS)) {
+                !(args.event.target as HTMLElement).closest('.' + cls.CHECKBOX_CONTAINER)) {
                 if (getNodeDetails.isChecked === 'true') {
                     this.fieldTable.uncheckAll([node]);
                     isChecked = false;

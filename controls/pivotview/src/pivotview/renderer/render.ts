@@ -136,9 +136,10 @@ export class Render {
         } else {
             this.parent.element.innerHTML = '';
             this.bindGrid(this.parent, (this.engine.isEmptyData ? true : false));
-            this.parent.element.appendChild(createElement('div', { id: this.parent.element.id + '_grid' }));
+            const gridElement: HTMLElement = createElement('div', { id: this.parent.element.id + '_grid' });
+            this.parent.element.appendChild(gridElement);
             this.parent.grid.isStringTemplate = true;
-            this.parent.grid.appendTo('#' + this.parent.element.id + '_grid');
+            this.parent.grid.appendTo(gridElement);
         }
         this.parent.grid.on(headerRefreshed, this.refreshHeader, this);
     }

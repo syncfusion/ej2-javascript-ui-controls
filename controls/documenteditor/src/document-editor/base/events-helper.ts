@@ -63,6 +63,49 @@ export interface FormFieldData {
 
 }
 /**
+ * Represents the properties of a comment.
+ */
+export interface CommentProperties {
+    /**
+     * Specifies the author of the comment.
+     */
+    author?: string;
+    /**
+     * Indicates whether the comment is resolved. The default value is false.
+     */
+    isResolved?: boolean;
+    /**
+     * Specifies the date and time of the comment.
+     */
+    dateTime: Date;
+}
+/**
+ * Represents a comment.
+ */
+export class Comment {
+    // /**
+    //  * Specifies the text of the comment.
+    //  */
+    // text: string;
+    // /**
+    //  * Specifies the replies to the comment.
+    //  */
+    // replies?: Comment[];
+    /**
+     * Specifies the unique identifier of the comment.
+     */
+    id: string;
+    /**
+     * Specifies the properties of the comment (author, isResolved, dateTime).
+     */
+    commentProperties: CommentProperties;
+    constructor(id: string, commentProperties: CommentProperties) {
+        this.id = id;
+        this.commentProperties = commentProperties;
+    }
+
+}
+/**
  * Represents the data for a content control element.
  */
 export interface ContentControlInfo {

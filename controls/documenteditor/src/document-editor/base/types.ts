@@ -792,10 +792,6 @@ export type FormatType =
      */
     'Docx' |
     /**
-     * HTML Format.
-     */
-    'Html' |
-    /**
      * Plain Text Format.
      */
     'Txt' |

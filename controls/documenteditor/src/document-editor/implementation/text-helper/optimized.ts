@@ -54,6 +54,7 @@ export class Optimized {
             + '<body>'
             + '</body>'
             + '</html>';
+
         if (!isNullOrUndefined(iframe.contentDocument)) {
             iframe.contentDocument.open();
             iframe.contentDocument.write(innerHtml);

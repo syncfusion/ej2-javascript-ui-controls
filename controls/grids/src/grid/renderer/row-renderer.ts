@@ -225,24 +225,34 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                         }
                     }
                 }
-                if (isFrozen && this.isSpan) {
+                if (this.isSpan) {
                     const rowsObject: Row<Column>[] = this.parent.getRowsObject();
                     const isRtl: boolean = this.parent.enableRtl;
                     if (rowsObject[row.index - 1]) {
                         const prevRowCells: Cell<Column>[] = rowsObject[row.index - 1].cells;
                         const prevRowCell: Cell<Column> = prevRowCells[i - 1];
+                        const currentRowCell: Cell<Column> = prevRowCells[parseInt(i.toString(), 10)];
                         const nextRowCell: Cell<Column> = prevRowCells[i + 1];
                         const direction: string = prevRowCells[parseInt(i.toString(), 10)].column.freeze;
                         if (prevRowCell && (prevRowCell.isRowSpanned || prevRowCell.rowSpanRange > 1) && prevRowCell.visible) {
-                            if (prevRowCell.column.freeze === 'Fixed' && direction === 'Fixed') {
-                                td.classList.add(isRtl ? 'e-removefreezerightborder' : 'e-removefreezeleftborder');
-                            } else if (!isRtl && i === 1 && direction === 'Left') {
-                                td.classList.add('e-addfreezefirstchildborder');
+                            if (!isRtl && !currentRowCell.isRowSpanned){
+                                td.classList.add('e-rowcell-firstchild');
+                            }
+                            if (isFrozen) {
+                                if (prevRowCell.column.freeze === 'Fixed' && direction === 'Fixed') {
+                                    td.classList.add(isRtl ? 'e-removefreezerightborder' : 'e-removefreezeleftborder');
+                                } else if (!isRtl && i === 1 && direction === 'Left') {
+                                    td.classList.add('e-addfreezefirstchildborder');
+                                }
                             }
                         }
-                        if (nextRowCell && (nextRowCell.isRowSpanned || nextRowCell.rowSpanRange > 1) && nextRowCell.visible &&
-                            nextRowCell.column.freeze === 'Fixed' && direction === 'Fixed' && cellArgs.colSpan < 2) {
-                            td.classList.add(isRtl ? 'e-removefreezeleftborder' : 'e-removefreezerightborder');
+                        if (nextRowCell && (nextRowCell.isRowSpanned || nextRowCell.rowSpanRange > 1) && nextRowCell.visible ) {
+                            if (isRtl && !currentRowCell.isRowSpanned) {
+                                td.classList.add('e-rowcell-lastchild');
+                            }
+                            if (isFrozen && nextRowCell.column.freeze === 'Fixed' && direction === 'Fixed' && cellArgs.colSpan < 2) {
+                                td.classList.add(isRtl ? 'e-removefreezeleftborder' : 'e-removefreezerightborder');
+                            }
                         }
                     }
                 }

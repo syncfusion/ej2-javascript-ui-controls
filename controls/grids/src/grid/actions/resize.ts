@@ -74,8 +74,18 @@ export class Resize implements IAction {
      */
     public autoFitColumns(fName?: string | string[], startRowIndex?: number, endRowIndex?: number): void {
         const columnName: string[] = (fName === undefined || fName === null || fName.length <= 0) ?
-            this.parent.getColumns().map((x: Column) => x.field) : (typeof fName === 'string') ? [fName] : fName;
+            this.parent.getColumns().map((x: Column) => {x.autoFit=true; return x.field}) : (typeof fName === 'string') ? [fName] : fName;
         this.parent.isAutoFitColumns = true;
+        if(!isNullOrUndefined(fName) && typeof fName=='object' && fName.length !== 0 )
+        {
+            fName.forEach((field)=>{
+                this.parent.getColumnByField(field).autoFit = true;
+            })
+        }
+        else if(typeof fName === 'string' && fName.trim() !== '')
+        {
+            this.parent.getColumnByField(fName).autoFit = true;
+        }
         if (this.parent.enableAdaptiveUI) {
             this.parent.element.classList.add('e-grid-autofit');
         }
@@ -88,7 +98,10 @@ export class Resize implements IAction {
         if (newarray.length > 0) {
             this.autoFitColumns(newarray);
         }
-        if (this.parent.resizeSettings.mode === 'Auto') {
+        if (this.parent.allowResizing && (this.parent.resizeSettings.mode === 'Auto' || (this.parent.resizeSettings.mode === 'Normal' &&
+            !this.parent.autoFit && newarray.length === 0))) {
+            this.widthService.setWidthToTable();
+        } else if (this.parent.autoFit && this.parent.resizeSettings.mode === 'Auto') {
             this.widthService.setWidthToTable();
         }
     }

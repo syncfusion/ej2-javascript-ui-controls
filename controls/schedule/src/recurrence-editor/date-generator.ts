@@ -307,6 +307,9 @@ function weeklyType(startDate: Date, endDate: Date, data: number[], ruleObject: 
         }
     } else {
         tempDate = getStartDateForWeek(startDate, ruleObject.day);
+        if (interval > 1 && dayIndex.indexOf(ruleObject.day[0]) < startDate.getDay()) {
+            tempDate.setDate(tempDate.getDate() + ((interval - 1) * 7));
+        }
         while (compareDates(tempDate, endDate)) {
             weekState = validateRules(tempDate, ruleObject);
             if (weekState && (expectedDays.indexOf(DAYINDEX[tempDate.getDay()]) > -1)) {

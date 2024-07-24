@@ -1026,7 +1026,12 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 this.inputEle.setAttribute('type', 'text');
             }
         } else {
-            this.inputEle = this.createElement('input', { attrs: { role: 'textbox', type: 'text' } }) as HTMLInputElement;
+            if (!isNOU(this.element.id)) {
+                this.inputEle = this.createElement('input', { attrs: { role: 'textbox', type: 'text', id: this.element.id } }) as HTMLInputElement;
+            }
+            else {
+                this.inputEle = this.createElement('input', { attrs: { role: 'textbox', type: 'text' } }) as HTMLInputElement;
+            }
             this.element.parentElement.insertBefore(this.inputEle, this.element);
         }
         this.inputObj = Input.createInput(

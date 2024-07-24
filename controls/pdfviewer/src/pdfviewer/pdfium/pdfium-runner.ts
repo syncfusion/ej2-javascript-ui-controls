@@ -220,8 +220,10 @@ export function PdfiumRunner(): void {
                     setTimeout(() => {
                         try {
                             const firstPage: Page = documentDetails.getPage(event.data.pageIndex);
-                            const data: object = firstPage.render('thumbnail', null, false, null, null);
-                            resolve(data);
+                            if (firstPage.processor !== null && firstPage.processor !== undefined) {
+                                const data: object = firstPage.render('thumbnail', null, false, null, null);
+                                resolve(data);
+                            }
                         } catch (error) {
                             reject(error);
                         }

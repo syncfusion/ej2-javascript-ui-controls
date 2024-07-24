@@ -520,7 +520,7 @@
       .e-headercell.e-fltr-icon .e-headercelldiv .e-sortnumber {
         margin: $grid-rtl-bigger-sortnumber-withfilter-margin;
         @if $grid-skin == 'tailwind' {
-          margin-left: 4px;
+          margin-left: 0;
         }
       }
   
@@ -1860,7 +1860,22 @@
       text-transform: $grid-header-text-transform;
       user-select: none;
     }
-
+    
+    .e-rightalign:not(.e-fltr-icon) .e-headercelldiv,
+    .e-leftalign:not(.e-fltr-icon) .e-headercelldiv,
+    .e-centeralign:not(.e-fltr-icon) .e-headercelldiv{
+      padding: 0 .4em ;
+      @if $grid-skin == 'material' {
+        padding: $grid-headercell-div-padding;
+      }
+      @if $grid-skin == 'fabric' {
+        padding: 0 1px 0;
+      }
+      @if $grid-skin == 'highcontrast' {
+        padding: 0;
+      }
+    }
+    
     .e-headercelldiv.e-headerchkcelldiv {
       overflow: visible;
     }
@@ -2304,7 +2319,7 @@
       }
   
     &.e-default:not(.e-rtl) tr {
-        & td:first-child:not(.e-xlsel-left-border, .e-fixedfreeze.e-freezeleftborder, .e-addfreezefirstchildborder),
+        & td:first-child:not(.e-xlsel-left-border, .e-fixedfreeze.e-freezeleftborder, .e-rowcell-firstchild, .e-addfreezefirstchildborder),
         & th.e-headercell:first-child:not(.e-firstcell):not(.e-headercell.e-frozen-left-border),
         & th.e-filterbarcell:first-child:not(.e-filterbarcell.e-frozen-left-border) {
             border-left-width: 0;
@@ -2362,9 +2377,6 @@
         right: 2px;
       }
     }
-    &.e-rtl .e-sortfilter .e-rightalign .e-headercelldiv {
-      padding: $grid-headercelldiv-right-align-padding;
-    }
 
     .e-sortfilterdiv {
       float: right;
@@ -2411,7 +2423,7 @@
     }
 
     &.e-rtl .e-gridheader .e-sortfilter {
-      .e-centeralign.e-headercell[aria-sort="none"]:not(.e-centeralign),
+      .e-centeralign.e-headercell[aria-sort="none"],
       .e-centeralign.e-headercell:not([aria-sort]) {
         .e-headercelldiv,
         .e-stackedheadercelldiv {
@@ -3819,7 +3831,7 @@
           }
 
           & .e-headercelldiv {
-            padding: 0 1.6em 0 1.2em;
+            padding: 0 25px 0 .7em;
 
             & .e-sortnumber {
               @include grid-flot-margin(right, $grid-bigger-sort-right-margin);
@@ -4013,7 +4025,7 @@
       }
 
       &.e-default {
-        & tr td:last-child:not(.e-xlsel-left-border, .e-addfreezefirstchildborder),
+        & tr td:last-child:not(.e-xlsel-left-border, .e-rowcell-lastchild, .e-addfreezefirstchildborder),
         & .e-gridheader table tr th:last-child:not(.e-firstcell) {
           border-left: 0;
         }

@@ -1013,11 +1013,18 @@ export class TaskProcessor extends DateProcessor {
         }
         if (ganttProperties.duration === 0) {
             this.parent.setRecordValue('isMilestone', true, ganttProperties, true);
+            if (!isNullOrUndefined(this.parent.taskFields) && !isNullOrUndefined(this.parent.taskFields.milestone)) {
+                this.parent.setRecordValue(this.parent.taskFields.milestone, true, ganttData, true);
+            }
+
             this.parent.setRecordValue('endDate', ganttProperties.startDate, ganttProperties, true);
         }
         if (!isNullOrUndefined(isMileStone) && isMileStone) {
             this.parent.setRecordValue('duration', 0, ganttProperties, true);
             this.parent.setRecordValue('isMilestone', true, ganttProperties, true);
+            if(!isNullOrUndefined(this.parent.taskFields) && !isNullOrUndefined(this.parent.taskFields.milestone)){
+                this.parent.setRecordValue(this.parent.taskFields.milestone, true, ganttData, true);  
+             }
             this.parent.setRecordValue('endDate', ganttProperties.startDate, ganttProperties, true);
         }
         if (!isNullOrUndefined(taskSettings.work)) {
@@ -1026,6 +1033,9 @@ export class TaskProcessor extends DateProcessor {
                 this.parent.setRecordValue('work', 0, ganttProperties, true);
                 this.parent.setRecordValue('duration', 0, ganttProperties, true);
                 this.parent.setRecordValue('isMilestone', true, ganttProperties, true);
+                if (!isNullOrUndefined(this.parent.taskFields) && !isNullOrUndefined(this.parent.taskFields.milestone)) {
+                    this.parent.setRecordValue(this.parent.taskFields.milestone, true, ganttData, true);
+                }
                 this.parent.setRecordValue('endDate', ganttProperties.startDate, ganttProperties, true);
             } else {
                 this.parent.setRecordValue('work', work, ganttProperties, true);
@@ -1034,7 +1044,9 @@ export class TaskProcessor extends DateProcessor {
                     this.updateWorkWithDuration(ganttData);
                     break;
                 case 'FixedWork':
-                    this.updateDurationWithWork(ganttData);
+                    if (!isNullOrUndefined(ganttData[this.parent.taskFields.resourceInfo]) && ganttData.ganttProperties.resourceInfo.length !== 0) {
+                        this.updateDurationWithWork(ganttData);
+                    }
                     this.updateUnitWithWork(ganttData);
                     break;
                 case 'FixedUnit':
@@ -1046,9 +1058,15 @@ export class TaskProcessor extends DateProcessor {
                 }
                 if (ganttProperties.duration === 0) {
                     this.parent.setRecordValue('isMilestone', true, ganttProperties, true);
+                    if (!isNullOrUndefined(this.parent.taskFields) && !isNullOrUndefined(this.parent.taskFields.milestone)) {
+                        this.parent.setRecordValue(this.parent.taskFields.milestone, true, ganttData, true);
+                    }
                     this.parent.setRecordValue('endDate', ganttProperties.startDate, ganttProperties, true);
                 } else if (!isNullOrUndefined(ganttProperties.startDate) && !isNullOrUndefined(ganttProperties.duration)) {
                     this.parent.setRecordValue('isMilestone', false, ganttProperties, true);
+                    if(!isNullOrUndefined(this.parent.taskFields) && !isNullOrUndefined(this.parent.taskFields.milestone)){
+                        this.parent.setRecordValue(this.parent.taskFields.milestone, false, ganttData, true);  
+                     }
                     this.calculateEndDate(ganttData);
                 }
             }
@@ -1693,7 +1711,7 @@ export class TaskProcessor extends DateProcessor {
         } else if (fieldName === 'work') {
             this.parent.setRecordValue(
                 'taskData.' + columnMapping[fieldName as string],
-                this.getWorkString(ganttProp.work, ganttProp.workUnit), ganttData);
+                ganttProp.work, ganttData);
             this.parent.setRecordValue(columnMapping[fieldName as string], ganttProp[fieldName as string], ganttData);
         } else if (fieldName === 'type') {
             this.parent.setRecordValue('taskData.' + columnMapping[fieldName as string], ganttProp[fieldName as string], ganttData);
@@ -1973,7 +1991,7 @@ export class TaskProcessor extends DateProcessor {
                 if (!this.parent.isLoad) {
                     this.parent.setRecordValue(
                         'taskData.' + dataMapping.work,
-                        this.getWorkString(ganttProperties.work, ganttProperties.workUnit), ganttData);
+                        ganttProperties.work, ganttData);
                 }
                 this.parent.setRecordValue(dataMapping.work, ganttProperties.work, ganttData);
             }
@@ -2880,6 +2898,8 @@ export class TaskProcessor extends DateProcessor {
                     this.parent.setRecordValue('isMilestone', milestone, parentProp, true);
                     if (!isNullOrUndefined(this.parent.taskFields.milestone)) {
                         this.updateMappingData(parentData, 'milestone');
+                        this.parent.setRecordValue(this.parent.taskFields.milestone, milestone, parentData, true);
+                        this.parent.setRecordValue('taskData.' + this.parent.taskFields.milestone, milestone, parentData, true);
                     }
                     if (parentProp.isAutoSchedule) {
                         this.calculateDuration(parentData);

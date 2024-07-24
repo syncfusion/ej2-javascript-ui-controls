@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 26.2.4 (2024-07-24)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I604324` - Resolved the issue that endnote are not visible in DocumentEditor when it splitted to next page.
+- `#I611455` - Word document viewer now working properly in open method when display control after document open.
+- `#I605521` - Text in comment section is now showing in correct format.
+- `#I603460` - Resolved the content control border issue when insert multiple paragraph.
+
 ## 26.1.42 (2024-07-16)
 
 ### DocumentEditor

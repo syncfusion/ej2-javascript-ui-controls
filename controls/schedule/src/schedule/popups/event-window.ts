@@ -191,8 +191,13 @@ export class EventWindow {
             this.addEventHandlers();
         }
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
-            this.renderFormElements(this.element.querySelector('.e-schedule-form'), data);
+            this.renderFormElements(this.element.querySelector('.e-schedule-form'), data, type, repeatType);
+        } else {
+            this.setEditorContent(data, type, repeatType);
         }
+    }
+
+    private setEditorContent(data: Record<string, any>, type: CurrentAction, repeatType: number): void {
         if (!this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
             removeClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], cls.DISABLE_CLASS);
         }
@@ -375,7 +380,7 @@ export class EventWindow {
         return container;
     }
 
-    private renderFormElements(form: HTMLFormElement, args?: Record<string, any>): void {
+    private renderFormElements(form: HTMLFormElement, args?: Record<string, any>, type?: CurrentAction, repeatType?: number): void {
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             if (args) {
                 if (this.fieldValidator) {
@@ -403,14 +408,16 @@ export class EventWindow {
             this.parent.renderTemplates(() => {
                 if (this.element) {
                     this.applyFormValidation();
-                    if (this.eventCrudData) {
-                        this.showDetails(this.eventCrudData);
-                        this.eventCrudData = null;
+                    if (args) {
+                        this.setEditorContent(args, type, repeatType);
                     }
                 }
             });
         } else {
             form.appendChild(this.getDefaultEventWindowContent());
+            if (args) {
+                this.setEditorContent(args, type, repeatType);
+            }
         }
     }
 
@@ -1025,13 +1032,9 @@ export class EventWindow {
     }
 
     private showDetails(eventData: Record<string, any>): void {
-        this.eventData = this.eventCrudData ? this.eventData : eventData;
+        this.eventData = eventData;
         const eventObj: Record<string, any> = <Record<string, any>>extend({}, eventData, null, true);
         const formElements: HTMLInputElement[] = this.getFormElements(cls.EVENT_WINDOW_DIALOG_CLASS);
-        if ((this.parent as Record<string, any>).isReact && formElements.length < 1 && !this.cellClickAction) {
-            this.eventCrudData = eventObj;
-            return;
-        }
         if ((!this.cellClickAction || this.cellClickAction && !isNullOrUndefined(this.parent.editorTemplate)) &&
             (<Date>eventObj[this.fields.endTime]).getHours() === 0 && (<Date>eventObj[this.fields.endTime]).getMinutes() === 0) {
             this.trimAllDay(eventObj);

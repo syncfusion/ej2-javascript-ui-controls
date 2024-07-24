@@ -97,7 +97,7 @@ export class Toolbar {
             this.parent.element.replaceChild(this.toolbar.element, this.parent.element.querySelector('.' + cls.GRID_TOOLBAR));
             this.toolbar.element.classList.add(cls.GRID_TOOLBAR);
         } else {
-            this.toolbar.appendTo('#' + this.parent.element.id + 'pivot-toolbar');
+            this.toolbar.appendTo(element);
         }
         this.toolbar.width = this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.getWidthAsNumber();
         if (this.parent.chart) {
@@ -446,10 +446,11 @@ export class Toolbar {
         if (select('#' + this.parent.element.id + 'report-dialog', this.parent.element) !== null) {
             remove(select('#' + this.parent.element.id + 'report-dialog', this.parent.element));
         }
-        this.parent.element.appendChild(createElement('div', {
+        const reportDialogElement: HTMLElement = createElement('div', {
             id: this.parent.element.id + 'report-dialog',
             className: cls.GRID_REPORT_DIALOG
-        }));
+        });
+        this.parent.element.appendChild(reportDialogElement);
         const dialog: Dialog = new Dialog({
             animationSettings: { effect: 'Fade' },
             allowDragging: true,
@@ -483,17 +484,18 @@ export class Toolbar {
             cssClass: this.parent.cssClass
         });
         dialog.isStringTemplate = true;
-        dialog.appendTo('#' + this.parent.element.id + 'report-dialog');
+        dialog.appendTo(reportDialogElement);
     }
 
     private renderMDXDialog(): void {
         if (select('#' + this.parent.element.id + 'mdx-dialog', this.parent.element) !== null) {
             remove(select('#' + this.parent.element.id + 'mdx-dialog', this.parent.element));
         }
-        this.parent.element.appendChild(createElement('div', {
+        const mdxDialogElement: HTMLElement = createElement('div', {
             id: this.parent.element.id + 'mdx-dialog',
             className: cls.GRID_MDX_DIALOG
-        }));
+        });
+        this.parent.element.appendChild(mdxDialogElement);
         const mdxDialog: Dialog = new Dialog({
             animationSettings: { effect: 'Fade' },
             allowDragging: true,
@@ -522,7 +524,7 @@ export class Toolbar {
             cssClass: this.parent.cssClass
         });
         mdxDialog.isStringTemplate = true;
-        mdxDialog.appendTo('#' + this.parent.element.id + 'mdx-dialog');
+        mdxDialog.appendTo(mdxDialogElement);
     }
 
     private copyMDXQuery(): void {
@@ -834,6 +836,7 @@ export class Toolbar {
      */
     public createChartMenu(): void {
         if (select('#' + this.parent.element.id + 'chart_menu', this.parent.element)) {
+            const chartMenuElement: HTMLElement = select('#' + this.parent.element.id + 'chart_menu', this.parent.element);
             const menuItems: MenuItemModel[] = [];
             const types: ChartSeriesType[] = this.getValidChartType();
             for (let i: number = 0; (i < types.length && i < 7); i++) {
@@ -866,8 +869,7 @@ export class Toolbar {
                 iconCss: cls.TOOLBAR_CHART + ' ' + cls.ICON,
                 items: toDisable ? [] : menuItems
             }];
-            let chartMenu: Menu = select('#' + this.parent.element.id + 'chart_menu', this.parent.element) ?
-                getInstance(select('#' + this.parent.element.id + 'chart_menu', this.parent.element), Menu) as Menu : null;
+            let chartMenu: Menu = chartMenuElement ? getInstance(chartMenuElement, Menu) as Menu : null;
             if (chartMenu && !chartMenu.isDestroyed) {
                 chartMenu.destroy();
                 chartMenu = null;
@@ -886,7 +888,7 @@ export class Toolbar {
                     beforeItemRender: this.multipleAxesCheckbox.bind(this)
                 });
             chartMenu.isStringTemplate = true;
-            chartMenu.appendTo('#' + this.parent.element.id + 'chart_menu');
+            chartMenu.appendTo(chartMenuElement);
         }
     }
     private create(): void {
@@ -894,6 +896,7 @@ export class Toolbar {
             this.createChartMenu();
         }
         if (select('#' + this.parent.element.id + 'export_menu', this.parent.element)) {
+            const exportMenuElement: HTMLElement = select('#' + this.parent.element.id + 'export_menu', this.parent.element);
             const menu: MenuItemModel[] = [{
                 iconCss: cls.GRID_EXPORT + ' ' + cls.ICON,
                 items: [
@@ -940,9 +943,10 @@ export class Toolbar {
                     }
                 });
             exportMenu.isStringTemplate = true;
-            exportMenu.appendTo('#' + this.parent.element.id + 'export_menu');
+            exportMenu.appendTo(exportMenuElement);
         }
         if (select('#' + this.parent.element.id + 'subtotal_menu', this.parent.element)) {
+            const subTotalMenuElement: HTMLElement = select('#' + this.parent.element.id + 'subtotal_menu', this.parent.element);
             const menu: MenuItemModel[] = [{
                 iconCss: cls.GRID_SUB_TOTAL + ' ' + cls.ICON,
                 items: [
@@ -1004,9 +1008,10 @@ export class Toolbar {
                     }
                 });
             subTotalMenu.isStringTemplate = true;
-            subTotalMenu.appendTo('#' + this.parent.element.id + 'subtotal_menu');
+            subTotalMenu.appendTo(subTotalMenuElement);
         }
         if (select('#' + this.parent.element.id + 'grandtotal_menu', this.parent.element)) {
+            const grandTotalMenuElement: HTMLElement = select('#' + this.parent.element.id + 'grandtotal_menu', this.parent.element);
             const menu: MenuItemModel[] = [{
                 iconCss: cls.GRID_GRAND_TOTAL + ' ' + cls.ICON,
                 items: [
@@ -1063,9 +1068,10 @@ export class Toolbar {
                     }
                 });
             grandTotalMenu.isStringTemplate = true;
-            grandTotalMenu.appendTo('#' + this.parent.element.id + 'grandtotal_menu');
+            grandTotalMenu.appendTo(grandTotalMenuElement);
         }
         if (select('#' + this.parent.element.id + 'formatting_menu', this.parent.element)) {
+            const formattingMenuElement: HTMLElement = select('#' + this.parent.element.id + 'formatting_menu', this.parent.element);
             const menu: MenuItemModel[] = [{
                 iconCss: cls.FORMATTING_MENU + ' ' + cls.ICON,
                 items: [
@@ -1089,7 +1095,7 @@ export class Toolbar {
                     select: this.menuItemClick.bind(this)
                 });
             formattingMenu.isStringTemplate = true;
-            formattingMenu.appendTo('#' + this.parent.element.id + 'formatting_menu');
+            formattingMenu.appendTo(formattingMenuElement);
         }
         const saveArgs: SaveReportArgs = {
             report: this.parent.getPersistData(),
@@ -1098,6 +1104,7 @@ export class Toolbar {
         this.currentReport = this.parent.localeObj.getConstant('defaultReport');
         this.parent.trigger(events.saveReport, saveArgs);
         if (select('#' + this.parent.element.id + '_reportlist', this.parent.element)) {
+            const reportListElement: HTMLElement = select('#' + this.parent.element.id + '_reportlist', this.parent.element);
             const reports: FetchReportArgs = this.fetchReports();
             const reportList: DropDownList = new DropDownList({
                 dataSource: reports.reportName,
@@ -1111,7 +1118,7 @@ export class Toolbar {
                 value: this.currentReport
             });
             reportList.isStringTemplate = true;
-            reportList.appendTo('#' + this.parent.element.id + '_reportlist');
+            reportList.appendTo(reportListElement);
         }
         this.updateItemElements();
     }
@@ -1162,7 +1169,7 @@ export class Toolbar {
                 enableHtmlSanitizer: this.parent.enableHtmlSanitizer
             });
             args.element.innerText = '';
-            checkbox.appendTo('#' + this.parent.element.id + '_' + 'checkBox');
+            checkbox.appendTo(inputCheckbox);
             if ((['Pie', 'Funnel', 'Pyramid', 'Doughnut', 'Pareto'].indexOf(this.parent.chartSettings.chartSeries.type) > -1) &&
                 !args.element.classList.contains(cls.MENU_DISABLE)) {
                 args.element.classList.add(cls.MENU_DISABLE);
@@ -1192,7 +1199,7 @@ export class Toolbar {
                 enableHtmlSanitizer: this.parent.enableHtmlSanitizer
             });
             args.element.innerText = '';
-            checkbox.appendTo('#' + this.parent.element.id + '_' + 'showLegendCheckBox');
+            checkbox.appendTo(inputCheckbox);
             const checkboxObj: HTMLElement = this.parent.element.querySelector('.' + cls.CHECKBOX_CONTAINER + '.e-showLegend');
             args.element.appendChild(checkboxObj);
         }

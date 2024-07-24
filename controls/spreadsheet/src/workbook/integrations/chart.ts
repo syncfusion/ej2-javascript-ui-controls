@@ -45,7 +45,7 @@ export class WorkbookChart {
         args.isInitCell = isNullOrUndefined(args.isInitCell) ? false : args.isInitCell;
         args.isUndoRedo = isNullOrUndefined(args.isUndoRedo) ? true : args.isUndoRedo;
         args.isPaste = isNullOrUndefined(args.isPaste) ? false : args.isPaste;
-        const chart: ChartModel[] = args.chart; let chartModel: ChartModel;
+        const chart: ChartModel[] = args.chart; let chartModel: ChartModel; let chartLength: number;
         if (chart.length > 0) {
             while (i < chart.length) {
                 if (args.isCut === false) {
@@ -120,7 +120,9 @@ export class WorkbookChart {
                         currentHeight: chartModel.height, currentWidth: chartModel.width, id: chartModel.id, requestType: 'chartRefreshOnInit'
                     };
                     if (indexes[0] !== chartRowIdx.clientY || indexes[1] !== chartColIdx.clientX) {
+                        chartLength = chart.length;
                         this.parent.notify(refreshChartCellOnInit, eventArgs);
+                        i -= chartLength - chart.length;
                     }
                 }
                 i++;
@@ -178,7 +180,10 @@ export class WorkbookChart {
                     const chart: ChartModel = this.parent.chartColl[chartCnt as number];
                     if (!isNullOrUndefined(args.overlayEle.querySelector('#' + chart.id))) {
                         const chartObj: HTMLElement = this.parent.element.querySelector('.' + chart.id);
-                        const excelFilter: { height: string, width: string } = getComponent(chartObj, 'chart');
+                        let excelFilter: { height: string, width: string } = getComponent(chartObj, 'chart');
+                        if (!excelFilter) {
+                            excelFilter = getComponent(chartObj, 'accumulationchart');
+                        }
                         if (excelFilter) {
                             excelFilter.height = args.height;
                             excelFilter.width = args.width;

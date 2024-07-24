@@ -5273,5 +5273,43 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 100);
         });
     });
+
+    describe('896793 - Facing some issues while pasting an image into the RichTextEditor in Firefox', () => {
+        let editor: RichTextEditor;
+        beforeAll((done: Function) => {
+            editor = renderRTE({
+                value: '<p>Rich Text Editor</p>'
+            });
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(editor);
+            done();
+        });
+        it('Paste the image into the Rich Text Editor', (done: DoneFn) => {
+            const imageUrl = 'https://cdn.syncfusion.com/ej2/richtexteditor-resources/RTE-Portrait.png';
+            fetch(imageUrl)
+                .then(response => response.blob())
+                .then(blob => {
+                const file = new File([blob], "image.png", {
+                    type: "image/png",
+                    lastModified: Date.now()
+                });
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                const pasteEvent: ClipboardEvent = new ClipboardEvent('paste', {
+                    clipboardData: dataTransfer,
+                    bubbles: true,
+                    cancelable: true
+                } as ClipboardEventInit);
+                setCursorPoint((editor as any).inputElement.querySelector('p').childNodes[0], 3);
+                editor.contentModule.getEditPanel().dispatchEvent(pasteEvent);
+                setTimeout(function () {
+                    expect(editor.inputElement.querySelectorAll("img").length > 0).toBe(true);
+                    done();
+                }, 1000);
+            });
+        });
+    });
 });
 

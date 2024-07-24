@@ -1,4 +1,4 @@
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, addClass } from '@syncfusion/ej2-base';
 import { IGrid, NotifyArgs } from '../base/interface';
 import { formatUnit } from '@syncfusion/ej2-base';
 import { columnWidthChanged, preventFrozenScrollRefresh } from '../base/constant';
@@ -20,7 +20,7 @@ export class ColumnWidthService {
 
     public setWidthToColumns(): void {
         let i: number = 0; const indexes: number[] = this.parent.getColumnIndexesInView(); let wFlag: boolean = true;
-        let totalColumnsWidth: number = 0;
+        let totalColumnsWidth: number | string = 0;
         if (this.parent.allowGrouping) {
             for (let len: number = this.parent.groupSettings.columns.length; i < len; i++) {
                 if (this.parent.enableColumnVirtualization && indexes.indexOf(i) === -1) { wFlag = false; continue; }
@@ -43,15 +43,24 @@ export class ColumnWidthService {
             this.setColumnWidth(new Column({ width: '30px' }), this.parent.groupSettings.columns.length + columns.length);
         }
         totalColumnsWidth = this.getTableWidth(this.parent.getColumns());
-        if (this.parent.width !== 'auto' && this.parent.width.toString().indexOf('%') === -1) {
-            this.setMinwidthBycalculation(totalColumnsWidth);
+        if (totalColumnsWidth !== 'auto') {
+            if (this.parent.width !== 'auto' && this.parent.width.toString().indexOf('%') === -1) {
+                this.setMinwidthBycalculation(totalColumnsWidth as number);
+            }
+            if (this.parent.allowResizing && this.parent.element.getBoundingClientRect().width > totalColumnsWidth) {
+                addClass([this.parent.getHeaderTable(), this.parent.getContentTable()], ['e-tableborder']);
+            }
         }
     }
 
     public setMinwidthBycalculation(tWidth?: number): void {
         let difference: number = 0;
         const collection: Column[] = this.parent.getColumns().filter((a: Column) => {
-            return isNullOrUndefined(a.width) || a.width === 'auto';
+            if (this.parent.allowResizing) {
+                return (isNullOrUndefined(a.width) || a.width === 'auto') && isNullOrUndefined(a.maxWidth);
+            } else {
+                return isNullOrUndefined(a.width) || a.width === 'auto';
+            }
         });
         if (collection.length) {
             if (!isNullOrUndefined(this.parent.width) && this.parent.width !== 'auto' &&
@@ -96,11 +105,11 @@ export class ColumnWidthService {
         }
         const columnIndex: number = isNullOrUndefined(index) ? this.parent.getNormalizedColumnIndex(column.uid) : index;
         const cWidth: string | number = this.getWidth(column);
-        const tgridWidth: number = this.getTableWidth(this.parent.getColumns());
+        const tgridWidth: number | string = this.getTableWidth(this.parent.getColumns());
         if (cWidth !== null) {
             this.setWidth(cWidth, columnIndex);
-            if (this.parent.width !== 'auto' && this.parent.width.toString().indexOf('%') === -1) {
-                this.setMinwidthBycalculation(tgridWidth);
+            if (this.parent.width !== 'auto' && this.parent.width.toString().indexOf('%') === -1 && tgridWidth !== 'auto') {
+                this.setMinwidthBycalculation(tgridWidth as number);
             }
             if ((this.parent.allowResizing && module === 'resize') || (this.parent.getFrozenColumns() && this.parent.allowResizing)) {
                 this.setWidthToTable();
@@ -203,32 +212,47 @@ export class ColumnWidthService {
     }
 
     public getWidth(column: Column): string | number {
-        if (isNullOrUndefined(column.width) && this.parent.allowResizing
-            && isNullOrUndefined(column.minWidth) && !this.isWidthUndefined()) {
-            column.width = 200;
+        if (this.parent.allowResizing && isNullOrUndefined(column.width)) {
+            if (isNullOrUndefined(column.minWidth) && isNullOrUndefined(column.maxWidth)
+                && !this.isWidthUndefined()) {
+                column.width = 200;
+            }
+            else if (column.maxWidth) {
+                column.width = column.maxWidth;
+            }
         }
         if (!column.width) { return null; }
         const width: number = parseInt(column.width.toString(), 10);
         if (column.minWidth && width < parseInt(column.minWidth.toString(), 10)) {
             return column.minWidth;
-        } else if ((column.maxWidth && width > parseInt(column.maxWidth.toString(), 10))) {
+        } else if (column.maxWidth && (column.width === 'auto' || width > parseInt(column.maxWidth.toString(), 10))) {
             return column.maxWidth;
         } else {
             return column.width;
         }
     }
 
-    public getTableWidth(columns: Column[]): number {
-        let tWidth: number = 0;
+    public getTableWidth(columns: Column[]): number | string {
+        let tWidth: number | string = 0;
+        let isAutoColumn: boolean = false;
         for (const column of columns) {
-            let cWidth: string | number = this.getWidth(column);
-            if (column.width === 'auto') {
-                cWidth = 0;
-            }
-            if (column.visible !== false && cWidth !== null) {
-                tWidth += parseInt(cWidth.toString(), 10);
+            if (column.visible !== false) {
+                let cWidth: string | number = this.getWidth(column);
+                if (column.width === 'auto' || !column.width) {
+                    if (this.parent.allowResizing) {
+                        if (!column.maxWidth) {
+                            isAutoColumn = true;
+                        }
+                    } else {
+                        cWidth = 0;
+                    }
+                }
+                if (cWidth !== null) {
+                    tWidth += parseInt(cWidth.toString(), 10);
+                }
             }
         }
+        tWidth = isAutoColumn ? 'auto' : tWidth;
         return tWidth;
     }
 
@@ -237,7 +261,7 @@ export class ColumnWidthService {
         if (this.parent.detailTemplate || this.parent.childGrid) {
             this.setColumnWidth(new Column({ width: '30px' }));
         }
-        tWidth = this.isAutoResize() ? '100%' : tWidth;
+        tWidth = (this.isAutoResize() || tWidth === 'auto') ? '100%' : tWidth;
         (this.parent.getHeaderTable() as HTMLTableElement).style.width = tWidth;
         (this.parent.getContentTable() as HTMLTableElement).style.width = tWidth;
         const edit: HTMLTableElement = <HTMLTableElement>this.parent.element.querySelector('.e-table.e-inline-edit');

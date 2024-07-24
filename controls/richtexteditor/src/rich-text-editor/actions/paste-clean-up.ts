@@ -8,7 +8,6 @@ import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach, extend, ad
 import { getUniqueID, Browser, closest} from '@syncfusion/ej2-base';
 import { CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_REMOVE_FORMAT, CLS_RTE_PASTE_PLAIN_FORMAT } from '../base/classes';
 import { CLS_RTE_PASTE_OK, CLS_RTE_PASTE_CANCEL, CLS_RTE_DIALOG_MIN_HEIGHT } from '../base/classes';
-import { CLS_RTE_IMAGE, CLS_IMGINLINE, CLS_IMGBREAK } from '../base/classes';
 import { pasteCleanupGroupingTags } from '../../common/config';
 import { NodeSelection } from '../../selection/selection';
 import * as EVENTS from './../../common/constant';
@@ -205,12 +204,7 @@ export class PasteCleanup {
                 if (isValueNotEmpty) {
                     (e.args as ClipboardEvent).preventDefault();
                     this.pasteDialog(value, args, isClipboardHTMLDataNull);
-                } else if (Browser.userAgent.indexOf('Firefox') !== -1 && isNOU(file)) {
-                    this.fireFoxImageUpload();
                 }
-            } else if (!isValueNotEmpty && !this.parent.pasteCleanupSettings.plainText &&
-                Browser.userAgent.indexOf('Firefox') !== -1) {
-                this.fireFoxImageUpload();
             } else if (this.parent.pasteCleanupSettings.plainText) {
                 (e.args as ClipboardEvent).preventDefault();
                 this.plainFormatting(value, args, isClipboardHTMLDataNull);
@@ -222,31 +216,6 @@ export class PasteCleanup {
                 this.formatting(value, true, args);
             }
         }
-    }
-    private fireFoxImageUpload(): void {
-        this.fireFoxUploadTime = setTimeout(() => {
-            if (Browser.userAgent.indexOf('Firefox') !== -1) {
-                let currentFocusNode: Node = this.nodeSelectionObj.getRange(this.contentRenderer.getDocument()).startContainer;
-                if (currentFocusNode.nodeName !== '#text') {
-                    // eslint-disable-next-line
-                    currentFocusNode = currentFocusNode.childNodes[this.nodeSelectionObj.getRange(this.contentRenderer.getDocument()).startOffset];
-                }
-                if (currentFocusNode.previousSibling.nodeName === 'IMG') {
-                    if (!isNOU((currentFocusNode.previousSibling as HTMLElement).getAttribute('src'))) {
-                        (currentFocusNode.previousSibling as HTMLElement).classList.add('pasteContent_Img');
-                    }
-                    (currentFocusNode.previousSibling as HTMLElement).classList.add(CLS_RTE_IMAGE);
-                    if (this.parent.insertImageSettings.display === 'inline') {
-                        (currentFocusNode.previousSibling as HTMLElement).classList.add(CLS_IMGINLINE);
-                    } else {
-                        (currentFocusNode.previousSibling as HTMLElement).classList.add(CLS_IMGBREAK);
-                    }
-                    (currentFocusNode.previousSibling as HTMLElement).classList.add();
-                    this.setImageProperties(currentFocusNode.previousSibling as HTMLImageElement);
-                }
-            }
-            this.imgUploading(this.parent.inputElement);
-        }, 500);
     }
     private splitBreakLine(value: string): string {
         const enterSplitText: string[] = value.split('\n');
@@ -459,11 +428,22 @@ export class PasteCleanup {
         this.parent.inputElement.contentEditable = 'true';
         e.element = imgElem as HTMLElement;
         e.detectImageSource = ImageInputSource.Pasted;
-        this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {
-            if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
-                const url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
-                (imgElem as HTMLImageElement).src = url;
-                imgElem.setAttribute('alt', (e as MetaData).file.name);
+        uploadObj.filesData.forEach((element: FileInfo) => {
+            if (element.statusCode === '2') {
+                this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {
+                    if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
+                        const url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
+                        (imgElem as HTMLImageElement).src = url;
+                        imgElem.setAttribute('alt', (e as MetaData).file.name);
+                    }
+                });
+            }
+            else if (element.statusCode === '5') {
+                this.parent.trigger(events.imageRemoving, e, (e: object) => {
+                    if (!isNullOrUndefined((e as { element: HTMLImageElement }).element.src)) {
+                        (e as { element: HTMLImageElement }).element.src = '';
+                    }
+                });
             }
         });
         popupObj.close();

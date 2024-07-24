@@ -220,9 +220,14 @@ export class Toolbar {
      * @returns {void}
      */
     public showToolbar(enableToolbar: boolean): void {
-        const toolbar: HTMLElement = this.toolbarElement;
+        let toolbar: HTMLElement;
+        if (!isNullOrUndefined(this.toolbarElement)) {
+            toolbar = this.toolbarElement;
+        }
         if (enableToolbar) {
-            toolbar.style.display = 'block';
+            if (!isNullOrUndefined(toolbar)) {
+                toolbar.style.display = 'block';
+            }
             const toolbarContainer: HTMLElement = this.pdfViewerBase.getElement('_toolbarContainer');
             if (toolbarContainer) {
                 let toolbarHeight: number = toolbarContainer.clientHeight;;
@@ -232,7 +237,7 @@ export class Toolbar {
                 this.pdfViewerBase.toolbarHeight = toolbarHeight;
             }
             if ((Browser.isDevice && !this.pdfViewer.enableDesktopMode) && this.pdfViewer.toolbarModule &&
-            this.pdfViewer.toolbarModule.annotationToolbarModule) {
+                this.pdfViewer.toolbarModule.annotationToolbarModule) {
                 this.pdfViewer.toolbarModule.annotationToolbarModule.hideMobileAnnotationToolbar();
             }
         } else {
@@ -247,7 +252,9 @@ export class Toolbar {
                     this.annotationToolbarModule.propertyToolbar.element.style.display = 'none';
                 }
             }
-            toolbar.style.display = 'none';
+            if (!isNullOrUndefined(toolbar)) {
+                toolbar.style.display = 'none';
+            }
         }
     }
 
@@ -262,14 +269,22 @@ export class Toolbar {
             const navigationToolbar: HTMLElement = this.pdfViewerBase.navigationPane.sideBarToolbar;
             const navigationToolbarSplitter: HTMLElement = this.pdfViewerBase.navigationPane.sideBarToolbarSplitter;
             if (enableNavigationToolbar) {
-                navigationToolbar.style.display = 'block';
-                navigationToolbarSplitter.style.display = 'block';
+                if (!isNullOrUndefined(navigationToolbar)) {
+                    navigationToolbar.style.display = 'block';
+                }
+                if (!isNullOrUndefined(navigationToolbarSplitter)) {
+                    navigationToolbarSplitter.style.display = 'block';
+                }
                 if (this.pdfViewerBase.navigationPane.isBookmarkOpen || this.pdfViewerBase.navigationPane.isThumbnailOpen) {
                     this.pdfViewerBase.navigationPane.clear();
                 }
             } else {
-                navigationToolbar.style.display = 'none';
-                navigationToolbarSplitter.style.display = 'none';
+                if (!isNullOrUndefined(navigationToolbar)) {
+                    navigationToolbar.style.display = 'none';
+                }
+                if (!isNullOrUndefined(navigationToolbarSplitter)) {
+                    navigationToolbarSplitter.style.display = 'none';
+                }
                 if (this.pdfViewerBase.navigationPane.isBookmarkOpen || this.pdfViewerBase.navigationPane.isThumbnailOpen) {
                     this.pdfViewerBase.navigationPane.updateViewerContainerOnClose();
                 }

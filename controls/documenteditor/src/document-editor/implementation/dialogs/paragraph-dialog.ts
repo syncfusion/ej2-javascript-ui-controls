@@ -945,7 +945,9 @@ export class ParagraphDialog {
         this.documentHelper.owner.isShiftingEnabled = true;
         if (this.documentHelper.selection.isEmpty) {
             this.documentHelper.owner.editorModule.applyParaFormatProperty(selection.start.paragraph, undefined, paragraphFormat, false);
+            this.documentHelper.owner.editorModule.isMeasureParaWidth = true;
             this.documentHelper.owner.editorModule.layoutItemBlock(selection.start.paragraph, false);
+            this.documentHelper.owner.editorModule.isMeasureParaWidth = true;
         } else {
             this.documentHelper.owner.editorModule.updateSelectionParagraphFormatting('ParagraphFormat', paragraphFormat, false);
         }

@@ -18,6 +18,7 @@ export class GanttTreeGrid {
     private parent: Gantt;
     private treeGridElement: HTMLElement;
     public treeGridColumns: ColumnModel[];
+    public isPersist: boolean = false;
     /**
      * @private
      */
@@ -196,6 +197,10 @@ export class GanttTreeGrid {
     }
 
     private beforeDataBound(args: object): void {
+        if (!isNullOrUndefined(this.parent.selectionModule) && this.parent.selectionSettings && this.parent.selectionSettings.persistSelection && this.parent.selectionModule.getSelectedRowIndexes().length > 0 &&
+            args['actionArgs']['requestType'] === 'sorting') {
+            this.isPersist = true;
+        }
         this.parent.updatedRecords = this.parent.virtualScrollModule && this.parent.enableVirtualization ?
             getValue('virtualScrollModule.visualData', this.parent.treeGrid) : getValue('result', args);
         if (this.parent.virtualScrollModule && this.parent.enableVirtualization) {
@@ -538,7 +543,7 @@ export class GanttTreeGrid {
                 let indexvalue: number = 0;
                 this.parent.currentViewData.map((data: Object, index: number) => {
                     if (!isNullOrUndefined(this.parent.currentSelection)
-                    && (data['ganttProperties'].taskId === this.parent.currentSelection.taskId))  {
+                    && (data['ganttProperties'].taskId === this.parent.currentSelection[this.parent.taskFields.id]))  {
                         indexvalue = index;
                     }
                 });
@@ -783,6 +788,7 @@ export class GanttTreeGrid {
             column.editType = column.editType ? column.editType : 'stringedit';
             column.type = 'string';
             column.allowFiltering = column.allowFiltering === false ? false : true;
+            column.valueAccessor = column.valueAccessor ? column.valueAccessor : this.dependencyValueAccessor.bind(this);
         } else if (taskSettings.resourceInfo === column.field) {
             this.composeResourceColumn(column);
         } else if (taskSettings.notes === column.field) {
@@ -995,6 +1001,33 @@ export class GanttTreeGrid {
         }
         return '';
     }// eslint-disable-next-line
+
+    
+    private dependencyValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
+        if (!isNullOrUndefined(data.ganttProperties.predecessorsName)) {
+            let value: string = "";
+            let predecessorsName = data.ganttProperties.predecessorsName;
+            let splitString = (predecessorsName as string).split(",");
+            splitString.map((splitvalue: string, index: number) => {
+                if (splitvalue.includes("FS")) {
+                    value += splitvalue.replace("FS", this.parent.localeObj.getConstant("FS"))
+                    value += (splitString.length !== index + 1) ? "," : "";
+                } else if (splitvalue.includes("FF")) {
+                    value += splitvalue.replace("FF", this.parent.localeObj.getConstant("FF"))
+                    value += (splitString.length !== index + 1) ? "," : "";
+                } else if (splitvalue.includes("SS")) {
+                    value += splitvalue.replace("SS", this.parent.localeObj.getConstant("SS"))
+                    value += (splitString.length !== index + 1) ? "," : "";
+                }
+                else if (splitvalue.includes("SF")) {
+                    value += splitvalue.replace("SF", this.parent.localeObj.getConstant("SF"))
+                    value += (splitString.length !== index + 1) ? "," : "";
+                }
+            })
+            return value;
+        }
+        return ""
+    }
     private resourceValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
         const ganttProp: ITaskData = data.ganttProperties;
         if (!isNullOrUndefined(ganttProp)) {

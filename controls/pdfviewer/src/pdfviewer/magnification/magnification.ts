@@ -519,7 +519,17 @@ export class Magnification {
 
     private magnifyPages(): void {
         this.clearRerenderTimer();
-        this.pdfViewerBase.showPageLoadingIndicator(this.pdfViewerBase.currentPageNumber - 1, true);
+        const pageDivElements: any = document.querySelectorAll('.e-pv-page-div');
+        const startPageElement: number = pageDivElements[0].id.split('_pageDiv_')[1];
+        const endPageElement: number = pageDivElements[pageDivElements.length - 1].id.split('_pageDiv_')[1];
+        if ((this.previousZoomFactor !== this.zoomFactor)) {
+            for (let i: number = startPageElement; i <= endPageElement; i++) {
+                this.pdfViewerBase.showPageLoadingIndicator(i, false);
+            }
+        }
+        for (let i: number = startPageElement; i <= endPageElement; i++) {
+            this.pdfViewerBase.showPageLoadingIndicator(i, true);
+        }
         this.isWaitingPopupUpdated = true;
         if (!this.isPagesZoomed) {
             this.reRenderPageNumber = this.pdfViewerBase.currentPageNumber;

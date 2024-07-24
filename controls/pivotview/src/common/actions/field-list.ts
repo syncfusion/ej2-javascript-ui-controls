@@ -83,7 +83,7 @@ export class FieldList implements IAction {
             });
             this.parent.pivotFieldListModule.isPopupView = true;
             this.parent.pivotFieldListModule.pivotGridModule = this.parent;
-            this.parent.pivotFieldListModule.appendTo('#' + this.element.id);
+            this.parent.pivotFieldListModule.appendTo(this.element);
         }
     }
 

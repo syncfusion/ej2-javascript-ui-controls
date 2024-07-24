@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 26.2.4 (2024-07-24)
+
+### Grid
+
+#### Bug fixes
+
+- `#I600715` - The issue where the column width set to "auto", would revert to its maximum width when resized has been resolved.
+- `#FB59210` - Border disappearance when `RowSpanning` in grid columns issue has been resolved.
+- `#I606869` - Inability to enable grid resize dynamically issue has been resolved.
+- `#I606503` - Resolved the script error that occurs when using `dialogTemplate` editing in both the parent and child grids.
+
 ## 26.1.42 (2024-07-16)
 
 ### Grid

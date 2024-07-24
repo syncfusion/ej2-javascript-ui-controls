@@ -12,7 +12,7 @@ import { getRowHeight, setColumnIndex, Global, ispercentageWidth, getNumberForma
 import { setRowElements, resetRowIndex, compareChanges, getCellByColAndRowIndex, performComplexDataOperation } from './util';
 import * as events from '../base/constant';
 import { ReturnType, BatchChanges } from '../base/type';
-import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI, LazyLoadArgs, LoadEventArgs, ContextMenuClickEventArgs } from './interface';
+import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs, FilterUI, LazyLoadArgs, LoadEventArgs, ContextMenuClickEventArgs, NotifyArgs } from './interface';
 import {AggregateQueryCellInfoEventArgs, IGrid } from './interface';
 import { IRenderer, IValueFormatter, IFilterOperator, IIndex, RowDataBoundEventArgs, QueryCellInfoEventArgs } from './interface';
 import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, ParentDetails, ContextMenuItemModel } from './interface';
@@ -2030,7 +2030,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @event actionBegin
      */
     @Event()
-    public actionBegin: EmitType<PageEventArgs | GroupEventArgs | FilterEventArgs | SearchEventArgs | SortEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs | ActionEventArgs>;
+    public actionBegin: EmitType<PageEventArgs | GroupEventArgs | FilterEventArgs | SearchEventArgs | SortEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs | ActionEventArgs | NotifyArgs>;
 
     /**
      * Triggers when Grid actions such as sorting, filtering, paging, grouping etc. are completed.
@@ -2038,7 +2038,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @event actionComplete
      */
     @Event()
-    public actionComplete: EmitType<PageEventArgs | GroupEventArgs | FilterEventArgs | SearchEventArgs | SortEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs | ActionEventArgs>;
+    public actionComplete: EmitType<PageEventArgs | GroupEventArgs | FilterEventArgs | SearchEventArgs | SortEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs | ActionEventArgs | NotifyArgs>;
     /* eslint-enable */
 
     /**
@@ -4001,6 +4001,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         case 'enableAltRow':
             this.renderModule.refresh(); break;
         case 'allowResizing':
+            if (this.resizeModule) {
+                this.resizeModule.render();
+            }
             this.headerModule.refreshUI();
             this.updateResizeLines(); break;
         case 'rowHeight':
@@ -6550,8 +6553,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         if ((this.width === 'auto' || typeof (this.width) === 'string' && this.width.indexOf('%') !== -1)
             && this.getColumns().filter((col: Column) => (!col.width || col.width === 'auto') && col.minWidth).length > 0) {
-            const tgridWidth: number = this.widthService.getTableWidth(this.getColumns());
-            this.widthService.setMinwidthBycalculation(tgridWidth);
+            const tgridWidth: number | string = this.widthService.getTableWidth(this.getColumns());
+            if (this.allowResizing && tgridWidth !== 'auto') {
+                this.widthService.setMinwidthBycalculation(tgridWidth as number);
+            }
         }
         if (this.isFrozenGrid() && this.enableColumnVirtualization && this.widthService) {
             this.widthService.refreshFrozenScrollbar();

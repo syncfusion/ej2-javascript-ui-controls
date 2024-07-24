@@ -2,7 +2,35 @@
 
 ## [Unreleased]
 
+## 26.2.4 (2024-07-24)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I605096` - Now, the data label color is correct when setting the position to `Auto`.
+
+### Accumulation Chart
+
+#### Bug Fixes
+
+- `#I609990` - Now, the data label tooltip will adjust automatically when it goes outside the chart bounds.
+
 ## 26.1.42 (2024-07-16)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I605430` - The chart height fits the container even when scaling is applied.
+
+### 3DCircularChart
+
+#### Bug Fixes
+
+- `#I608643` - Now, the legend highlighting works properly for the 3D Circular chart.
+
+## 26.1.41 (2024-07-09)
 
 ### Chart
 

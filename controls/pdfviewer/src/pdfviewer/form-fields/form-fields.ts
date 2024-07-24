@@ -3,7 +3,7 @@ import { PdfViewerBase } from '../index';
 import { Browser, isBlazor, isNullOrUndefined, initializeCSPTemplate } from '@syncfusion/ej2-base';
 import { PdfAnnotationBaseModel } from '../drawing/pdf-annotation-model';
 import { PdfAnnotationBase } from '../drawing/pdf-annotation';
-import { splitArrayCollection, processPathData, cornersPointsBeforeRotation, Rect, PointModel } from '@syncfusion/ej2-drawings';
+import { splitArrayCollection, processPathData, cornersPointsBeforeRotation, Rect, PointModel, getPathString } from '@syncfusion/ej2-drawings';
 import { DiagramHtmlElement } from '../drawing/html-element';
 import { ItemModel } from '../pdfviewer-model';
 import { Tooltip } from '@syncfusion/ej2-popups';
@@ -1003,7 +1003,14 @@ export class FormFields {
                             this.pdfViewer.isInitialFieldToolbarSelection = true;
                         }
                     }
-                    const currentValue: string = value ? value : this.pdfViewerBase.signatureModule.outputString;
+                    let currentValue: string = value ? value : this.pdfViewerBase.signatureModule.outputString;
+                    if (signatureType === 'Path') {
+                        if (value && this.pdfViewerBase.signatureModule.outputString === "") {
+                            const parsenew: Object[] = JSON.parse(currentValue);
+                            const newArray: Object[] = splitArrayCollection(parsenew);
+                            currentValue = getPathString(newArray);
+                        }
+                    }
                     let currentFont: string = fontname ? fontname : this.pdfViewerBase.signatureModule.fontName;
                     const zoomvalue: number = this.pdfViewerBase.getZoomFactor();
                     const currentWidth: number = this.pdfViewerBase.drawSignatureWithTool ?
@@ -1023,7 +1030,7 @@ export class FormFields {
                         currentField.offsetParent.offsetParent.style.transform : currentField.style.transform;
                     rotateAngleString = rotateAngleString.substring(rotateAngleString.indexOf('(') + 1, rotateAngleString.indexOf('d'));
                     const rotateAngle: number = rotateAngleString ? parseInt(rotateAngleString, 10) : 0;
-                    if (signatureType === 'Type') {
+                    if (signatureType === 'Type' || signatureType === 'Text') {
                         if (!currentFont) {
                             currentFont = 'Helvetica';
                         }

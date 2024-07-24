@@ -3,7 +3,7 @@
  */
 import { getValue, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import {  Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, ContextMenuClickEventArgs  } from '../../src/index';
-import { dialogEditData, resourcesData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData, scheduleModeData1, splitTasksData2, dialogData1, splitTasksData3, CR886052, MT887459,resourcesDatas1, resourceCollections1 } from '../base/data-source.spec';
+import { dialogEditData, resourcesData,resourceData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData, scheduleModeData1, splitTasksData2, dialogData1, splitTasksData3, CR886052, MT887459,resourcesDatas1, resourceCollections1 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent } from '../base/gantt-util.spec';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { DataManager } from '@syncfusion/ej2-data';
@@ -9422,7 +9422,6 @@ describe('Edit date in RTL mode', () => {
             }
         });
         it('AditionalParams dependency tab editing', () => {
-            debugger
             ganttObj.openEditDialog(1);
             let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
             tab.selectedItem = 1;
@@ -9431,5 +9430,89 @@ describe('Edit date in RTL mode', () => {
             expect(dialog.columnModel[0].visible).toBe(false);
             expect(dialog.columnModel[0].field).toBe("id");
             expect(dialog.columnModel[0].headerText).toBe("Iv value");
+        });
+    });
+
+    describe('Milestone and Work Property Not Working Properly ', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: [],
+                enableContextMenu: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    resourceInfo: 'resources',
+                    work: 'Work',
+                    child: 'subtasks',
+                    type: 'taskType',
+                    milestone: 'isMilestone',
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                },
+                resources: resourceData,
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName',
+                    unit: 'Unit',
+                },
+                workUnit: 'Hour',
+                taskType: 'FixedWork',
+                toolbar: [
+                    'Add',
+                    'Edit',
+                    'Update',
+                    'Delete',
+                    'Cancel',
+                    'ExpandAll',
+                    'CollapseAll',
+                ],
+                allowSelection: true,
+                height: '450px',
+                treeColumnIndex: 1,
+                columns: [
+                    { field: 'TaskID', visible: false },
+                    { field: 'TaskName', headerText: 'Task Name', width: '180' },
+                    { field: 'resources', headerText: 'Resources', width: '160' },
+                    { field: 'Work', width: '110' },
+                    { field: 'Duration', width: '100' },
+                    { field: 'taskType', headerText: 'Task Type', width: '110' },
+                ],
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach(() => {
+            ganttObj.openAddDialog();
+         });
+        it('check Milestone and Work  ', () => {
+            let textObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+            textObj.value = '0 days';
+            textObj.dataBind();
+           let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+           triggerMouseEvent(saveRecord, 'click');
+            expect(ganttObj.flatData[0].ganttProperties.isMilestone).toBe(true);
+            expect(ganttObj.flatData[0]["isMilestone"]).toBe(true);
+            expect(ganttObj.flatData[0].ganttProperties.work).toBe(0);
+            expect(ganttObj.flatData[0]['Work']).toBe(0);  
+        });
+        it('check Milestone as true and Work as number  ', () => {
+           let saveRecord: HTMLElement = document.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+           triggerMouseEvent(saveRecord, 'click');
+            expect(ganttObj.flatData[0].ganttProperties.isMilestone).toBe(false);
+            expect(ganttObj.flatData[0]["isMilestone"]).toBe(false);
+            expect(ganttObj.flatData[0].ganttProperties.work).toBe(0);
+            expect(ganttObj.flatData[0]['Work']).toBe(0);  
         });
     });

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.1.42 (2024-07-16)
+
+### Common
+
+#### Bug Fixes
+
+- `#I610845` - Resolved the Fluent 2 theme issues
+
 ## 23.2.6 (2023-11-28)
 
 ### Common

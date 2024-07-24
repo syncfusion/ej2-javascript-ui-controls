@@ -869,7 +869,7 @@ export class WordExport {
             if (comment.initial && comment.initial !== '') {
                 writer.writeAttributeString('w', 'initials', this.wNamespace, comment.initial);
             }
-            const blocks: any[] = this.retrieveCommentText(comment.text, comment.mentions);
+            const blocks: any[] = HelperMethods.commentInlines(comment.text, comment.mentions, this.keywordIndex)
             for (let k: number = 0; k < blocks.length; k++) {
                 this.isInsideComment = true;
                 this.commentParaID++;
@@ -890,76 +890,6 @@ export class WordExport {
             }
         }
 
-    }
-    private retrieveCommentText(text: string, mentions: FieldSettingsModel[]): any[] {
-        const blocks: any = [];
-        const multiText: string[] = text.split('\n');
-        let tempText : string = '';
-        while (multiText.length > 0) {
-            let block: any = {};
-            block[inlinesProperty[this.keywordIndex]] = [];
-            const inlines: any = {};
-            let dataName: string = '';
-            if (mentions && mentions.length > 0) {
-                let text: string = '';
-                let url: string = '';
-                for (let i: number = 0; i < mentions.length; i++) {
-                    dataName = (mentions[parseInt(i.toString(), 10)] as any).Name;
-                    if (multiText[0].indexOf('span') !== -1 && (mentions[parseInt(i.toString(), 10)] as any).Name) {
-                        const regex: RegExp = /(<span[^>]*>.*<\/span>)/;
-                        const match: RegExpMatchArray = multiText[0].match(regex);
-                        text = multiText[0].substring(match.index + match[0].length);
-                        const temp: string[] = text.split('&nbsp;');
-                        dataName = (mentions[parseInt(i.toString(), 10)] as any).Name;
-                        url = (mentions[parseInt(i.toString(), 10)] as any).EmailId;
-                        tempText = temp.length > 1 ? temp[1] : temp[0];
-                    }
-                }
-                block = this.serializeMentions(dataName, url, block);
-            }
-            if (multiText[0].indexOf('span') !== -1) {
-                let email = multiText[0].match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-                multiText[0] = email ? email + '': multiText[0] ;
-            }
-            if(multiText[0].indexOf('&nbsp;')!== -1 || multiText[0].indexOf('<div><br></div>') !== -1){
-                const match = multiText[0].match(/^(.*?)(<div><br><\/div>|&nbsp;)/);
-                multiText[0] = match ? match[1] : multiText[0];
-            }
-            inlines[textProperty[this.keywordIndex]] = mentions.length > 0 ? tempText : multiText[0];
-            block[inlinesProperty[this.keywordIndex]].push(inlines);
-            blocks.push(block);
-            multiText.splice(0, 1);
-        }
-        return blocks;
-    }
-
-    private serializeMentions(dataName: string, url: string, blocks: string): any {
-        const inlines: object = {};
-        inlines[characterFormatProperty[this.keywordIndex]] = {};
-        inlines['fieldType'] = 0;
-        inlines['hasFieldEnd'] = true;
-        blocks[inlinesProperty[this.keywordIndex]].push(inlines);
-        const inlines2: object = {};
-        inlines2[characterFormatProperty[this.keywordIndex]] = {};
-        inlines2[textProperty[this.keywordIndex]] = ' HYPERLINK \'' + url + '\' ';
-        blocks[inlinesProperty[this.keywordIndex]].push(inlines2);
-        const inlines3: object = {};
-        inlines3[characterFormatProperty[this.keywordIndex]] = {};
-        inlines3['fieldType'] = 2;
-        blocks[inlinesProperty[this.keywordIndex]].push(inlines3);
-        const inlines4: object = {};
-        inlines4[characterFormatProperty[this.keywordIndex]] = {
-            'underline': 'Single',
-            'fontColor': '#0563c1',
-            'bidi': false
-        };
-        inlines4[textProperty[this.keywordIndex]] = dataName;
-        blocks[inlinesProperty[this.keywordIndex]].push(inlines4);
-        const inlines5: object = {};
-        inlines5[characterFormatProperty[this.keywordIndex]] = {};
-        inlines5['fieldType'] = 1;
-        blocks[inlinesProperty[this.keywordIndex]].push(inlines5);
-        return blocks;
     }
     // Serialize the comments (commentsExtended.xml)
     private serializeCommentsExtended(): void {

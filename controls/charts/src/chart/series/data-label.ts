@@ -710,6 +710,7 @@ export class DataLabel {
         const finalPosition: number = series.type.indexOf('Range') !== -1 || series.type === 'Hilo' ? 2 : 4;
         while (isOverLap && position < finalPosition) {
             let actualPosition: LabelPosition = this.getPosition(position);
+            this.fontBackground = series.marker.dataLabel.fill;
             if (series.type.indexOf('Stacking') > -1 && actualPosition === 'Outer') {
                 actualPosition = 'Top';
                 position++;

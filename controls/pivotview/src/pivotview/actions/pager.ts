@@ -98,7 +98,7 @@ export class Pager {
                 cssClass: this.parent.cssClass
             });
             this.pager.isVue = (<{ isVue?: boolean }>this.parent).isVue;
-            this.pager.appendTo('#' + this.parent.element.id + 'pivot-pager');
+            this.pager.appendTo(pagerElement);
             if (isNullOrUndefined(pagerOptions.template)) {
                 if (pagerOptions.showRowPager) {
                     if (!pagerOptions.enableCompactView && tableWidth > 400) {
@@ -117,7 +117,7 @@ export class Pager {
                             change: this.rowPageChange.bind(this),
                             cssClass: this.parent.cssClass
                         });
-                        rowPagerTextBox.appendTo('#' + this.parent.element.id + '_row_textbox');
+                        rowPagerTextBox.appendTo(select('#' + this.parent.element.id + '_row_textbox', this.parent.element));
                     }
                     if (pagerOptions.showRowPageSize) {
                         const rowPages: number[] = this.parent.pagerSettings.rowPageSizes.slice(0);
@@ -136,7 +136,7 @@ export class Pager {
                             width: '64px',
                             cssClass: this.parent.cssClass
                         });
-                        rowPageSizeDropDown.appendTo('#' + this.parent.element.id + '_' + 'row' + '_size_list');
+                        rowPageSizeDropDown.appendTo(select('#' + this.parent.element.id + '_' + 'row' + '_size_list', this.parent.element));
                     }
                 }
                 if (pagerOptions.showColumnPager) {
@@ -156,7 +156,7 @@ export class Pager {
                             change: this.columnPageChange.bind(this),
                             cssClass: this.parent.cssClass
                         });
-                        columnPagerTextBox.appendTo('#' + this.parent.element.id + '_column_textbox');
+                        columnPagerTextBox.appendTo(select('#' + this.parent.element.id + '_column_textbox', this.parent.element));
                     }
                     if (pagerOptions.showColumnPageSize) {
                         const columnPages: number[] = this.parent.pagerSettings.columnPageSizes.slice(0);
@@ -175,7 +175,7 @@ export class Pager {
                             width: '64px',
                             cssClass: this.parent.cssClass
                         });
-                        columnPageSizeDropDown.appendTo('#' + this.parent.element.id + '_' + 'column' + '_size_list');
+                        columnPageSizeDropDown.appendTo(select('#' + this.parent.element.id + '_' + 'column' + '_size_list', this.parent.element));
                     }
                 }
                 this.unWireEvent();

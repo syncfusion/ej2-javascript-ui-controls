@@ -1812,6 +1812,34 @@ describe('Auto fill ->', () => {
                 done();
             });
         });
+        describe('EJ2-896132', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Additional column cells gets selected while selecting the autofill options button in mouse moving', function (done) {
+                helper.invoke('selectRange', ['A9']);
+                const autoFill: HTMLElement = helper.getElementFromSpreadsheet('.e-autofill');
+                let td: HTMLElement = helper.invoke('getCell', [13, 0]);
+                let coords = td.getBoundingClientRect();
+                let autoFillCoords = autoFill.getBoundingClientRect();
+                helper.triggerMouseAction('mousedown', { x: autoFillCoords.left + 1, y: autoFillCoords.top + 1 }, null, autoFill);
+                helper.getInstance().selectionModule.mouseMoveHandler({ target: autoFill, clientX: autoFillCoords.right, clientY: autoFillCoords.bottom });
+                helper.getInstance().selectionModule.mouseMoveHandler({ target: td, clientX: coords.left + 1, clientY: coords.top + 1 });
+                helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                expect(spreadsheet.sheets[0].selectedRange).toBe('A9:A14');
+                const autoFillOptions: HTMLElement = helper.getElementFromSpreadsheet('.e-dragfill-ddb');
+                let autoFillOptionsCoords = autoFillOptions.getBoundingClientRect();
+                helper.triggerMouseAction('mousedown', { x: autoFillOptionsCoords.left + 1, y: autoFillOptionsCoords.top + 1 }, null, autoFillOptions);
+                helper.triggerMouseAction('mousemove', { x: autoFillOptionsCoords.left, y: autoFillOptionsCoords.top + 30 }, autoFillOptions);
+                helper.triggerMouseAction('mouseup', { x: coords.left + 1, y: coords.top + 1 }, document, td);
+                expect(spreadsheet.sheets[0].selectedRange).toBe('A9:A14');
+                done();
+            });
+        });
     });
     describe('EJ2-66414', () => {
         beforeAll((done: Function) => {

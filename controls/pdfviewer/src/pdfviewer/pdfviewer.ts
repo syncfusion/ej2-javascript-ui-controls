@@ -8337,9 +8337,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Match case': 'Match case',
         'Apply': 'Apply',
         'GoToPage': 'Go to Page',
-
-        'No matches': 'Viewer has finished searching the document. No more matches were found',
-        'No Text Found': 'No Text Found',
+        'No Matches':'PDF Viewer has finished searching the document. No matches were found.',
+        'No More Matches':'PDF Viewer has finished searching the document. No more matches were found.',
+        'No Search Matches':'No matches found',
+        'No More Search Matches':'No more matches found',
         'Undo': 'Undo',
         'Redo': 'Redo',
         'Annotation': 'Add or Edit annotations',
@@ -9019,7 +9020,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @returns {void}
      */
     public unload(): void {
-        if (!isNullOrUndefined(this.viewerBase.pdfViewerRunner)) {
+        if (!isNullOrUndefined(this.viewerBase.pdfViewerRunner) && !this.viewerBase.isPasswordProtected) {
             this.viewerBase.pdfViewerRunner.postMessage({ message: 'unloadFPDF' });
         }
         this.viewerBase.clear(true);

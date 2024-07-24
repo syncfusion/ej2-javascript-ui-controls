@@ -709,6 +709,10 @@ export class PdfViewerBase {
      * @private
      */
     public focusField: any = [];
+    /**
+     * @private
+     */
+    public isPasswordProtected: boolean;
     private isMoving: boolean;
     /**
      * EJ2CORE-813 - This flag is represent current device is 'iPad' or 'iPhone' or'iPod' device.
@@ -901,6 +905,7 @@ export class PdfViewerBase {
      * @returns {void}
      */
     public initiatePageRender(documentData: string, password: string): void {
+        this.isPasswordProtected = (password || isNullOrUndefined(password)) ? true : false;
         if (this.clientSideRendering) {
             this.pdfViewer.unload();
         }
@@ -1091,8 +1096,13 @@ export class PdfViewerBase {
         } else {
             this.updateViewerContainerSize();
         }
-        this.viewerContainer.style.height = this.updatePageHeight(this.pdfViewer.element.getBoundingClientRect().height, 0);
         const toolbarModule: any = this.pdfViewer.toolbarModule;
+        if (!isNullOrUndefined(this.viewerContainer) && !isNullOrUndefined(toolbarModule.toolbarElement)) {
+            if (toolbarModule.toolbarElement.style.display == 'none') {
+                this.viewerContainer.style.height = this.updatePageHeight(this.pdfViewer.element.getBoundingClientRect().height, 0);
+            }
+            this.navigationPane.sideBarToolbar.style.height = this.updatePageHeight(this.pdfViewer.element.getBoundingClientRect().height, 0);
+        }
         if (toolbarModule) {
             if (isBlazor()) {
                 if (this.pdfViewer.enableToolbar || this.pdfViewer.enableAnnotationToolbar) {
@@ -1100,18 +1110,26 @@ export class PdfViewerBase {
                 }
             } else {
                 if (this.pdfViewer.enableToolbar) {
-                    toolbarModule.toolbar.refreshOverflow();
+                    if (!isNullOrUndefined(toolbarModule.toolbar)) {
+                        toolbarModule.toolbar.refreshOverflow();
+                    }
                 }
                 if (this.pdfViewer.enableAnnotationToolbar && toolbarModule.annotationToolbarModule) {
-                    toolbarModule.annotationToolbarModule.toolbar.refreshOverflow();
+                    if (!isNullOrUndefined(toolbarModule.annotationToolbarModule) && !isNullOrUndefined(toolbarModule.annotationToolbarModule.toolbar)) {
+                        toolbarModule.annotationToolbarModule.toolbar.refreshOverflow();
+                    }
                 }
             }
         }
     }
 
     private updateViewerContainerSize(): void {
-        this.viewerContainer.style.width = this.pdfViewer.element.clientWidth + 'px';
-        this.pageContainer.style.width = this.viewerContainer.offsetWidth + 'px';
+        if (!isNullOrUndefined(this.viewerContainer)) {
+            this.viewerContainer.style.width = this.pdfViewer.element.clientWidth + 'px';
+        }
+        if (!isNullOrUndefined(this.pageContainer)) {
+            this.pageContainer.style.width = this.viewerContainer.offsetWidth + 'px';
+        }
         this.updateZoomValue();
     }
 

@@ -23,7 +23,7 @@ import { EJ2Intance } from '../base/interface';
 import { TemplateEditCell } from '../renderer/template-edit-cell';
 import { DataUtil } from '@syncfusion/ej2-data';
 import { Row } from '../models/row';
-import { addRemoveEventListener, padZero } from '../base/util';
+import { addRemoveEventListener, padZero, getParentIns } from '../base/util';
 import * as literals from '../base/string-literals';
 
 /**
@@ -777,7 +777,9 @@ export class Edit implements IAction {
         const gObj: IGrid = this.parent;
         gObj.isWidgetsDestroyed = true;
         if (gObj.editSettings.template) {
-            this.parent.destroyTemplate(['editSettingsTemplate']);
+            let parentIns: IGrid = getParentIns(this.parent);
+            parentIns = parentIns.isReact ? parentIns : this.parent;
+            parentIns.destroyTemplate(['editSettingsTemplate']);
             if (this.parent.isReact) {
                 this.parent.renderTemplates();
             }
@@ -826,7 +828,8 @@ export class Edit implements IAction {
             if (formObjects[parseInt(i.toString(), 10)] && formObjects[parseInt(i.toString(), 10)].element
                 && !formObjects[parseInt(i.toString(), 10)].isDestroyed) {
                 formObjects[parseInt(i.toString(), 10)].destroy();
-                if (this.parent.isReact && this.parent.editSettings.mode === 'Dialog'
+                const parentIns: IGrid = getParentIns(this.parent);
+                if (parentIns.isReact && this.parent.editSettings.mode === 'Dialog'
                     && (!isNullOrUndefined(this.parent.editSettings.template) || col.length)) {
                     formObjects[parseInt(i.toString(), 10)].element.remove();
                 }

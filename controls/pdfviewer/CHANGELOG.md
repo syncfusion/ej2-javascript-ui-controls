@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 26.2.4 (2024-07-24)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I604925` - Now, the stamp annotation is updated correctly in the downloaded PDF.
+- `#I609434` - Now, the `Approved` stamp rendered properly in the stand-alone PDF viewer when exporting/importing as an object.
+- `#I603747` - Now, the PDF document is loaded properly in the PDF Viewer when disposing of the PdfRenderer object.
+
 ## 26.1.42 (2024-07-16)
 
 ### PDF Viewer

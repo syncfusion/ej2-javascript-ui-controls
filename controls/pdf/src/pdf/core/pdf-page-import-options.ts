@@ -163,7 +163,7 @@ export class PdfPageImportOptions {
     /**
      * Gets the boolean value indicating whether the form fields are grouped or not while importing pages.
      *
-     * @returns {boolean} value Indicates formfields grouping.
+     * @returns {boolean} value Indicates form fields grouping.
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);
@@ -183,7 +183,7 @@ export class PdfPageImportOptions {
     /**
      * Sets the boolean value indicating whether the form fields are grouped or not while importing pages.
      *
-     * @param {boolean} value Indicates formfields grouping
+     * @param {boolean} value Indicates form fields grouping
      * ```typescript
      * // Load an existing PDF document
      * let document: PdfDocument = new PdfDocument(data);

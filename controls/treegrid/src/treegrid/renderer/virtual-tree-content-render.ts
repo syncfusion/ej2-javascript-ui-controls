@@ -527,7 +527,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
     }
     public appendContent(target: HTMLElement, newChild: DocumentFragment, e: NotifyArgs) : void {
         if ((this.parent.dataSource instanceof DataManager && (this.parent.dataSource as DataManager).dataSource.url !== undefined
-        && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent) || this.parent.isFrozenGrid()) {
+        && !(this.parent.dataSource as DataManager).dataSource.offline && (this.parent.dataSource as DataManager).dataSource.url !== '') || isCountRequired(this.parent)) {
             if (getValue('isExpandCollapse', e)) {
                 this.isRemoteExpand = true;
             }

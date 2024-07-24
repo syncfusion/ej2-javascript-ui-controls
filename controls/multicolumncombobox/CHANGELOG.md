@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## 26.1.42 (2024-07-16)
+## 26.1.39 (2024-06-25)
 
 ### MultiColumn ComboBox
 

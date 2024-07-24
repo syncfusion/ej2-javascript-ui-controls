@@ -614,7 +614,7 @@ export class PdfRenderer {
                     if (isObject) {
                         settings.exportAppearance = isObject;
                         exportObject = this.loadedDocument.exportAnnotations(settings);
-                        return 'data:application/json;base64,' + _encode(this.loadedDocument.exportAnnotations(settings));
+                        return 'data:application/json;base64,' + _encode(exportObject);
                     } else {
                         fileName = this.changeFileExtension(this.pdfViewer.fileName, 'json');
                         return 'data:application/json;base64,' + _encode(this.loadedDocument.exportAnnotations(settings));

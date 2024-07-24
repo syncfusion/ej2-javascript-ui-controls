@@ -835,6 +835,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
     private matchedRowEle: Element;
     private matchedContent: { [key: string]: Object } | undefined;
     private isDataFiltered: boolean;
+    private isInitialRender: boolean;
 
     /**
      * *Constructor for creating the component
@@ -1016,6 +1017,10 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
 
     private getGridColumns(): ColumnModel[] {
         return this.columns.map((column: ColumnModel) => {
+            let changeType: string;
+            if (column.displayAsCheckBox && !column.format) {
+                changeType = 'boolean';
+            }
             return {
                 field: column.field,
                 headerText: column.header,
@@ -1026,7 +1031,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                 template: column.template,
                 headerTemplate: column.headerTemplate,
                 customAttributes: column.customAttributes,
-                type: column.displayAsCheckBox ? 'boolean' : 'string'
+                type: changeType
             };
         });
     }
@@ -1062,6 +1067,13 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
             const noRecordEle: HTMLElement = this.popupDiv.querySelector('.e-no-records');
             if (noRecordEle) { this.popupDiv.removeChild(noRecordEle); }
         }
+        if (this.isInitialRender) {
+            const rowHeight: number = !this.popupDiv.classList.contains(NODATA) ? this.popupDiv.querySelector('.e-gridcontent tr').getBoundingClientRect().height : this.popupDiv.getBoundingClientRect().height;
+            this.popupRowHeight = rowHeight;
+            this.popupObj.hide();
+            this.popupEle.style.visibility = 'unset';
+            this.isInitialRender = false;
+        }
     }
 
     private onActionFailure(args: FailureEventArgs): void {
@@ -1078,6 +1090,9 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
             this.inputEle.setAttribute('aria-expanded', 'false');
             this.inputEle.setAttribute('aria-readOnly', this.readonly.toString());
             this.inputEle.setAttribute('aria-disabled', this.disabled.toString());
+            this.inputEle.setAttribute('autocomplete', 'off');
+            this.inputEle.setAttribute('autocapitalize', 'off');
+            this.inputEle.setAttribute('spellcheck', 'false');
             this.inputEle.setAttribute('tabindex', '0');
         } else {
             this.inputEle = this.createElement('input', { attrs: { role: 'textbox', type: 'text' } }) as HTMLInputElement;
@@ -1276,9 +1291,9 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
             popupHeight = formatUnit(parseInt(popupHeight, 10) - height + 'px');
         }
         this.popupDiv.style.maxHeight = popupHeight;
-        this.popupRowHeight = this.popupDiv.querySelector('.e-gridcontent tr').getBoundingClientRect().height;
         this.updateGridHeight();
-        this.popupObj.hide();
+        this.popupEle.style.visibility = 'hidden';
+        this.isInitialRender = true;
     }
 
     private updateGridHeight(isFilter?: boolean, autoHeight?: boolean, dataSourceCount?: number): void {
@@ -1312,6 +1327,10 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                 if (!Browser.isDevice) {
                     this.hidePopup();
                 }
+            },
+            open: () => {
+                this.inputEle.focus();
+                this.updateClearIconState();
             }
         });
     }
@@ -1416,8 +1435,8 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
             cancel: false
         };
         const selectedRecords: { [key: string]: Object } = this.gridObj.getSelectedRecords()[0] as { [key: string]: Object };
-        const fieldText = selectedRecords ? selectedRecords[this.fields.text].toString() : "";
-        const fieldValue = selectedRecords ? selectedRecords[this.fields.value].toString() : "";
+        const fieldText = selectedRecords ? selectedRecords[this.fields.text].toString() : '';
+        const fieldValue = selectedRecords ? selectedRecords[this.fields.value].toString() : '';
         const ChangeEventArgs: ChangeEventArgs = {
             isInteracted: e ? true : false,
             item: selectedRecords,
@@ -1432,12 +1451,14 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         this.trigger('select', eventArgs, (eventArgs: SelectEventArgs) => {
             if (!eventArgs.cancel && eventArgs.itemData) {
                 const selectedRecord: { [key: string]: Object } = eventArgs.itemData as { [key: string]: Object };
-                if (!isKeyNav || (isKeyNav && (e as KeyboardEvent).key === 'Enter')) {
+                const event: KeyboardEvent = e as KeyboardEvent;
+                const isUpdateVal: boolean = event.key === 'Enter' || event.key === 'Tab' || event.shiftKey && event.key === 'Tab' || event.altKey && event.key === 'ArrowUp';
+                if (!isKeyNav || (isKeyNav && isUpdateVal)) {
                     this.updateValues(selectedRecord[this.fields.value] as string,
                                       selectedRecord[this.fields.text] as string, this.gridObj.selectedRowIndex, ChangeEventArgs);
                 }
                 Input.setValue(selectedRecord[this.fields.text] as string, this.inputEle, this.floatLabelType, this.showClearButton);
-                if (!isKeyNav || (isKeyNav && (e as KeyboardEvent).key === 'Enter')) { this.hidePopup(e as KeyboardEventArgs); }
+                if (!isKeyNav || (isKeyNav && isUpdateVal)) { this.hidePopup(e as KeyboardEventArgs); }
             }
         });
     }
@@ -1463,6 +1484,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
 
     private inputHandler(e: Event): void {
         this.showPopup(null, true);
+        this.updateClearIconState();
         if (this.allowFiltering) {
             const inputValue: string = (<HTMLInputElement>e.target).value.toLowerCase();
             let customFiltering: boolean = false;
@@ -1576,14 +1598,17 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
     }
 
     private wireEvents(): void {
-        const ddbIcon: HTMLElement = this.inputWrapper.querySelector('.e-input-group-icon');
-        const clearIcon: HTMLElement = this.inputWrapper.querySelector('.e-clear-icon');
-        EventHandler.add(ddbIcon, 'mousedown', this.dropDownClick, this);
+        if (!isNOU(this.inputObj.buttons[0])) {
+            EventHandler.add(this.inputObj.buttons[0], 'mousedown', this.preventBlur, this);
+            EventHandler.add(this.inputObj.buttons[0], 'mousedown', this.dropDownClick, this);
+        }
         EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
         EventHandler.add(this.gridEle, 'click', this.onMouseClick, this);
         EventHandler.add(this.inputEle, 'input', this.inputHandler, this);
-        EventHandler.add(this.inputWrapper, 'focus', this.focusIn, this);
-        if (clearIcon) { EventHandler.add(clearIcon, 'click', this.clearText, this); }
+        EventHandler.add(this.inputEle, 'focus', this.focusIn, this);
+        if (this.showClearButton) {
+            EventHandler.add(this.inputObj.clearButton, 'mousedown', this.clearText, this);
+        }
         EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.windowResize, this);
         this.keyboardModule = new KeyboardEvents(
             this.inputWrapper,
@@ -1604,16 +1629,23 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
     }
 
     private unWireEvents(): void {
-        const ddbIcon: HTMLElement = this.inputWrapper.querySelector('.e-input-group-icon');
-        const clearIcon: HTMLElement = this.inputWrapper.querySelector('.e-clear-icon');
-        EventHandler.remove(ddbIcon, 'mousedown', this.dropDownClick);
+        if (!isNOU(this.inputObj.buttons[0])) {
+            EventHandler.remove(this.inputObj.buttons[0], 'mousedown', this.preventBlur);
+            EventHandler.remove(this.inputObj.buttons[0], 'mousedown', this.dropDownClick);
+        }
         EventHandler.remove(document, 'mousedown', this.onDocumentClick);
         EventHandler.remove(this.inputEle, 'input', this.inputHandler);
         EventHandler.remove(this.inputWrapper, 'focus', this.focusIn);
         EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.windowResize);
         EventHandler.remove(this.gridEle, 'click', this.onMouseClick);
-        if (clearIcon) { EventHandler.remove(clearIcon, 'click', this.clearText); }
+        if (this.showClearButton) {
+            EventHandler.remove(this.inputObj.clearButton, 'mousedown', this.clearText);
+        }
         if (this.keyboardModule) { this.keyboardModule.destroy(); }
+    }
+
+    private preventBlur(e: MouseEvent): void {
+        e.preventDefault();
     }
 
     private dropDownClick(e: MouseEvent): void {
@@ -1648,7 +1680,6 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         else {
             if (!target.classList.contains('e-multicolumncombobox') && !target.classList.contains('e-clear-icon')) { this.updateValuesOnInput(e); }
         }
-        if (!closest(target, '.e-multicolumn-list')) { this.inputWrapper.tabIndex = -1; }
     }
 
     private updateValuesOnInput(mouseEvent?: MouseEvent, keyEvent?: KeyboardEventArgs, isClearValues?: boolean): void {
@@ -1724,9 +1755,8 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         case 'altUp':
         case 'shiftTab':
         case 'tab':
-            if (this.isPopupOpen) {
-                this.hidePopup(e);
-            }
+            if (this.isPopupOpen) { this.hidePopup(e); }
+            else { this.focusOut(); }
             break;
         case 'altDown':
             if (!this.isPopupOpen) {
@@ -1736,7 +1766,7 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
             break;
         case 'moveDown':
         case 'moveUp':
-            this.updateSelectedItem(e);
+            this.updateSelectedItem(e, true, true);
             break;
         case 'enter':
             this.updateValuesOnInput(null, e);
@@ -1755,6 +1785,9 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
             else if (e.key === 'ArrowUp') { e.action = 'moveUp'; }
             else if (e.key === 'End') { e.action = 'end'; }
             else if (e.key === 'Home') { e.action = 'home'; }
+            else if (e.key === 'Tab') { e.action = 'tab'; }
+            else if (e.key === 'Escape') { e.action = 'escape'; }
+            if (e.shiftKey && e.key === 'Tab') { e.action = 'shiftTab'; }
             if (e.altKey && e.key === 'ArrowUp') { e.action = 'altUp'; }
         }
         switch (e.action) {
@@ -1764,6 +1797,9 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         case 'altUp':
             if (this.isPopupOpen) {
                 e.preventDefault();
+                if (e.action !== 'escape') {
+                    this.updateSelectedItem(e);
+                }
                 this.hidePopup(e);
             }
             break;
@@ -1776,19 +1812,24 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
         }
     }
 
-    private updateSelectedItem(e: KeyboardEventArgs, isUpdateIndex: boolean = true): void {
+    private updateSelectedItem(e: KeyboardEventArgs, isUpdateIndex: boolean = true, isInputTarget?: boolean): void {
         if (this.isPopupOpen) {
             let index: number = !this.fields.groupBy ? this.gridObj.selectedRowIndex : this.gridObj.selectedRowIndex ? this.gridObj.selectedRowIndex : 0;
             if ((index === -1 && (e.action === 'moveDown' || e.action === 'moveUp')) || (e.action === 'home')) { index = 0; }
             else if ((index >= this.gridObj.getRows().length && e.action === 'moveDown') || (e.action === 'end')) { index = this.gridObj.getRows().length - 1; }
-            else if (e.action === 'moveDown' && (index >= 0 && index <= this.gridObj.getRows().length) && this.fields.groupBy) { index += 1; }
-            else if (e.action === 'moveUp' && index > 0 && this.fields.groupBy) { index -= 1; }
+            else if (e.action === 'moveDown' && (index >= 0 && index <= this.gridObj.getRows().length) && (this.fields.groupBy || isInputTarget)) { index += 1; }
+            else if (e.action === 'moveUp' && index > 0 && (this.fields.groupBy) || isInputTarget) { index -= 1; }
             this.gridObj.selectRow(index);
             this.gridObj.selectedRowIndex = index;
             const focusedEle: HTMLElement = this.gridEle.querySelector('.e-row-focus');
             if (focusedEle) { focusedEle.classList.remove('e-row-focus'); }
             if (isUpdateIndex) { this.selectedGridRow(this.gridObj.getRows()[index], e, true); }
         }
+    }
+
+    private updateClearIconState(): void {
+        const clearIconEle: HTMLElement = this.inputWrapper.querySelector('.e-clear-icon');
+        if (clearIconEle) { clearIconEle.style.display = this.inputEle.value === '' ? 'none' : 'flex'; }
     }
 
     /**
@@ -1800,10 +1841,8 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
     public focusIn(e?: FocusEvent | MouseEvent | KeyboardEvent | TouchEvent): void {
         if (this.disabled || this.readonly) { return; }
         addClass([this.inputWrapper], [INPUTFOCUS]);
-        this.inputWrapper.tabIndex = 0;
-        this.inputWrapper.focus();
-        const clearIconEle: HTMLElement = this.inputWrapper.querySelector('.e-clear-icon');
-        if (clearIconEle && (this.value && this.value.toString() !== '' || this.text && this.text !== '')) { clearIconEle.classList.remove('e-clear-icon-hide'); }
+        this.inputEle.focus();
+        this.updateClearIconState();
         this.trigger('focus', e);
         if (this.floatLabelType !== 'Never') {
             Input.calculateWidth(this.inputEle, this.inputWrapper);
@@ -1818,11 +1857,10 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
      */
     public focusOut(e?: MouseEvent | KeyboardEventArgs): void {
         if (this.disabled || this.readonly) { return; }
-        this.hidePopup(e);
+        if (this.isPopupOpen) { this.hidePopup(e); }
         removeClass([this.inputWrapper], [INPUTFOCUS]);
-        this.inputWrapper.tabIndex = -1;
         const clearIconEle: HTMLElement = this.inputWrapper.querySelector('.e-clear-icon');
-        if (clearIconEle) { clearIconEle.classList.add('e-clear-icon-hide'); }
+        if (clearIconEle) { clearIconEle.style.display = 'none'; }
         if (this.floatLabelType !== 'Never') {
             Input.calculateWidth(this.inputEle, this.inputWrapper);
         }
@@ -1852,6 +1890,13 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                     }
                     this.focusIn(e);
                 }
+                const contentEle: Element = this.gridObj.getContent();
+                if (contentEle) {
+                    const activeRow: HTMLElement = contentEle.querySelector('.e-rowcell.e-active');
+                    if (activeRow) { this.inputEle.setAttribute('aria-activedescendant', activeRow.parentElement.getAttribute('data-uid')); }
+                    else if (contentEle.querySelector('.e-row')) { this.inputEle.setAttribute('aria-activedescendant', contentEle.querySelector('.e-row').getAttribute('data-uid')); }
+                }
+                
                 this.popupObj.show(new Animation(eventArgs.animation), this.popupEle);
             }
         });
@@ -1875,12 +1920,14 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                 this.inputEle.value = this.text ? this.text.toString() : '';
                 if (e) {
                     const target: HTMLElement = <HTMLElement>e.target;
-                    if (target.classList.contains('e-multicolumn-list-icon') || target.classList.contains('e-rowcell')) {
+                    if (target && (target.classList.contains('e-multicolumn-list-icon') || target.classList.contains('e-rowcell'))) {
                         if (!this.value) { this.gridObj.refreshColumns(); }
-                        this.focusIn(e);
+                        setTimeout((): void => { this.focusIn(e); });
                     }
                     else { this.focusOut(); }
                 }
+                this.inputEle.removeAttribute('aria-owns');
+                this.inputEle.removeAttribute('aria-activedescendant');
             }
         });
         setTimeout((): void => {
@@ -1948,17 +1995,22 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
             this.gridObj.destroy();
             detach(this.gridObj.element);
         }
-        if (this.popupObj) {
-            this.popupObj.destroy();
-            detach(this.popupObj.element);
-        }
         if (this.inputEle) {
-            const attrArray: string[] = ['placeholder', 'aria-expanded', 'spellcheck', 'aria-label', 'role', 'type', 'aria-owns', 'aria-controls'];
+            const attrArray: string[] = ['placeholder', 'aria-expanded', 'spellcheck', 'aria-label', 'role', 'type',
+                'aria-owns', 'aria-controls', 'aria-readonly', 'autocomplete', 'autocapitalize', 'spellcheck', 'aria-activedescendant'];
             for (let i: number = 0; i < attrArray.length; i++) {
                 this.inputEle.removeAttribute(attrArray[i as number]);
             }
             this.inputEle.classList.remove('e-input');
             Input.setValue('', this.inputEle, this.floatLabelType, this.showClearButton);
+        }
+        if (this.popupEle) {
+            this.popupEle.removeAttribute('aria-label');
+            this.popupEle.removeAttribute('role');
+        }
+        if (this.popupObj) {
+            this.popupObj.destroy();
+            detach(this.popupObj.element);
         }
         if (this.element.tagName !== this.getDirective()) {
             this.inputWrapper.parentElement.insertBefore(this.element, this.inputWrapper);

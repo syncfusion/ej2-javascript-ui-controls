@@ -180,27 +180,27 @@ export class _PdfMergeHelper {
             }
             for (let i: number = 0; i < form.count; i++) {
                 const field: PdfField = form.fieldAt(i);
-                let existingkids: _PdfReference[] = [];
+                let existingKids: _PdfReference[] = [];
                 const isTextbox : _PdfName = field._dictionary.get('FT');
                 if (isTextbox.name.toString() === 'Tx') {
                     if (field._dictionary.has('Kids')) {
-                        existingkids = field._dictionary.get('Kids');
-                        if (existingkids.length > 1) {
-                            for (let j: number = 0; j < existingkids.length; j++) {
+                        existingKids = field._dictionary.get('Kids');
+                        if (existingKids.length > 1) {
+                            for (let j: number = 0; j < existingKids.length; j++) {
                                 let fieldItem: any = field.itemAt(j); // eslint-disable-line
                                 if (fieldItem.page === oldPage) {
-                                    array = this._combineFormFields(form, field, kidsArray, existingkids, newPage._ref, array, i);
+                                    array = this._combineFormFields(form, field, kidsArray, existingKids, newPage._ref, array, i);
                                     break;
                                 }
                             }
-                        } else if (existingkids.length === 1) {
+                        } else if (existingKids.length === 1) {
                             if (field.page === oldPage) {
-                                array = this._combineFormFields(form, field, kidsArray, existingkids, newPage._ref, array, i);
+                                array = this._combineFormFields(form, field, kidsArray, existingKids, newPage._ref, array, i);
                             }
                         }
                     } else {
                         if (field.page === oldPage) {
-                            array = this._combineFormFields(form, field, kidsArray, existingkids, newPage._ref, array, i);
+                            array = this._combineFormFields(form, field, kidsArray, existingKids, newPage._ref, array, i);
                         }
                     }
                 } else {
@@ -212,24 +212,24 @@ export class _PdfMergeHelper {
             }
         }
     }
-    _combineFormFields(form: PdfForm, field: PdfField, kidsArray: _PdfReference[], existingkids: _PdfReference[], ref: _PdfReference,
+    _combineFormFields(form: PdfForm, field: PdfField, kidsArray: _PdfReference[], existingKids: _PdfReference[], ref: _PdfReference,
                        array: _PdfReference[], index: number) : _PdfReference[] {
         const fieldDictionary: _PdfDictionary = this._exportFormFieldDictionary(this._crossReference, field);
         if (fieldDictionary.has('Kids')) {
             const kids: _PdfReference[] = fieldDictionary.get('Kids');
             for (let j: number = 0; j < kids.length; j++) {
-                if ((kidsArray.indexOf(existingkids[Number.parseInt(j.toString(), 10)]) !== -1)) {
+                if ((kidsArray.indexOf(existingKids[Number.parseInt(j.toString(), 10)]) !== -1)) {
                     const dictionary: _PdfDictionary = this._crossReference._fetch(kids[Number.parseInt(j.toString(), 10)]);
                     dictionary.update('P', ref);
                     array.push(kids[Number.parseInt(j.toString(), 10)]);
-                    const oldDictionary: _PdfDictionary = this._crossReference._fetch(existingkids[Number.parseInt(j.toString(), 10)]);
+                    const oldDictionary: _PdfDictionary = this._crossReference._fetch(existingKids[Number.parseInt(j.toString(), 10)]);
                     oldDictionary.forEach((key:any, value: any) => { // eslint-disable-line
                         if (key === 'Parent') {
                             dictionary.update(key, value);
                         }
                     });
-                    this._kidsReference.push(existingkids[Number.parseInt(j.toString(), 10)]);
-                    existingkids.push(kids[Number.parseInt(j.toString(), 10)]);
+                    this._kidsReference.push(existingKids[Number.parseInt(j.toString(), 10)]);
+                    existingKids.push(kids[Number.parseInt(j.toString(), 10)]);
                     dictionary._updated = true;
                     field._dictionary._updated = true;
                 }
@@ -370,10 +370,10 @@ export class _PdfMergeHelper {
         const field: PdfField = form._parseFields(dict, ref);
         this._crossReference._cacheMap.set(newReference, field._dictionary);
         if (field._dictionary.has('Kids')) {
-            const existingkids: _PdfReference[] = pdfField._dictionary.get('Kids');
+            const existingKids: _PdfReference[] = pdfField._dictionary.get('Kids');
             const kids: _PdfReference[] = field._dictionary.get('Kids');
             for (let j: number = 0; j < kids.length; j++) {
-                if ((kidsArray.indexOf(existingkids[Number.parseInt(j.toString(), 10)]) !== -1)){
+                if ((kidsArray.indexOf(existingKids[Number.parseInt(j.toString(), 10)]) !== -1)){
                     const dictionary: _PdfDictionary = this._crossReference._fetch(kids[Number.parseInt(j.toString(), 10)]);
                     dictionary.update('P', ref);
                     dictionary.update('Parent', newReference);

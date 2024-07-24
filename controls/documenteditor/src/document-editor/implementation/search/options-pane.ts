@@ -783,7 +783,7 @@ export class OptionsPane {
             (this.replaceButton as HTMLButtonElement).disabled = true;
             (this.replaceAllButton as HTMLButtonElement).disabled = true;
         }
-        if (!isNullOrUndefined(this.searchInput.value) && !this.searchInput.value.match(/^[a-zA-Z0-9]+$/) && this.searchInput.value !== "") {
+        if (!isNullOrUndefined(this.searchInput.value) && this.searchInput.value.match(/[!\@\#$%\^&*\(\)_\-+\=\[\]\{\};:"\|,.<>\/?`~\s\\؟°÷×،؛]/) && this.searchInput.value !== "") {
             this.wholeWord.checked = false;
             this.wholeWord.disabled = true;
         } else {
@@ -1317,7 +1317,7 @@ export class OptionsPane {
                 }
                 textBox.value = selectedText;
                 textBox.select();
-                if (!isNullOrUndefined(textBox.value) && !textBox.value.match(/^[a-zA-Z0-9]+$/) && textBox.value !== "") {
+                if (!isNullOrUndefined(textBox.value) && textBox.value.match(/[!\@\#$%\^&*\(\)_\-+\=\[\]\{\};:"\|,.<>\/?`~\s\\؟°÷×،؛]/) && textBox.value !== "") {
                     this.wholeInput.checked = false;
                     this.wholeWord.disabled = true;
                 } else {

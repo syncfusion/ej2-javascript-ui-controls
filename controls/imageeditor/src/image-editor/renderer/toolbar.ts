@@ -2747,6 +2747,15 @@ export class ToolbarModule {
                 args.toolbarItems = ['fillColor', 'strokeColor', 'strokeWidth', 'z-order', 'duplicate', 'remove'];
             }
             this.initShapesToolbarItem(args.toolbarItems);
+            if (parent.activeObj.shape === 'image') {
+                const actObj: SelectionPoint = extend({}, parent.activeObj, {}, true) as SelectionPoint;
+                parent.notify('shape', { prop: 'refreshActiveObj', onPropertyChange: false });
+                parent.notify('draw', { prop: 'render-image', value: { isMouseWheel: null, isPreventClearRect: null, isFrame: true } });
+                parent.activeObj = actObj;
+                parent.notify('draw', { prop: 'drawObject', onPropertyChange: false, value: { canvas: 'duplicate', obj: parent.activeObj,
+                    isCropRatio: null, points: null, isPreventDrag: true } });
+                this.renderQAT(false);
+            }
             break;
         case 'text':
             if (Browser.isDevice) {
@@ -2821,14 +2830,14 @@ export class ToolbarModule {
             parent.notify('draw', { prop: 'render-image', value: { isMouseWheel: null, isPreventClearRect: null, isFrame: true } });
             break;
         }
-        this.currToolbar = type;
         this.refreshDropDownBtn(isCropping);
-        this.updateKBDNavigation(this.currToolbar);
+        this.updateKBDNavigation(type);
+        this.currToolbar = type;
     }
 
     private updateKBDNavigation(type: string): void {
         const parent: ImageEditor = this.parent; const id: string = parent.element.id;
-        if (!parent.isKBDNavigation) { return; }
+        if (!parent.isKBDNavigation || this.currToolbar === type) { return; }
         if (this.isToolbar()) {
             const tbar: Element = parent.element.querySelectorAll('#' + id + '_toolbar')[0];
             let tbarInitialChild: Element; let tbarInitialBtn: HTMLButtonElement;
@@ -5126,8 +5135,10 @@ export class ToolbarModule {
                 }
                 parent.notify('selection', { prop: 'setSliderActive', onPropertyChange: false, value: {bool: false }});
                 if (type === 'transparency') {
-                    parent.notify('undo-redo', { prop: 'updateUndoRedoStack', onPropertyChange: false});
-                    (parent.element.querySelector('#' + parent.element.id + '_transparency') as HTMLInputElement).click();
+                    setTimeout((): void => {
+                        parent.notify('undo-redo', { prop: 'updateUndoRedoStack', onPropertyChange: false});
+                        (parent.element.querySelector('#' + parent.element.id + '_transparency') as HTMLInputElement).click();
+                    }, 50);
                 }
             }
         });

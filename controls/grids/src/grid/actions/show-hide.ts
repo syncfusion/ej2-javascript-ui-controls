@@ -1,6 +1,7 @@
 import { isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { iterateArrayOrObject, isGroupAdaptive, isActionPrevent, addRemoveEventListener } from '../base/util';
+import { ColumnWidthService } from '../services/width-controller';
 import * as events from '../base/constant';
 import { IGrid } from '../base/interface';
 import { ContentRender } from '../renderer';
@@ -16,6 +17,7 @@ export class ShowHide {
     private changedCol: Column[];
     private isShowHide: boolean = false;
     private evtHandlers: { event: string, handler: Function }[];
+    private widthService: ColumnWidthService;
 
     /**
      * Constructor for the show hide module.
@@ -26,6 +28,7 @@ export class ShowHide {
     constructor(parent: IGrid) {
         this.parent = parent;
         this.addEventListener();
+        this.widthService = new ColumnWidthService(parent);
     }
 
     public addEventListener(): void {
@@ -220,8 +223,12 @@ export class ShowHide {
             }
         }
         );
-        if (this.parent.autoFit && !this.parent.groupSettings.columns.length) {
-            this.parent.preventAdjustColumns();
+        if (!this.parent.groupSettings.columns.length) {
+            if (this.parent.autoFit) {
+                this.parent.preventAdjustColumns();
+            } else if (this.parent.allowResizing && this.parent.resizeSettings.mode === 'Normal') {
+                this.widthService.setWidthToTable();
+            }
         }
     }
 }

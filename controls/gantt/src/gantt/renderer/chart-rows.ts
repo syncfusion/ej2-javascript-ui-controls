@@ -1082,18 +1082,29 @@ export class ChartRows extends DateProcessor {
         /* eslint-disable-next-line */
          let activecls: string;
          let rows: any;
-         setTimeout(() => {
-             if (!isNullOrUndefined(this.parent.treeGrid.grid) && !isNullOrUndefined(this.parent.treeGrid.grid.contentModule) && 
-                 !isNullOrUndefined(this.parent.treeGrid.grid.contentModule.getRows())) {
-                 rows = this.parent.treeGrid.grid.contentModule.getRows()[i as number];
-                 if (rows && rows.isSelected) {
-                     activecls = 'e-active';
-                 }
-                 else {
-                     activecls = '';
-                 }
-             }
-         }, 0);
+        if (this.parent.treeGridModule.isPersist) {
+            setTimeout(() => {
+                if (!isNullOrUndefined(this.parent.treeGrid.grid) && !isNullOrUndefined(this.parent.treeGrid.grid.contentModule) &&
+                    !isNullOrUndefined(this.parent.treeGrid.grid.contentModule.getRows())) {
+                    rows = this.parent.treeGrid.grid.contentModule.getRows()[i as number];
+                    if (rows && rows.isSelected) {
+                        activecls = 'e-active';
+                    }
+                    else {
+                        activecls = '';
+                    }
+                }
+            }, 0);
+        }
+        else {
+            rows = this.parent.treeGrid.grid.contentModule.getRows()[i as number];
+            if (rows && rows.isSelected) {
+                activecls = 'e-active';
+            }
+            else {
+                activecls = '';
+            }
+        }
         table.innerHTML = '<tr class="' + this.getRowClassName(this.templateData) + ' ' + cls.chartRow + ' ' + (activecls) + '"' +
         'style="display:' + this.getExpandDisplayProp(this.templateData) + ';height:' +
         this.parent.rowHeight + 'px;">' +

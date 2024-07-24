@@ -401,6 +401,11 @@ export class Edit {
             }
             const ganttData: IGanttData = this.parent.viewType === 'ResourceView' ?
                 this.parent.flatData[this.parent.getTaskIds().indexOf('T' + data[tasks.id])] : this.parent.getRecordByID(data[tasks.id]);
+                if (!isNullOrUndefined(ganttData[tasks.milestone])) {
+                    if (ganttData[tasks.milestone] === true) {
+                        ganttData[tasks.milestone] = false;
+                    }
+                }
             if (this.parent.undoRedoModule && !this.parent.undoRedoModule['isUndoRedoPerformed'] && this.parent['isUndoRedoItemPresent']('Edit') && ganttData) {
                 this.parent.undoRedoModule['createUndoCollection']();
                 const details: Object = {};
@@ -498,11 +503,6 @@ export class Edit {
         const ganttPropByMapping: Object = getSwapKey(ganttObj.columnMapping);
         const scheduleFieldNames: string[] = [];
         let isScheduleValueUpdated: boolean = false;
-        if (!isNullOrUndefined(ganttData[tasks.milestone])) {
-            if (ganttData[tasks.milestone] === true) {
-                ganttData[tasks.milestone] = false;
-            }
-        }
         for (const key of Object.keys(data)) {
             if ([tasks.startDate, tasks.endDate, tasks.duration].indexOf(key) !== -1) {
                 if (isNullOrUndefined(data[`${key}`]) && !ganttObj.allowUnscheduledTasks) {

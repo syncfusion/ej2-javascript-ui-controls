@@ -1041,7 +1041,7 @@ export class DragAndDrop extends ActionBase {
             util.getUniversalTime(<Date>eventObj[this.parent.eventFields.startTime]);
         let offsetLeft: number = this.parent.enableRtl ? Math.abs(this.actionObj.clone.offsetLeft) - this.actionObj.clone.offsetWidth :
             parseInt(this.actionObj.clone.style.left, 10);
-        offsetLeft = Math.floor(offsetLeft / Math.trunc(this.actionObj.cellWidth)) * this.actionObj.cellWidth;
+        offsetLeft = Math.round(offsetLeft / this.actionObj.cellWidth) * this.actionObj.cellWidth;
         let rightOffset: number;
         if (this.parent.enableRtl) {
             rightOffset = Math.abs(parseInt(this.actionObj.clone.style.right, 10));
@@ -1224,7 +1224,7 @@ export class DragAndDrop extends ActionBase {
     }
 
     private getColumnIndex(offsetLeft: number): number {
-        const index: number = Math.floor(offsetLeft / Math.trunc(this.actionObj.cellWidth));
+        const index: number = Math.round(offsetLeft / this.actionObj.cellWidth);
         if (this.isHeaderRows) {
             return index;
         }

@@ -2214,7 +2214,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     }
 
     /**
-     * The `calculateNow` method is used to calculate any uncalculated formulas in a spreadsheet.
+     * The `calculateNow` method is used to calculate any `uncalculated formulas` in a spreadsheet.
      * This method accepts an option to specify whether the calculation should be performed for the entire workbook or a specific sheet.
      *
      * @param {string} [scope] - Specifies the scope of the calculation. Acceptable values are `Sheet` or `Workbook`.
@@ -3227,10 +3227,11 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * {% codeBlock src='spreadsheet/clearFilter/index.md' %}{% endcodeBlock %}
      *
      * @param {string} field - Specify the field.
+     * @param {number} sheetIndex - Specify the index of the sheet.
      * @returns {void} - To clear the filter.
      */
-    public clearFilter(field?: string): void {
-        this.notify(clearFilter, { field: field });
+    public clearFilter(field?: string, sheetIndex?: number): void {
+        this.notify(clearFilter, { field: field, sheetIndex: sheetIndex });
     }
 
     /**

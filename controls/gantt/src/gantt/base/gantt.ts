@@ -2045,7 +2045,8 @@ export class Gantt extends Component<HTMLElement>
             focusSearch: 'ctrl+shift+70', //F Key
             contextMenu: 'shift+F10', //F Key
             undo: 'ctrl+z', //F Key
-            redo: 'ctrl+y' //F Key
+            redo: 'ctrl+y', //F Key
+            selectAll: 'ctrl+a'
         };
         this.focusModule = new FocusModule(this);
         if (this.zoomingLevels.length === 0) {
@@ -4143,7 +4144,11 @@ export class Gantt extends Component<HTMLElement>
             splitTask: 'Split Task',
             mergeTask: 'Merge Task',
             left: 'Left',
-            right: 'Right'
+            right: 'Right',
+            FF: "FF",
+            FS: "FS",
+            SF: "SF",
+            SS: "SS"
         };
         return ganttLocale;
     }

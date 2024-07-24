@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.2.4 (2024-07-24)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#FB58731` - Resolved issues with copy paste of swimlane using rubber band selection.
+
 ## 26.1.42 (2024-07-16)
 
 ### Diagram

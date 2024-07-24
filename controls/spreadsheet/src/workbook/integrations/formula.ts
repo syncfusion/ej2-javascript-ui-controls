@@ -196,7 +196,6 @@ export class WorkbookFormula {
         case 'initSheetInfo':
             this.updateSheetInfo(); break;
         case 'refreshCalculate':
-            args.sheet = isNullOrUndefined(args.sheetIndex) ? this.parent.getActiveSheet() : getSheet(this.parent, <number>args.sheetIndex);
             this.refreshCalculate(args);
             break;
         case 'refreshRandomFormula':
@@ -550,6 +549,7 @@ export class WorkbookFormula {
      * @private
      */
     public refreshCalculate(args: FormulaCalculateArgs): void {
+        args.sheet = isNullOrUndefined(args.sheetIndex) ? this.parent.getActiveSheet() : getSheet(this.parent, <number>args.sheetIndex);
         const sheetId: string = args.sheet.id + '';
         const family: CalcSheetFamilyItem = this.calculateInstance.getSheetFamilyItem(sheetId);
         let cellRef: string = getColumnHeaderText(args.colIndex + 1) + (args.rowIndex + 1);

@@ -918,7 +918,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Property(false)
     public showRevisions: boolean;
-
     /**
      * Gets or sets a value indicating whether to start automatic resize with the specified time interval and iteration count.
      *
@@ -4201,6 +4200,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 (styleInCollection as WParagraphStyle).characterFormat.destroy();
                 (styleInCollection as WParagraphStyle).characterFormat.copyFormat((style as WParagraphStyle).characterFormat);
                 const oldListId: number = (styleInCollection as WParagraphStyle).paragraphFormat.listFormat.listId;
+                (styleInCollection as WParagraphStyle).paragraphFormat.destroy();
                 (styleInCollection as WParagraphStyle).paragraphFormat.copyFormat((style as WParagraphStyle).paragraphFormat);
                 // this.updateList();
                 styleInCollection.link = style.link;

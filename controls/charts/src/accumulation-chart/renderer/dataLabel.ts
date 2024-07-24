@@ -269,7 +269,7 @@ export class AccumulationDataLabel extends AccumulationBase {
                     showTooltip(
                         point.text || point.y.toString(), x, y, this.areaRect.width,
                         this.accumulation.element.id + '_EJ2_Datalabel_Tooltip',
-                        getElement(this.accumulation.element.id + '_Secondary_Element')
+                        getElement(this.accumulation.element.id + '_Secondary_Element'), null, null, this.accumulation.initialClipRect
                     );
                 }
             }

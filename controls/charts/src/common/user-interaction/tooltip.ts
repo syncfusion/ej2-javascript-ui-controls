@@ -170,9 +170,9 @@ export class BaseTooltip extends ChartData {
         templatePoint: Points | Points[] | AccPoints | Chart3DPoint| Chart3DPoint[] = null, customTemplate?: string
     ): void {
         const series: Series = <Series>this.currentPoints[0].series;
-        const module: AccumulationTooltip | Tooltip | Tooltip3D = (<Chart>chart).tooltipModule || (<Chart3D>chart).tooltip3DModule ||
+        const tooltipModule: AccumulationTooltip | Tooltip | Tooltip3D = (<Chart>chart).tooltipModule || (<Chart3D>chart).tooltip3DModule ||
          (<AccumulationChart>chart).accumulationTooltipModule;
-        if (!module || location === null) { // For the tooltip enable is false.
+        if (!tooltipModule || location === null) { // For the tooltip enable is false.
             removeElement(this.chart.element.id + '_tooltip');
             return;
         }
@@ -213,13 +213,13 @@ export class BaseTooltip extends ChartData {
                     controlName: 'Chart',
                     allowHighlight: chart.getModuleName() === 'chart' && !series.marker.allowHighlight,
                     tooltipRender: () => {
-                        module.removeHighlight();
-                        module.highlightPoints();
-                        module.updatePreviousPoint(extraPoints);
+                        tooltipModule.removeHighlight();
+                        tooltipModule.highlightPoints();
+                        tooltipModule.updatePreviousPoint(extraPoints);
                     },
                     animationComplete: (args: ITooltipAnimationCompleteArgs) => {
                         if (args.tooltip.fadeOuted) {
-                            module.fadeOut(<PointData[]>module.previousPoints);
+                            tooltipModule.fadeOut(<PointData[]>tooltipModule.previousPoints);
                         }
                     }
                 });

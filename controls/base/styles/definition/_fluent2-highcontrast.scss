@@ -26,9 +26,9 @@
   --color-sf-flyout-bg-color-pressed: var(--color-sf-content-bg-color-hover);
   --color-sf-flyout-bg-color-selected: var(--color-sf-content-bg-color-hover);
   --color-sf-flyout-bg-color-focus: var(--color-sf-content-bg-color-hover);
-  --color-sf-overlay-bg-color: rgba($black, .4);
-  --color-sf-table-bg-color-hover: var(--color-sf-black);
-  --color-sf-table-bg-color-pressed: var(--color-sf-black);
+  --color-sf-overlay-bg-color: rgba(0, 0, 0, .4);
+  --color-sf-table-bg-color-hover: #1aebff;
+  --color-sf-table-bg-color-pressed: #1aebff;
   --color-sf-table-bg-color-selected: #1aebff;
 
   --color-sf-content-text-color: #fff;
@@ -48,13 +48,13 @@
   --color-sf-flyout-text-color-selected: var(--color-sf-content-text-color-hover);
   --color-sf-flyout-text-color-focus: var(--color-sf-content-text-color-hover);
   --color-sf-flyout-text-color-disabled: var(--color-sf-content-text-color-disabled);
-  --color-sf-table-text-color-hover: var(--color-sf-content-text-color-hover);
-  --color-sf-table-text-color-pressed: var(--color-sf-content-text-color-hover);
-  --color-sf-table-text-color-selected: var(--color-sf-content-text-color-hover);
+  --color-sf-table-text-color-hover: #000;
+  --color-sf-table-text-color-pressed: #000;
+  --color-sf-table-text-color-selected: #000;
 
   --color-sf-icon-color: #fff;
-  --color-sf-icon-color-hover: var(--color-sf-content-text-color);
-  --color-sf-icon-color-pressed: var(--color-sf-content-text-color);
+  --color-sf-icon-color-hover: #000;
+  --color-sf-icon-color-pressed: #000;
   --color-sf-icon-color-disabled: var(--color-sf-content-text-color-disabled);
 
   --color-sf-border-light: #fff;
@@ -700,8 +700,8 @@ $msg-warning-color-alt1: mapcolorvariable('msg-warning-color-alt1') !default;
 $msg-warning-bg-color-alt1: mapcolorvariable('msg-warning-bg-color-alt1') !default;
 $msg-warning-border-color-alt1: mapcolorvariable('msg-warning-border-color-alt1') !default;
 $msg-warning-color-alt2: mapcolorvariable('msg-warning-color-alt2') !default;
-$msg-warning-bg-color-alt2: mapcolorvariable('msg-warning-bg-color-alt2:') !default;
-$msg-warning-border-color-alt2: mapcolorvariable('msg-warning-border-color-alt2:') !default;
+$msg-warning-bg-color-alt2: mapcolorvariable('msg-warning-bg-color-alt2') !default;
+$msg-warning-border-color-alt2: mapcolorvariable('msg-warning-border-color-alt2') !default;
 
 $msg-warning-icon-color: mapcolorvariable('msg-warning-icon-color') !default;
 $msg-warning-icon-color-alt1: mapcolorvariable('msg-warning-icon-color-alt1') !default;
@@ -977,7 +977,7 @@ $flyout-bg-color-hover: $flyout-bg-color-hover !default;
 $flyout-bg-color-pressed: $flyout-bg-color-pressed !default;
 $flyout-bg-color-selected: $flyout-bg-color-selected !default;
 $flyout-bg-color-focus: $flyout-bg-color-focus !default;
-$overlay-bg-color: rgba($overlay-bg, .4) !default;
+$overlay-bg-color: rgba(0, 0, 0, .4) !default;
 $table-bg-color-hover: $table-bg-color-hover !default;
 $table-bg-color-pressed: $table-bg-color-pressed !default;
 $table-bg-color-selected: $table-bg-color-selected !default;

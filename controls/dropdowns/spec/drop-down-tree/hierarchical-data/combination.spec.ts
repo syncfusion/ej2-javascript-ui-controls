@@ -118,7 +118,7 @@ describe('DropDown Tree control hierarchical datasource', () => {
         });
         it('for showCheckBox with autoCheck and value', () => {
             ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" }, showCheckBox: true, treeSettings: { autoCheck: true }, value: ['21', '7'] }, '#ddtree');
-            expect(ddtreeObj.text).toBe('India,Brazil,Paraná,Ceará,Acre,Assam,Bihar,Tamil Nadu,Punjab');
+            expect(ddtreeObj.text).toBe('India,Brazil,Assam,Bihar,Tamil Nadu,Punjab,Paraná,Ceará,Acre');
         });
         it('for showCheckBox with Delimiter mode and autocheck & loadOnDemand enabled', (done: Function) => {
             ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" }, showCheckBox: true, mode: 'Delimiter', treeSettings: { autoCheck: true, loadOnDemand: true } }, '#ddtree');

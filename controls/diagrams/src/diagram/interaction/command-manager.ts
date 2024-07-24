@@ -1011,7 +1011,7 @@ export class CommandHandler {
      */
     public copyObjects(): Object[] {
         let selectedItems: (NodeModel | ConnectorModel)[] = [];
-        const obj: Object[] = [];
+        let obj: Object[] = [];
         this.clipboardData.childTable = {};
         if (this.diagram.selectedItems.connectors.length > 0) {
             selectedItems = this.diagram.selectedItems.connectors;
@@ -1032,52 +1032,54 @@ export class CommandHandler {
         if (this.diagram.selectedItems.nodes.length > 0) {
             selectedItems = selectedItems.concat(this.diagram.selectedItems.nodes);
             for (let j: number = 0; j < this.diagram.selectedItems.nodes.length; j++) {
-                if (!(selectedItems[parseInt(j.toString(), 10)] as Node).isPhase) {
+                if (!(this.diagram.selectedItems.nodes[parseInt(j.toString(), 10)] as Node).isPhase) {
                     const node: NodeModel = clone(this.diagram.selectedItems.nodes[parseInt(j.toString(), 10)]);
-                    if (node.wrapper && (node.offsetX !== node.wrapper.offsetX)) {
-                        node.offsetX = node.wrapper.offsetX;
-                    }
-                    if (node.wrapper && (node.offsetY !== node.wrapper.offsetY)) {
-                        node.offsetY = node.wrapper.offsetY;
-                    }
-                    const processTable: {} = {};
-                    this.copyProcesses(node as Node);
-                    obj.push(clone(node));
-                    const matrix: Matrix = identityMatrix();
-                    rotateMatrix(matrix, -node.rotateAngle, node.offsetX, node.offsetY);
-                    if (node.children) {
-                        const childTable: {} = this.clipboardData.childTable;
-                        let tempNode: NodeModel | ConnectorModel;
-                        const elements: (NodeModel | ConnectorModel)[] = [];
-                        const nodes: (NodeModel | ConnectorModel)[] = this.getAllDescendants(node, elements, true);
-                        for (let i: number = 0; i < nodes.length; i++) {
-                            tempNode = this.diagram.nameTable[nodes[parseInt(i.toString(), 10)].id];
-                            const clonedObject: NodeModel | ConnectorModel = childTable[tempNode.id] = clone(tempNode);
-                            const newOffset: PointModel = transformPointByMatrix(
-                                matrix, { x: clonedObject.wrapper.offsetX, y: clonedObject.wrapper.offsetY });
-                            if (tempNode instanceof Node) {
-                                (clonedObject as Node).offsetX = newOffset.x;
-                                (clonedObject as Node).offsetY = newOffset.y;
-                                (clonedObject as Node).rotateAngle -= node.rotateAngle;
+                    if(!(((node as Node).isLane || (node as Node).isHeader) && this.checkSwimlaneInSelection((node as Node), obj))){
+                        if (node.wrapper && (node.offsetX !== node.wrapper.offsetX)) {
+                            node.offsetX = node.wrapper.offsetX;
+                        }
+                        if (node.wrapper && (node.offsetY !== node.wrapper.offsetY)) {
+                            node.offsetY = node.wrapper.offsetY;
+                        }
+                        const processTable: {} = {};
+                        this.copyProcesses(node as Node);
+                        obj.push(clone(node));
+                        const matrix: Matrix = identityMatrix();
+                        rotateMatrix(matrix, -node.rotateAngle, node.offsetX, node.offsetY);
+                        if (node.children) {
+                            const childTable: {} = this.clipboardData.childTable;
+                            let tempNode: NodeModel | ConnectorModel;
+                            const elements: (NodeModel | ConnectorModel)[] = [];
+                            const nodes: (NodeModel | ConnectorModel)[] = this.getAllDescendants(node, elements, true);
+                            for (let i: number = 0; i < nodes.length; i++) {
+                                tempNode = this.diagram.nameTable[nodes[parseInt(i.toString(), 10)].id];
+                                const clonedObject: NodeModel | ConnectorModel = childTable[tempNode.id] = clone(tempNode);
+                                const newOffset: PointModel = transformPointByMatrix(
+                                    matrix, { x: clonedObject.wrapper.offsetX, y: clonedObject.wrapper.offsetY });
+                                if (tempNode instanceof Node) {
+                                    (clonedObject as Node).offsetX = newOffset.x;
+                                    (clonedObject as Node).offsetY = newOffset.y;
+                                    (clonedObject as Node).rotateAngle -= node.rotateAngle;
+                                }
+                            }
+                            this.clipboardData.childTable = childTable;
+                        }
+                        if (node.shape.type === 'SwimLane') {
+                            const swimlane: NodeModel = this.diagram.getObject(this.diagram.selectedItems.nodes[parseInt(j.toString(), 10)].id);
+                            const childTable: {} = this.clipboardData.childTable;
+                            const connectorsList: string[] = getConnectors(this.diagram, swimlane.wrapper.children[0] as GridPanel, 0, true);
+                            for (let i: number = 0; i < connectorsList.length; i++) {
+                                const connector: ConnectorModel = this.diagram.getObject(connectorsList[parseInt(i.toString(), 10)]);
+                                childTable[connector.id] = clone(connector);
                             }
                         }
-                        this.clipboardData.childTable = childTable;
-                    }
-                    if (node.shape.type === 'SwimLane') {
-                        const swimlane: NodeModel = this.diagram.getObject(this.diagram.selectedItems.nodes[parseInt(j.toString(), 10)].id);
-                        const childTable: {} = this.clipboardData.childTable;
-                        const connectorsList: string[] = getConnectors(this.diagram, swimlane.wrapper.children[0] as GridPanel, 0, true);
-                        for (let i: number = 0; i < connectorsList.length; i++) {
-                            const connector: ConnectorModel = this.diagram.getObject(connectorsList[parseInt(i.toString(), 10)]);
-                            childTable[connector.id] = clone(connector);
+                        if (node && (node as Node).isLane) {
+                            const childTable: {} = this.clipboardData.childTable;
+                            const swimlane: NodeModel = this.diagram.getObject((node as Node).parentId);
+                            const lane: LaneModel = findLane(node as Node, this.diagram);
+                            childTable[node.id] = cloneObject(lane);
+                            childTable[node.id].width = swimlane.wrapper.actualSize.width;
                         }
-                    }
-                    if (node && (node as Node).isLane) {
-                        const childTable: {} = this.clipboardData.childTable;
-                        const swimlane: NodeModel = this.diagram.getObject((node as Node).parentId);
-                        const lane: LaneModel = findLane(node as Node, this.diagram);
-                        childTable[node.id] = cloneObject(lane);
-                        childTable[node.id].width = swimlane.wrapper.actualSize.width;
                     }
                 }
             }
@@ -1092,9 +1094,48 @@ export class CommandHandler {
             this.endGroupAction();
         }
         this.sortByZIndex(obj, 'zIndex');
+        if (this.diagram.selectedItems.nodes.some(function(node) {
+            return node.shape.type === 'SwimLane';
+        })) {
+            obj = this.removeDuplicateObjects(obj);
+        }
         return obj;
     }
-
+    //To remove duplicate objects
+    private removeDuplicateObjects(objects:NodeModel[]) {
+        let uniqueObjects = {};
+        for (let i:number = 0; i < objects.length; i++) {
+            uniqueObjects[objects[parseInt(i.toString(), 10)].id] = objects[parseInt(i.toString(), 10)];
+        }
+        let result = [];
+        //To remove objects with same id
+        for (const key in uniqueObjects) {
+            if (uniqueObjects.hasOwnProperty(key)) {
+                result.push(uniqueObjects[`${key}`]);
+            }
+        }
+        //To remove the nodes which is child node of copied swimlane
+        for(let i:number = 0; i < result.length; i++) {
+            if(result[parseInt(i.toString(), 10)].parentId) {
+                let lane = this.diagram.getObject(result[parseInt(i.toString(), 10)].parentId);
+                if(lane && (lane as Node).isLane && (lane as Node).parentId && result.some(obj => obj.id === (lane as Node).parentId)) {
+                    result.splice(i, 1);
+                    i--;
+                }
+            }
+        }
+        // Get the keys from childTable
+        var childTableKeys = Object.keys(this.clipboardData.childTable);
+        // Filter the array to remove objects with ids matching the keys in childTable except lane
+        var filteredArray = result.filter(function (item) {
+            return (childTableKeys.indexOf(item.id) === -1 || item.isLane);
+        });
+        return filteredArray;
+    };
+    //To check if the swimlane is selected along with its child lane
+    private checkSwimlaneInSelection(node:Node, obj:NodeModel[]) {
+        return this.diagram.selectedItems.nodes.some((item:NodeModel) => item.id === node.parentId);
+    };
     private copyProcesses(node: Node): void {
         if (node.shape.type === 'Bpmn' && (node.shape as BpmnShape).activity &&
             (node.shape as BpmnShape).activity.subProcess.processes &&

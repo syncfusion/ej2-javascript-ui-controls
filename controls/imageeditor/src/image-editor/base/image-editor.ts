@@ -3220,7 +3220,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      * @returns {void}.
      */
     public updateArrow(type: string, id: string): void {
+        let isObjPushed: boolean = false;
+        const collLength: number = this.objColl.length;
         this.notify('shape', { prop: 'pushActItemIntoObj'});
+        if (collLength !== this.objColl.length) {isObjPushed = true; }
         const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
         const object: Object = {currObj: {} as CurrentObject };
         const objt: Object = {shapeSettingsObj: {} as ShapeSettings };
@@ -3231,7 +3234,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         prevObj.objColl = extend([], this.objColl, [], true) as SelectionPoint[];
         prevObj.pointColl = extend([], this.pointColl, [], true) as Point[];
         prevObj.afterCropActions = extend([], this.afterCropActions, [], true) as string[];
-        this.objColl.pop();
+        if (isObjPushed) {this.objColl.pop(); }
         if (type === 'startArrow') {this.activeObj.start = this.getTextFromId(id); }
         else if (type === 'endArrow') {this.activeObj.end = this.getTextFromId(id); }
         this.notify('shape', {prop: 'setStrokeSettings', value: {strokeSettings: null, strokeColor: null, fillColor: null,
@@ -3271,7 +3274,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      */
     public updateFontFamily(id: string): void {
         this.notify('selection', { prop: 'setInitialTextEdit', value: {bool: false }});
+        let isObjPushed: boolean = false;
+        const collLength: number = this.objColl.length;
         this.notify('shape', { prop: 'pushActItemIntoObj'});
+        if (collLength !== this.objColl.length) {isObjPushed = true; }
         const objColl: SelectionPoint[] = extend([], this.objColl, [], true) as SelectionPoint[];
         const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
         const objt: Object = {shapeSettingsObj: {} as ShapeSettings };
@@ -3287,7 +3293,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false,
             value: {obj: selPointCollObj }});
         prevObj.selPointColl = extend([], selPointCollObj['selPointColl'], [], true) as Point[];
-        this.objColl.pop();
+        if (isObjPushed) {this.objColl.pop(); }
         if (this.textArea.style.display === 'block' || this.textArea.style.display === 'inline-block') {
             this.notify('shape', { prop: 'updateFontRatio', onPropertyChange: false,
                 value: {obj: this.activeObj, isTextArea: true}});
@@ -3347,7 +3353,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
     public updateFontSize(text: string): void {
         const itemText: string = text;
         this.notify('selection', { prop: 'setInitialTextEdit', value: {bool: false }});
+        let isObjPushed: boolean = false;
+        const collLength: number = this.objColl.length;
         this.notify('shape', { prop: 'pushActItemIntoObj'});
+        if (collLength !== this.objColl.length) {isObjPushed = true; }
         const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
         const objt: Object = {shapeSettingsObj: {} as ShapeSettings };
         this.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: objt}});
@@ -3362,7 +3371,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false,
             value: {obj: selPointCollObj }});
         prevObj.selPointColl = extend([], selPointCollObj['selPointColl'], [], true) as Point[];
-        this.objColl.pop();
+        if (isObjPushed) {this.objColl.pop(); }
         if (this.textArea.style.display === 'block' || this.textArea.style.display === 'inline-block') {
             this.notify('shape', { prop: 'updateFontRatio', onPropertyChange: false,
                 value: {obj: this.activeObj, isTextArea: true}});
@@ -3446,7 +3455,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
      */
     public updateFontColor(value: string): void {
         this.notify('selection', { prop: 'setInitialTextEdit', value: {bool: false }});
+        let isObjPushed: boolean = false;
+        const collLength: number = this.objColl.length;
         this.notify('shape', { prop: 'pushActItemIntoObj'});
+        if (collLength !== this.objColl.length) {isObjPushed = true; }
         const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
         const objt: Object = {shapeSettingsObj: {} as ShapeSettings };
         this.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: objt}});
@@ -3461,7 +3473,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false,
             value: {obj: selPointCollObj }});
         prevObj.selPointColl = extend([], selPointCollObj['selPointColl'], [], true) as Point[];
-        this.objColl.pop();
+        if (isObjPushed) {this.objColl.pop(); }
         if (this.textArea.style.display === 'none') {
             this.activeObj.strokeSettings.strokeColor = value;
             this.notify('shape', {prop: 'setStrokeSettings', value: {strokeSettings: null,
@@ -3640,7 +3652,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             const obj: Object = {shapeSettingsObj: {} as ShapeSettings };
             this.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: obj}});
             const shapeSettings: ShapeSettings = obj['shapeSettingsObj'];
+            let isObjPushed: boolean = false;
+            const collLength: number = this.objColl.length;
             this.notify('shape', { prop: 'pushActItemIntoObj'});
+            if (collLength !== this.objColl.length) {isObjPushed = true; }
             const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
             const object: Object = {currObj: {} as CurrentObject };
             this.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
@@ -3652,7 +3667,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false,
                 value: {obj: selPointCollObj }});
             prevObj.selPointColl = extend([], selPointCollObj['selPointColl'], [], true) as Point[];
-            this.objColl.pop();
+            if (isObjPushed) {this.objColl.pop(); }
             this.activeObj.strokeSettings.strokeWidth = parseInt(id, 10);
             if (this.activeObj.shape === 'rectangle' || this.activeObj.shape === 'ellipse') {
                 this.activeObj.strokeSettings.strokeWidth = parseInt(id, 10) - 1;
@@ -3694,7 +3709,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         const shapeSettings: ShapeSettings = objt['shapeSettingsObj'];
         if (this.activeObj.shape && (this.activeObj.shape !== 'path' || (this.activeObj.shape === 'path' &&
             this.activeObj.pointColl.length > 0))) {
+            let isObjPushed: boolean = false;
+            const collLength: number = this.objColl.length;
             this.notify('shape', { prop: 'pushActItemIntoObj'});
+            if (collLength !== this.objColl.length) {isObjPushed = true; }
             const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
             const object: Object = {currObj: {} as CurrentObject };
             this.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
@@ -3706,7 +3724,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
             this.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false,
                 value: {obj: selPointCollObj }});
             prevObj.selPointColl = extend([], selPointCollObj['selPointColl'], [], true) as Point[];
-            this.objColl.pop();
+            if (isObjPushed) {this.objColl.pop(); }
             this.activeObj.strokeSettings.strokeColor = value;
             this.notify('shape', {prop: 'setStrokeSettings', value: {strokeSettings: null, strokeColor:
                 this.activeObj.strokeSettings.strokeColor, fillColor: null, strokeWidth: null }});
@@ -3743,7 +3761,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         const obj: Object = {shapeSettingsObj: {} as ShapeSettings };
         this.notify('selection', { prop: 'updatePrevShapeSettings', onPropertyChange: false, value: {obj: obj}});
         const shapeSettings: ShapeSettings = obj['shapeSettingsObj'];
+        let isObjPushed: boolean = false;
+        const collLength: number = this.objColl.length;
         this.notify('shape', { prop: 'pushActItemIntoObj'});
+        if (collLength !== this.objColl.length) {isObjPushed = true; }
         const prevCropObj: CurrentObject = extend({}, this.cropObj, {}, true) as CurrentObject;
         const object: Object = {currObj: {} as CurrentObject };
         this.notify('filter', { prop: 'getCurrentObj', onPropertyChange: false, value: {object: object }});
@@ -3755,7 +3776,7 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
         this.notify('freehand-draw', { prop: 'getSelPointColl', onPropertyChange: false,
             value: {obj: selPointCollObj }});
         prevObj.selPointColl = extend([], selPointCollObj['selPointColl'], [], true) as Point[];
-        this.objColl.pop();
+        if (isObjPushed) {this.objColl.pop(); }
         this.activeObj.strokeSettings.fillColor = value;
         this.notify('shape', {prop: 'setStrokeSettings',
             value: {strokeSettings: null, strokeColor: null, fillColor: this.activeObj.strokeSettings.fillColor,

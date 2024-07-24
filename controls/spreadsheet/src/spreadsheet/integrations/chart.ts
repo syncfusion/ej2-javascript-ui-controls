@@ -3,7 +3,7 @@
  */
 import { Spreadsheet } from '../base/index';
 import { getSheetIndex, SheetModel, isHiddenRow, CellModel, getCell, setCell, Workbook, getSheet } from '../../workbook/index';
-import { initiateChart, ChartModel, getRangeIndexes, isNumber, LegendPosition, getSheetIndexFromAddress, DateFormatCheckArgs, checkDateFormat, refreshChartCellOnInit } from '../../workbook/common/index';
+import { initiateChart, ChartModel, getRangeIndexes, isNumber, LegendPosition, getSheetIndexFromAddress, DateFormatCheckArgs, checkDateFormat, refreshChartCellOnInit, workbookFormulaOperation, checkIsFormula } from '../../workbook/common/index';
 import { Overlay, Dialog } from '../services/index';
 import { overlay, locale, refreshChartCellObj, getRowIdxFromClientY, getColIdxFromClientX, deleteChart, dialog, overlayEleSize, undoRedoForChartDesign, BeforeActionData, addDPRValue, refreshChartCellModel } from '../common/index';
 import { BeforeImageRefreshData, BeforeChartEventArgs, completeAction, clearChartBorder, focusBorder } from '../common/index';
@@ -194,7 +194,7 @@ export class SpreadsheetChart {
         const prevCellChart: object[] = prevCellObj ? prevCellObj.chart : [];
         let prevChartObj: ChartModel;
         let currChartObj: ChartModel[];
-        const prevCellChartLen: number = (prevCellChart && prevCellChart.length) ? prevCellChart.length : 0;
+        let prevCellChartLen: number = (prevCellChart && prevCellChart.length) ? prevCellChart.length : 0;
         if (prevCellChartLen) {
             for (let i: number = 0; i < prevCellChartLen; i++) {
                 if ((prevCellChart[i as number] as ChartModel).id === args.id.split('_overlay')[0]) {
@@ -204,6 +204,7 @@ export class SpreadsheetChart {
                     prevChartObj.top = args.currentTop;
                     prevChartObj.left = args.currentLeft;
                     prevCellChart.splice(i, 1);
+                    i--; prevCellChartLen--;
                     for (let idx: number = 0, chartCollLen: number = this.parent.chartColl.length; idx < chartCollLen; idx++) {
                         if (prevChartObj.id === this.parent.chartColl[idx as number].id) {
                             prevChartObj.height = args.currentHeight;
@@ -251,6 +252,13 @@ export class SpreadsheetChart {
             const cell: CellModel = getCell(rIdx, cIdx, getSheet(this.parent, sheetIndex));
             if (cell) {
                 let value: string | number;
+                if (cell.formula && isNullOrUndefined(cell.value)) {
+                    this.parent.notify(workbookFormulaOperation, {
+                        action: 'refreshCalculate', value: cell.formula, rowIndex:
+                            rIdx, colIndex: cIdx, isFormula: checkIsFormula(cell.formula), sheetIndex: sheetIndex
+                    });
+                    value = cell.value || (<unknown>cell.value === 0 ? 0 : null);
+                }
                 if (cell.format) {
                     const formatObj: NumberFormatArgs = { value: cell.value, format: cell.format, formattedText: cell.value, cell: cell,
                         rowIndex: rIdx, colIndex: cIdx };
@@ -339,6 +347,13 @@ export class SpreadsheetChart {
             while (minc <= maxc) {
                 if (isHiddenCol(sheet, minc)) { minc++; continue; }
                 const cell: CellModel = getCell(minr, minc, sheet, false, true);
+                if (cell.formula && isNullOrUndefined(cell.value)) {
+                    this.parent.notify(workbookFormulaOperation, {
+                        action: 'refreshCalculate', value: cell.formula, rowIndex:
+                            minr, colIndex: minc, isFormula: checkIsFormula(cell.formula), sheetIndex: options.sheetIdx
+                    });
+                    value = cell.value || (<unknown>cell.value === 0 ? 0 : null);
+                }
                 if (cell.format && !isYvalue) {
                     const forArgs: NumberFormatArgs = { value: cell.value, format: cell.format, formattedText: cell.value, rowIndex: minr,
                         colIndex: minc, cell: cell };

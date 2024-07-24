@@ -1529,9 +1529,15 @@ export class TaskbarEdit extends DateProcessor {
         if (item.width <= 3) {
             this.parent.setRecordValue('width', 3, item, true);
             this.parent.setRecordValue('isMilestone', true, item, true);
+            if (!isNullOrUndefined(this.taskBarEditRecord[this.parent.taskFields.milestone])) {
+                this.parent.setRecordValue(this.parent.taskFields.milestone, true, this.taskBarEditRecord, true);
+            }
         } else {
             this.parent.setRecordValue('width', item.width, item, true);
             this.parent.setRecordValue('isMilestone', false, item, true);
+            if (!isNullOrUndefined(this.taskBarEditRecord[this.parent.taskFields.milestone])) {
+                this.parent.setRecordValue(this.parent.taskFields.milestone, false, this.taskBarEditRecord, true);
+            }
         }
     }
 

@@ -1,0 +1,17 @@
+@include export-module('barcode-theme') {
+
+  .e-barcode,
+  .e-datamatrix,
+  .e-qrcode
+   {
+    display: block;
+  }
+
+  .e-content-placeholder.e-barcode.e-placeholder-barcode,
+  .e-content-placeholder.e-datamatrixgenerator.e-placeholder-datamatrixgenerator,
+  .e-content-placeholder.e-qrcodegenerator.e-placeholder-qrcodegenerator {
+    background-size: 100% 100%;
+    max-height: 100px;
+    max-width: 100px;
+  }
+}

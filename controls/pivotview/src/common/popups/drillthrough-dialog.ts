@@ -97,7 +97,7 @@ export class DrillThroughDialog {
                             const prevItems: IDataSet[] = [];
                             let index: number = 0;
                             for (const item of this.drillThroughGrid.dataSource as IDataSet[]) {
-                                if (isNullOrUndefined(item['__index']) || item['__index'] === '') {
+                                if (item['__index'] === '0' || item['__index'] === '') {
                                     for (const field of this.engine.fields) {
                                         if (isNullOrUndefined(item[field as string])) {
                                             delete item[field as string];

@@ -280,7 +280,7 @@ export class Selection {
             if (sheet.isProtected && !sheet.protectSettings.selectCells && !sheet.protectSettings.selectUnLockedCells) {
                 return;
             }
-            if (!closest(e.target as Element, '.e-findtool-dlg')) {
+            if (!(closest(e.target as Element, '.e-findtool-dlg') || closest(e.target as Element, '.e-dragfill-ddb'))) {
                 if (this.getSheetElement().contains(e.target as Node) && !(e.target as HTMLElement).classList.contains('e-colresize')
                     && !(e.target as HTMLElement).classList.contains('e-rowresize')) {
                     const sheet: SheetModel = this.parent.getActiveSheet(); const mode: string = this.parent.selectionSettings.mode;

@@ -7770,3 +7770,105 @@ describe('Adding phase at runtime by drag and drop', () => {
 
     });
 });
+
+describe('892957-Copying and paste swimlane in diagram creates multiple nodes', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let btn: HTMLButtonElement;
+    let mouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramSwimlaneCopyPaste' });
+        document.body.appendChild(ele);
+        let pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
+' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+'0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+        let nodes: NodeModel[] = [
+            {
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    header: {
+                        annotation: { content: 'ONLINE PURCHASE STATUS' },
+                        height: 50, style: { fontSize: 11 },
+                        orientation: 'Horizontal',
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'CUSTOMER' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'Order',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [
+                                        {
+                                            content: 'ORDER',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 20 },
+                                    height: 40, width: 100
+                                },
+                                {
+                                    id: 'Order2',
+                                    shape: { type: 'Path', data: pathData },
+                                    annotations: [
+                                        {
+                                            content: 'ORDER',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 200, top: 20 },
+                                    height: 40, width: 100
+                                }
+                            ],
+                        },
+                    
+                    ],
+                    phases: [
+                        {
+                            id: 'phase1', offset: 170,
+                            header: { content: { content: 'Phase' } }
+                        },
+                    ],
+                    phaseSize: 20,
+                },
+                offsetX: 420, offsetY: 270,
+                height: 100,
+                width: 650
+            },
+        ];
+        let connectors: ConnectorModel[] = [
+            {
+                id: 'connector1', sourceID: 'Order',
+                targetID: 'Order2'
+            },
+        
+        ];
+        diagram = new Diagram({
+            width: '80%',
+            height: '600px',
+            nodes: nodes,
+            connectors:connectors
+        });
+        diagram.appendTo('#diagramSwimlaneCopyPaste');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Copy paste swimlane after select all or rubber band selection', (done: Function) => {
+        let prevConLength = diagram.connectors.length;
+        let prevNodeLength = diagram.nodes.length;
+        diagram.selectAll();
+        diagram.copy();
+        diagram.paste();
+        expect(prevConLength === 1 && diagram.connectors.length === 2 && prevNodeLength === 7 && diagram.nodes.length === 14).toBe(true);
+        done();
+    });
+  
+});

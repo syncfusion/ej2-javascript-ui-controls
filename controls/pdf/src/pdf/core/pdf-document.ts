@@ -1647,7 +1647,7 @@ export class PdfDocument {
             const page: PdfPage = document.getPage(i);
             document.form._doPostProcess(document.flatten, page);
             if (page.annotations.count > 0) {
-                page.annotations._doPostProcess(this._flatten);
+                page.annotations._doPostProcess(document.flatten);
             }
             helper._importPages(page, document, this._targetIndex, isLayersPresent, this._isDuplicatePage);
             correspondancePagecount++;

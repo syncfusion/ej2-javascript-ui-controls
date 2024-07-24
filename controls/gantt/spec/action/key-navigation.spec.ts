@@ -906,3 +906,49 @@ describe('Gantt Selection support', () => {
 
         });
     });
+
+describe('control + all to select all record action', function () {
+    let ganttObj: Gantt;
+    let preventDefault: Function = new Function();
+    beforeAll(function (done) {
+        ganttObj = createGantt({
+            dataSource: projectData1,
+            editSettings:{
+                allowAdding: true,
+                allowEditing:true,
+                allowDeleting: true
+            },
+            enableUndoRedo: true,
+            undoRedoActions:['Add','Edit','Delete'],
+            allowSorting: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                child: 'subtasks',
+                dependency: 'Predecessor'
+            },
+            selectionSettings: {
+                mode: 'Row',
+                type: 'Multiple'
+            },
+            projectStartDate: new Date('02/01/2017'),
+            projectEndDate: new Date('12/30/2017'),
+            rowHeight: 40,
+            taskbarHeight: 30
+        }, done);
+    });
+    afterAll(function () {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    it('to select all record', () => {
+        let args: any = { action: 'selectAll', preventDefault: preventDefault };
+        ganttObj.keyboardModule.keyAction(args);
+        expect(ganttObj.selectionModule.selectedRowIndexes.length).toBe(41)
+    });
+});

@@ -21,7 +21,7 @@ describe('MultiColumnComboBox control', () => {
     describe('Basic rendering', () => {
         let multiColObj: MultiColumnComboBox;
         let element: HTMLInputElement;
-        beforeEach((): void => {
+        beforeAll((): void => {
             element = <HTMLInputElement>createElement('input', { id: 'multicolumn-combobox' });
             document.body.appendChild(element);
             multiColObj = new MultiColumnComboBox({
@@ -31,7 +31,7 @@ describe('MultiColumnComboBox control', () => {
             });
             multiColObj.appendTo(element);
         });
-        afterEach((): void => {
+        afterAll((): void => {
             if (multiColObj) {
                 multiColObj.destroy();
                 multiColObj = undefined;
@@ -58,6 +58,20 @@ describe('MultiColumnComboBox control', () => {
             expect(multiColObj.element.getAttribute("aria-expanded")).toEqual("false");
             expect(multiColObj.element.getAttribute("tabindex")).toEqual("0");
             expect(multiColObj.element.parentElement.getAttribute("spellcheck")).toBe("false");
+            expect(multiColObj.element.getAttribute("autocomplete")).toEqual("off");
+            expect(multiColObj.element.getAttribute("autocapitalize")).toEqual("off");
+            expect(multiColObj.element.getAttribute("aria-owns")).toEqual(null);
+            expect(multiColObj.element.getAttribute("aria-controls")).toEqual(null);
+            expect(multiColObj.element.getAttribute("aria-activedescendant")).toEqual(null);
+            let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+            clickEvent.initEvent('mousedown', true, true);
+            (multiColObj as any).inputObj.buttons[0].dispatchEvent(clickEvent);
+            expect(multiColObj.element.getAttribute("aria-owns")).toEqual("multicolumn-combobox_popup");
+            expect(multiColObj.element.getAttribute("aria-controls")).toEqual("multicolumn-combobox");
+            expect(multiColObj.element.getAttribute("aria-activedescendant")).toEqual("grid-row2");
+            (multiColObj as any).inputObj.buttons[0].dispatchEvent(clickEvent);
+            expect(multiColObj.element.getAttribute("aria-owns")).toEqual(null);
+            expect(multiColObj.element.getAttribute("aria-activedescendant")).toEqual(null);
         });
         it('Generic nav Element ID generation', () => {
             multiColObj = new MultiColumnComboBox({
@@ -146,11 +160,12 @@ describe('MultiColumnComboBox control', () => {
             expect(isPopupOpen).toBe(false);
             multiColObj.focusIn();
             expect((multiColObj as any).inputWrapper.classList.contains('e-input-focus')).toBe(true);
-            const dropDownEle: HTMLElement = (multiColObj as any).inputWrapper.querySelector('.e-input-group-icon');
-            EventHandler.trigger(dropDownEle, 'mousedown');
+            let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+            clickEvent.initEvent('mousedown', true, true);
+            (multiColObj as any).inputObj.buttons[0].dispatchEvent(clickEvent);
             expect(isPopupOpen).toBe(true);
             expect(isPopupClose).toBe(false);
-            EventHandler.trigger(dropDownEle, 'mousedown');
+            (multiColObj as any).inputObj.buttons[0].dispatchEvent(clickEvent);
             expect(isPopupClose).toBe(true);
         });
         it(' popup open and close on content select ', (done) => {
@@ -172,8 +187,9 @@ describe('MultiColumnComboBox control', () => {
             expect(isPopupOpen).toBe(false);
             multiColObj.focusIn();
             expect((multiColObj as any).inputWrapper.classList.contains('e-input-focus')).toBe(true);
-            const dropDownEle: HTMLElement = (multiColObj as any).inputWrapper.querySelector('.e-input-group-icon');
-            EventHandler.trigger(dropDownEle, 'mousedown');
+            let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+            clickEvent.initEvent('mousedown', true, true);
+            (multiColObj as any).inputObj.buttons[0].dispatchEvent(clickEvent);
             multiColObj.gridObj.selectedRowIndex = 0;
             setTimeout(function () {
                 expect(isPopupOpen).toBe(true);
@@ -185,6 +201,90 @@ describe('MultiColumnComboBox control', () => {
                 expect(multiColObj.inputEle.value).toBe('PHP');
                 done();
             }, 800);
+        });
+    });
+
+    // Component Focus
+    describe('Component Focus ', () => {
+        let multiColObj: any;
+        let element: HTMLInputElement;
+        let keyEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            action: null,
+            key: null,
+            target: null,
+            currentTarget: null,
+            stopImmediatePropagation: (): void => { /** NO Code */ }
+        };
+        beforeAll((): void => {
+            element = <HTMLInputElement>createElement('input', { id: 'multicolumn-combobox' });
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (multiColObj) {
+                multiColObj.destroy();
+                multiColObj = undefined;
+            }
+            remove(element);
+        });
+        it('focus when click on input', () => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: languageData,
+                fields: { text: 'text', value: 'id' },
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }]
+            });
+            multiColObj.appendTo(element);
+            multiColObj.inputEle.focus();
+            multiColObj.focusIn();
+            expect((multiColObj as any).inputWrapper.classList.contains('e-input-focus')).toBe(true);
+            expect(document.activeElement === multiColObj.inputEle).toBe(true);
+        });
+        it('Focus when dropdown click', () => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: languageData,
+                fields: { text: 'text', value: 'id' },
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }]
+            });
+            multiColObj.appendTo(element);
+            let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+            clickEvent.initEvent('mousedown', true, true);
+            (multiColObj as any).inputObj.buttons[0].dispatchEvent(clickEvent);
+            expect((multiColObj as any).inputWrapper.classList.contains('e-input-focus')).toBe(true);
+            (multiColObj as any).inputObj.buttons[0].dispatchEvent(clickEvent);
+            expect((multiColObj as any).inputWrapper.classList.contains('e-input-focus')).toBe(true);
+        });
+        it('Focus when keyboard interaction', (done) => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: languageData,
+                fields: { text: 'text', value: 'id' },
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }]
+            });
+            multiColObj.appendTo(element);
+            multiColObj.inputEle.focus();
+            multiColObj.focusIn();
+            keyEventArgs.action = 'altDown';
+            setTimeout(() => {
+                multiColObj.keyActionHandler(keyEventArgs);
+                expect((multiColObj as any).inputWrapper.classList.contains('e-input-focus')).toBe(true);
+                expect(document.activeElement === multiColObj.inputEle).toBe(true);
+                keyEventArgs.action = 'moveDown';
+                multiColObj.keyActionHandler(keyEventArgs);
+                expect(multiColObj.gridObj.selectedRowIndex).toBe(0);
+                keyEventArgs.key = 'Enter';
+                multiColObj.gridObj.keyPressed(keyEventArgs);
+                expect(document.activeElement === multiColObj.inputEle).toBe(true);
+                expect(multiColObj.inputEle.value).toBe('PHP');
+                const rowCell: HTMLElement = multiColObj.gridEle.querySelector('.e-rowcell')
+                keyEventArgs.target = rowCell;
+                keyEventArgs.key = '';
+                multiColObj.onMouseClick(keyEventArgs);
+                expect(multiColObj.inputEle.value).toBe('PHP');
+                keyEventArgs.action = 'tab';
+                multiColObj.keyActionHandler(keyEventArgs);
+                expect((multiColObj as any).inputWrapper.classList.contains('e-input-focus')).toBe(false);
+                done();
+            }, 800);
+            
         });
     });
 
@@ -224,9 +324,9 @@ describe('MultiColumnComboBox control', () => {
             });
             multiColObj.appendTo(element);
             expect(multiColObj.inputEle.value).toBe('JAVA');
-            expect(multiColObj.text).toBe(null);
+            expect(multiColObj.text).toBe('JAVA');
             expect(multiColObj.value).toBe('list1');
-            expect(multiColObj.index).toBe(null);
+            expect(multiColObj.index).toBe(3);
         });
         it(' text property - custom value - not exist text  ', () => {
             multiColObj = new MultiColumnComboBox({
@@ -251,8 +351,8 @@ describe('MultiColumnComboBox control', () => {
             multiColObj.appendTo(element);
             expect(multiColObj.inputEle.value).toBe('JAVA');
             expect(multiColObj.text).toBe('JAVA');
-            expect(multiColObj.value).toBe(null);
-            expect(multiColObj.index).toBe(null);
+            expect(multiColObj.value).toBe('list1');
+            expect(multiColObj.index).toBe(3);
         });
         it(' value property - onPropertyChange - custom value - not exist value  ', () => {
             multiColObj = new MultiColumnComboBox({
@@ -278,9 +378,9 @@ describe('MultiColumnComboBox control', () => {
             multiColObj.value = 'list1';
             multiColObj.dataBind();
             expect(multiColObj.inputEle.value).toBe('JAVA');
-            expect(multiColObj.text).toBe(null);
+            expect(multiColObj.text).toBe('JAVA');
             expect(multiColObj.value).toBe('list1');
-            expect(multiColObj.index).toBe(null);
+            expect(multiColObj.index).toBe(3);
         });
         it(' text property - onPropertyChange custom value - not exist text  ', () => {
             multiColObj = new MultiColumnComboBox({
@@ -307,8 +407,8 @@ describe('MultiColumnComboBox control', () => {
             multiColObj.dataBind();
             expect(multiColObj.inputEle.value).toBe('JAVA');
             expect(multiColObj.text).toBe('JAVA');
-            expect(multiColObj.value).toBe(null);
-            expect(multiColObj.index).toBe(null);
+            expect(multiColObj.value).toBe('list1');
+            expect(multiColObj.index).toBe(3);
         });
         it(' value - text - index - property priority check ', () => {
             multiColObj = new MultiColumnComboBox({
@@ -321,25 +421,25 @@ describe('MultiColumnComboBox control', () => {
             });
             multiColObj.appendTo(element);
             expect(multiColObj.inputEle.value).toBe('HTML');
-            expect(multiColObj.text).toBe('JAVA');
+            expect(multiColObj.text).toBe('HTML');
             expect(multiColObj.value).toBe('id1');
-            expect(multiColObj.index).toBe(3);
+            expect(multiColObj.index).toBe(1);
         });
         it(' text - index - property priority check ', () => {
             multiColObj = new MultiColumnComboBox({
                 dataSource: languageData,
                 text: 'JAVA',
-                index: 3,
+                index: 0,
                 fields: { text: 'text', value: 'id' },
                 columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }]
             });
             multiColObj.appendTo(element);
             expect(multiColObj.inputEle.value).toBe('JAVA');
             expect(multiColObj.text).toBe('JAVA');
-            expect(multiColObj.value).toBe(null);
+            expect(multiColObj.value).toBe('list1');
             expect(multiColObj.index).toBe(3);
         });
-        it( 'index - property priority check ', () => {
+        it( 'index - property check ', () => {
             multiColObj = new MultiColumnComboBox({
                 dataSource: languageData,
                 index: 3,
@@ -348,8 +448,8 @@ describe('MultiColumnComboBox control', () => {
             });
             multiColObj.appendTo(element);
             expect(multiColObj.inputEle.value).toBe('JAVA');
-            expect(multiColObj.text).toBe(null);
-            expect(multiColObj.value).toBe(null);
+            expect(multiColObj.text).toBe('JAVA');
+            expect(multiColObj.value).toBe('list1');
             expect(multiColObj.index).toBe(3);
         });
         it('value property in remote data', (done) => {
@@ -368,9 +468,9 @@ describe('MultiColumnComboBox control', () => {
             multiColObj.appendTo(element);
             setTimeout(() => {
                 expect(multiColObj.inputEle.value).toBe('Ann Devon');
-                expect(multiColObj.text).toBe(null);
+                expect(multiColObj.text).toBe('Ann Devon');
                 expect(multiColObj.value).toBe('EASTC');
-                expect(multiColObj.index).toBe(null);
+                expect(multiColObj.index).toBe(18);
                 done();
             }, 800);
         });
@@ -393,8 +493,8 @@ describe('MultiColumnComboBox control', () => {
             setTimeout(() => {
                 expect(multiColObj.inputEle.value).toBe('Ana Trujillo');
                 expect(multiColObj.text).toBe('Ana Trujillo');
-                expect(multiColObj.value).toBe(null);
-                expect(multiColObj.index).toBe(null);
+                expect(multiColObj.value).toBe('ANATR');
+                expect(multiColObj.index).toBe(1);
                 done();
             }, 800);
         });
@@ -414,8 +514,8 @@ describe('MultiColumnComboBox control', () => {
             multiColObj.appendTo(element);
             setTimeout(() => {
                 expect(multiColObj.inputEle.value).toBe('Antonio Moreno');
-                expect(multiColObj.text).toBe(null);
-                expect(multiColObj.value).toBe(null);
+                expect(multiColObj.text).toBe('Antonio Moreno');
+                expect(multiColObj.value).toBe('ANTON');
                 expect(multiColObj.index).toBe(2);
                 done();
             }, 800);
@@ -452,15 +552,16 @@ describe('MultiColumnComboBox control', () => {
             });
             multiColObj.appendTo(element);
             expect(multiColObj.inputEle.readOnly).toBe(true);
-            const dropDownEle: HTMLElement = (multiColObj as any).inputWrapper.querySelector('.e-input-group-icon');
-            EventHandler.trigger(dropDownEle, 'mousedown');
+            let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+            clickEvent.initEvent('mousedown', true, true);
+            (multiColObj as any).inputObj.buttons[0].dispatchEvent(clickEvent);
             expect(isPopupOpen).toBe(false)
             multiColObj.readonly = false;
             multiColObj.dataBind();
             expect(multiColObj.inputEle.readOnly).toBe(false);
             multiColObj.focusIn();
             expect((multiColObj as any).inputWrapper.classList.contains('e-input-focus')).toBe(true);
-            EventHandler.trigger(dropDownEle, 'mousedown');
+            (multiColObj as any).inputObj.buttons[0].dispatchEvent(clickEvent);
             expect(isPopupOpen).toBe(true)
         });
         it(' Disabled property ', () => {
@@ -480,8 +581,9 @@ describe('MultiColumnComboBox control', () => {
             multiColObj.appendTo(element);
             expect(multiColObj.inputEle.disabled).toBe(true);
             expect(multiColObj.element.getAttribute('aria-disabled')).toBe('true');
-            const dropDownEle: HTMLElement = (multiColObj as any).inputWrapper.querySelector('.e-input-group-icon');
-            EventHandler.trigger(dropDownEle, 'mousedown');
+            let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+            clickEvent.initEvent('mousedown', true, true);
+            (multiColObj as any).inputObj.buttons[0].dispatchEvent(clickEvent);
             expect(isPopupOpen).toBe(false)
             multiColObj.disabled = false;
             multiColObj.dataBind();
@@ -489,7 +591,7 @@ describe('MultiColumnComboBox control', () => {
             expect(multiColObj.element.getAttribute('aria-disabled')).toBe('false');
             multiColObj.focusIn();
             expect((multiColObj as any).inputWrapper.classList.contains('e-input-focus')).toBe(true);
-            EventHandler.trigger(dropDownEle, 'mousedown');
+            (multiColObj as any).inputObj.buttons[0].dispatchEvent(clickEvent);
             expect(isPopupOpen).toBe(true)
         });
         it(' CssClass property ', () => {
@@ -630,11 +732,12 @@ describe('MultiColumnComboBox control', () => {
             multiColObj.appendTo(element);
             multiColObj.focusIn();
             expect((multiColObj as any).inputWrapper.classList.contains('e-input-focus')).toBe(true);
-            const dropDownEle: HTMLElement = (multiColObj as any).inputWrapper.querySelector('.e-input-group-icon');
-            EventHandler.trigger(dropDownEle, 'mousedown');
+            let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+            clickEvent.initEvent('mousedown', true, true);
+            (multiColObj as any).inputObj.buttons[0].dispatchEvent(clickEvent);
             multiColObj.gridObj.selectedRowIndex = 0;
             setTimeout(function () {
-                let noRecordEle: HTMLElement = multiColObj.popupObj.querySelector('.e-nodata');
+                let noRecordEle: HTMLElement = multiColObj.popupEle.querySelector('.e-nodata');
                 expect(noRecordEle.innerText).toBe('No records found');
                 done();
             }, 800);
@@ -648,11 +751,12 @@ describe('MultiColumnComboBox control', () => {
             multiColObj.appendTo(element);
             multiColObj.focusIn();
             expect((multiColObj as any).inputWrapper.classList.contains('e-input-focus')).toBe(true);
-            const dropDownEle: HTMLElement = (multiColObj as any).inputWrapper.querySelector('.e-input-group-icon');
-            EventHandler.trigger(dropDownEle, 'mousedown');
+            let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+            clickEvent.initEvent('mousedown', true, true);
+            (multiColObj as any).inputObj.buttons[0].dispatchEvent(clickEvent);
             multiColObj.gridObj.selectedRowIndex = 0;
             setTimeout(function () {
-                let noRecordEle: HTMLElement = multiColObj.popupObj.querySelector('.e-nodata');
+                let noRecordEle: HTMLElement = multiColObj.popupEle.querySelector('.e-nodata');
                 expect(noRecordEle.innerText).toBe('No records found');
                 done();
             }, 800);
@@ -666,10 +770,31 @@ describe('MultiColumnComboBox control', () => {
             });
             multiColObj.appendTo(element);
             const footerEle: HTMLElement = (multiColObj as any).popupObj.element.querySelector('.e-popup-footer');
-            expect(footerEle.innerText).toBe('Total count is: 9');
+            expect(footerEle.querySelector('.e-footer-temp').innerHTML).toBe('Total count is: 9');
             multiColObj.footerTemplate = '<div class="e-footer-temp">Total update count is: ${count}</div>';
             multiColObj.dataBind();
-            expect(footerEle.innerText).toBe('Total update count is: 9');
+            expect(footerEle.querySelector('.e-footer-temp').innerHTML).toBe('Total update count is: 9');
+        });
+        it('format & displayAsCheckBox - property priority check', (done) => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: [
+                    { OrderID: 101, Freight: 32.38, OrderDate: new Date(8364186e5) }, { OrderID: 102, Freight: 11.61, OrderDate: new Date(836505e6) },
+                    { OrderID: 103, Freight: 65.83, OrderDate: new Date(8367642e5) }, { OrderID: 104, Freight: 41.34, OrderDate: new Date(8367642e5) }
+                ],
+                fields: { text: 'OrderID', value: 'Freight' },
+                columns: [
+                    { field: 'OrderID', header: 'Order ID' },
+                    { field: 'Freight', header: 'Freight', displayAsCheckBox: true },
+                    { field: 'OrderDate', header: 'Order Date', format: 'yMd', displayAsCheckBox: true }
+                ]
+            });
+            multiColObj.appendTo(element);
+            setTimeout(() => {
+                expect(multiColObj.gridObj.getContent().querySelectorAll('.e-rowcell')[1].classList.contains('e-gridchkbox-cell')).toBe(true);
+                expect(multiColObj.gridObj.columns[2].format).toBe('yMd');
+                expect(multiColObj.gridObj.getContent().querySelectorAll('.e-rowcell')[2].classList.contains('e-gridchkbox-cell')).toBe(false);
+                done();
+            }, 800);
         });
     });
 
@@ -705,7 +830,7 @@ describe('MultiColumnComboBox control', () => {
             multiColObj.focusIn();
             expect(multiColObj.inputWrapper.classList.contains('e-input-focus')).toBe(true);
         });
-        it(' key press - alt + down arrow ', () => {
+        it(' key press - alt + down arrow ', (done) => {
             let eventDetails: any;
             let isPopupOpen: boolean = false;
             multiColObj = new MultiColumnComboBox({
@@ -718,30 +843,30 @@ describe('MultiColumnComboBox control', () => {
                 }
             });
             multiColObj.appendTo(element);
-            expect(multiColObj.popupObj.element.classList.contains('e-popup-open')).toBe(false);
-            expect(multiColObj.popupObj.element.classList.contains('e-popup-close')).toBe(true);
             multiColObj.focusIn();
             keyEventArgs.action = 'altDown';
-            multiColObj.keyActionHandler(keyEventArgs);
-            expect(isPopupOpen).toBe(true);
-            expect(eventDetails.action).toBe('altDown');
+            setTimeout(() => {
+                multiColObj.keyActionHandler(keyEventArgs);
+                expect(isPopupOpen).toBe(true);
+                expect(eventDetails.action).toBe('altDown');
+                done();
+            }, 800);
         });
         it(' key press - alt + up arrow - without open popup ', () => {
+            let isPopupOpen: boolean = false;
             multiColObj = new MultiColumnComboBox({
                 dataSource: languageData,
                 fields: { text: 'text', value: 'id' },
-                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }]
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }],
+                open: () => { isPopupOpen = true; }
             });
             multiColObj.appendTo(element);
-            expect(multiColObj.popupObj.element.classList.contains('e-popup-open')).toBe(false);
-            expect(multiColObj.popupObj.element.classList.contains('e-popup-close')).toBe(true);
             multiColObj.focusIn();
             keyEventArgs.action = 'altUp';
             multiColObj.keyActionHandler(keyEventArgs);
-            expect(multiColObj.popupObj.element.classList.contains('e-popup-open')).toBe(false);
-            expect(multiColObj.popupObj.element.classList.contains('e-popup-close')).toBe(true);
+            expect(isPopupOpen).toBe(false);
         });
-        it(' key press - escape ', () => {
+        it(' key press - escape ', (done) => {
             let isPopupClose: boolean = false;
             multiColObj = new MultiColumnComboBox({
                 dataSource: languageData,
@@ -752,15 +877,16 @@ describe('MultiColumnComboBox control', () => {
                 }
             });
             multiColObj.appendTo(element);
-            expect(multiColObj.popupObj.element.classList.contains('e-popup-open')).toBe(false);
-            expect(multiColObj.popupObj.element.classList.contains('e-popup-close')).toBe(true);
             multiColObj.focusIn();
             keyEventArgs.action = 'altDown';
-            multiColObj.keyActionHandler(keyEventArgs);
-            expect(isPopupClose).toBe(false);
-            keyEventArgs.action = 'escape';
-            multiColObj.keyActionHandler(keyEventArgs);
-            expect(isPopupClose).toBe(true);
+            setTimeout(() => {
+                multiColObj.keyActionHandler(keyEventArgs);
+                expect(isPopupClose).toBe(false);
+                keyEventArgs.action = 'escape';
+                multiColObj.keyActionHandler(keyEventArgs);
+                expect(isPopupClose).toBe(true);
+                done();
+            }, 800);            
         });
         it(' key press - mouse down and mouse up ', (done) => {
             let isPopupClose: boolean = false;
@@ -779,13 +905,11 @@ describe('MultiColumnComboBox control', () => {
                 columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }]
             });
             multiColObj.appendTo(element);
-            expect(multiColObj.popupObj.element.classList.contains('e-popup-open')).toBe(false);
-            expect(multiColObj.popupObj.element.classList.contains('e-popup-close')).toBe(true);
             multiColObj.focusIn();
             keyEventArgs.action = 'altDown';
-            multiColObj.keyActionHandler(keyEventArgs);
-            expect(isPopupOpen).toBe(true);
             setTimeout(() => {
+                multiColObj.keyActionHandler(keyEventArgs);
+                expect(isPopupOpen).toBe(true);
                 expect(eventDetails.action).toBe('altDown');
                 keyEventArgs.action = 'moveDown';
                 multiColObj.keyActionHandler(keyEventArgs);
@@ -823,18 +947,115 @@ describe('MultiColumnComboBox control', () => {
                 columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }]
             });
             multiColObj.appendTo(element);
-            expect(multiColObj.popupObj.element.classList.contains('e-popup-open')).toBe(false);
-            expect(multiColObj.popupObj.element.classList.contains('e-popup-close')).toBe(true);
             multiColObj.focusIn();
             keyEventArgs.action = 'altDown';
-            multiColObj.keyActionHandler(keyEventArgs);
-            expect(isPopupOpen).toBe(true);
             setTimeout(() => {
+                multiColObj.keyActionHandler(keyEventArgs);
+                expect(isPopupOpen).toBe(true);
                 expect(eventDetails.action).toBe('altDown');
                 keyEventArgs.action = 'moveDown';
                 multiColObj.keyActionHandler(keyEventArgs);
                 expect(multiColObj.gridObj.selectedRowIndex).toBe(0);
                 keyEventArgs.key = 'Enter';
+                multiColObj.gridObj.keyPressed(keyEventArgs);
+                expect(isPopupClose).toBe(true);
+                expect(multiColObj.inputEle.value).toBe('PHP');
+                done();
+            }, 800);
+        });
+        it(' key press - move down and tab key', (done) => {
+            let isPopupClose: boolean = false;
+            let isPopupOpen: boolean = false;
+            let eventDetails: any;
+            multiColObj = new MultiColumnComboBox({
+                dataSource: languageData,
+                fields: { text: 'text', value: 'id' },
+                open: (args: PopupEventArgs) => {
+                    eventDetails = args.event;
+                    isPopupOpen = true;
+                },
+                close: () => {
+                    isPopupClose = true;
+                },
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }]
+            });
+            multiColObj.appendTo(element);
+            multiColObj.focusIn();
+            keyEventArgs.action = 'altDown';
+            setTimeout(() => {
+                multiColObj.keyActionHandler(keyEventArgs);
+                expect(isPopupOpen).toBe(true);
+                expect(eventDetails.action).toBe('altDown');
+                keyEventArgs.action = 'moveDown';
+                multiColObj.keyActionHandler(keyEventArgs);
+                expect(multiColObj.gridObj.selectedRowIndex).toBe(0);
+                keyEventArgs.action = 'tab';
+                multiColObj.gridObj.keyPressed(keyEventArgs);
+                expect(isPopupClose).toBe(true);
+                expect(multiColObj.inputEle.value).toBe('PHP');
+                done();
+            }, 800);
+        });
+        it(' key press - move down and shiftTab key', (done) => {
+            let isPopupClose: boolean = false;
+            let isPopupOpen: boolean = false;
+            let eventDetails: any;
+            multiColObj = new MultiColumnComboBox({
+                dataSource: languageData,
+                fields: { text: 'text', value: 'id' },
+                open: (args: PopupEventArgs) => {
+                    eventDetails = args.event;
+                    isPopupOpen = true;
+                },
+                close: () => {
+                    isPopupClose = true;
+                },
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }]
+            });
+            multiColObj.appendTo(element);
+            multiColObj.focusIn();
+            keyEventArgs.action = 'altDown';
+            setTimeout(() => {
+                multiColObj.keyActionHandler(keyEventArgs);
+                expect(isPopupOpen).toBe(true);
+                expect(eventDetails.action).toBe('altDown');
+                keyEventArgs.action = 'moveDown';
+                multiColObj.keyActionHandler(keyEventArgs);
+                expect(multiColObj.gridObj.selectedRowIndex).toBe(0);
+                keyEventArgs.action = 'shiftTab';
+                multiColObj.gridObj.keyPressed(keyEventArgs);
+                expect(isPopupClose).toBe(true);
+                expect(multiColObj.inputEle.value).toBe('PHP');
+                done();
+            }, 800);
+        });
+        it(' key press - move down and altUp key', (done) => {
+            let isPopupClose: boolean = false;
+            let isPopupOpen: boolean = false;
+            let eventDetails: any;
+            multiColObj = new MultiColumnComboBox({
+                dataSource: languageData,
+                fields: { text: 'text', value: 'id' },
+                open: (args: PopupEventArgs) => {
+                    eventDetails = args.event;
+                    isPopupOpen = true;
+                },
+                close: () => {
+                    isPopupClose = true;
+                },
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }]
+            });
+            multiColObj.appendTo(element);
+            multiColObj.focusIn();
+            keyEventArgs.action = 'altDown';
+            setTimeout(() => {
+                multiColObj.keyActionHandler(keyEventArgs);
+                expect(isPopupOpen).toBe(true);
+                expect(eventDetails.action).toBe('altDown');
+                keyEventArgs.action = 'moveDown';
+                multiColObj.keyActionHandler(keyEventArgs);
+                expect(multiColObj.gridObj.selectedRowIndex).toBe(0);
+                keyEventArgs.action = 'altUp';
                 multiColObj.gridObj.keyPressed(keyEventArgs);
                 expect(isPopupClose).toBe(true);
                 expect(multiColObj.inputEle.value).toBe('PHP');

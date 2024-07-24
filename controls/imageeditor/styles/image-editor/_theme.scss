@@ -36,9 +36,12 @@
           background: inherit;
           border: none;
           margin-top: $image-editor-ddbtn-margin-top;
-          @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' $skin-name == 'bootstrap5-dark' {
+          @if $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'bootstrap5-dark' {
             background: $tbar-default-bg;
             color: $tbar-default-icon-color;
+          }
+          @if $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' {
+            border: 2px solid #000;
           }
           @if $skin-name == 'Material3' {
             box-shadow: none;
@@ -58,6 +61,36 @@
             background: $btn-focus-bgcolor;
             box-shadow: none;
             color: $btn-focus-color;
+            @if $skin-name == 'FluentUI' {
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
+              box-shadow: inset 0 0 0 1px !important; /* stylelint-disable-line declaration-no-important */
+            }
+            @else if $skin-name == 'FluentUI' or $skin-name == 'fabric' or $skin-name == 'fabric-dark' {
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
+            }
+            @else if $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' {
+              outline: none !important; /* stylelint-disable-line declaration-no-important */
+              border: 2px solid #fff !important; /* stylelint-disable-line declaration-no-important */
+            }
+            @else if $skin-name == 'bootstrap4' {
+              $color-rgba: rgba(mix(lighten($btn-focus-bgcolor, 50%), $btn-focus-border-color, 15%), .5);
+              box-shadow: 0 0 0 .25em $color-rgba !important; /* stylelint-disable-line declaration-no-important */
+            }
+            @else if $skin-name == 'bootstrap5' {
+              box-shadow: $secondary-shadow-focus !important; /* stylelint-disable-line declaration-no-important */
+            }
+            @else if $skin-name == 'Material3' {
+              box-shadow: $shadow-focus-ring1 !important; /* stylelint-disable-line declaration-no-important */
+            }
+            @else if $skin-name == 'tailwind' {
+              box-shadow: 0 0 0 1px #4f46e5 !important; /* stylelint-disable-line declaration-no-important */
+            }
+          }
+
+          &:focus-visible {
+            @if $skin-name == 'fluent2' {
+              box-shadow: $keyboard-focus !important; /* stylelint-disable-line declaration-no-important */
+            }
           }
 
           &:active {

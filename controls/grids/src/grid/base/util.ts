@@ -2246,6 +2246,16 @@ export function getRowIndexFromElement(row: Element): number {
 
 /**
  *
+ * @param { IGrid } grid - Defines grid instance
+ * @returns { IGrid } returns parent grid instance
+ */
+export function getParentIns(grid: IGrid): IGrid {
+    return grid.parentDetails && grid.parentDetails.parentInstObj ?
+        getParentIns(grid.parentDetails.parentInstObj) : grid;
+}
+
+/**
+ *
  * @param { string[] } fields - Defines grouped fields
  * @param { values } values - Defines caption keys
  * @param { any } instance - Defines dynamic class instance

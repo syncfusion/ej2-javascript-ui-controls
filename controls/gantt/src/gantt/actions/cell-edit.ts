@@ -443,6 +443,9 @@ export class CellEdit {
             }
             if (currentDuration !== 0 && ganttProb.isMilestone) {
                 this.parent.setRecordValue('isMilestone', false, ganttProb, true);
+                if (!isNullOrUndefined(this.parent.taskFields.milestone)) {
+                    this.parent.setRecordValue(this.parent.taskFields.milestone, false, args.data, true);
+                }
                 this.parent.setRecordValue(
                     'startDate',
                     this.parent.dateValidationModule.checkStartDate(ganttProb.startDate, ganttProb),
@@ -605,9 +608,35 @@ export class CellEdit {
             this.parent.trigger('actionFailure', { error: err });
         }
         this.parent.predecessorModule.updateUnscheduledDependency(editedArgs.data);
+        const FF = this.parent.localeObj.getConstant("FF");
+        const FS = this.parent.localeObj.getConstant("FS");
+        const SS = this.parent.localeObj.getConstant("SS");
+        const SF = this.parent.localeObj.getConstant("SF");
+        let splitString = (editedArgs.data[this.parent.taskFields.dependency] as string).split(",");
+        let value = ""
+        splitString.map((splitvalue: string, index: number) => {
+            if (splitvalue.includes(FF)) {
+                value += splitvalue.replace(FF, "FF")
+                value += (splitString.length !== index + 1) ? "," : "";
+            } else if (splitvalue.includes(FS)) {
+                value += splitvalue.replace(FS, "FS")
+                value += (splitString.length !== index + 1) ? "," : "";
+            } else if (splitvalue.includes(SS)) {
+                value += splitvalue.replace(SS, "SS")
+                value += (splitString.length !== index + 1) ? "," : "";
+            }
+            else if (splitvalue.includes(SF)) {
+                value += splitvalue.replace(SF, "SF")
+                value += (splitString.length !== index + 1) ? "," : "";
+            }
+            else {
+                value += splitvalue;
+                value += (splitString.length !== index + 1) ? "," : "";
+            }
+        })
         if (!this.parent.connectorLineEditModule.updatePredecessor(
             editedArgs.data,
-            editedArgs.data[this.parent.taskFields.dependency], editedArgs)) {
+            value, editedArgs)) {
             this.parent.editModule.revertCellEdit(cellEditArgs);
         }
     }

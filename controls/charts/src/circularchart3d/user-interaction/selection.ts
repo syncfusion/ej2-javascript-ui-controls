@@ -113,7 +113,7 @@ export class CircularChartSelection3D extends BaseSelection {
         const pointElements: Element[] = [];
         const elements: NodeListOf<HTMLElement> = document.querySelectorAll('[id*="-region-series-' + index.series + '-point-' + index.point + '"]');
         elements.forEach((pointElement: Element) => {
-            if (this.indexFinder(pointElement.id).point === index.point) {
+            if (pointElement.id.indexOf(this.circular3D.element.id + '-') > -1 && this.indexFinder(pointElement.id).point === index.point) {
                 pointElements.push(pointElement as Element);
             }
         });

@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 26.2.4 (2024-07-24)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I609672` - Now, the `imageRemoving` event is triggered properly when we delete the pasted image when uploading from the upload popup in the Rich Text Editor.
+
+- `#I605021` - Now, pasting the content from the MS Word web application with alignment styles as justified works properly in Rich Text Editor.
+
+- `#I572346` - Now, the mention tags should not be added within the span while pasting in the Rich Text Editor.
+
 ## 26.1.42 (2024-07-16)
 
 ### RichTextEditor
