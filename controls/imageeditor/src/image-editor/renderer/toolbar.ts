@@ -1585,7 +1585,7 @@ export class ToolbarModule {
         }
         const fileObj: Object = { fileName: '', fileType: '' };
         parent.notify('draw', { prop: 'getFileName', onPropertyChange: false, value: { obj: fileObj } });
-        this.fileType = fileObj['fileType'];
+        this.fileType = fileObj['fileType'] ? fileObj['fileType'] : 'JPEG';
         parent.notify('export', { prop: 'exportToCanvas', value: { object: obj } });
         const tempCanvas: HTMLCanvasElement = obj['canvas'];
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
@@ -1596,7 +1596,7 @@ export class ToolbarModule {
         const ddbElem: Element = document.getElementById(id + '_saveDropdownbtn');
         if (ddbElem) {
             const spanElem: HTMLElement = document.createElement('span');
-            spanElem.innerHTML = fileObj['fileType'].toUpperCase();
+            spanElem.innerHTML = this.fileType.toUpperCase();
             if (ddbElem) {
                 ddbElem.appendChild(spanElem);
             }

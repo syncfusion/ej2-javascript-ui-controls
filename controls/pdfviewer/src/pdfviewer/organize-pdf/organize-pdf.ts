@@ -1,8 +1,9 @@
 import { PdfViewer, PdfViewerBase, AjaxHandler, ISize } from '../index';
 import { createElement, Browser, initializeCSPTemplate, isNullOrUndefined, getComponent, Draggable, DragEventArgs, Droppable, DropEventArgs } from '@syncfusion/ej2-base';
-import { Tooltip, TooltipEventArgs, Dialog } from '@syncfusion/ej2-popups';
+import { Tooltip, TooltipEventArgs, Dialog} from '@syncfusion/ej2-popups';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { Toolbar, ClickEventArgs, ContextMenu, MenuItemModel, BeforeOpenCloseMenuEventArgs, ItemModel, EventArgs } from '@syncfusion/ej2-navigations';
+import { createSpinner, showSpinner, hideSpinner } from '../base/spinner';
 
 interface IActionOrganizeElements {
     action: string;
@@ -143,6 +144,10 @@ export class PageOrganizer {
         if (this.pdfViewer.enableRtl) {
             this.organizeDialog.enableRtl = true;
         }
+        const waitingPopup: HTMLElement = createElement('div', { id: elementID + '_organizeLoadingIndicator' });
+        dialogDiv.appendChild(waitingPopup);
+        createSpinner({ target: waitingPopup, cssClass: 'e-spin-center' });
+        this.pdfViewerBase.setLoaderProperties(waitingPopup);
         this.organizeDialog.appendTo(dialogDiv);
         if (!isReConstruct) {
             this.organizeDialog.show(true);
@@ -203,6 +208,10 @@ export class PageOrganizer {
         if (this.pdfViewer.enableRtl) {
             this.organizeDialog.enableRtl = true;
         }
+        const waitingPopup: HTMLElement = createElement('div', { id: elementID + '_organizeLoadingIndicator' });
+        dialogDiv.appendChild(waitingPopup);
+        createSpinner({ target: waitingPopup, cssClass: 'e-spin-center' });
+        this.pdfViewerBase.setLoaderProperties(waitingPopup);
         this.organizeDialog.appendTo(dialogDiv);
         this.organizeDialog.show(true);
         this.createMobileContextMenu();
@@ -1397,6 +1406,19 @@ export class PageOrganizer {
         });
     }
 
+    private showOrganizeLoadingIndicator(isShow: boolean): void {
+        const waitingPopup: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_organizeLoadingIndicator');;
+        if (waitingPopup) {
+            if (isShow) {
+                waitingPopup.style.display = 'block';
+                showSpinner(waitingPopup);
+            } else {
+                waitingPopup.style.display = 'none';
+                hideSpinner(waitingPopup);
+            }
+        }
+    }
+
     private onSelectAllClick(): void {
         // eslint-disable-next-line
         const proxy: PageOrganizer = this;
@@ -1853,7 +1875,7 @@ export class PageOrganizer {
 
     private onSaveClicked(): void {
         this.isSkipRevert = true;
-        this.organizeDialog.hide();
+        this.showOrganizeLoadingIndicator(true);
         if ((JSON.stringify(this.tempOrganizePagesCollection) !== JSON.stringify(this.organizePagesCollection)) ||
         this.isDocumentModified) {
             this.updateOrganizePageCollection();
@@ -1866,6 +1888,10 @@ export class PageOrganizer {
                         const fileName: string = this.pdfViewer.fileName;
                         const downloadFileName: string = this.pdfViewer.downloadFileName;
                         const jsonDocumentId: string = this.pdfViewerBase.jsonDocumentId;
+                        this.showOrganizeLoadingIndicator(false);
+                        this.organizeDialog.hide();
+                        this.undoOrganizeCollection = [];
+                        this.redoOrganizeCollection = [];
                         this.pdfViewer.load(base64, null);
                         this.pdfViewerBase.updateDocumentEditedProperty(true);
                         this.pdfViewer.fileName = fileName;
@@ -1880,9 +1906,12 @@ export class PageOrganizer {
                 });
             });
         }
-
-        this.undoOrganizeCollection = [];
-        this.redoOrganizeCollection = [];
+        else{
+            this.showOrganizeLoadingIndicator(false);
+            this.organizeDialog.hide();
+            this.undoOrganizeCollection = [];
+            this.redoOrganizeCollection = [];
+        }
     }
 
     private blobToBase64(blob: Blob): any {

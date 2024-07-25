@@ -119,6 +119,7 @@ export class PdfViewerBase {
      */
     public currentPageNumber: number = 0;
     private previousZoomValue: number;
+    private initialZoomValue: any = {};
     /**
      * @private
      */
@@ -1750,6 +1751,11 @@ export class PdfViewerBase {
     }
 
     private saveFormfieldsData(data: any): void {
+        // Moved the signature value collection to the bottom.
+        if (!this.clientSideRendering) {
+            const moveToBottom: string[] = ['ink', 'SignatureText', 'SignatureImage'];
+            data.PdfRenderedFormFields = data.PdfRenderedFormFields.filter((item: any) => moveToBottom.indexOf(item['Name']) === -1).concat(data.PdfRenderedFormFields.filter((item: any) => moveToBottom.indexOf(item['Name']) !== -1));
+        }
         this.pdfViewer.isFormFieldDocument = false;
         this.enableFormFieldButton(false);
         if (data && data.PdfRenderedFormFields && data.PdfRenderedFormFields.length > 0) {
@@ -1895,7 +1901,7 @@ export class PdfViewerBase {
             } else {
                 hideSpinner(waitingPopup);
             }
-            if(!this.pdfViewer.magnificationModule.isWaitingPopupUpdated) {
+            if(!isNullOrUndefined(this.pdfViewer.magnificationModule) && !this.pdfViewer.magnificationModule.isWaitingPopupUpdated) {
                 this.updateWaitingPopup(pageIndex);
             }
         }
@@ -1919,7 +1925,12 @@ export class PdfViewerBase {
         }
     }
 
-    private setLoaderProperties(element: HTMLElement): void {
+     /**
+     * @param {HTMLElement} element - specifies the element.
+     * @returns {void}
+     * @private
+     */
+    public setLoaderProperties(element: HTMLElement): void {
         const spinnerElement: HTMLElement = (element.firstChild.firstChild.firstChild as HTMLElement);
         if (spinnerElement) {
             spinnerElement.style.height = '48px';
@@ -3181,7 +3192,7 @@ export class PdfViewerBase {
                 this.pdfViewer.magnificationModule.fitToAuto();
             } else if (this.pdfViewer.zoomMode !== 'FitToWidth' && this.pdfViewer.magnificationModule.fitType === 'fitToWidth') {
                 this.pdfViewer.magnificationModule.fitToWidth();
-            } else if (this.pdfViewer.magnificationModule.fitType === 'fitToPage') {
+            } else if (this.pdfViewer.zoomMode !== 'FitToPage' && this.pdfViewer.magnificationModule.fitType === 'fitToPage') {
                 this.pdfViewer.magnificationModule.fitToPage();
             }
         }
@@ -8077,7 +8088,7 @@ export class PdfViewerBase {
     public getStoredData(pageIndex: number, isTextSearch?: boolean): any {
         let zoomFactor: number = this.retrieveCurrentZoomFactor();
         if (this.pdfViewer.restrictZoomRequest && !this.pdfViewer.tileRenderingSettings.enableTileRendering) {
-            zoomFactor = 1;
+            zoomFactor = this.initialZoomValue[parseInt(pageIndex.toString(), 10)];
         }
         let storedData: any = this.getWindowSessionStorage(pageIndex, zoomFactor) ?
             this.getWindowSessionStorage(pageIndex, zoomFactor) : this.getPinchZoomPage(pageIndex);
@@ -8342,6 +8353,7 @@ export class PdfViewerBase {
             }
         }
         const zoomFactor: number = this.retrieveCurrentZoomFactor();
+        this.initialZoomValue[parseInt(pageIndex.toString(), 10)] = zoomFactor;
         if (isNaN(tileX) && isNaN(tileY)) {
             if (sessionSize < maxSessionSize) {
                 window.sessionStorage.setItem(this.documentId + '_' + pageIndex + '_' + zoomFactor, JSON.stringify(storeObject));

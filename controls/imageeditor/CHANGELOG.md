@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.2.5 (2024-07-26)
+
+### Image Editor
+
+#### Bug Fixes
+
+- `#I614410` - The issue with "Pinch zoom functionality is not working properly on touch devices" has been resolved.
+
 ## 26.2.4 (2024-07-24)
 
 ### Image Editor

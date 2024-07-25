@@ -2298,4 +2298,60 @@ describe('Row Drag and Drop module', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-895688: Datagrid with multi select + Allow drag and drop and a default sorting is not working', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 10),
+                    allowRowDragAndDrop: true,
+                    allowSorting: true,
+                    sortSettings: { columns: [{ field: 'OrderID', direction: 'Descending' }] },
+                    columns: [
+                        { type: 'checkbox', width: 50 },
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 80, textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, textAlign: 'Left' },
+                        { field: 'Freight', headerText: 'Freight', width: 130, format: 'C2', textAlign: 'Right' },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 120, format: 'yMd', textAlign: 'Right' }
+                    ],
+                }, done);
+        });
+        it('Select the row drag and drop', () => {
+            const dragRowElem: Element = gridObj.getRowByIndex(0).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+            const dropRowElem: Element = gridObj.getRowByIndex(2).querySelector('.e-rowdragdrop.e-rowdragdropcell');
+            const dragClient: any = dragRowElem.getBoundingClientRect();
+            const dropClient: any = dropRowElem.getBoundingClientRect();
+            gridObj.selectRows([0, 1]);
+            dragRowElem.classList.add('e-rowcell');
+            (gridObj.rowDragAndDropModule as any).draggable.currentStateTarget = dragRowElem;
+            (gridObj.rowDragAndDropModule as any).helper({
+                target: gridObj.getContentTable().querySelector('tr'),
+                sender: { clientX: 10, clientY: 10, target: dragRowElem }
+            });
+            const dropClone: HTMLElement = gridObj.element.querySelector('.e-cloneproperties.e-draganddrop.e-grid.e-dragclone');
+            (gridObj.rowDragAndDropModule as any).dragStart({
+                target: dragRowElem,
+                event: { clientX: dragClient.x, clientY: dragClient.y, target: dragRowElem }
+            });
+            (gridObj.rowDragAndDropModule as any).drag({
+                target: dropRowElem,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+            });
+            (gridObj.rowDragAndDropModule as any).dragStop({
+                target: dropRowElem,
+                element: gridObj.getContentTable(),
+                helper: dropClone,
+                event: { clientX: dropClient.x, clientY: dropClient.y, target: dropRowElem }
+            });
+        });
+        it('Selection of row', () => {
+            expect(gridObj.getRows()[1].hasAttribute('aria-selected')).toBeTruthy();
+            expect(gridObj.getRows()[2].hasAttribute('aria-selected')).toBeTruthy();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

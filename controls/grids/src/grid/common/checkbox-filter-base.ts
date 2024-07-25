@@ -566,7 +566,7 @@ export class CheckBoxFilterBase {
                 if (isNullOrUndefined(val) && isNotEqual) {
                     coll.push({
                         field: defaults.field, matchCase: defaults.matchCase, operator: 'equal',
-                        predicate: 'and', value: null
+                        predicate: 'or', value: null
                     });
                 }
             }

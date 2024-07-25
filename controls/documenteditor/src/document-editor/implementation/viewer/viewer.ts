@@ -1667,7 +1667,7 @@ export class DocumentHelper {
             }
             return;
         }
-        if (!this.owner.isReadOnlyMode && this.owner.editorModule.canEditContentControl || (this.owner.documentHelper.protectionType === 'FormFieldsOnly' && this.owner.editorModule.canEditContentControl && !isNullOrUndefined(this.owner.documentHelper.selection) && this.owner.documentHelper.selection.checkContentControlLocked()) || this.selection.isInlineFormFillMode()) {
+        if (!this.owner.isReadOnlyMode && this.owner.editorModule.canEditContentControl || (this.owner.documentHelper.protectionType === 'FormFieldsOnly' && this.owner.editorModule.canEditContentControl && !isNullOrUndefined(this.owner.documentHelper.selection) && this.owner.documentHelper.selection.checkContentControlLocked()) || (!isNullOrUndefined(this.selection) && this.selection.isInlineFormFillMode())) {
             const key: number = event.keyCode || event.charCode;
             let char: string = '';
             if (key) {

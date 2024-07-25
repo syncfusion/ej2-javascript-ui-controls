@@ -1738,15 +1738,26 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         option.templateID = this.itemTemplateId;
         option.isStringTemplate = this.isStringTemplate;
         const itemcheck: boolean = this.templateCompiler(this.itemTemplate);
+        let ulElement: HTMLElement;
         if (typeof this.itemTemplate !== 'function' && itemcheck) {
             const itemValue: string = select(this.itemTemplate, document).innerHTML.trim();
-            return ListBase.renderContentTemplate(
+            ulElement = ListBase.renderContentTemplate(
                 this.createElement, itemValue, dataSource,
                 (fields as FieldSettingsModel & { properties: Object }).properties, option, this);
+
+            if (this.isVirtualizationEnabled && (this as any).isReact) {
+                this.renderReactTemplates();
+            }
+            return ulElement;
         } else {
-            return ListBase.renderContentTemplate(
+            ulElement = ListBase.renderContentTemplate(
                 this.createElement, this.itemTemplate as any, dataSource,
                 (fields as FieldSettingsModel & { properties: Object }).properties, option, this);
+
+            if (this.isVirtualizationEnabled && (this as any).isReact) {
+                this.renderReactTemplates();
+            }
+            return ulElement;
         }
     }
 

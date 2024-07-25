@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 26.2.5 (2024-07-26)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I612449` - The secondary axis labels will render properly with scrollbar on the secondary axis.
+
+### RangeNavigator
+
+#### Bug Fixes
+
+- `#I613716` - Now, the series is rendered properly when the y-values are the same.
+
 ## 26.2.4 (2024-07-24)
 
 ### Chart

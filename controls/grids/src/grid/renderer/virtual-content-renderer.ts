@@ -14,7 +14,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { InterSectionObserver, ScrollDirection } from '../services/intersection-observer';
 import { RendererFactory } from '../services/renderer-factory';
 import { VirtualRowModelGenerator } from '../services/virtual-row-model-generator';
-import { isGroupAdaptive, ensureLastRow, ensureFirstRow, getEditedDataIndex, getTransformValues, checkVirtualSort, getVisiblePage, parentsUntil } from '../base/util';
+import { isGroupAdaptive, ensureLastRow, ensureFirstRow, getEditedDataIndex, getTransformValues, checkIsVirtual, getVisiblePage, parentsUntil } from '../base/util';
 import { setStyleAttribute } from '@syncfusion/ej2-base';
 import { ColumnWidthService } from '../services/width-controller';
 import { Grid } from '../base/grid';
@@ -283,11 +283,19 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         let indexes: number[] = info.direction === 'down' ? [max(index, 1), ++index, ++index] : [max(index - 1, 1), index, index + 1];
         this.prevInfo = this.prevInfo || this.vgenerator.getData();
         indexes = indexes.filter((val: number, ind: number) => indexes.indexOf(val) === ind);
+        let preventSelf: boolean = false;
+        if (checkIsVirtual(this.parent) && info.direction === 'up' && ((((info.page + 1) === this.prevInfo.page
+            || info.page === this.prevInfo.page) && info.block === 1) || (info.page === this.prevInfo.page && indexes.length === 2))
+            && this.vgenerator.isBlockAvailable(info.blockIndexes[1] + 1)) {
+            preventSelf = (info.page + 1) === this.prevInfo.page && info.block === 1;
+            index += 1;
+            indexes = [max(index - 1, 1), index, index + 1];
+        }
         if (this.prevInfo.blockIndexes.toString() === indexes.toString()) {
             return indexes;
         }
 
-        if (info.loadSelf || (info.direction === 'down' && this.isEndBlock(old))) {
+        if ((info.loadSelf && !preventSelf) || (info.direction === 'down' && this.isEndBlock(old))) {
             indexes = this.vgenerator.getBlockIndexes(info.page);
         }
 
@@ -807,7 +815,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         if (this.prevInfo && this.prevInfo.blockIndexes) {
             visiblePage = getVisiblePage(this.prevInfo.blockIndexes);
         }
-        if (this.requestType === 'sorting' && visiblePage.length && checkVirtualSort(this.parent)) {
+        if ((this.requestType === 'sorting' || this.requestType === 'delete') && visiblePage.length && checkIsVirtual(this.parent)) {
             args.query.skip(this.parent.pageSettings.pageSize * (visiblePage[0] - 1));
             args.query.take(this.parent.pageSettings.pageSize * visiblePage.length);
             args.skipPage = true;

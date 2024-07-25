@@ -3,7 +3,7 @@ import { Group } from '@syncfusion/ej2-data';
 import { IModelGenerator, IGrid, VirtualInfo, NotifyArgs } from '../base/interface';
 import { Row } from '../models/row';
 import { Cell } from '../models/cell';
-import { getRowIndexFromElement, isGroupAdaptive, checkVirtualSort, getVisiblePage } from '../base/util';
+import { getRowIndexFromElement, isGroupAdaptive, checkIsVirtual, getVisiblePage } from '../base/util';
 import { Column } from '../models/column';
 import { PageSettingsModel } from '../models/page-settings-model';
 import { RowModelGenerator } from '../services/row-model-generator';
@@ -65,7 +65,8 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         }
         let isManualRefresh: boolean = false;
         const info: VirtualInfo = e.virtualInfo = e.virtualInfo
-            || (e.requestType === 'sorting' && checkVirtualSort(this.parent) && this.prevInfo) || this.getData();
+            || ((e.requestType === 'sorting' || e.requestType === 'delete') && checkIsVirtual(this.parent) && this.prevInfo)
+            || this.getData();
         this.prevInfo = info;
         const xAxis: boolean = info.sentinelInfo && info.sentinelInfo.axis === 'X';
         const page: number = !xAxis && info.loadNext && !info.loadSelf ? info.nextInfo.page : info.page;
@@ -96,7 +97,8 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
             if (!this.isBlockAvailable(values[parseInt(i.toString(), 10)])) {
                 let startIdx: number = !isNullOrUndefined(this.startIndex) ? this.startIndex :
                     this.getStartIndex(values[parseInt(i.toString(), 10)], data);
-                startIdx = isGroupAdaptive(this.parent) && !this.parent.vcRows.length && e.requestType === 'sorting' ? 0 : startIdx;
+                startIdx = isGroupAdaptive(this.parent) && !this.parent.vcRows.length && (e.requestType === 'sorting'
+                    || e.requestType === 'delete') ? 0 : startIdx;
                 const rows: Row<Column>[] = this.rowModelGenerator.generateRows(data, {
                     virtualInfo: info, startIndex: startIdx
                 });
@@ -112,7 +114,7 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                 } else {
                     if (isManualRefresh) {
                         this.setBlockForManualRefresh(this.cache, indexes, rows);
-                    } else if (e.requestType === 'sorting' && checkVirtualSort(this.parent)) {
+                    } else if ((e.requestType === 'sorting' || e.requestType === 'delete') && checkIsVirtual(this.parent)) {
                         const visiblePage: number[] = getVisiblePage(info.blockIndexes);
                         let prevEndIndex: number = 0;
                         for (let i: number = 0; i < visiblePage.length; i++) {

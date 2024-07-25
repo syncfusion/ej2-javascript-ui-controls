@@ -779,6 +779,18 @@ describe('Range navigator', () => {
             range.interval = 1;
             range.refresh();
         })
+        it('checking with same y value', (done: Function) => {
+            range.loaded = (args: Object) => {
+                axisLabel = document.getElementById('container_AxisLabels');
+                expect(axisLabel.childNodes[0].firstChild.textContent === '12 AM').toBe(true);
+                done();
+            };
+            done();
+            range.series[0].dataSource = [{ x: new Date('2023-09-04T00:00:00Z'), y: 1 }, { x: new Date('2023-09-08T00:00:00Z'), y: 1 }];
+            range.intervalType = 'Auto',
+            range.interval = null;
+            range.refresh();
+        })
     });
     it('memory leak', () => {
         profile.sample();

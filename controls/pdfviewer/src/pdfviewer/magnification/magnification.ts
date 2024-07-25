@@ -151,7 +151,9 @@ export class Magnification {
      */
     public zoomIn(): void {
         if (this.fitType || this.isNotPredefinedZoom) {
-            this.zoomLevel = this.lowerZoomLevel;
+            if (!isNullOrUndefined(this.lowerZoomLevel)) {
+                this.zoomLevel = this.lowerZoomLevel;
+            }
             this.fitType = null;
         }
         this.isNotPredefinedZoom = false;
@@ -186,7 +188,9 @@ export class Magnification {
      */
     public zoomOut(): void {
         if (this.fitType || this.isNotPredefinedZoom) {
-            this.zoomLevel = this.higherZoomLevel;
+            if (!isNullOrUndefined(this.higherZoomLevel)) {
+                this.zoomLevel = this.higherZoomLevel;
+            }
             this.fitType = null;
         }
         this.isNotPredefinedZoom = false;
@@ -449,7 +453,7 @@ export class Magnification {
                 }
             }
             if (this.pdfViewerBase.pageCount > 0) {
-                if ((this.previousZoomFactor !== this.zoomFactor)) {
+                if ((this.previousZoomFactor !== this.zoomFactor) || this.pdfViewerBase.isInitialPageMode) {
                     if (!this.isPinchZoomed) {
                         this.magnifyPages();
                     } else {
@@ -522,7 +526,7 @@ export class Magnification {
         const pageDivElements: any = document.querySelectorAll('.e-pv-page-div');
         const startPageElement: number = pageDivElements[0].id.split('_pageDiv_')[1];
         const endPageElement: number = pageDivElements[pageDivElements.length - 1].id.split('_pageDiv_')[1];
-        if ((this.previousZoomFactor !== this.zoomFactor)) {
+        if ((this.previousZoomFactor !== this.zoomFactor) || this.pdfViewerBase.isInitialPageMode) {
             for (let i: number = startPageElement; i <= endPageElement; i++) {
                 this.pdfViewerBase.showPageLoadingIndicator(i, false);
             }

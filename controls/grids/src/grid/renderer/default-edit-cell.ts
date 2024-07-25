@@ -1,5 +1,5 @@
 import { isNullOrUndefined, extend, KeyboardEventArgs } from '@syncfusion/ej2-base';
-import { IEditCell } from '../base/interface';
+import { IEditCell, EJ2Intance } from '../base/interface';
 import { Column } from '../models/column';
 import { isEditable, createEditElement } from '../base/util';
 import { TextBox }  from '@syncfusion/ej2-inputs';
@@ -20,7 +20,12 @@ export class DefaultEditCell extends EditCellBase implements IEditCell {
     }
 
     public read(element: Element): string {
-        return (<HTMLInputElement>element).value;
+        if ((<HTMLInputElement>element).type === 'hidden' && !isNullOrUndefined((<EJ2Intance>element).ej2_instances[0]) &&
+            !isNullOrUndefined((<EJ2Intance>element).ej2_instances[0].textarea)) {
+            return (<EJ2Intance>element).ej2_instances[0].value;
+        } else {
+            return (<HTMLInputElement>element).value;
+        }
     }
 
     public write(args: { rowData: Object, element: Element, column: Column, requestType: string }): void {

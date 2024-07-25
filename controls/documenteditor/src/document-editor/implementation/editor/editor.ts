@@ -17428,7 +17428,7 @@ export class Editor {
                     return;
                 }
             }
-            if ((inline.type === 0 && inline.nextElement !== contentControl.reference) || (inline.type === 0 && contentControl.contentControlProperties.lockContentControl && inline.nextElement === contentControl.reference)) {
+            if ((!isNullOrUndefined(contentControl) && inline.type === 0 && inline.nextElement !== contentControl.reference) || (!isNullOrUndefined(contentControl) && inline.type === 0 && contentControl.contentControlProperties.lockContentControl && inline.nextElement === contentControl.reference)) {
                 return;
             }
         }
@@ -18653,7 +18653,7 @@ export class Editor {
                         return;
                     }
                 }
-                if ((inline.type === 0 && inline.nextElement !== contentControl.reference) || (inline.type === 0 && contentControl.contentControlProperties.lockContentControl && inline.nextElement === contentControl.reference)) {
+                if ((!isNullOrUndefined(contentControl) && inline.type === 0 && inline.nextElement !== contentControl.reference) || (!isNullOrUndefined(contentControl) && inline.type === 0 && contentControl.contentControlProperties.lockContentControl && inline.nextElement === contentControl.reference)) {
                     return;
                 }
             } else {

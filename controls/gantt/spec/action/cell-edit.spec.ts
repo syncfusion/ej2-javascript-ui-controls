@@ -1925,7 +1925,8 @@ describe('taskType with resourceUnit mapping', () => {
         });
         it('update taskID using updateTaskId method', () => {
             ganttObj.updateTaskId(2,40);
-            expect(ganttObj.currentViewData[1]['TaskID']).toBe('40');
+            expect(ganttObj.currentViewData[1]['TaskID']).toBe(40);
+            expect(ganttObj.currentViewData[1].taskData['TaskID']).toBe(40);
         });
     });
     describe('Custom timeline unit count', () => {

@@ -2288,9 +2288,12 @@ export class Edit {
                     return;
                 }
                 const thisRecord: IGanttData = this.parent.flatData[cIndex as number];
-                thisRecord.ganttProperties.taskId = thisRecord.ganttProperties.rowUniqueID = nId;
-                thisRecord.taskData[this.parent.taskFields.id] = nId;
-                thisRecord[this.parent.taskFields.id] = nId;
+                if (!isNullOrUndefined(thisRecord)) {
+                    this.parent.setRecordValue('taskId', newId, thisRecord.ganttProperties, true);
+                    this.parent.setRecordValue('rowUniqueID', nId, thisRecord.ganttProperties, true);
+                    this.parent.setRecordValue(this.parent.taskFields.id, newId, thisRecord, true);
+                    this.parent.setRecordValue(this.parent.taskFields.id, newId, thisRecord.taskData, true);
+                }
                 ids[cIndex as number] = nId;
                 if (thisRecord.hasChildRecords && this.parent.taskFields.parentID) {
                     const childRecords: IGanttData[] = thisRecord.childRecords;

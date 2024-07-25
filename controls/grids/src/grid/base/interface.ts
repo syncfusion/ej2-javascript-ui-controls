@@ -717,6 +717,7 @@ export interface IGrid extends Component<HTMLElement> {
     getCurrentViewRecords(): Object[];
     selectRows?(indexes: number[]): void;
     clearSelection?(): void;
+    clearRowSelection?(): void;
     updateExternalMessage?(message: string): void;
     getColumns?(isRefresh?: boolean): Column[];
     getStackedHeaderColumnByHeaderText?(stackedHeader: string, col: Column[]): Column;

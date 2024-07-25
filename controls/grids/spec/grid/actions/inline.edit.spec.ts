@@ -2300,9 +2300,9 @@ describe('Inline Editing module', () => {
                     //updatated data cehck
                     expect((gridObj.currentViewData[0] as any).FIELD1).toBe('updated');
                     //row count check
-                    expect(gridObj.getContent().querySelectorAll('.e-row').length).toBe(50);
+                    expect(gridObj.getContent().querySelectorAll('.e-row').length).toBe(75);
                     //record count check
-                    expect(gridObj.currentViewData.length).toBe(50);
+                    expect(gridObj.currentViewData.length).toBe(75);
                     expect(gridObj.isEdit).toBeFalsy();
                     let data: Object = (<{ virtualData?: Object }>(gridObj as Grid).contentModule).virtualData;
                     expect(Object.keys(data).length).toBe(0);
@@ -4215,6 +4215,65 @@ describe('EJ2- 871212 - grid’s edit type datepicker with enable mask for date 
             });
             (gridObj as any).editModule.curretRowFocus();
             expect(curretRowFocusSpy).toHaveBeenCalled();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+    
+    describe('EJ2-895689: Issue with Grid Column Multiline Edit Params in Chrome and Edge =>', () => {
+        let gridObj: Grid;
+        let stringParams: any = {
+            params: {
+                multiline: true,
+                showClearButton: true
+            }
+        }
+        beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                editSettings: {
+                allowEditing: true,
+                allowAdding: true,
+                allowDeleting: true,
+                mode: 'Normal',
+                },
+                toolbar: ['Add','Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    {
+                        field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                        validationRules: { required: true, number: true }, width: 140
+                    },
+                    {
+                        field: 'CustomerID', headerText: 'Customer ID',
+                        validationRules: { required: true }, width: 140
+                    },
+                    {
+                        field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit',
+                        width: 140, format: 'C2', validationRules: { required: true }
+                    },
+                    {  field: 'ShipAddress', headerText: 'ShipAddress', width: 170, edit: stringParams},
+                ],
+            }, done);
+        });
+
+        it('Editing the row', function (done) {
+            gridObj.actionComplete = function (args: any) {
+                if (args.requestType == 'beginEdit') {
+                    args.form.elements[4].ej2_instances[0].value = 'Updated';
+                    gridObj.endEdit();
+                    done();
+                }
+            };
+            (gridObj as any).dblClickHandler({ target: gridObj.element.querySelectorAll('.e-row')[1].firstElementChild });
+        });
+
+        it('Updating the row', function (done) {
+            expect((gridObj.getCurrentViewRecords()[1] as any).ShipAddress).toBe('Updated');
+            done();
         });
 
         afterAll(() => {

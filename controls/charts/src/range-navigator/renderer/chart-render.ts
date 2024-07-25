@@ -203,6 +203,9 @@ export class RangeSeries extends NiceInterval {
         this.yAxis.maximumLabels = 3;
         this.yAxis.intervalDivs = [10, 5, 2, 1];
         this.yAxis.orientation = 'Vertical';
+        if (this.yMin === this.yMax) {
+            this.yMax += 1; this.yMin -= 1;
+        }
         control.doubleModule.min = this.yMin;
         control.doubleModule.max = this.yMax;
         control.doubleModule.getActualRange(this.yAxis, control.bounds);

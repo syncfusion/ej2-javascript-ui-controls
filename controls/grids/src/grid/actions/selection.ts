@@ -4234,6 +4234,7 @@ export class Selection implements IAction {
         this.parent.off(events.refreshInfinitePersistSelection, this.onDataBoundFunction);
         this.parent.off(events.onEmpty, this.setCheckAllForEmptyGrid);
         this.parent.off(events.click, this.clickHandler);
+        this.parent.removeEventListener(events.resizeStop, this.resizeEndFn);
         this.parent.off(events.beforeRefreshOnDataChange, this.initPerisistSelection);
     }
 

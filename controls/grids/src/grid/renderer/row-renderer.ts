@@ -235,7 +235,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                         const nextRowCell: Cell<Column> = prevRowCells[i + 1];
                         const direction: string = prevRowCells[parseInt(i.toString(), 10)].column.freeze;
                         if (prevRowCell && (prevRowCell.isRowSpanned || prevRowCell.rowSpanRange > 1) && prevRowCell.visible) {
-                            if (!isRtl && !currentRowCell.isRowSpanned){
+                            if (!isRtl && (!currentRowCell.isRowSpanned || prevRowCell.rowSpanRange > currentRowCell.rowSpanRange)){
                                 td.classList.add('e-rowcell-firstchild');
                             }
                             if (isFrozen) {
@@ -247,7 +247,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
                             }
                         }
                         if (nextRowCell && (nextRowCell.isRowSpanned || nextRowCell.rowSpanRange > 1) && nextRowCell.visible ) {
-                            if (isRtl && !currentRowCell.isRowSpanned) {
+                            if (isRtl && (!currentRowCell.isRowSpanned || nextRowCell.rowSpanRange > currentRowCell.rowSpanRange)) {
                                 td.classList.add('e-rowcell-lastchild');
                             }
                             if (isFrozen && nextRowCell.column.freeze === 'Fixed' && direction === 'Fixed' && cellArgs.colSpan < 2) {

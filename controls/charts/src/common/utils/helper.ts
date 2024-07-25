@@ -149,12 +149,23 @@ export function rotateTextSize(font: FontModel, text: string, angle: number, cha
             htmlObject.appendChild(tspanElement);
         }
     }
-    chart.svgObject.appendChild(htmlObject);
+    const axisSvgObject: Element = chart.svgRenderer.createSvg({ id: 'AxisLabelMax_svg' });
+    if (chart.element.parentElement.style.transform.indexOf('scale') > -1) {
+        document.body.appendChild(axisSvgObject);
+        axisSvgObject.appendChild(htmlObject);
+    } else {
+        chart.svgObject.appendChild(htmlObject);
+    }
     const box: ClientRect = htmlObject.getBoundingClientRect();
     if (transformValue) {
         chart.element.style.transform = transformValue;
     }
-    remove(htmlObject);
+    if (chart.element.parentElement.style.transform.indexOf('scale') > -1) {
+        remove(axisSvgObject);
+    }
+    else {
+        remove(htmlObject);
+    }
     if (!chart.delayRedraw && !chart.redraw && !(chart as Chart).stockChart && !(chart as Chart).pointsAdded) {
         remove(chart.svgObject);
     }
@@ -2619,8 +2630,13 @@ export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator 
     if (chart.getModuleName() === 'chart') {
         let scaleX: number = 1; let scaleY: number = 1;
         if (chart.width === '' || chart.width === null || chart.width === '100%') {
-            scaleX = chart.element.getBoundingClientRect().width > 0 ?
-                chart.element.getBoundingClientRect().width / chart.availableSize.width : 1;
+            if (containerWidth && chart.element.parentElement.style.transform.indexOf('scale') > -1) {
+                scaleX = 1;
+            }
+            else {
+                scaleX = chart.element.getBoundingClientRect().width > 0 ?
+                    chart.element.getBoundingClientRect().width / chart.availableSize.width : 1;
+            }
             if (containerHeight && chart.element.parentElement.style.transform.indexOf('scale') > -1) {
                 scaleY = 1;
             } else {

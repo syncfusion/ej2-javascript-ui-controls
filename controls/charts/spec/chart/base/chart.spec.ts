@@ -762,4 +762,46 @@ describe('Chart Control', () => {
             chart.appendTo('#container');
         });
     });
+    describe('Check the RTL behaviour for title', () => {
+        let chart: Chart;
+        let ele: HTMLElement;
+        let ele2: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: Element;
+        beforeAll((): void => {
+            ele = createElement('div', {   id: 'container',
+            styles: 'transform: scale(1.5)' });
+            ele2 = createElement('div', { id: 'element' });
+            document.body.appendChild(ele);
+            document.getElementById('container').appendChild(ele2)
+            chart = new Chart(
+                {
+                    primaryXAxis: { valueType: 'Category', rangePadding: 'Normal', labelRotation: 90 },
+                    primaryYAxis: { title: 'PrimaryYAxis' },
+                    series: [{ dataSource: categoryData, xName: 'x', yName: 'y', fill: 'red', animation: { enable: false } }],
+                    title: 'Syncfusion Chart',
+                    titleStyle: {
+                        textAlignment : 'Near'                    
+                    },
+                    subTitle: 'Since 2012',
+                    subTitleStyle: {
+                        textAlignment : 'Far'
+                    }
+                });
+            
+        });
+        afterAll((): void => {
+            chart.destroy();
+            ele.remove();
+        });
+        it('Checking the container with applied scale', (done: Function) => {
+            loaded = (args: Object): void => {
+                element = document.getElementById('element0_AxisLabel_7');
+                expect(element.textContent == 'Sweden').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.appendTo('#element');
+        });
+    });
 });

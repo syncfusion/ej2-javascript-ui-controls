@@ -199,6 +199,9 @@ export function phaseDefine(
         phaseObject.constraints &= ~NodeConstraints.Select;
     }
     shape.phases[parseInt(phaseIndex.toString(), 10)].header.id = phaseObject.id;
+    //894556-Swimlane wrapper updated wrongly when phase offset set for vertical swimlane
+    const phaseOffset: number = shape.phases[parseInt(phaseIndex.toString(), 10)].offset;
+    object.wrapper.height = object.wrapper.height >= phaseOffset ? object.wrapper.height : phaseOffset + (object.shape as any).header.height;
     const wrapper: Container = addObjectToGrid(
         diagram, grid, object, phaseObject, false, true, false, shape.phases[parseInt(phaseIndex.toString(), 10)].id);
     grid.addObject(wrapper, rowValue, colValue);
@@ -996,7 +999,7 @@ export function updateHeaderMaxWidth(diagram: Diagram, swimLane: NodeModel): voi
         const grid: GridPanel = swimLane.wrapper.children[0] as GridPanel;
         const id: string = grid.rows[0].cells[0].children[0].id;
         const headerNode: Node = diagram.nameTable[`${id}`];
-        if (headerNode && headerNode.isHeader && headerNode.maxWidth < swimLane.width) {
+        if (headerNode && headerNode.isHeader && (headerNode.maxWidth < swimLane.width || headerNode.wrapper.maxWidth < swimLane.width)) {
             headerNode.maxWidth = swimLane.width;
             headerNode.wrapper.maxWidth = swimLane.width;
         }

@@ -192,6 +192,9 @@ export class RowDD {
         if (!e.target) { return; }
 
         this.processArgs(target);
+        if (gObj.enableVirtualization && isNullOrUndefined(this.rows[0])) {
+            classList(cloneElement, ['e-notallowedcur'], ['e-movecur']);
+        }
         const args: RowDragEventArgs = {
             rows: this.rows, target: target, draggableType: 'rows',
             data: this.rowData as Object[], originalEvent: e, cancel: false
@@ -344,6 +347,9 @@ export class RowDD {
             }
         }
         this.processArgs(target);
+        if (gObj.enableVirtualization && isNullOrUndefined(this.rows[0])) {
+            return;
+        }
         const args: RowDropEventArgs = {
             target: target, draggableType: 'rows',
             cancel: false,
@@ -373,7 +379,7 @@ export class RowDD {
                     if (e.helper.classList.contains('e-cloneproperties') && document.querySelector('.' + e.helper.classList[0])) {
                         remove(e.helper);
                     }
-                    if (gObj.enableVirtualization && (!this.parent.allowGrouping || !gObj.groupSettings.columns.length)) {
+                    if (gObj.enableVirtualization && !gObj.sortSettings.columns.length && !gObj.filterSettings.columns.length && (!this.parent.allowGrouping || !gObj.groupSettings.columns.length)) {
                         gObj.refresh();
                     } else {
                         this.rowOrder(args);
@@ -462,7 +468,11 @@ export class RowDD {
         const tr: HTMLTableRowElement[] = [].slice.call(tbodyH.getElementsByClassName(literals.row)).concat(
             [].slice.call(tbodyC.getElementsByClassName(literals.row)));
         const tbody: Element = gObj.createElement( literals.tbody, { attrs: { role: 'rowgroup' } });
-        this.parent.clearSelection();
+        if (!gObj.selectionSettings.persistSelection && Object.keys(gObj.selectionModule.selectedRowState).length === 0) {
+            this.parent.clearSelection();
+        } else {
+            this.parent.clearRowSelection();
+        }
         const targetRow: Element = this.refreshRowTarget(args);
         for (let i: number = 0, len: number = tr.length; i < len; i++) {
             tbody.appendChild(tr[parseInt(i.toString(), 10)]);
@@ -492,7 +502,11 @@ export class RowDD {
     private updateFrozenColumnreOrder(args: RowDropEventArgs): void {
         const gObj: IGrid = this.parent;
         const tbody: Element = gObj.getContentTable().querySelector( literals.tbody);
-        this.parent.clearSelection();
+        if (!gObj.selectionSettings.persistSelection && Object.keys(gObj.selectionModule.selectedRowState).length === 0) {
+            this.parent.clearSelection();
+        } else {
+            this.parent.clearRowSelection();
+        }
         const targetRow: Element = this.refreshRowTarget(args);
         this.refreshRow(args, tbody, targetRow);
     }
@@ -984,7 +998,7 @@ export class RowDD {
 
     private reorderRow(fromIndexes: number, toIndex: number): void {
         const gObj: IGrid = this.parent;
-        if (!gObj.sortSettings.columns.length && !gObj.groupSettings.columns.length && !gObj.filterSettings.columns.length) {
+        if (!gObj.groupSettings.columns.length) {
             //Todo: drag and drop mapper & BatchChanges
             const skip: number = gObj.allowPaging ?
                 (gObj.pageSettings.currentPage * gObj.pageSettings.pageSize) - gObj.pageSettings.pageSize : 0;
@@ -1041,7 +1055,7 @@ export class RowDD {
         const dragIdx: number = parseInt(this.startedRow.getAttribute(literals.dataRowIndex), 10);
         if ((gObj.getSelectedRecords().length > 0 && this.startedRow.cells[0].classList.contains('e-selectionbackground') === false)
             || gObj.getSelectedRecords().length === 0) {
-            if (gObj.enableVirtualization || (gObj.enableInfiniteScrolling && gObj.infiniteScrollSettings.enableCache)) {
+            if (gObj.enableInfiniteScrolling && gObj.infiniteScrollSettings.enableCache) {
                 this.rows = [this.startedRow];
             } else {
                 this.rows = [gObj.getRowByIndex(dragIdx)];

@@ -18,7 +18,7 @@ import {
     keepLinesTogetherProperty, keepWithNextProperty, contextualSpacingProperty, widowControlProperty,
     topProperty, leftProperty, rightProperty, bottomProperty, horizontalProperty, verticalProperty,
     colorProperty, hasNoneStyleProperty, lineStyleProperty, lineWidthProperty, shadowProperty, spaceProperty, inlinesProperty,
-    characterFormatProperty, textProperty
+    characterFormatProperty, textProperty, fieldTypeProperty, hasFieldEndProperty
 } from '../../index';
 import { FieldSettingsModel } from '@syncfusion/ej2-navigations';
 
@@ -935,8 +935,8 @@ export class HelperMethods {
     private static serializeMentions(name: string, email: string, block: string, keywordIndex: number): any {
         var inlines = {};
         inlines[characterFormatProperty[keywordIndex]] = {};
-        inlines["fieldType"] = 0;
-        inlines["hasFieldEnd"] = true;
+        inlines[fieldTypeProperty[keywordIndex]] = 0;
+        inlines[hasFieldEndProperty[keywordIndex]] = true;
         block[inlinesProperty[keywordIndex]].push(inlines);
         var inlines2 = {};
         inlines2[characterFormatProperty[keywordIndex]] = {};
@@ -944,7 +944,7 @@ export class HelperMethods {
         block[inlinesProperty[keywordIndex]].push(inlines2);
         var inlines3 = {};
         inlines3[characterFormatProperty[keywordIndex]] = {};
-        inlines3["fieldType"] = 2;
+        inlines3[fieldTypeProperty[keywordIndex]] = 2;
         block[inlinesProperty[keywordIndex]].push(inlines3);
         var inlines4 = {};
         inlines4[characterFormatProperty[keywordIndex]] = {
@@ -956,7 +956,7 @@ export class HelperMethods {
         block[inlinesProperty[keywordIndex]].push(inlines4);
         var inlines5 = {};
         inlines5[characterFormatProperty[keywordIndex]] = {};
-        inlines5["fieldType"] = 1;
+        inlines5[fieldTypeProperty[keywordIndex]] = 1;
         block[inlinesProperty[keywordIndex]].push(inlines5);
         return block;
     }

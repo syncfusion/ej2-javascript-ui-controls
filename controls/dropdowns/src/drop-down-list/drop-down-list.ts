@@ -2277,7 +2277,7 @@ export class DropDownList extends DropDownBase implements IInput {
                         return;
                     }
                     this.isCustomFilter = true;
-                    this.customFilterQuery = query.clone();
+                    this.customFilterQuery = query ? query.clone() : query;
                     this.filteringAction(dataSource, query, fields);
                 },
                 baseEventArgs: e,

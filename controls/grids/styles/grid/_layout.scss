@@ -2756,7 +2756,10 @@
         border-top-color: $grid-columnchooser-footer-border-color;
         border-top-width: 1px;
         margin-top: 0;
-        overflow-x: hidden;
+        overflow-x: auto;
+        & .e-checkbox-wrapper .e-label.e-checkboxfiltertext{
+          white-space: nowrap;
+        }
       }
 
       @if $grid-skin == 'fluent2' {

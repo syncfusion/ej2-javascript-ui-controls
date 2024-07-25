@@ -922,7 +922,7 @@ export class CartesianAxisLayoutPanel {
                 yAxisLabelX = labelPadding - ((angle === 0 ? elementSize.width :
                     (isAxisBreakLabel ? breakLabelMaxWidth : RotatedWidth)) / 2);
             }
-            pointX = isOpposed ? (rect.x - yAxisLabelX) : (rect.x + yAxisLabelX);
+            pointX = isOpposed ? axis.scrollBarHeight !== 0 ? ((rect.x + axis.scrollBarHeight + padding) - yAxisLabelX) : (rect.x - yAxisLabelX) : (rect.x + yAxisLabelX);
             if (isVerticalAngle) {
                 pointX += (isOpposed) ? -10 : 10;
             }

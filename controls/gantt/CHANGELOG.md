@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.2.5 (2024-07-26)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#896027` - `UpdateTaskId` method not working properly issue has been fixed.
+
 ## 26.2.4 (2024-07-24)
 
 ### GanttChart

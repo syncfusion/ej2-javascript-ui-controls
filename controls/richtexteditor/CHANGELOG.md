@@ -14,6 +14,12 @@
 
 - `#I572346` - Now, the mention tags should not be added within the span while pasting in the Rich Text Editor.
 
+- `#I609672` - Now, the previously uploaded image is removed from the server when a new image is uploaded in the insert image dialog in the Rich Text Editor.
+  
+- `#I609672` - Now, pasting an image into the Rich Text Editor in the Firefox browser from the local machine, the image will be uploaded properly.
+
+- `#I610812` - Now, the floating toolbar will work properly when the Rich Text Editor is rendered inside the dialog.
+
 ## 26.1.42 (2024-07-16)
 
 ### RichTextEditor

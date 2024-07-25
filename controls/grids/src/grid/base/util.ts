@@ -2373,9 +2373,9 @@ export function capitalizeFirstLetter(string: string): string {
 /**
  *
  * @param { IGrid } grid - Defines parent instance
- * @returns { boolean } - Returns is virtual sorting
+ * @returns { boolean } - Returns is virtual
  */
-export function checkVirtualSort(grid: IGrid): boolean {
+export function checkIsVirtual(grid: IGrid): boolean {
     return !(isGroupAdaptive(grid) || grid.groupSettings.enableLazyLoading
     || (!grid.enableVirtualization && grid.enableColumnVirtualization));
 }

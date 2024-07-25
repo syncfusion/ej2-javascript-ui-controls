@@ -93,16 +93,21 @@ export class Resize implements IAction {
     }
 
     private autoFit(): void {
-        const newarray: string[] = this.parent.getColumns().filter((c: Column) => c.autoFit === true)
-            .map((c: Column) => c.field || c.headerText);
+        let isMaxWidthColumnEnable: boolean = false;
+        const newarray: string[] = this.parent.getColumns().filter((c: Column) => {
+            if (!isNullOrUndefined(c.maxWidth)) { 
+                isMaxWidthColumnEnable = true;
+            } 
+            return c.autoFit === true;
+        }).map((c: Column) => c.field || c.headerText);
         if (newarray.length > 0) {
             this.autoFitColumns(newarray);
         }
-        if (this.parent.allowResizing && (this.parent.resizeSettings.mode === 'Auto' || (this.parent.resizeSettings.mode === 'Normal' &&
-            !this.parent.autoFit && newarray.length === 0))) {
+        if (this.parent.allowResizing && isMaxWidthColumnEnable && (this.parent.resizeSettings.mode === 'Auto' ||
+            (this.parent.resizeSettings.mode === 'Normal' && !this.parent.autoFit && newarray.length === 0))) {
             this.widthService.setWidthToTable();
         } else if (this.parent.autoFit && this.parent.resizeSettings.mode === 'Auto') {
-            this.widthService.setWidthToTable();
+            this.widthService.setWidthToTable()
         }
     }
 

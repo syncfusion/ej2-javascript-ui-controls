@@ -3684,10 +3684,10 @@ export class Selection {
                 this.panDown = null;
                 parent.notify('transform', { prop: 'setPanMove', onPropertyChange: false,
                     value: {point: null }});
-                parent.notify('transform', { prop: 'setTempPanMove', onPropertyChange: false,
-                    value: {point: null }});
             }
         }
+        parent.notify('transform', { prop: 'setTempPanMove', onPropertyChange: false,
+            value: {point: null }});
         if (this.currentDrawingShape !== 'path') {
             parent.currObjType.isDragging = false;
         }

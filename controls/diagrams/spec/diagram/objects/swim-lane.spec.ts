@@ -7872,3 +7872,173 @@ describe('892957-Copying and paste swimlane in diagram creates multiple nodes', 
     });
   
 });
+
+describe('894556-Swimlane wrapper updated wrongly when phase offset set for vertical swimlane', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let btn: HTMLButtonElement;
+    let mouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramPhaseOffset' });
+        document.body.appendChild(ele);
+        let pathData = 'M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135' +
+' 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C' +
+'0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z';
+        let nodes: NodeModel[] = [
+            {
+                id: 'swimlane',
+                shape: {
+                    type: 'SwimLane',
+                    orientation: 'Vertical', 
+                    header: {
+                        annotation: { content: '', style: { fill: 'transparent' } },
+                        height: 50, style: { fontSize: 11 },
+                    },
+                    lanes: [
+                        {
+                            id: 'stackCanvas1',
+                            header: {
+                                annotation: { content: 'Consumer' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'node1',
+                                    annotations: [
+                                        {
+                                            content: 'Consumer learns \n of product',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 60, top: 30 },
+                                    height: 40, width: 100, 
+                                },
+                                {
+                                    id: 'node2',
+                                    shape: { type: 'Flow', shape: 'Decision' },
+                                    annotations: [
+                                        {
+                                            content: 'Does \nConsumer want \nthe product',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 200, top: 20 },
+                                    height: 60, width: 120, 
+                                },
+                                {
+                                    id: 'node3',
+                                    annotations: [
+                                        {
+                                            content: 'No sales lead',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 300, top: 30 }, shape: { type: 'Path', data: pathData },
+                                    height: 40, width: 100, 
+                                },
+                                {
+                                    id: 'node4',
+                                    annotations: [
+                                        {
+                                            content: 'Sell to consumer',
+                                            style: { fontSize: 11 }
+                                        }
+                                    ],
+                                    margin: { left: 300, top: 200 },
+                                    height: 40, width: 100, 
+                                },
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas2',
+                            header: {
+                                annotation: { content: 'Marketing' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'node5',
+                                    annotations: [{ content: 'Create marketing campaigns' }],
+                                    margin: { left: 60, top: 20 },
+                                    height: 40, width: 100, 
+                                },
+                                {
+                                    id: 'node6',
+                                    annotations: [{ content: 'Marketing finds sales leads' }],
+                                    margin: { left: 210, top: 20 },
+                                    height: 40, width: 100, 
+                                }
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas3',
+                            header: {
+                                annotation: { content: 'Sales' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'node7',
+                                    annotations: [{ content: 'Sales receives lead' }],
+                                    margin: { left: 210, top: 30 },
+                                    height: 40, width: 100, 
+                                }
+                            ],
+                        },
+                        {
+                            id: 'stackCanvas4',
+                            header: {
+                                annotation: { content: 'Success' }, width: 50,
+                                style: { fontSize: 11 }
+                            },
+                            height: 100,
+                            children: [
+                                {
+                                    id: 'node8',
+                                    annotations: [{ content: 'Success helps \n retain consumer \n as a customer' }],
+                                    margin: { left: 100, top: 20 },
+                                    height: 50, width: 100, 
+                                }
+                            ],
+                        },
+                    ],
+                    phases: [
+                        {
+                            id: 'phase1', offset: 300,
+                            header: { annotation: { content: '' } }
+                        },
+                    ],
+                    phaseSize: 20,
+                },
+                offsetX: 200,
+                height: 100,
+                width: 650,
+                container: {
+                    type: 'Grid',
+                    orientation: 'Vertical',
+                },
+            },
+        ];
+        
+        diagram = new Diagram({
+            width: '80%',
+            height: '600px',
+            nodes: nodes,
+        });
+        diagram.appendTo('#diagramPhaseOffset');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Swimlane wrapper updated wrongly when phase offset set for vertical swimlane', (done: Function) => {
+        diagram.select([diagram.nodes[0]]);
+        expect(diagram.selectedItems.nodes[0].wrapper.height === 350).toBe(true);
+        expect(diagram.selectedItems.nodes[0].height === 350).toBe(true);
+        done();
+    });
+  
+});

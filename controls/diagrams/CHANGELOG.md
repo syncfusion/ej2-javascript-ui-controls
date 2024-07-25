@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 26.2.5 (2024-07-26)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I604552` - Swimlane wrapper updated wrongly when phase offset set for vertical swimlane and container defined.
+- `#I605961` - Connector will no longer split, when the connector's source or target id matched with node id which dropped on connector highlighter.
+
 ## 26.2.4 (2024-07-24)
 
 ### Diagram
