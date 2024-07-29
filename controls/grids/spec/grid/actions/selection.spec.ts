@@ -6974,3 +6974,31 @@ describe('EJ2-891988 - SelectRow method with toggle set to true does not selects
         destroy(gridObj);
     });
 });
+
+
+describe('EJ2-898361 - SelectedRowIndex property is not reset before rowDeselected event', () =>{
+    let gridObj: Grid;
+    let count: number = 0;
+    beforeAll((done) => {
+        gridObj = createGrid({
+                dataSource: data,
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' }
+                ],
+                rowDeselected: function () {
+                   count = count + 1;
+                }
+            }, done);
+        });
+    it('rowDeselected count - 1', () => {
+       gridObj.selectRow(0, true);
+    });
+
+    it('rowDeselected count - 2', () => {
+       gridObj.selectRow(0, true);
+       expect(count).toBe(1);
+    });
+});
+

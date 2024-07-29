@@ -505,7 +505,8 @@ export class Dependency {
      * @private
      */
     public updatedRecordsDateByPredecessor(): void {
-        if (!this.parent.autoCalculateDateScheduling) {
+        if (!this.parent.autoCalculateDateScheduling || (this.parent.isLoad && !this.parent.treeGrid.loadChildOnDemand
+            && this.parent.taskFields.hasChildMapping)) {
             return;
         }
         const flatData: IGanttData[] = this.parent.flatData;
@@ -716,6 +717,8 @@ export class Dependency {
                 tempDate = this.updateDateByOffset(tempDate, predecessor, ganttProperty);
             }
             if (!ganttProperty.isMilestone) {
+                let date = new Date(tempDate);
+                date.setDate(date.getDate() - 1);
                 tempDate = this.dateValidateModule.checkEndDate(tempDate, ganttProperty);
             }
             returnStartDate = this.dateValidateModule.getStartDate(

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.2.7 (2024-07-30)
+
+### Spreadsheet
+
+#### Bug fixes
+
+- `#I577428` - The script error that occurred when attempting to open the context menu without an active cell in the spreadsheet will no longer be thrown.
+
 ## 26.1.42 (2024-07-16)
 
 ### Spreadsheet

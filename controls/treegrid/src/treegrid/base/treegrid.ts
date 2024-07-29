@@ -2306,21 +2306,22 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             this.IsExpandCollapseClicked(args);
             if (!isNullOrUndefined((args.data as any)) && this.selectionSettings.persistSelection
                 && this.columnModel.filter((col: any) => col.type === 'checkbox').length > 0 && isRemoteData(this)) {
-                if (!isNullOrUndefined((args.data as any).parentItem)) {
+                if (!isNullOrUndefined((args.data as any).parentItem) || args.isHeaderCheckboxClicked) {
                     this.parentQuery = this.query.queries.filter((q: any) => q.e.field === this.parentIdMapping);
                     this.query.queries = this.query.queries.slice(0, 0);
                 }
+            }
+            if (this.pageSettings.pageSizeMode === 'Root') {
+                this.grid.selectionModule['totalRecordsCount'] = this.grid.currentViewData.length;
             }
             this.trigger(events.rowSelecting, args);
         };
         this.grid.rowDeselecting = (args: RowDeselectingEventArgs): void => {
             this.IsExpandCollapseClicked(args);
-            if (isNullOrUndefined((args.data as any)) && this.selectionSettings.persistSelection
+            if (!isNullOrUndefined((args.data as any)) && this.selectionSettings.persistSelection
                 && this.columnModel.filter((col: any) => col.type === 'checkbox').length > 0 && isRemoteData(this)) {
-                if (isNullOrUndefined((args.data as any).parentItem)) {
-                    this.parentQuery = this.query.queries.filter((q: any) => q.e.field === this.parentIdMapping);
-                    this.query.queries = this.query.queries.slice(0, 0);
-                }
+                this.parentQuery = this.query.queries.filter((q: any) => q.e.field === this.parentIdMapping);
+                this.query.queries = this.query.queries.slice(0, 0);
             }
             this.trigger(events.rowDeselecting, args);
         };

@@ -566,13 +566,13 @@ export class DataManipulation {
                     e[`${result}`] = this.parent.summaryModule.calculateSummaryValue(summaryQuery, e[`${result}`], true);
                 }
             }
+            if (rowDetails.action === 'remoteExpand' && this.parent.allowPaging && this.parent.pageSettings.pageSizeMode === 'All') {
+                this.parent.grid.pageSettings.totalRecordsCount = this.parent.grid.currentViewData.length + result.length;
+            }
             if (this.parent.enableVirtualization) {
                 this.parent.grid.pageSettings.totalRecordsCount = e.count;
             }
             e.count = this.parent.grid.pageSettings.totalRecordsCount;
-            if (rowDetails.action === 'remoteExpand' && this.parent.allowPaging) {
-                this.parent.grid.pageSettings.totalRecordsCount = this.parent.grid.currentViewData.length + result.length;
-            }
             const virtualArgs: NotifyArgs = {};
             if (this.parent.enableVirtualization) {
                 this.remoteVirtualAction(virtualArgs);

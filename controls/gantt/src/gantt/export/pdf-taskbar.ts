@@ -103,6 +103,7 @@ export class PdfGanttTaskbarCollection {
     public segmentCollection: ITaskData[] = [];
     public isCompleted: boolean;
     public isCompletedAutotask: boolean;
+    public isCompletedBaseline: boolean;
     public autoWidth?: number;
     public autoLeft?: number;
     public indicators: IIndicator[];
@@ -236,24 +237,6 @@ export class PdfGanttTaskbarCollection {
             progressFormat.alignment = PdfTextAlignment.Left;
         }
         let pageIndex: number = -1;
-        let renderBaselineWidth: number = 0;
-        if (this.baselineWidth > detail.totalWidth) {
-            if (this.parent.timelineModule.isZoomedToFit || this.isAutoFit()) {
-                renderBaselineWidth = detail.totalWidth - this.baselineLeft;
-            }
-            else {
-                renderBaselineWidth = detail.totalWidth;
-            }
-            this.baselineWidth = this.baselineWidth - detail.totalWidth;
-        }
-        else {
-            if ((this.parent.timelineModule.isZoomedToFit || this.isAutoFit()) && this.baselineWidth + this.baselineLeft > detail.totalWidth) {
-                renderBaselineWidth = detail.totalWidth - this.baselineLeft;
-            }
-            else {
-                renderBaselineWidth = this.baselineWidth;
-            }
-        }
         const baselinePen: PdfPen = new PdfPen(taskbar.baselineBorderColor);
         const baselineBrush: PdfBrush = new PdfSolidBrush(taskbar.baselineColor);
         const template : ITemplateDetails = taskbar.taskbarTemplate;
@@ -353,15 +336,6 @@ export class PdfGanttTaskbarCollection {
                 else  if (!this.isScheduledTask && this.unscheduledTaskBy !== 'duration') {
                     this.drawUnscheduledTask(taskGraphics, startPoint, cumulativeWidth, adjustHeight);
                 } else {
-                    if (this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
-                        if(this.isAutoFit()) {
-                            taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + (taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), (renderBaselineWidth), pixelToPoint(this.baselineHeight));
-                        }
-                        else {
-                            taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), pixelToPoint(renderBaselineWidth), pixelToPoint(this.baselineHeight));
-                        }
-                        renderedBaseline = true;
-                    }
                     if (taskbar.isSpliterTask) {
                         splitline.dashStyle = PdfDashStyle.Dot;
                         if(this.isAutoFit()) {
@@ -648,15 +622,6 @@ export class PdfGanttTaskbarCollection {
                     this.drawUnscheduledTask(taskGraphics, startPoint, cumulativeWidth, adjustHeight);
                 }
                  else {
-                    if (this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
-                        if (this.isAutoFit()) {
-                            taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + (taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), (renderBaselineWidth), pixelToPoint(this.baselineHeight));
-                        }
-                        else {
-                            taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), pixelToPoint(renderBaselineWidth), pixelToPoint(this.baselineHeight));
-                        }
-                        renderedBaseline = true;
-                    }
                     if (taskbar.isSpliterTask) {
                         let pervwidth = 0;
                         let valueChangeBlocker :boolean = true;
@@ -866,15 +831,6 @@ export class PdfGanttTaskbarCollection {
                 if (!this.isStartPoint) {
                     this.taskStartPoint = { ...startPoint };
                     this.isStartPoint = true;
-                }
-                if (this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
-                    if (this.isAutoFit()) {
-                        taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + (taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), (renderBaselineWidth), pixelToPoint(this.baselineHeight));
-                    }
-                    else {
-                        taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), pixelToPoint(renderBaselineWidth), pixelToPoint(this.baselineHeight));
-                    }
-                    renderedBaseline = true;
                 }
                 if (!this.isScheduledTask && this.unscheduledTaskBy === 'duration') {
                     let brush1: PdfLinearGradientBrush;
@@ -1097,15 +1053,6 @@ export class PdfGanttTaskbarCollection {
                     this.taskStartPoint = { ...startPoint };
                     this.isStartPoint = true;
                 }
-                if (this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
-                    if (this.isAutoFit()) {
-                        taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + (taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), (renderBaselineWidth), pixelToPoint(this.baselineHeight));
-                    }
-                    else {
-                        taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), pixelToPoint(renderBaselineWidth), pixelToPoint(this.baselineHeight));
-                    }
-                    renderedBaseline = true;
-                }
                 if (!this.isScheduledTask && this.unscheduledTaskBy === 'duration') {
                     let brush1: PdfLinearGradientBrush;
                     let brush2: PdfLinearGradientBrush;
@@ -1233,6 +1180,88 @@ export class PdfGanttTaskbarCollection {
                 }
                 this.isCompleted = false;
                 this.width -= detail.totalWidth;
+            }
+            if (this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
+
+                if (detail.startDate <= taskbar.baselineStartDate && taskbar.baselineEndDate <= detail.endDate) {
+                    if (!this.isStartPoint) {
+                        this.taskStartPoint = { ...startPoint };
+                        this.isStartPoint = true;
+                    }
+
+                    if (this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
+                        if (this.isAutoFit()) {
+                            taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + (taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), (taskbar.baselineWidth), pixelToPoint(this.baselineHeight));
+                        }
+                        else {
+                            taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), pixelToPoint(taskbar.baselineWidth), pixelToPoint(this.baselineHeight));
+                        }
+                    }
+                    this.isCompletedBaseline = true;
+                    this.startPage = pageIndex;
+                    this.endPage = pageIndex;
+                }
+                else if (detail.startDate <= taskbar.baselineStartDate && detail.endDate >= taskbar.baselineStartDate && (taskbar.baselineEndDate >= detail.endDate)) {
+                    if (!this.isStartPoint) {
+                        this.taskStartPoint = { ...startPoint };
+                        this.isStartPoint = true;
+                    }
+                    let renderWidth: number = 0;
+                    renderWidth = (detail.totalWidth - (taskbar.baselineLeft - cumulativeWidth));
+                    if (this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
+                        if (this.isAutoFit()) {
+                            taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + (taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), (renderWidth), pixelToPoint(this.baselineHeight));
+                        }
+                        else {
+                            taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), pixelToPoint(renderWidth), pixelToPoint(this.baselineHeight));
+
+                        }
+                    }
+
+                    taskbar.baselineWidth = taskbar.baselineWidth - renderWidth;
+
+
+                    this.baselineLeft = 0;
+                    this.isCompletedBaseline = false;
+                    this.startPage = pageIndex;
+                }
+                else if (taskbar.baselineEndDate <= detail.endDate && detail.startDate <= taskbar.baselineEndDate && !this.isCompletedBaseline) {
+                    if (!this.isStartPoint) {
+                        this.taskStartPoint = { ...startPoint };
+                        this.isStartPoint = true;
+                    }
+                    else if (this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
+                        if (this.isAutoFit()) {
+                            taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + (taskbar.baselineLeft + 0.5), startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), (taskbar.baselineWidth), pixelToPoint(this.baselineHeight));
+                        }
+                        else {
+                            taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft + 0.5), startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), pixelToPoint(taskbar.baselineWidth), pixelToPoint(this.baselineHeight));
+
+                        }
+                    }
+
+                    this.isCompletedBaseline = true;
+                    this.endPage = pageIndex;
+                }
+                else if (taskbar.baselineStartDate < detail.startDate && taskbar.baselineEndDate > detail.endDate) {
+                    if (!this.isStartPoint) {
+                        this.taskStartPoint = { ...startPoint };
+                        this.isStartPoint = true;
+                    }
+                    if (this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
+                        if (this.isAutoFit()) {
+                            taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + (taskbar.baselineLeft) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), (detail.totalWidth), pixelToPoint(taskbar.baselineHeight));
+                        }
+                        else {
+                            taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), pixelToPoint(detail.totalWidth), pixelToPoint(taskbar.baselineHeight));
+
+                        }
+                    }
+
+                    this.isCompletedBaseline = false;
+                    this.baselineWidth -= detail.totalWidth;
+                }
+
             }
             if(!this.isAutoSchedule && taskbar.isParentTask){
                 if (detail.startDate <= taskbar.autoStartDate && taskbar.autoEndDate<= detail.endDate) {     
@@ -1401,24 +1430,7 @@ export class PdfGanttTaskbarCollection {
                 this.drawMilestone(page, startPoint, detail, cumulativeWidth,taskbar);
             }
         }
-        if (this.baselineEndDate >= detail.startDate && !renderedBaseline && detail.startIndex !== 1 && this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
-            const adjustHeight: number = pixelToPoint((this.parent.rowHeight - this.height) / 4.5);
-            if (this.isAutoFit()) {
-                taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + (taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), (renderBaselineWidth), pixelToPoint(this.baselineHeight));
-            }
-            else {
-                taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), pixelToPoint(renderBaselineWidth), pixelToPoint(this.baselineHeight));
-            }
-        }
-        if (this.baselineEndDate >= detail.startDate && !renderedBaseline && detail.startIndex !== 1 && this.parent.renderBaseline && taskbar.baselineStartDate && taskbar.baselineEndDate) {
-            const adjustHeight: number = pixelToPoint((this.parent.rowHeight - this.height) / 4.5);
-            if (this.isAutoFit()) {
-                taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + (taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), (renderBaselineWidth), pixelToPoint(this.baselineHeight));
-            }
-            else {
-                taskGraphics.drawRectangle(baselinePen, baselineBrush, startPoint.x + pixelToPoint(taskbar.baselineLeft - cumulativeWidth) + 0.5, startPoint.y + adjustHeight + pixelToPoint(taskbar.height + 3), pixelToPoint(renderBaselineWidth), pixelToPoint(this.baselineHeight));
-            }
-        }
+ 
         this.drawRightLabel(page, startPoint, detail, cumulativeWidth);
         return isNextPage;
     }

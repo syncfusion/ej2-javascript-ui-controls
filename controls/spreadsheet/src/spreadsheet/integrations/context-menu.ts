@@ -1,7 +1,7 @@
 import { Spreadsheet } from '../base/index';
 import { ContextMenu as ContextMenuComponent, BeforeOpenCloseMenuEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { closest, extend, detach, L10n } from '@syncfusion/ej2-base';
+import { closest, extend, detach, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { MenuSelectEventArgs, removeSheetTab, cMenuBeforeOpen, renameSheetTab, cut, copy, paste, focus, getUpdateUsingRaf, updateSortCollection, isReadOnlyCells, readonlyAlert } from '../common/index';
 import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, initiateCustomSort, hideSheet } from '../common/index';
 import { openHyperlink, initiateHyperlink, editHyperlink, HideShowEventArgs, addNote, editNote, deleteNote } from '../common/index';
@@ -518,7 +518,7 @@ export class ContextMenu {
             const l10n: L10n = this.parent.serviceLocator.getService(locale);
             const cellIndexes: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
             const targetElement: HTMLElement = this.parent.getCell(cellIndexes[0], cellIndexes[1]);
-            if ( targetElement.children.length > 0 && targetElement.children[(targetElement.children.length - 1) as number].className.indexOf('addNoteIndicator') > -1) {
+            if (!isNullOrUndefined(targetElement) && targetElement.children.length > 0 && targetElement.children[(targetElement.children.length - 1) as number].className.indexOf('addNoteIndicator') > -1) {
                 items.push(
                     { text: l10n.getConstant('EditNote'), iconCss: 'e-icons e-edit-notes', id: id + '_editNote' },
                     { text: l10n.getConstant('DeleteNote'), iconCss: 'e-icons e-delete-notes', id: id + '_deleteNote' }

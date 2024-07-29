@@ -96,6 +96,11 @@ export class Selection {
     private pasteDropDwn: DropDownButton;
     /**
      * @private
+     * This will holds the selection html content to set data in clipboard. Avoid to use this field for other purpose.
+     */
+    private htmlContent: string = undefined;
+    /**
+     * @private
      */
     public isEndOffset: boolean = false;
     /**
@@ -9789,7 +9794,10 @@ export class Selection {
         if (isNullOrUndefined(this.owner.sfdtExportModule)) {
             return;
         }
-        this.copyToClipboard(this.getHtmlContent());
+        this.htmlContent = this.getHtmlContent();
+        this.documentHelper.isCopying = true;
+        this.copyToClipboard();
+        this.documentHelper.isCopying = false;
         if (isCut && this.owner.editorModule) {
             this.owner.editorModule.handleCut(this);
         }
@@ -9823,28 +9831,14 @@ export class Selection {
         return this.htmlWriter.writeHtml(documentContent, isOptimizedSfdt);
     }
 
-    private async copyToClipboard(htmlContent: string): Promise<boolean> {
-        const navigator: any = window.navigator;
-        const textContent: string = this.text;
-        if (navigator.clipboard && navigator.clipboard['write']) {
-            try {
-                let htmlBlob: Blob = new Blob([htmlContent], { type: 'text/html' });
-                let textBlob: Blob = new Blob([textContent], { type: 'text/plain' });
-                if (!document.hasFocus()) {
-                    document.body.focus();
-                }
-                await new Promise(resolve => window.requestAnimationFrame(resolve));
-                await navigator.clipboard.write([new ClipboardItem({ 'text/html': htmlBlob, 'text/plain': textBlob })])
-                    .catch(() => {
-                        return this.copyExecCommand(htmlContent);
-                    });
-                return true;
-            } catch (e) {
-                return false;
-            }
+    private copyToClipboard(htmlContent?: string): boolean {
+        let isCopied: boolean = false;
+        if (!isNullOrUndefined(htmlContent)) {
+            isCopied = this.copyExecCommand(htmlContent);
         } else {
-            return this.copyExecCommand(htmlContent);
+            isCopied = document.execCommand('copy');
         }
+        return isCopied;
     }
 
     private copyExecCommand(htmlContent: string): boolean {
@@ -9891,6 +9885,17 @@ export class Selection {
             }
         }
         return copySuccess;
+    }
+    /**
+     * @private
+     */
+    public onCopy(event: ClipboardEvent): void {
+        if (event.clipboardData && !isNullOrUndefined(this.htmlContent)) {
+            event.clipboardData.clearData();
+            event.clipboardData.setData('text/html', this.htmlContent);
+            event.clipboardData.setData('text/plain', this.text);
+            this.htmlContent = undefined;
+        }
     }
     // Caret implementation starts
     /**
@@ -11011,6 +11016,15 @@ export class Selection {
         if (!isNullOrUndefined(revision) && revision.range.length > 0) {
             let firstElement: any = revision.range[0];
             let lastElement: any = revision.range[revision.range.length - 1];
+            let paragraph: ParagraphWidget;
+            if (firstElement instanceof WCharacterFormat) {
+                paragraph = firstElement.ownerBase as ParagraphWidget;
+            } else if (!(firstElement instanceof WRowFormat)) {
+                paragraph = firstElement.line.paragraph;
+            }
+            if (!isNullOrUndefined(paragraph) && !isNullOrUndefined(paragraph.bodyWidget) && paragraph.bodyWidget instanceof HeaderFooterWidget && (isNullOrUndefined(paragraph.bodyWidget.page) || (!isNullOrUndefined(paragraph.bodyWidget.page) && paragraph.bodyWidget.page.index === -1))) {
+                return;
+            }
             if (firstElement instanceof WRowFormat) {
                 let rowWidget: TableRowWidget = firstElement.ownerBase;
                 let firstCell: TableCellWidget = rowWidget.childWidgets[0] as TableCellWidget;
@@ -11347,7 +11361,7 @@ export class Selection {
      * @returns {void}
      */
     public navigateToNextEditingRegion(): void {
-        let editRange: EditRangeStartElementBox = this.getEditRangeStartElement();
+        let editRange: EditRangeStartElementBox = this.getEditRangeStartElement(true);
         if(this.editRangeCollection.length > 0){
             this.sortEditRangeCollection();
             let length: number = this.editRangeCollection.length;
@@ -11357,7 +11371,7 @@ export class Selection {
             }
             let editRangeStart: EditRangeStartElementBox = index < length - 1 ?
                 this.editRangeCollection[index + 1] as EditRangeStartElementBox : this.editRangeCollection[0] as EditRangeStartElementBox;
-            let positionInfo: PositionInfo = this.getPosition(editRangeStart);
+            let positionInfo: PositionInfo = this.getPosition(editRangeStart, true);
             let startPosition: TextPosition = positionInfo.startPosition;
             let endPosition: TextPosition = positionInfo.endPosition;
             this.selectRange(startPosition, endPosition);
@@ -11388,10 +11402,10 @@ export class Selection {
     /**
      * @private
      */
-    public getEditRangeStartElement(): EditRangeStartElementBox {
+    public getEditRangeStartElement(isNavigateToNextEditRegion?: boolean): EditRangeStartElementBox {
         for (let i: number = 0; i < this.editRangeCollection.length; i++) {
             let editStart: EditRangeStartElementBox = this.editRangeCollection[i];
-            let position: PositionInfo = this.getPosition(editStart);
+            let position: PositionInfo = this.getPosition(editStart, isNavigateToNextEditRegion);
             let start: TextPosition = position.startPosition;
             let end: TextPosition = position.endPosition;
             if ((this.start.isExistAfter(start) || this.start.isAtSamePosition(start))
@@ -11502,7 +11516,7 @@ export class Selection {
     /**
      * @private
      */
-    public getPosition(element: ElementBox): PositionInfo {
+    public getPosition(element: ElementBox, isNavigateToNextEditRegion?: boolean): PositionInfo {
         let offset: number = element.line.getOffset(element, 1);
         let startPosition: TextPosition = new TextPosition(this.owner);
         startPosition.setPositionParagraph(element.line, offset);
@@ -11519,7 +11533,7 @@ export class Selection {
         let endPosition: TextPosition;
         let line: LineWidget = endElement.line as LineWidget;
         if(!isNullOrUndefined(endElement.line) && !isNullOrUndefined(line.children)) {
-            offset = endElement.line.getOffset(endElement, 1);
+            offset = endElement.line.getOffset(endElement, isNavigateToNextEditRegion ? 0 : 1);
             endPosition = new TextPosition(this.owner);
             endPosition.setPositionParagraph(endElement.line, offset);
         } else {
@@ -12111,13 +12125,6 @@ export class Selection {
         }
         return start.paragraph.associatedCell.equals(firstcell) && isRowSelect;
     }
-}
-
-/**
- * @private
- */
-declare class ClipboardItem {
-    constructor(data: { [mimeType: string]: Blob | string | ArrayBuffer });
 }
 
 /**

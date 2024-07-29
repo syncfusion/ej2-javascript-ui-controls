@@ -152,6 +152,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public scrollTop: number;
     public scrollLeft: number;
     public isPrinting: boolean;
+    public registeredTemplate: Object;
     public adaptiveGroupIndex: number = 0;
     public activeEventTemplates: string[];
 

@@ -2697,7 +2697,8 @@ export class Gantt extends Component<HTMLElement>
             this.predecessorModule['parentIds'] = [];
             this.predecessorModule['parentRecord'] = [];
             this.predecessorModule.updatePredecessors();
-            if (this.isInPredecessorValidation && this.enableValidation && this.autoCalculateDateScheduling) {
+            if (this.isInPredecessorValidation && this.enableValidation && this.autoCalculateDateScheduling &&
+                !(this.isLoad && !this.treeGrid.loadChildOnDemand && this.taskFields.hasChildMapping)) {
                 this.predecessorModule.updatedRecordsDateByPredecessor();
             }
         }
@@ -2859,7 +2860,7 @@ export class Gantt extends Component<HTMLElement>
     private updateCurrentViewData(): void {
         this.currentViewData = this.treeGrid.getCurrentViewRecords().slice();
         if (!this.loadChildOnDemand && this.taskFields.hasChildMapping && this.currentViewData.length > 0) {
-            this.autoCalculateDateScheduling = false;
+            this.isLoad = true;
             this.flatData = [];
             this.dataOperation.taskIds = [];
             this.ids = [];
@@ -3300,9 +3301,6 @@ export class Gantt extends Component<HTMLElement>
         }
         this.initialChartRowElements = this.ganttChartModule.getChartRows();
         this.isLoad = false;
-        if (!this.loadChildOnDemand && this.taskFields.hasChildMapping) {
-            this.autoCalculateDateScheduling = true;
-        }
         if (this.undoRedoModule) {
             this.previousFlatData = extend([], this.flatData, [], true) as IGanttData[];
         }
@@ -4021,7 +4019,7 @@ export class Gantt extends Component<HTMLElement>
             thWidth = (thElements[n as number] as HTMLElement).style.width;
             const divElement: HTMLElement = createElement('div', {
                 className: 'e-line-container-cell',
-                styles: (this.enableRtl ? 'right:' + (leftPos + 1) : 'left:' + leftPos) + 'px'
+                styles: (this.enableRtl ? 'right:' + (leftPos + 1) : 'left:' + (leftPos != -1 ? (leftPos + 0.3) : leftPos)) + 'px'
             });
             containerDiv.appendChild(divElement);
         }
@@ -4364,7 +4362,8 @@ export class Gantt extends Component<HTMLElement>
             const tempDate: Date = new Date(args.date.getTime());
             tempDate.setHours(0, 0, 0);
             if (holidays.indexOf(tempDate.getTime()) !== -1) {
-                if (!this.autoCalculateDateScheduling) {
+                if (!this.autoCalculateDateScheduling || (this.isLoad && !this.treeGrid.loadChildOnDemand &&
+                    this.taskFields.hasChildMapping)) {
                     args.isDisabled = false;
                 } else {
                     args.isDisabled = true;

@@ -9077,7 +9077,12 @@ export class CommentElementBox extends CommentCharacterElementBox {
 
     private commentEndIn: CommentCharacterElementBox;
 
-    private createdDate: string;
+    /**
+     * 
+     * @private
+     */
+
+    public createdDate: string;
 
     private authorIn: string = '';
 
@@ -9893,6 +9898,19 @@ export class CommentEditInfo {
      * @private
      */
     public text: string;
+}
+/**
+ * @private
+ */
+export class MentionDataEditInfo {
+    /**
+     * @private
+     */
+    public text: string;
+    /**
+     * @private
+     */
+    public value: string;
 }
 /**
  * @private

@@ -170,7 +170,8 @@ export class InlineEditRender {
             this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID, null, null, form);
             this.parent.renderTemplates();
         } else {
-            appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
+            appendChildren(form, this.parent.getEditTemplate()(
+                dummyData, this.parent, 'editSettingsTemplate', editTemplateID, null, null, null, this.parent.root));
         }
         // eslint-disable-next-line
         const setRules: Function = () => {

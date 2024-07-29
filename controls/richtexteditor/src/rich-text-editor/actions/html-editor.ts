@@ -235,6 +235,13 @@ export class HtmlEditor {
         let isRootParent: boolean = false;
         if (restrictKeys.indexOf(args.keyCode) < 0 && !args.shiftKey && !args.ctrlKey && !args.altKey && !isEmptyNode) {
             pointer = range.startOffset;
+            const container: Node = range.startContainer;
+            // Check if the container is a text node and contains a zero-width space
+            if (container.nodeType === Node.TEXT_NODE && container.nodeValue.includes("\u200B")) {
+                const beforeZeroWidthSpace: Text = (container as Text).splitText(container.nodeValue.indexOf("\u200B"));
+                beforeZeroWidthSpace.splitText(1); // The zero-width space is at the beginning of this node
+                beforeZeroWidthSpace.parentNode.removeChild(beforeZeroWidthSpace);
+            }
             // eslint-disable-next-line @typescript-eslint/no-unused-expressions
             range.startContainer.nodeName === '#text' ? range.startContainer.parentElement !== this.parent.inputElement ? range.startContainer.parentElement.classList.add('currentStartMark')
                 : isRootParent = true : (range.startContainer as Element).classList.add('currentStartMark');

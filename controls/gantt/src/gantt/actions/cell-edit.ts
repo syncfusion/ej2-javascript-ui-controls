@@ -402,7 +402,7 @@ export class CellEdit {
      */
     private durationEdited(args: ITaskbarEditedEventArgs): void {
         const regex: RegExp = /^[^\d.-]+$/;
-        if (regex.test(args.data['Duration'])) {
+        if (regex.test(args.data[this.parent.taskFields.duration])) {
             const err: string = `The provided value for the ${this.parent.taskFields.duration} field is invalid. Please ensure the ${this.parent.taskFields.duration} field contains only valid numeric values.`;
             this.parent.trigger('actionFailure', { error: err });
         }
@@ -603,7 +603,7 @@ export class CellEdit {
      */
     private dependencyEdited(editedArgs: ITaskbarEditedEventArgs, cellEditArgs: object): void {
         const specialCharacterPattern: RegExp = /[!@#$%^&*()_=[\]{};:<>|./?-]/;
-        if (specialCharacterPattern.test(editedArgs.data['Predecessor'])) {
+        if (specialCharacterPattern.test(editedArgs.data[this.parent.taskFields.dependency])) {
             const err: string = `The provided value for the ${this.parent.taskFields.dependency} field is invalid. Please ensure that the ${this.parent.taskFields.dependency} field does not contain any special characters.`;
             this.parent.trigger('actionFailure', { error: err });
         }

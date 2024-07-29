@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 26.2.7 (2024-07-30)
+
+### Grid
+
+#### Bug fixes
+
+- `#I608364` - Resolved the issue when `autoFitColumns` method does not modify the columns autoFit property to true.
+- `#FB59570` - Fixed the issue in filter items overlapping when `enableInfiniteScrolling` is enabled in `filterSettings`.
+- `#I610108` - The problem with the `date filter` in the grid component has been resolved.
+- `#F189307` - The issue where the edit dialog of the selected record does not open properly when the foreign key column is grouped has been resolved.
+- `#I610349` - Resolved the data repetition issue when scrolling up in a `virtualization` enabled grid.
+- `#I610521`, `#I609713` - Provided v-slot template support for `template`, `headerTemplate`, `pagerTemplate`, `rowTemplate`, stacked header template.
+- `#I607993` - The issue with the selection is not working properly when multi-select, drag and drop, and default sorting are all enabled has been resolved.
+- `#I604038` - The problem with Grid column multiline edit `params` in Chrome and Edge has been resolved.
+- `#I610011` - Resolved an issue where calling the `autoFitColumns` method caused a double border on the right side of the table.
+
 ## 26.2.4 (2024-07-24)
 
 ### Grid

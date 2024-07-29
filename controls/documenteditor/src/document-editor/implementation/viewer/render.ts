@@ -946,15 +946,15 @@ export class Renderer {
                         this.renderSolidLine(ctx, this.getScaledValue(xPos, 1), this.getScaledValue(footnote.y + (footnote.margin.top / 2) + 1, 2), 210 * this.documentHelper.zoomFactor, '#000000');
                     }
                 }
-                if (j === 0 && !isNullOrUndefined(footNoteReference) && !this.documentHelper.owner.editorModule.isFootNoteInsert) {
+                if (!isNullOrUndefined(footNoteReference) && !this.documentHelper.owner.editorModule.isFootNoteInsert) {
                     //if (j < 1 || (j > 0 && widget.footNoteReference !== (bodyWidget.childWidgets[j - 1] as BlockWidget).footNoteReference)) {
                     const paragraph: ParagraphWidget = this.documentHelper.getFirstParagraphBlock(widget);
                     if ((paragraph.firstChild as LineWidget).children[0] instanceof TextElementBox) {
                         let footNoteElement: TextElementBox = (paragraph.firstChild as LineWidget).children[0] as TextElementBox;
                         if (footNoteElement.text === '\u0002') {
                             footNoteElement.text = footNoteElement.text.replace(footNoteElement.text, footNoteReference.text);
+                            footNoteElement.width = footNoteReference.width;
                         }
-                        footNoteElement.width = footNoteReference.width;
                     }
                     //}
                 }

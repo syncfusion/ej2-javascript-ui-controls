@@ -79,18 +79,19 @@ export interface CommentProperties {
      */
     dateTime: Date;
 }
+
 /**
- * Represents a comment.
+ * Represents a comment information.
  */
-export class Comment {
-    // /**
-    //  * Specifies the text of the comment.
-    //  */
-    // text: string;
-    // /**
-    //  * Specifies the replies to the comment.
-    //  */
-    // replies?: Comment[];
+export interface CommentInfo {
+    /**
+     * Specifies the text of the comment.
+     */
+    text: string;
+    /**
+     * Specifies the replies to the comment.
+     */
+    replies?: Comment[];
     /**
      * Specifies the unique identifier of the comment.
      */
@@ -99,12 +100,35 @@ export class Comment {
      * Specifies the properties of the comment (author, isResolved, dateTime).
      */
     commentProperties: CommentProperties;
-    constructor(id: string, commentProperties: CommentProperties) {
+}
+
+/**
+ * Represents a comment.
+ */
+export class Comment {
+    /**
+     * Specifies the text of the comment.
+     */
+    text: string;
+    /**
+     * Specifies the replies to the comment.
+     */
+    replies?: Comment[];
+    /**
+     * Specifies the unique identifier of the comment.
+     */
+    id: string;
+    /**
+     * Specifies the properties of the comment (author, isResolved, dateTime).
+     */
+    commentProperties: CommentProperties;
+    constructor(id: string, commentProperties: CommentProperties, text: string) {
         this.id = id;
         this.commentProperties = commentProperties;
+        this.text = text;
     }
-
 }
+
 /**
  * Represents the data for a content control element.
  */

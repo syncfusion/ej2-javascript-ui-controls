@@ -234,7 +234,8 @@ export class TaskProcessor extends DateProcessor {
     private prepareDataSource(data: Object[]): void {
         this.prepareRecordCollection(data, 0);
         this.parent.initialLoadData = extend({}, {}, this.parent.flatData, true);
-        if (!this.parent.autoCalculateDateScheduling) {
+        if (!this.parent.autoCalculateDateScheduling || (this.parent.isLoad && !this.parent.treeGrid.loadChildOnDemand &&
+            this.parent.taskFields.hasChildMapping)) {
             this.parent.dataMap = this.parent.flatData.reduce((map, val) => {
                 map.set(val.uniqueID, val);
                 return map;
@@ -281,7 +282,8 @@ export class TaskProcessor extends DateProcessor {
                 }
             }
             const ganttData: IGanttData = this.createRecord(tempData, level, parentItem, true);
-            if (!this.parent.enableValidation || !this.parent.autoCalculateDateScheduling) {
+            if (!this.parent.enableValidation || (!this.parent.autoCalculateDateScheduling || (this.parent.isLoad &&
+                !this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping))) {
                 this.updateTaskLeftWidth(ganttData);
             }
             ganttData.index = this.recordIndex++;
@@ -998,7 +1000,8 @@ export class TaskProcessor extends DateProcessor {
                 }
             }
         }
-        if (!this.parent.autoCalculateDateScheduling) {
+        if (!this.parent.autoCalculateDateScheduling || (this.parent.isLoad && !this.parent.treeGrid.loadChildOnDemand &&
+            this.parent.taskFields.hasChildMapping)) {
             if (!isNullOrUndefined(ganttData.ganttProperties.startDate)) {
                 ganttData[this.parent.taskFields.startDate] = ganttData.ganttProperties.startDate;
                 ganttData.taskData[this.parent.taskFields.startDate] = ganttData.ganttProperties.startDate;
@@ -1041,7 +1044,9 @@ export class TaskProcessor extends DateProcessor {
                 this.parent.setRecordValue('work', work, ganttProperties, true);
                 switch (tType) {
                 case 'FixedDuration':
-                    this.updateWorkWithDuration(ganttData);
+                    if (!isNullOrUndefined(ganttData[this.parent.taskFields.resourceInfo]) && ganttData.ganttProperties.resourceInfo.length !== 0) {
+                        this.updateWorkWithDuration(ganttData);
+                    }
                     break;
                 case 'FixedWork':
                     if (!isNullOrUndefined(ganttData[this.parent.taskFields.resourceInfo]) && ganttData.ganttProperties.resourceInfo.length !== 0) {
@@ -1137,7 +1142,7 @@ export class TaskProcessor extends DateProcessor {
      */
     public updateUnitWithWork(ganttData: IGanttData): void {
         const ganttProperties: ITaskData = ganttData.ganttProperties;
-        const resources: Object[] = ganttProperties.resourceInfo;
+        const resources: Object[] = (!this.parent.isLoad && !isNullOrUndefined(this.parent.editModule) && !isNullOrUndefined(this.parent.editModule.dialogModule) && !this.parent.editModule.dialogModule['isEdit'] && !this.parent.editModule.cellEditModule.isCellEdit) ? this.parent.editModule.dialogModule.ganttResources : ganttProperties.resourceInfo;
         const resourcesLength: number = !isNullOrUndefined(resources) ? resources.length : 0;
         let totSeconds: number;
         if (this.parent.weekWorkingTime.length > 0) {
@@ -1239,7 +1244,8 @@ export class TaskProcessor extends DateProcessor {
             }
         } else {
             this.updateDurationValue(duration, ganttProperties);
-            if (this.parent.autoCalculateDateScheduling) {
+            if (this.parent.autoCalculateDateScheduling && !(this.parent.isLoad && !this.parent.treeGrid.loadChildOnDemand &&
+                this.parent.taskFields.hasChildMapping)) {
                 this.calculateEndDate(ganttData);
             }
             else {
@@ -2568,7 +2574,8 @@ export class TaskProcessor extends DateProcessor {
      */
     private updateTaskLeftWidth(data: IGanttData): void {
         const task: ITaskData = data.ganttProperties;
-        if (!data.hasChildRecords || !this.parent.autoCalculateDateScheduling) {
+        if (!data.hasChildRecords || (!this.parent.autoCalculateDateScheduling || (this.parent.isLoad &&
+            !this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping))) {
             this.updateWidthLeft(data);
         }
         this.parent.setRecordValue('baselineLeft', this.calculateBaselineLeft(task), task, true);
@@ -2580,10 +2587,12 @@ export class TaskProcessor extends DateProcessor {
             childData = parentItem.childRecords as IGanttData[];
         }
         if (parentItem && childData.indexOf(data) === childData.length - 1 && !data.hasChildRecords && this.parent.enableValidation) {
-            if (this.parent.autoCalculateDateScheduling || this.parent.viewType === 'ResourceView') {
+            if ((this.parent.autoCalculateDateScheduling && !(this.parent.isLoad && !this.parent.treeGrid.loadChildOnDemand &&
+                this.parent.taskFields.hasChildMapping)) || this.parent.viewType === 'ResourceView') {
                 this.updateParentItems(parentItem);
             }
-            if (!this.parent.autoCalculateDateScheduling) {
+            if (!this.parent.autoCalculateDateScheduling || (this.parent.isLoad && !this.parent.treeGrid.loadChildOnDemand &&
+                this.parent.taskFields.hasChildMapping)) {
                 this.updateWidthLeft(parentItem);
             }
         } else if (parentItem && !this.parent.enableValidation) {
@@ -2773,7 +2782,8 @@ export class TaskProcessor extends DateProcessor {
         let deleteUpdate: boolean = false;
         const ganttProp: ITaskData = !isNullOrUndefined(parentData) ? parentData.ganttProperties : null;
         const [isParentUnschecule, propertyWithValue] : [boolean, string] = this.isUnscheduledTask(ganttProp, parentData);
-        if (this.parent.autoCalculateDateScheduling || this.parent.viewType === 'ResourceView') {
+        if ((this.parent.autoCalculateDateScheduling && !(this.parent.isLoad && !this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping))
+            || this.parent.viewType === 'ResourceView') {
             if (parentData && parentData.childRecords && parentData.childRecords.length > 0) {
                 const previousStartDate: Date = ganttProp.isAutoSchedule ? ganttProp.startDate : ganttProp.autoStartDate;
                 const previousEndDate: Date = ganttProp.isAutoSchedule ? ganttProp.endDate :
@@ -2938,7 +2948,8 @@ export class TaskProcessor extends DateProcessor {
         const parentItem: IGanttData = !isNullOrUndefined(parentData) ?
             this.parent.getParentTask(parentData.parentItem) as IGanttData : null;
         if (parentItem) {
-            if (this.parent.autoCalculateDateScheduling || this.parent.viewType === 'ResourceView') {
+            if ((this.parent.autoCalculateDateScheduling && !(this.parent.isLoad && !this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping))
+                || this.parent.viewType === 'ResourceView') {
                 this.updateParentItems(parentItem);
             }
         }

@@ -32,6 +32,7 @@ export class Edit {
     private isValidatedEditedRecord: boolean = false;
     private createArray: boolean = true;
     public isFirstCall: boolean;
+    public isAdded : boolean;
     /**
      * @private
      */
@@ -757,6 +758,9 @@ export class Edit {
                     }
                     break;
                 case 'FixedDuration':
+                    if (resources.length === 0) {
+                        return;
+                    }
                     if (resources.length && (column === 'work' || (isAutoSchedule &&
                             isEffectDriven && (column === 'resource')))) {
                         if (column === 'work') {
@@ -932,7 +936,8 @@ export class Edit {
             this.parent.connectorLineEditModule.addRemovePredecessor(args.data);
         }
         let validateObject: object = {};
-        if (isValidatePredecessor) {
+        if (isValidatePredecessor && this.parent.autoCalculateDateScheduling && !(this.parent.isLoad &&
+            !this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping)) {
             if (!isNullOrUndefined(parentData)) {
                 validateObject = this.parent.connectorLineEditModule.validateTypes(parentData, args.data);
             } else if (!isNullOrUndefined(childRecordIndex)) {
@@ -1000,13 +1005,15 @@ export class Edit {
     public updateEditedTask(args: ITaskbarEditedEventArgs): void {
         const ganttRecord: IGanttData = args.data;
         this.editedRecord = ganttRecord;
-        if (this.parent.autoCalculateDateScheduling) {
+        if (this.parent.autoCalculateDateScheduling && !(this.parent.isLoad && !this.parent.treeGrid.loadChildOnDemand &&
+            this.parent.taskFields.hasChildMapping)) {
             this.updateParentChildRecord(ganttRecord);
         }
         if (this.parent.predecessorModule) {
             this.parent.predecessorModule.isValidatedParentTaskID = '';
         }
-        if ((this.parent.isConnectorLineUpdate || (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'])) && this.parent.autoCalculateDateScheduling) {
+        if ((this.parent.isConnectorLineUpdate || (this.parent.undoRedoModule && this.parent.undoRedoModule['isUndoRedoPerformed'])) && this.parent.autoCalculateDateScheduling &&
+            !(this.parent.isLoad && !this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping)) {
             /* validating predecessor for updated child items */
             for (let i: number = 0; i < this.parent.predecessorModule.validatedChildItems.length; i++) {
                 const child: IGanttData = this.parent.predecessorModule.validatedChildItems[i as number];
@@ -1050,7 +1057,8 @@ export class Edit {
         }
         /** Update parent up-to zeroth level */
         if (ganttRecord.parentItem) {
-            if (this.parent.autoCalculateDateScheduling) {
+            if (this.parent.autoCalculateDateScheduling && !(this.parent.isLoad && !this.parent.treeGrid.loadChildOnDemand &&
+                this.parent.taskFields.hasChildMapping)) {
                 this.parent.dataOperation.updateParentItems(ganttRecord, true);
             }
             const parentData: IGanttData = this.parent.getRecordByID(ganttRecord.parentItem.taskId);
@@ -2171,13 +2179,16 @@ export class Edit {
                 for (let j: number = 0; j < deleteItems.length; j++) {
                     const parentTask: IGanttData = this.parent.getParentTask(deleteItems[j as number].parentItem);
                     if (deleteItems[j as number].parentItem) {
-                        const childRecord: IGanttData[] = parentTask.childRecords;
-                        const filteredRecord: IGanttData[] = childRecord.length === 1 ?
+                        let childRecord: IGanttData[]; 
+                        if (!isNullOrUndefined(parentTask)) {
+                            childRecord = parentTask.childRecords;
+                            const filteredRecord: IGanttData[] = childRecord.length === 1 ?
                             childRecord : childRecord.filter((data: IGanttData): boolean => {
                                 return !data.isDelete;
                             });
-                        if (filteredRecord.length > 0) {
-                            this.parent.dataOperation.updateParentItems(deleteItems[j as number].parentItem);
+                            if (filteredRecord.length > 0) {
+                                this.parent.dataOperation.updateParentItems(deleteItems[j as number].parentItem);
+                            }
                         }
                     }
                     const predecessor: IPredecessor[] = deleteItems[j as number].ganttProperties.predecessor;
@@ -2467,7 +2478,10 @@ export class Edit {
         const deletedRecords: IGanttData[] = [];
         for (let i: number = 0; i < args.deletedRecordCollection.length; i++) {
             if (this.parent.viewType === 'ProjectView') {
-                deletedRecords.push(this.parent.getRecordByID(args.deletedRecordCollection[i as number].ganttProperties.taskId));
+                const record: IGanttData = this.parent.getRecordByID(args.deletedRecordCollection[i as number].ganttProperties.taskId);
+                if (!isNullOrUndefined(record)) {
+                    deletedRecords.push(record);
+                }
             }
             else {
                 let id: string;
@@ -2565,6 +2579,7 @@ export class Edit {
         this.parent.connectorLineIds = [];
         this.parent.predecessorModule.createConnectorLinesCollection(this.parent.flatData);
         this.parent.treeGrid.parentData = [];
+        this.isAdded = false;
         this.parent.treeGrid.refresh();
         if (this.parent.enableImmutableMode) {
             this.refreshRecordInImmutableMode();
@@ -3176,6 +3191,7 @@ export class Edit {
             this.parent.selectedRowIndex = 0;
         }
         this.parent.treeGrid['isAddedFromGantt'] = true;
+        this.isAdded = true;
         this.parent.treeGrid.refresh();
         if (this.parent.enableImmutableMode) {
             this.parent.modifiedRecords = args.modifiedRecords;

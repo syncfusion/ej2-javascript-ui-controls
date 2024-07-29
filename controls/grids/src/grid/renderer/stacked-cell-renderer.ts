@@ -38,7 +38,8 @@ export class StackedHeaderCellRenderer extends CellRenderer implements ICellRend
         const column: Column = cell.column;
         node.appendChild(div);
         if (!isNullOrUndefined(column.headerTemplate)) {
-            appendChildren(div, column.getHeaderTemplate()(column, this.parent, 'headerTemplate'));
+            appendChildren(div, column.getHeaderTemplate()(
+                column, this.parent, 'headerTemplate', null, null, null, null, this.parent.root));
         } else {
             this.appendHtml(div, this.parent.sanitize(column.headerText), column.getDomSetter());
         }

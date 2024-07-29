@@ -256,12 +256,12 @@ export class ColumnWidthService {
         return tWidth;
     }
 
-    public setWidthToTable(): void {
+    public setWidthToTable(isMaxWidth?: boolean): void {
         let tWidth: string = formatUnit(this.getTableWidth(<Column[]>this.parent.getColumns()));
         if (this.parent.detailTemplate || this.parent.childGrid) {
             this.setColumnWidth(new Column({ width: '30px' }));
         }
-        tWidth = (this.isAutoResize() || tWidth === 'auto') ? '100%' : tWidth;
+        tWidth = (this.isAutoResize() || tWidth === 'auto' || isMaxWidth) ? '100%' : tWidth;
         (this.parent.getHeaderTable() as HTMLTableElement).style.width = tWidth;
         (this.parent.getContentTable() as HTMLTableElement).style.width = tWidth;
         const edit: HTMLTableElement = <HTMLTableElement>this.parent.element.querySelector('.e-table.e-inline-edit');

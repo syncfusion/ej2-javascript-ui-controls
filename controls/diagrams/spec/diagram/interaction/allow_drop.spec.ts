@@ -566,3 +566,278 @@ describe('Connector Allow Drop', () => {
         done();
     });
 });
+describe('Connector Allow Drop', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'AllowDrop' });
+        document.body.appendChild(ele);
+
+        let port1 = { id: "port1", shape: "square", offset: { x: 0, y: 0.5 } }
+        let port2 = { id: "port2", shape: "square", offset: { x: 1, y: 0.5 } }
+        let node1: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 150, offsetY: 150, annotations: [{ content: 'node1' }], };
+        let node2: NodeModel = {
+            id: 'node2', width: 100, height: 100, offsetX: 650, offsetY: 150, annotations: [{ content: 'node2' }],
+            constraints: NodeConstraints.Default | NodeConstraints.AllowDrop
+        };
+        let node3 = {
+            id: 'node3', width: 100, height: 100, offsetX: 490, offsetY: 290, annotations: [{ content: 'node3' }],
+            constraints: NodeConstraints.Default | NodeConstraints.AllowDrop
+        };
+        let connector1: ConnectorModel = {
+            id: 'connector1', sourceID: "node1", targetID: "node2",
+            constraints: ConnectorConstraints.Default | ConnectorConstraints.AllowDrop
+        };
+        diagram = new Diagram({
+            enableConnectorSplit: true,
+            width: 700, height: 600, nodes: [node1, node2, node3],
+            connectors: [connector1]
+        });
+        diagram.appendTo('#AllowDrop');
+
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it("894577 - dropping node on connector after the highlighter is activated", function (done) {
+        let highlighter: HTMLElement = null;
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 490, 290);
+        mouseEvents.mouseDownEvent(diagramCanvas, 490, 290);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 150);
+        highlighter = document.getElementById(diagram.element.id + '_diagramAdorner_svg_highlighter');
+        expect(highlighter !== null).toBe(true);
+        mouseEvents.mouseUpEvent(diagramCanvas, 400, 150);
+        expect(diagram.connectors.length === 2).toBe(true);
+        done();
+    });
+});
+describe('Connector Allow Drop', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'AllowDrop' });
+        document.body.appendChild(ele);
+ 
+        let port1 = { id: "port1", shape: "square", offset: { x: 0, y: 0.5 } }
+        let port2 = { id: "port2", shape: "square", offset: { x: 1, y: 0.5 } }
+        let node1: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 150, offsetY: 150, annotations: [{ content: 'node1' }],
+        constraints: NodeConstraints.Default | NodeConstraints.AllowDrop};
+        let node2: NodeModel = {
+            id: 'node2', width: 100, height: 100, offsetX: 650, offsetY: 150, annotations: [{ content: 'node2' }],
+            constraints: NodeConstraints.Default | NodeConstraints.AllowDrop
+        };
+        let connector1: ConnectorModel = {
+            id: 'connector1', sourceID: "node1", targetID: "node2",
+            constraints: ConnectorConstraints.Default | ConnectorConstraints.AllowDrop
+        };
+        diagram = new Diagram({
+            enableConnectorSplit: true,
+            width: 700, height: 600, nodes: [node1, node2],
+            connectors: [connector1]
+        });
+        diagram.appendTo('#AllowDrop');
+ 
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it("894577 - dropping node on connector of having node's id as sourceID or targetID", function (done) {
+        let highlighter: HTMLElement = null;
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseDownEvent(diagramCanvas, 660, 160);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 350, 150);
+        highlighter = document.getElementById(diagram.element.id + '_diagramAdorner_svg_highlighter');
+        expect(highlighter !== null).toBe(true);
+        mouseEvents.mouseUpEvent(diagramCanvas, 350, 150);
+        expect(diagram.connectors.length === 1).toBe(true);
+        done();
+    });
+});
+describe('Connector Allow Drop', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'AllowDrop' });
+        document.body.appendChild(ele);
+ 
+        let port1 = { id: "port1", shape: "square", offset: { x: 0, y: 0.5 } }
+        let port2 = { id: "port2", shape: "square", offset: { x: 1, y: 0.5 } }
+        let node1: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 150, offsetY: 150, annotations: [{ content: 'node1' }],
+        constraints: NodeConstraints.Default | NodeConstraints.AllowDrop};
+        let node2: NodeModel = {
+            id: 'node2', width: 100, height: 100, offsetX: 650, offsetY: 150, annotations: [{ content: 'node2' }],
+            constraints: NodeConstraints.Default | NodeConstraints.AllowDrop
+        };
+        let connector1: ConnectorModel = {
+            id: 'connector1', sourceID: "node1", targetID: "node2",
+            constraints: ConnectorConstraints.Default | ConnectorConstraints.AllowDrop
+        };
+        diagram = new Diagram({
+            enableConnectorSplit: true,
+            width: 700, height: 600, nodes: [node1, node2],
+            connectors: [connector1]
+        });
+        diagram.appendTo('#AllowDrop');
+ 
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it("894577 - dropping selector on connector of having node's id as sourceID or targetID", function (done) {
+        let highlighter: HTMLElement = null;
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 660, 160);
+        mouseEvents.mouseDownEvent(diagramCanvas, 660, 160);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 350, 150);
+        highlighter = document.getElementById(diagram.element.id + '_diagramAdorner_svg_highlighter');
+        expect(highlighter !== null).toBe(true);
+        mouseEvents.mouseUpEvent(diagramCanvas, 350, 150);
+        expect(diagram.connectors.length === 1).toBe(true);
+        done();
+    });
+});
+describe('Connector Allow Drop', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'AllowDrop' });
+        document.body.appendChild(ele);
+ 
+        let node1: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 150, offsetY: 150, annotations: [{ content: 'node1' }],
+        constraints: NodeConstraints.Default | NodeConstraints.AllowDrop};
+        let node2: NodeModel = {
+            id: 'node2', width: 100, height: 100, offsetX: 650, offsetY: 150, annotations: [{ content: 'node2' }],
+            constraints: NodeConstraints.Default | NodeConstraints.AllowDrop
+        };
+        let node3: NodeModel = {
+            id: 'node3', width: 100, height: 100, offsetX: 650, offsetY: 450, annotations: [{ content: 'node3' }],
+            constraints: NodeConstraints.Default | NodeConstraints.AllowDrop
+        };
+        let group: NodeModel = {
+            id: 'group', children: ['node2','node3'] ,annotations: [{ content: 'Group' }],
+            constraints: NodeConstraints.Default | NodeConstraints.AllowDrop
+        };
+        let connector1: ConnectorModel = {
+            id: 'connector1', sourceID: "node1", targetID: "node2", type: 'Orthogonal',
+            constraints: ConnectorConstraints.Default | ConnectorConstraints.AllowDrop
+        };
+        let connector2: ConnectorModel = {
+            id: 'connector2', sourceID: "node2", targetID: "node3", type: 'Orthogonal',
+            constraints: ConnectorConstraints.Default | ConnectorConstraints.AllowDrop
+        };
+        diagram = new Diagram({
+            enableConnectorSplit: true,
+            width: 700, height: 600, nodes: [node1, node2, node3, group],
+            connectors: [connector1, connector2]
+        });
+        diagram.appendTo('#AllowDrop');
+ 
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it("894577 - dropping group node on connector of having node's id as sourceID or targetID", function (done) {
+        let highlighter: HTMLElement = null;
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseDownEvent(diagramCanvas, 640, 260);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 350, 250);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 160, 103);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 160, 100);
+        mouseEvents.mouseUpEvent(diagramCanvas, 160, 100);
+        expect(diagram.connectors.length === 2).toBe(true);
+        done();
+    });
+});
+describe('Connector Allow Drop', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'AllowDrop' });
+        document.body.appendChild(ele);
+ 
+        let node1: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 150, offsetY: 150, annotations: [{ content: 'node1' }],
+        constraints: NodeConstraints.Default | NodeConstraints.AllowDrop};
+        let node2: NodeModel = {
+            id: 'node2', width: 100, height: 100, offsetX: 650, offsetY: 150, annotations: [{ content: 'node2' }],
+            constraints: NodeConstraints.Default | NodeConstraints.AllowDrop
+        };
+        let node3: NodeModel = {
+            id: 'node3', width: 100, height: 100, offsetX: 650, offsetY: 450, annotations: [{ content: 'node3' }],
+            constraints: NodeConstraints.Default | NodeConstraints.AllowDrop
+        };
+        let group: NodeModel = {
+            id: 'group', children: ['node2','node3'] ,annotations: [{ content: 'Group' }],
+            constraints: NodeConstraints.Default | NodeConstraints.AllowDrop
+        };
+        let connector1: ConnectorModel = {
+            id: 'connector1', sourceID: "node1", targetID: "node2", type: 'Orthogonal',
+            constraints: ConnectorConstraints.Default | ConnectorConstraints.AllowDrop
+        };
+        let connector2: ConnectorModel = {
+            id: 'connector2', sourceID: "node2", targetID: "node3", type: 'Orthogonal',
+            constraints: ConnectorConstraints.Default | ConnectorConstraints.AllowDrop
+        };
+        diagram = new Diagram({
+            enableConnectorSplit: true,
+            width: 700, height: 600, nodes: [node1, node2, node3, group],
+            connectors: [connector1, connector2]
+        });
+        diagram.appendTo('#AllowDrop');
+ 
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it("894577 - dropping group selector on connector of having node's id as sourceID or targetID", function (done) {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, 640, 260);
+        mouseEvents.mouseDownEvent(diagramCanvas, 640, 260);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 350, 250);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 160, 103);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 160, 100);
+        mouseEvents.mouseUpEvent(diagramCanvas, 160, 100);
+        expect(diagram.connectors.length === 2).toBe(true);
+        done();
+    });
+});

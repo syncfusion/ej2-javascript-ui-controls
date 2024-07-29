@@ -4,7 +4,7 @@ import { CellVerticalAlignment, LineStyle } from '../../base/types';
 import { WCharacterFormat } from '../format/character-format';
 import { WParagraphFormat } from '../format/paragraph-format';
 import { HelperMethods } from '../editor/editor-helper';
-import { sectionsProperty, characterFormatProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, nameProperty, boldProperty, italicProperty, underlineProperty, baselineAlignmentProperty, strikethroughProperty, highlightColorProperty, fontSizeProperty, fontColorProperty, fontFamilyProperty, styleNameProperty, allCapsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, bordersProperty, leftMarginProperty, rightMarginProperty, topMarginProperty, bottomMarginProperty, cellWidthProperty, columnSpanProperty, rowSpanProperty, verticalAlignmentProperty, isHeaderProperty, cellSpacingProperty, shadingProperty, tableAlignmentProperty, preferredWidthProperty, preferredWidthTypeProperty, backgroundColorProperty, hasNoneStyleProperty, lineStyleProperty, lineWidthProperty, textProperty, widthProperty, heightProperty, colorProperty, imageStringProperty, topProperty, bottomProperty, rightProperty, leftProperty, fieldTypeProperty, inlinesProperty, cellFormatProperty, rowFormatProperty, cellsProperty, rowsProperty, tableFormatProperty, blocksProperty, listLevelPatternProperty, abstractListIdProperty, levelsProperty, bookmarkTypeProperty, inlineFormatProperty, startAtProperty, characterSpacingProperty, scalingProperty, DocumentEditor,imagesProperty, Dictionary, isMetaFileProperty, isCreatedUsingHtmlSpanTagProperty, restartLevelProperty, titleProperty, descriptionProperty} from '../../index';
+import { sectionsProperty, characterFormatProperty, paragraphFormatProperty, listsProperty, abstractListsProperty, nameProperty, boldProperty, italicProperty, underlineProperty, baselineAlignmentProperty, strikethroughProperty, highlightColorProperty, fontSizeProperty, fontColorProperty, fontFamilyProperty, styleNameProperty, allCapsProperty, listIdProperty, listLevelNumberProperty, leftIndentProperty, rightIndentProperty, firstLineIndentProperty, textAlignmentProperty, afterSpacingProperty, beforeSpacingProperty, lineSpacingProperty, lineSpacingTypeProperty, listFormatProperty, bordersProperty, leftMarginProperty, rightMarginProperty, topMarginProperty, bottomMarginProperty, cellWidthProperty, columnSpanProperty, rowSpanProperty, verticalAlignmentProperty, isHeaderProperty, cellSpacingProperty, shadingProperty, tableAlignmentProperty, preferredWidthProperty, preferredWidthTypeProperty, backgroundColorProperty, hasNoneStyleProperty, lineStyleProperty, lineWidthProperty, textProperty, widthProperty, heightProperty, colorProperty, imageStringProperty, topProperty, bottomProperty, rightProperty, leftProperty, fieldTypeProperty, inlinesProperty, cellFormatProperty, rowFormatProperty, cellsProperty, rowsProperty, tableFormatProperty, blocksProperty, listLevelPatternProperty, abstractListIdProperty, levelsProperty, bookmarkTypeProperty, inlineFormatProperty, startAtProperty, characterSpacingProperty, scalingProperty, DocumentEditor,imagesProperty, Dictionary, isMetaFileProperty, isCreatedUsingHtmlSpanTagProperty, restartLevelProperty, titleProperty, descriptionProperty, tabsProperty, tabJustificationProperty, tabLeaderProperty, positionProperty} from '../../index';
 
 /**
  * @private
@@ -129,7 +129,7 @@ export class HtmlExport {
         }
         if (paragraph[inlinesProperty[this.keywordIndex]].length === 0) {
             //Handled to preserve non breaking space for empty paragraphs similar to MS Word behavior.
-            blockStyle += '&nbsp';
+            blockStyle += '<span />';
         } else {
             blockStyle = this.serializeInlines(paragraph, blockStyle);
         }
@@ -242,12 +242,19 @@ export class HtmlExport {
     private serializeInlines(paragraph: any, blockStyle: string): string {
         let inline: any = undefined;
         let i: number = 0;      
+        let tabCount: number = 0;
         while (paragraph[inlinesProperty[this.keywordIndex]].length > i) {
             inline = paragraph[inlinesProperty[this.keywordIndex]][i];
-            if (inline.hasOwnProperty(inlinesProperty[this.keywordIndex])) {
-                blockStyle = this.serializeContentInlines(inline, blockStyle);
+            if ((inline.hasOwnProperty(textProperty[this.keywordIndex])
+                && inline[textProperty[this.keywordIndex]] === '\t')) {
+                tabCount++;
                 i++;
                 continue;
+            } else if (tabCount > 0) {
+                let tagAttributes: string[] = [];
+                tagAttributes.push('style="mso-tab-count:' + tabCount.toString() + '"');
+                blockStyle += this.createAttributesTag('span', tagAttributes) + this.endTag('span');
+                tabCount = 0;
             }
             if (inline.hasOwnProperty(imageStringProperty[this.keywordIndex])) {
                 blockStyle += this.serializeImageContainer(inline);
@@ -873,16 +880,85 @@ export class HtmlExport {
         if (!isNullOrUndefined(propertyValue) && propertyValue !== 0) {
             paraStyle += 'text-indent:' + propertyValue.toString() + 'pt;';
         }
+        if (!isNullOrUndefined(paragraphFormat[tabsProperty[this.keywordIndex]]) && paragraphFormat[tabsProperty[this.keywordIndex]].length > 0) {
+            paraStyle += this.serializeTabs(paragraphFormat[tabsProperty[this.keywordIndex]]);
+        }
         propertyValue = paragraphFormat[lineSpacingProperty[this.keywordIndex]];
         if (!isNullOrUndefined(propertyValue)) {
-            if (paragraphFormat[lineSpacingTypeProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 0 : 'Multiple')) {
-                propertyValue = Math.round(propertyValue * 10) / 10;
-            } else {
-                propertyValue = propertyValue.toString() + 'pt;';
+            const lineSpacingType = paragraphFormat[lineSpacingTypeProperty[this.keywordIndex]];
+            const isMultiple = lineSpacingType === (this.keywordIndex == 1 ? 0 : 'Multiple');
+            const isAtLeast = lineSpacingType === (this.keywordIndex == 1 ? 0 : 'AtLeast');
+        
+            //Write Default linespacing
+            if (propertyValue == 1 && isMultiple) {
+                paraStyle += 'line-height:' + 'normal;';
+            } else if (isMultiple) { 
+                paraStyle += 'line-height:' + (Math.abs(propertyValue) * 100).toString() + '%;';
+            } //Writes the lineSpacing value other than lineSpacingRule Atleast and lineSpacing value less than 12
+            else if (!isAtLeast || propertyValue >= 12) {
+                paraStyle += 'line-height:' + propertyValue.toString() + 'pt;';
             }
-            paraStyle += 'line-height:' + propertyValue;
-        }
+        }        
         return paraStyle.toString();
+    }
+    private serializeTabs(tabs: any): string {
+        let tabsStyle: string = 'tab-stops:';
+        for (let i: number = 0; i < tabs.length; i++) {
+            let tab: any = tabs[i];
+            if (tab.hasOwnProperty(tabJustificationProperty[this.keywordIndex])) {
+                let tabJustification: string = this.getTabJustification(tab[tabJustificationProperty[this.keywordIndex]]);
+                if (tabJustification !== '') {
+                    tabsStyle += tabJustification + ' ';
+                }
+            }
+            if (tab.hasOwnProperty(tabLeaderProperty[this.keywordIndex])) {
+                let tabLeader: string = this.getTabLeader(tab[tabLeaderProperty[this.keywordIndex]]);
+                if (tabLeader !== '') {
+                    tabsStyle +=  tabLeader + ' ';
+                }
+            }
+            if (tab.hasOwnProperty(positionProperty[this.keywordIndex])) {
+                tabsStyle += tab[positionProperty[this.keywordIndex]].toString() + 'pt';
+            }
+            if (i !== tabs.length - 1) {
+                tabsStyle += ' ';
+            }
+        }
+        tabsStyle += ';';
+        return tabsStyle;
+    }
+    private getTabLeader(tabLeader: any): string {
+        switch (tabLeader) {
+            case 'Dot':
+            case 2:
+                return 'dotted';
+            case 'Hyphen':
+            case 3:
+                return 'dashed';
+            case 'Underscore':
+            case 4:
+                return 'heavy';
+            default:
+                return '';
+        }
+    }
+    private getTabJustification(tabJustification: any): string {
+        switch (tabJustification) {
+            case 'Bar':
+            case 1:
+                return 'bar';
+            case 'Center':
+            case 2:
+                return 'center';
+            case 'Decimal':
+            case 3:
+                return 'decimal';
+            case 'Right':
+            case 5:
+                return 'right';
+            default:
+                return '';
+        }
     }
     private createAttributesTag(tagValue: string, localProperties: string[]): string {
         let sb: string = '';

@@ -588,11 +588,17 @@ function createAjax(
                 const action: string = getValue('action', data);
                 const isFileOperation: boolean = (action === 'move' || action === 'rename' || action === 'copy' || action === 'delete' || action === 'search') && event !== 'rename-end';
                 if (action === 'read' || action === 'create' || event === 'rename-end') {
+                    const rootId: number | string = parent.fileSystemData
+                        .filter((item: { [key: string]: Object; }) => isNOU(item.parentId))
+                        .length > 0
+                        ? parent.fileSystemData
+                            .filter((item: { [key: string]: Object; }) => isNOU(item.parentId))[0].id as number | string
+                        : 0;
                     parent.responseData = {
-                        cwd: filterById(parent, parent.path === '/' && event !== 'node-expand' && event !== 'rename-end-parent' ? 0 : idValue),
+                        cwd: filterById(parent, parent.path === '/' && event !== 'node-expand' && event !== 'rename-end-parent' ? rootId : idValue),
                         details: null,
                         error: null,
-                        files: filterByParent(parent, parent.path === '/' && event !== 'node-expand' && event !== 'rename-end-parent' ? 0 : idValue)
+                        files: filterByParent(parent, parent.path === '/' && event !== 'node-expand' && event !== 'rename-end-parent' ? rootId : idValue)
                     };
                     if (isNOU(parent.responseData.cwd)) {
                         const message: string = 'Cannot load empty data within the File Manager.';

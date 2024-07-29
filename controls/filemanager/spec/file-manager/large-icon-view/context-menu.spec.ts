@@ -328,7 +328,7 @@ describe('FileManager control LargeIcons view', () => {
             evt.initEvent('contextmenu', true, true);
             Li.dispatchEvent(evt);
             expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Open');
-            expect(sourceElement.element.querySelectorAll('li')[0].classList.contains('e-disabled')).toBe(true);
+            expect(sourceElement.element.querySelectorAll('li')[0].classList.contains('e-disabled')).toBe(false);
         });
     });
     describe('for LargeIcons View context menu', () => {

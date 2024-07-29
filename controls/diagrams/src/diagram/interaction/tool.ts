@@ -907,17 +907,50 @@ export class MoveTool extends ToolBase {
             this.commandHandler.removeSnap(); this.commandHandler.removeHighlighter();
             if (args.source && this.currentTarget && canAllowDrop(this.currentTarget) &&
                 this.commandHandler.isDroppable(args.source, this.currentTarget)) {
+                var canSplit = true;
                 this.commandHandler.drop(this.currentElement, this.currentTarget, this.currentPosition);
                 if(this.currentTarget && this.currentTarget instanceof Connector){
                     if(this.commandHandler.diagram.enableConnectorSplit === true){
-                        if(this.currentElement){
+                        if (this.currentElement) {
+                            //EJ2 - Restricting the connector splitting if any one edge is already connected to the node
                             if (this.currentElement && this.currentElement instanceof Node) {
-                                this.commandHandler.connectorSplit(this.currentElement,this.currentTarget);
+                                if (this.currentElement.children !== undefined) {
+                                    for (let i = 0; i < this.currentElement.children.length; i++) {
+                                        if (this.currentElement.children[parseInt(i.toString(), 10)] == this.currentTarget.sourceID ||
+                                            this.currentElement.children[parseInt(i.toString(), 10)] == this.currentTarget.targetID) {
+                                            canSplit = false;
+                                        }
+                                    }
+                                }
+                                else {
+                                    if (this.currentElement.id == this.currentTarget.sourceID || this.currentElement.id == this.currentTarget.targetID) {
+                                        canSplit = false;
+                                    }
+                                }
+                                if (canSplit) {
+                                    this.commandHandler.connectorSplit(this.currentElement, this.currentTarget);
+                                }
                             }
                             else if (this.currentElement instanceof Selector && !(this.commandHandler.PreventConnectorSplit)) {
                                 if (this.currentElement.nodes.length > 0) {
-                                    this.commandHandler.connectorSplit(this.currentElement.nodes[0],this.currentTarget);
-                                    this.commandHandler.PreventConnectorSplit = false;
+                                    if (this.currentElement.nodes[0].children) {
+                                        for (let i = 0; i < this.currentElement.nodes[0].children.length; i++) {
+                                            if (this.currentElement.nodes[0].children[parseInt(i.toString(), 10)] == this.currentTarget.sourceID ||
+                                                this.currentElement.nodes[0].children[parseInt(i.toString(), 10)] == this.currentTarget.targetID) {
+                                                canSplit = false;
+                                            }
+                                        }
+                                    }
+                                    else {
+                                        if ((this.currentElement.nodes[0]).id == this.currentTarget.sourceID ||
+                                            (this.currentElement.nodes[0]).id == this.currentTarget.targetID) {
+                                            canSplit = false;
+                                        }
+                                    }
+                                    if (canSplit) {
+                                        this.commandHandler.connectorSplit(this.currentElement.nodes[0], this.currentTarget);
+                                        this.commandHandler.PreventConnectorSplit = false;
+                                    }
                                 }
                             }
                         }

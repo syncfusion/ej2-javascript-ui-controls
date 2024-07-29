@@ -2,13 +2,34 @@
 
 ## [Unreleased]
 
+## 26.2.7 (2024-07-30)
+
+### GanttChart
+
+#### Bug fixes
+
+-`#I607879`  - Work Property Value Not Calculating Properly When Adding or Editing a Record issue has been fixed.
+- `#I607391` - Baseline not render properly  when Pdf export issue has been fixed.
+- `#I614007` - Dependency offset value not updating properly with unscheduled tasks issue has been fixed.
+- `#I603923` - Row selection toggling not working properly while `persistSelection` is enabled issue has been fixed.
+- `#I606658` - `timezone` property is not working properly in Gantt issue has been fixed.
+
 ## 26.2.5 (2024-07-26)
 
 ### GanttChart
 
 #### Bug fixes
 
-- `#896027` - `UpdateTaskId` method not working properly issue has been fixed.
+- `#F189417` - `queryTaskbarInfo` event is not working properly while change the color of taskbar issue has been fixed.
+- `#I612340` - `actionFailure` event not working properly for duration issue has been fixed.
+- `#I608398` - `autoCalculateDateScheduling` property not working properly with `loadChildOnDemand` feature issue has been fixed.
+- `#I896027` - `UpdateTaskId` method not working properly issue has been fixed.
+
+## 26.2.5 (2024-07-26)
+
+### GanttChart
+
+#### Bug fixes
 
 ## 26.2.4 (2024-07-24)
 

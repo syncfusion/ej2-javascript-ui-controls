@@ -141,6 +141,7 @@ export class DetailRow {
                     }
                 } else {
                     childGrid = new Grid(this.getGridModel(gObj, rowObj, gObj.printMode));
+                    childGrid.root = gObj.root ? gObj.root : gObj;
                     this.childRefs.push(childGrid);
                     if (childGrid.query) {
                         childGrid.query = childGrid.query.clone();
@@ -153,10 +154,11 @@ export class DetailRow {
                             getObject(gObj.childGrid.queryString, data) : data[gObj.childGrid.queryString],
                         parentRowData: data
                     };
-                    if (gObj.isReact) {
+                    if (gObj.isReact || gObj.isVue) {
                         childGrid.parentDetails.parentInstObj = gObj;
                     }
-                    else if (gObj.parentDetails && gObj.parentDetails.parentInstObj && gObj.parentDetails.parentInstObj.isReact) {
+                    else if (gObj.parentDetails && gObj.parentDetails.parentInstObj && (gObj.parentDetails.parentInstObj.isReact
+                        || gObj.parentDetails.parentInstObj.isVue)) {
                         childGrid.parentDetails.parentInstObj = gObj.parentDetails.parentInstObj;
                     }
                     (<{ isLegacyTemplate?: boolean }>childGrid).isLegacyTemplate = gObj.isReact

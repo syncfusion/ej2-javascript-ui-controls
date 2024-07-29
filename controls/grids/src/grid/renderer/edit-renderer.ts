@@ -186,7 +186,7 @@ export class EditRender {
                     this.parent.renderTemplates();
                 } else {
                     const template: Element[] | NodeList = col.getEditTemplate()(
-                        extend({ 'index': args.rowIndex }, tempData), this.parent, 'editTemplate', tempID);
+                        extend({ 'index': args.rowIndex }, tempData), this.parent, 'editTemplate', tempID, null, null, null, gObj.root);
                     appendChildren(input, template);
                 }
             } else {

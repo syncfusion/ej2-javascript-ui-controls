@@ -1948,7 +1948,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             if (element.classList.contains(LISTITEM)) {
                 ulElement = select('.' + PARENTITEM, element);
             }
-            const checkedNodes: HTMLElement[] = selectAll('.' + CHECK, ulElement);
+            const checkedNodes: HTMLElement[] = selectAll('.' + CHECKBOXWRAP + ' .' + CHECK, ulElement);
             const indeterminateNodes: HTMLElement[] = selectAll('.' + INDETERMINATE, ulElement);
             const nodes: HTMLElement[] = selectAll('.' + LISTITEM, ulElement);
             const checkBoxEle: Element = element.getElementsByClassName(CHECKBOXWRAP)[0];

@@ -13879,3 +13879,44 @@ export let localizationData: Object[] = [
         ]
     }
 ];
+export let actionFailureData : object[] = [
+    {
+        taskID: 1,
+        taskName: 'Project Schedule',
+        startDate: new Date('02/04/2024'),
+        endDate: new Date('03/10/2024')
+    },
+    {
+        taskID: 2,
+        taskName: 'Planning',
+        startDate: new Date('02/04/2024'),
+        endDate: new Date('02/10/2024'),
+        parentID: 1
+    },
+    {
+        taskID: 3,
+        taskName: 'Plan timeline',
+        startDate: new Date('02/04/2024'),
+        endDate: new Date('02/10/2024'),
+        duration: 6,
+        progress: '60',
+        parentID: 2
+    },
+    {
+        taskID: 4,
+        taskName: 'Plan budget',
+        startDate: new Date('02/04/2024'),
+        endDate: new Date('02/10/2024'),
+        duration: 6,
+        progress: '90',
+        parentID: 2
+    },
+    {
+        taskID: 5,
+        taskName: 'Allocate resources',
+        startDate: new Date('02/04/2024'),
+        endDate: new Date('02/10/2024'),
+        duration: 6,
+        progress: '75',
+        parentID: 2
+    }]

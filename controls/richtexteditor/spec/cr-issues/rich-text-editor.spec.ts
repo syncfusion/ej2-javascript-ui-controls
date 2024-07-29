@@ -4726,4 +4726,38 @@ describe('RTE CR issues ', () => {
             }, 400);
         });
     });
+    describe('895384 - The placeholder does not show up after cleaning up all the content in the Rich Text Editor.', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyBoardEventDel: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
+        let innerHTML: string = `<p>hello</p><ul><li>world</li><li id="one">this&nbsp;</li><li id="two">is</li></ul><p>me</p>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                value: innerHTML
+
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+        it('select all content in rte and press delete ', (done: DoneFn) => {
+            rteObj.inputElement.innerHTML=innerHTML;
+            rteObj.dataBind();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#one').childNodes[0], rteObj.element.querySelector('#two'), 0, 1);
+            keyBoardEventDel.keyCode = 46;
+            keyBoardEventDel.code = 'Delete';
+            keyBoardEventDel.action = 'delete';
+            (rteObj as any).keyDown(keyBoardEventDel);
+            (rteObj as any).keyUp(keyBoardEventDel);
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML==='<p>hello</p><ul><li>world</li></ul><p>me</p>').toBe(true);
+                done();
+            }, 100);
+        });
+    });
 });

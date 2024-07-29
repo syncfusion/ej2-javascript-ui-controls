@@ -838,7 +838,7 @@ export class CommentView {
     public reopenButton: Button;
     public deleteButton: Button;
     public resolveView: HTMLElement;
-    private itemData: FieldSettingsModel[] = [];
+    public itemData: FieldSettingsModel[] = [];
     private editMention: Mention;
     private replyMention: Mention;
 
@@ -1027,8 +1027,12 @@ export class CommentView {
     }
 
     private onSelect(e: MentionSelectEventArgs): void {
-        this.itemData.push(e.itemData);
-        
+        this.owner.documentEditorSettings.mentionSettings.fields
+        let data: any = {};
+        let item: any = e.itemData as any;
+        data.text = item[this.owner.documentEditorSettings.mentionSettings.fields.text]
+        data.value = item[this.owner.documentEditorSettings.mentionSettings.fields.value];
+        this.itemData.push(data);
     }
 
     private initDateView(): void {

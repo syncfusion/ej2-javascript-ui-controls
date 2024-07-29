@@ -117,7 +117,6 @@ export class GanttTreeGrid {
             this.parent.treeGrid.dataSource = {result: this.parent.flatData, count: count};
         } else {
             if (!this.parent.treeGrid.loadChildOnDemand && this.parent.taskFields.hasChildMapping) {
-                this.parent.autoCalculateDateScheduling = false;
                 this.parent.treeGrid.dataSource = this.parent.dataSource;
             }
             else {
@@ -523,7 +522,7 @@ export class GanttTreeGrid {
         }
         if (getValue('requestType', args) === 'refresh' && isNullOrUndefined(getValue('type', args)) && this.parent.addDeleteRecord) {
             if (this.parent.selectedRowIndex !== -1) {
-                if (!isNullOrUndefined(this.parent.selectionModule)) {
+                if (!isNullOrUndefined(this.parent.selectionModule) && this.parent.selectionSettings && this.parent.selectionSettings.persistSelection && this.parent.editModule.isAdded) {
                     const selectedIndexes: number[] = this.parent.selectionModule.selectedRowIndexes;
                     if (selectedIndexes.length > 1 && this.parent.selectionSettings.persistSelection) {
                         for (let i: number = 0; i < selectedIndexes.length; i++) {

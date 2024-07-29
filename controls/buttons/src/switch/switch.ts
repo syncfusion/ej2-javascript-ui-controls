@@ -180,7 +180,9 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         if (!this.disabled) {
             this.unWireEvents();
         }
-        destroy(this, this.getWrapper() as Element, this.tagName);
+        if (this.getWrapper()) {
+            destroy(this, this.getWrapper() as Element, this.tagName);
+        }
         if (this.refreshing) {
             ['e-control', 'e-switch', 'e-lib'].forEach((key: string) => {
                 this.element.classList.add(key);

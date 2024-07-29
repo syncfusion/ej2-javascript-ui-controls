@@ -93,19 +93,20 @@ export class Resize implements IAction {
     }
 
     private autoFit(): void {
-        let isMaxWidthColumnEnable: boolean = false;
-        const newarray: string[] = this.parent.getColumns().filter((c: Column) => {
+        const cols: Column[] = this.parent.getColumns();
+        let isMaxWidthCount: number = 0;
+        const newarray: string[] = cols.filter((c: Column) => {
             if (!isNullOrUndefined(c.maxWidth)) { 
-                isMaxWidthColumnEnable = true;
+                isMaxWidthCount++;
             } 
             return c.autoFit === true;
         }).map((c: Column) => c.field || c.headerText);
         if (newarray.length > 0) {
             this.autoFitColumns(newarray);
         }
-        if (this.parent.allowResizing && isMaxWidthColumnEnable && (this.parent.resizeSettings.mode === 'Auto' ||
+        if (this.parent.allowResizing && isMaxWidthCount && (this.parent.resizeSettings.mode === 'Auto' ||
             (this.parent.resizeSettings.mode === 'Normal' && !this.parent.autoFit && newarray.length === 0))) {
-            this.widthService.setWidthToTable();
+            this.widthService.setWidthToTable(isMaxWidthCount !== cols.length);
         } else if (this.parent.autoFit && this.parent.resizeSettings.mode === 'Auto') {
             this.widthService.setWidthToTable()
         }
@@ -211,7 +212,7 @@ export class Resize implements IAction {
             this.widthService.refreshFrozenScrollbar();
         }
         const tableWidth: number = (headerTable as HTMLElement).offsetWidth;
-        const contentwidth: number = (gObj.getContent().scrollWidth);
+        const contentwidth: number = contentTable.parentElement.scrollWidth;
         if (contentwidth > tableWidth) {
             if (!isNullOrUndefined(contentTable.querySelector('.e-emptyrow'))) {
                 addClass([headerTable], ['e-tableborder']);

@@ -435,6 +435,7 @@ export class SfdtReader {
         let isFieldDisplayText: boolean = false;
         for (let i = 0; i < blocks.length; i++) {
             const inlines: any = blocks[i][inlinesProperty[this.keywordIndex]];
+            let mention: any = {};
             for (let j: number = 0; j < inlines.length; j++) {
                 const inline: any = inlines[j];
                 if ((inline[fieldTypeProperty[this.keywordIndex]] === 0) || (inline[fieldTypeProperty[this.keywordIndex]] === 1) || (inline[fieldTypeProperty[this.keywordIndex]] === 2)) {
@@ -446,15 +447,17 @@ export class SfdtReader {
                     continue;
                 }
                 let textValue: string = inline[textProperty[this.keywordIndex]];
-                let mention: any = {};
+                
                 if (isFieldCode) {
                     let updatedText: string = textValue.replace(/.*"(.*)".*/, '$1');
-                    mention.EmailId = updatedText;
+                    updatedText = updatedText.replace('mailto:', '');
+                    mention.value = updatedText;
                     isFieldCode = false;
                 } else if (isFieldDisplayText) {
-                    mention.Name = textValue;
+                    mention.text = textValue;
                     isFieldDisplayText = false;
                     data.push(mention);
+                    mention = {};
                 }
             }
         }
@@ -1280,8 +1283,8 @@ export class SfdtReader {
                 footnoteElement.characterFormat = new WCharacterFormat(footnoteElement);
                 this.parseCharacterFormat(this.keywordIndex, inline[characterFormatProperty[this.keywordIndex]], footnoteElement.characterFormat, writeInlineFormat);
                 this.applyCharacterStyle(inline, footnoteElement);
-                this.parseBody(inline[blocksProperty[this.keywordIndex]], footnoteElement.bodyWidget.childWidgets as BlockWidget[], footnoteElement.bodyWidget, false, undefined, undefined, undefined, true);
                 this.checkAndApplyRevision(this.keywordIndex, inline, footnoteElement);
+                this.parseBody(inline[blocksProperty[this.keywordIndex]], footnoteElement.bodyWidget.childWidgets as BlockWidget[], footnoteElement.bodyWidget, false, undefined, undefined, undefined, true);
                 lineWidget.children.push(footnoteElement);
                 hasValidElmts = true;
             } else if (inline.hasOwnProperty(chartTypeProperty[this.keywordIndex])) {

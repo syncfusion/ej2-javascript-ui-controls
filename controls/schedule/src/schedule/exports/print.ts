@@ -88,6 +88,7 @@ export class Print {
         Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, Year, TimelineYear);
         this.printInstance = new Schedule(this.getPrintScheduleModel(printOptions));
         this.printInstance.isPrinting = true;
+        this.printInstance.registeredTemplate = this.parent.registeredTemplate;
         this.printInstance.root = this.parent.root ? this.parent.root : this.parent;
         this.printInstance.appendTo(element);
         this.printInstance.on(events.print, this.contentReady, this);

@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 26.2.5 (2024-07-26)
+## 26.2.7 (2024-07-30)
+
+### Ribbon
+
+#### Features
+
+- `#I604471`, `#I604695` - Now we have provided support for automatically scaling SVG images as icons, that are compatible with different Ribbon Layouts.
+
+## 26.1.42 (2024-07-16)
 
 ### Ribbon
 

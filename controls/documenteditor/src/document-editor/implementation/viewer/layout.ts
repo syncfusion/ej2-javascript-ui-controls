@@ -10125,7 +10125,10 @@ export class Layout {
         }
         return false;
     }
-    private checkAndShiftEndnote(): void {
+    /**
+     * @private
+     */
+    public checkAndShiftEndnote(): void {
         if (this.documentHelper.owner.selectionModule) {
             let endBlock: BlockWidget = this.documentHelper.owner.selectionModule.end.paragraph;
             if (endBlock.isInsideTable) {
@@ -10187,7 +10190,7 @@ export class Layout {
         // } else {
         //     reLayoutItems = viewer.renderedElements.get(block as TableWidget).length === 0;
         // }
-        if (this.isNeedToRelayout(blockAdv.bodyWidget)) {
+        if (this.isNeedToRelayout(blockAdv.bodyWidget) || this.isPageBreakInsideContentControl(blockAdv)) {
             if (!this.isMultiColumnSplit) {
                 this.updateContainerForTable(block, viewer);
             }
@@ -10309,7 +10312,7 @@ export class Layout {
                 //Moves the paragraph widget to previous body widget.
                 if (!isNullOrUndefined(prevBodyWidget) && prevBodyWidget !== widget.containerWidget && !this.isMultiColumnSplit) {
                     index++;
-                    if (!(prevBodyWidget.lastChild as ParagraphWidget).isEndsWithPageBreak && !(prevBodyWidget.lastChild as ParagraphWidget).isEndsWithColumnBreak) {
+                    if (!(prevBodyWidget.lastChild as ParagraphWidget).isEndsWithPageBreak && !(prevBodyWidget.lastChild as ParagraphWidget).isEndsWithColumnBreak && !this.isPageBreakInsideContentControl(prevBodyWidget.lastChild as ParagraphWidget)) {
                         this.updateContainerWidget(widget, prevBodyWidget, index, true, footWidget);
                     }
                     if (footWidget.length > 0) {
@@ -10361,7 +10364,7 @@ export class Layout {
                     isSkip = false;
                     i--;
                 }
-                if (((widget.isEndsWithPageBreak && !this.isPageBreakInsideField(widget)) || widget.isEndsWithColumnBreak) && this.viewer instanceof PageLayoutViewer) {
+                if (((widget.isEndsWithPageBreak && !this.isPageBreakInsideField(widget)) || widget.isEndsWithColumnBreak || this.isPageBreakInsideContentControl(widget)) && this.viewer instanceof PageLayoutViewer) {
                     let nextBodyWidget: BodyWidget = this.createOrGetNextBodyWidget(prevBodyWidget, this.viewer);
                     nextBodyWidget = this.moveBlocksToNextPage(widget, true);
                     viewer.updateClientArea(nextBodyWidget, nextBodyWidget.page);
@@ -10456,6 +10459,22 @@ export class Layout {
         return isPageBreakInsideField;
     }
 
+    private isPageBreakInsideContentControl(widget: BlockWidget): boolean {
+        let isPageBreakBlockContentControl: boolean = false;
+        if (widget instanceof ParagraphWidget && widget.childWidgets.length > 0) {
+            let lastLine: LineWidget = widget.childWidgets[widget.childWidgets.length - 1] as LineWidget;
+            if (lastLine.children.length > 0) {
+                let lastElement: ElementBox = lastLine.children[lastLine.children.length - 1] as ElementBox;
+                if (lastElement instanceof ContentControl && lastElement.contentControlWidgetType === 'Block' &&
+                    !isNullOrUndefined(lastElement.previousElement) && lastElement.previousElement instanceof TextElementBox
+                    && (lastElement.previousElement as TextElementBox).text === '\f') {
+                    isPageBreakBlockContentControl = true;
+                }
+            }
+        }
+        return isPageBreakBlockContentControl;
+    }
+    
     /**
      * @private
      * Get the footnote of the block widget.

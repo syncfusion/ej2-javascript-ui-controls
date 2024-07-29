@@ -55,6 +55,11 @@ export class DocumentHelper {
     public isCompleted: boolean = true;
     /**
      * @private
+     * To set the copied content to the clipboard. Reserved for internal use.
+     */
+    public isCopying: boolean = false;
+    /**
+     * @private
      */
     public fontColorInputElement: ColorPicker;
     /**
@@ -1419,6 +1424,7 @@ export class DocumentHelper {
         window.addEventListener('keyup', this.onKeyUpInternal);
         window.addEventListener('mouseup', this.onImageResizer);
         window.addEventListener('touchend', this.onImageResizer);
+        window.addEventListener('copy', this.onCopy);
         this.viewerContainer.addEventListener('touchstart', this.onTouchStartInternal);
         this.viewerContainer.addEventListener('touchmove', this.onTouchMoveInternal);
         this.viewerContainer.addEventListener('touchend', this.onTouchUpInternal);
@@ -1696,6 +1702,20 @@ export class DocumentHelper {
             this.owner.editorModule.onTextInputInternal();
         } else {
             this.editableDiv.innerText = '';
+        }
+    };
+
+    /**
+     * Fired on copy.
+     *
+     * @private
+     * @param {ClipboardEvent} event - Specifies clipboard event.
+     * @returns {void}
+     */
+    public onCopy = (event: ClipboardEvent): void => {
+        if (this.isCopying && !isNullOrUndefined(this.selection) && !this.selection.isEmpty) {
+            this.owner.selection.onCopy(event);
+            event.preventDefault();
         }
     };
 
@@ -3204,7 +3224,7 @@ export class DocumentHelper {
                 page = this.pages[i];
                 page.boundingRectangle = new Rect(page.boundingRectangle.x, top, page.boundingRectangle.width, page.boundingRectangle.height);
                 top = page.boundingRectangle.bottom + 20;
-                if (!isNullOrUndefined(page.bodyWidgets[0].firstChild) && !(page.bodyWidgets[0].firstChild instanceof TableWidget && page.bodyWidgets[0].firstChild.header)) {
+                if (page.bodyWidgets.length > 0 && !isNullOrUndefined(page.bodyWidgets[0].firstChild) && !(page.bodyWidgets[0].firstChild instanceof TableWidget && page.bodyWidgets[0].firstChild.header)) {
                     page.repeatHeaderRowTableWidget = false;
                 }
             }
@@ -4311,6 +4331,7 @@ export class DocumentHelper {
         window.removeEventListener('keyup', this.onKeyUpInternal);
         window.removeEventListener('mouseup', this.onImageResizer);
         window.removeEventListener('touchend', this.onImageResizer);
+        window.removeEventListener('copy', this.onCopy);
         if (navigator !== undefined && navigator.userAgent.match('Firefox')) {
             this.viewerContainer.removeEventListener('DOMMouseScroll', this.zoomModule.onMouseWheelInternal);
         }

@@ -2257,9 +2257,9 @@ describe('Vertical View Event Render Module', () => {
             const appointmentWrapper: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(appointmentWrapper[3].childElementCount).toEqual(2);
             const firstEvent: HTMLElement = schObj.element.querySelector('[data-id ="Appointment_1"]');
-            expect(firstEvent.style.height).toEqual('1.2px');
+            expect(firstEvent.style.height).toEqual('36px');
             const secondEvent: HTMLElement = schObj.element.querySelector('[data-id ="Appointment_2"]');
-            expect(secondEvent.style.height).toEqual('1.2px');
+            expect(secondEvent.style.height).toEqual('36px');
         });
     });
 

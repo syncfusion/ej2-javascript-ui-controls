@@ -11,7 +11,8 @@ import { Reorder } from '../../../src/grid/actions/reorder';
 import { Page } from '../../../src/grid/actions/page';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { Selection } from '../../../src/grid/actions/selection';
-import { filterData, data } from '../base/datasource.spec';import { ColumnMenu} from '../../../src/grid/actions/column-menu';
+import { filterData, data, normalData, foreigndata } from '../base/datasource.spec';
+import { ColumnMenu} from '../../../src/grid/actions/column-menu';
 import { ContextMenu } from '../../../src/grid/actions/context-menu';
 import { ContextMenuOpenEventArgs } from '../../../src/grid/base/interface';
 import { ColumnMenuOpenEventArgs } from '../../../src/grid/base/interface';
@@ -731,6 +732,47 @@ describe('Dialog Editing module', () => {
         afterAll(() => {
             destroy(gridObj);
             gridObj = null;
+        });
+    });
+
+    describe('EJ2-897585 - When the foreign key column is grouped, the edit dialog of the selected record does not open properly with those records => ', ()=>{
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: normalData,
+                    allowPaging: true,
+                    allowGrouping: true,
+                    groupSettings: { columns: ['CustomerID'] },
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Dialog' },
+                    pageSettings: { pageCount: 5 },
+                    toolbar: ['Add', 'Edit', 'Delete'],
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, isPrimaryKey: true },
+                        { field: 'CustomerID',  headerText: 'Customer ID', width: 120, foreignKeyField: 'CustomerName', foreignKeyValue: 'ShipCountry', dataSource: foreigndata },
+                        { field: 'Freight',  headerText: 'Freight', width: 120},
+                        { field: 'ShipCountry',  headerText: 'Ship Country', width: 120 }
+                    ],
+                }, done);
+        });
+        
+        it('Verify the presence of the clicked row for editing', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'beginEdit') {
+                    expect(args.rowData.OrderID).toBe(10252);
+                    done();
+                }
+            }
+            gridObj.clearSelection();
+            gridObj.selectRow(0, true);
+            gridObj.actionComplete = actionComplete;
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
         });
     });
 

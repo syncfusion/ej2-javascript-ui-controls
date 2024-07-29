@@ -145,7 +145,7 @@ describe('FileManager control Grid view', () => {
             evt.initEvent('contextmenu', true, true);
             Li.dispatchEvent(evt);
             expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Open');
-            expect(sourceElement.element.querySelectorAll('li')[0].classList.contains('e-disabled')).toBe(true);
+            expect(sourceElement.element.querySelectorAll('li')[0].classList.contains('e-disabled')).toBe(false);
         });
         it('folder context menu upload process testing', () => {
             let el: any = document.getElementById(feObj.element.id + '_contextmenu');

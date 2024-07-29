@@ -170,9 +170,11 @@
         &:focus-visible {
           @if $skin-name == 'fluent2' {
             box-shadow: $secondary-shadow-focus;
+            color: $breadcrumb-item-color !important; /* stylelint-disable-line declaration-no-important */
 
-            & .e-breadcrumb-icon {
-              color: $icon-color;
+            & .e-breadcrumb-icon,
+            &.e-breadcrumb-url .e-breadcrumb-icon {
+              color: $icon-color !important; /* stylelint-disable-line declaration-no-important */
             }
           }
         }

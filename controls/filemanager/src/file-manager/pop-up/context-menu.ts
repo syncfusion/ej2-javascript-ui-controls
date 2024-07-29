@@ -146,6 +146,9 @@ export class ContextMenu {
                 /* istanbul ignore next */
             } else if (closest(target, '#' + this.parent.element.id + CLS.TREE_ID)) {
                 uid = closest(target, 'li').getAttribute('data-uid');
+                if (!isNOU(uid)) {
+                    this.parent.navigationpaneModule.treeObj.selectedNodes = [uid];
+                }
                 treeFolder = true;
             }
             /* istanbul ignore next */
@@ -400,11 +403,7 @@ export class ContextMenu {
                     break;
                 case 'paste':
                     if (this.menuType === 'folder') {
-                        if ((this.parent.activeModule === 'largeiconsview') || (this.parent.activeModule === 'detailsview')) {
-                            this.parent.folderPath = getFullPath(this.parent, this.menuItemData, this.parent.path);
-                        } else {
-                            this.parent.folderPath = '';
-                        }
+                        this.parent.folderPath = getFullPath(this.parent, this.menuItemData, this.parent.path);
                     } else {
                         this.parent.folderPath = '';
                     }

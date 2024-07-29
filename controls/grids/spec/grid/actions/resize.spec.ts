@@ -1410,4 +1410,32 @@ describe('Resize module', () => {
         });
     });
 
+    describe('EJ2-899166 - The columns width is set to "Auto". When resized, the column jumps back to its max width.', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    height: 410,
+                    allowResizing: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, maxWidth: 300, minWidth: 10 },
+                        { field: 'Freight', width: 125, format: 'C2', minWidth: 10 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, minWidth: 10 },
+                    ],
+    
+                    pageSettings: { pageCount: 5 }
+                }, done);
+        });
+    
+        it('content table 100% width test', () => {
+            expect((gridObj.getContentTable() as HTMLElement).style.width).toBe('100%');
+        });
+    
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+
 });

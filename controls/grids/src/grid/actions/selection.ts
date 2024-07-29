@@ -352,7 +352,7 @@ export class Selection implements IAction {
             this.parent.trigger(events.rowSelecting, this.fDataUpdate(args),
                                 this.rowSelectingCallBack(args, isToggle, index, selectData, isRemoved, isRowSelected, can));
         } else {
-            if ( this.selectionSettings.checkboxMode !== 'ResetOnRowClick' ) {
+            if (this.selectionSettings.checkboxMode !== 'ResetOnRowClick' && this.selectionSettings.persistSelection) {
                 this.rowDeselect(events.rowDeselecting, [rowObj.index], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], this.actualTarget);
                 if (this.isCancelDeSelect) {
                     return;

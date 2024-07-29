@@ -356,8 +356,11 @@ export class Selection {
             const rIndex: number = parseInt(selectedRow.getAttribute('data-rowindex'), 10);
             const isToggle: boolean = this.parent.selectionSettings.enableToggle;
             if (this.parent.selectionSettings.type === 'Single' || (!this.isMultiCtrlRequest && !this.isMultiShiftRequest)) {
+                if (this.parent.selectionSettings.persistSelection) {
+                    this.addRemoveClass(this.selectedRowIndexes, e['name']);
+                }
                 if (!this.parent.allowTaskbarDragAndDrop || (this.parent.allowTaskbarDragAndDrop && (this.parent.rowDragAndDropModule &&
-                   !this.parent.rowDragAndDropModule['draggedRecord']))) {
+                    !this.parent.rowDragAndDropModule['draggedRecord']))) {
                     this.selectRow(rIndex, isToggle);
                 }
             } else {
@@ -428,6 +431,10 @@ export class Selection {
                 }
                 else if (index > -1) {
                     this.addClass(selectedRow);
+                }
+                if ((this.parent.selectionSettings.type === 'Single' || (!this.isMultiCtrlRequest && !this.isMultiShiftRequest)) && index > -1 && this.parent.selectionSettings.persistSelection &&
+                    request === 'chartMouseUp' && this.isSelectionFromChart) {
+                    this.removeClass(selectedRow);
                 }
             }
         }

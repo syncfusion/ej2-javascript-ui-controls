@@ -2,7 +2,7 @@
 import { RevisionType, RevisionActionType } from '../../base/types';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../../document-editor';
-import { ShapeBase, ElementBox, ParagraphWidget, TableRowWidget, TableWidget, TableCellWidget, BookmarkElementBox, FootnoteElementBox, Widget, BlockWidget, FieldElementBox } from '../viewer/page';
+import { ShapeBase, ElementBox, ParagraphWidget, TableRowWidget, TableWidget, TableCellWidget, BookmarkElementBox, FootnoteElementBox, Widget, BlockWidget, FieldElementBox, HeaderFooterWidget, ShapeElementBox } from '../viewer/page';
 import { WCharacterFormat } from '../format/character-format';
 import { WRowFormat } from '../format/row-format';
 import { Selection, TextPosition } from '../selection';
@@ -301,11 +301,18 @@ export class Revision {
             if (item instanceof FootnoteElementBox) {
                 if (item.footnoteType === 'Footnote') {
                     this.owner.editorModule.removeFootnote(item);
+                } else {
+                    this.owner.editorModule.removeEndnote(item);
                 }
+            } else if (item instanceof ShapeElementBox) {
+                this.owner.editorModule.removeDeletedShapeRevision(item);
             }
             this.removeItem(item);
             this.isContentRemoved = true;
-            this.owner.documentHelper.layout.reLayoutParagraph(currentPara, 0, 0);
+            let skipRelayout: boolean = !isNullOrUndefined(currentPara) && !isNullOrUndefined(currentPara.bodyWidget) && currentPara.bodyWidget instanceof HeaderFooterWidget && (isNullOrUndefined(currentPara.bodyWidget.page) || (!isNullOrUndefined(currentPara.bodyWidget.page) && currentPara.bodyWidget.page.index === -1))
+            if (!skipRelayout) {
+                this.owner.documentHelper.layout.reLayoutParagraph(currentPara, 0, 0);
+            }
             if (isNullOrUndefined(currentPara.childWidgets)) {
                 const textPosition: TextPosition = this.owner.selectionModule.getTextPosBasedOnLogicalIndex(this.owner.selectionModule.editPosition);
                 this.owner.selectionModule.selectContent(textPosition, true);
@@ -450,7 +457,7 @@ export class Revision {
             for (let i: number = 0; i < elementPara.characterFormat.revisions.length; i++) {
                 let currentRevision: Revision = elementPara.characterFormat.revisions[i];
                 let rangeIndex: number = currentRevision.range.indexOf(element);
-                if (rangeIndex >= 0) {
+                if (rangeIndex >= 0 && currentRevision.revisionID === this.revisionID) {
                     return true;
                 }
             }

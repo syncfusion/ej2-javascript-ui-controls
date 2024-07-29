@@ -32,11 +32,11 @@ import { PasteOptions } from './index';
 import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo, ContextElementInfo, CollaborativeEditing, CollaborativeEditingEventArgs, Operation, ProtectionInfo, HistoryInfo, BaseHistoryInfo, WParagraphStyle, WList, WCharacterStyle, CollaborativeEditingHandler, ActionInfo } from './implementation/index';
 import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-dialog';
 import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';
-import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat, ProtectionType, ContentControlInfo, ServerActionType } from './base';
+import { FormFillingMode, TrackChangeEventArgs, ServiceFailureArgs, ImageFormat, ProtectionType, ContentControlInfo, ServerActionType, CommentInfo, CommentProperties } from './base';
 import { TrackChangesPane } from './implementation/track-changes/track-changes-pane';
 import { RevisionCollection } from './implementation/track-changes/track-changes';
 import { NotesDialog } from './implementation/dialogs/notes-dialog';
-import { ContentControl, FootNoteWidget, HeaderFooterWidget, IWidget, ImageElementBox, LineWidget, TextElementBox } from './implementation/viewer/page';
+import { CommentElementBox, ContentControl, FootNoteWidget, HeaderFooterWidget, IWidget, ImageElementBox, LineWidget, TextElementBox } from './implementation/viewer/page';
 import { internalZoomFactorChange, contentChangeEvent, documentChangeEvent, selectionChangeEvent, zoomFactorChangeEvent, beforeFieldFillEvent, afterFieldFillEvent, serviceFailureEvent, viewChangeEvent, customContextMenuSelectEvent, customContextMenuBeforeOpenEvent, internalviewChangeEvent, internalDocumentEditorSettingsChange, trackChanges, internalOptionPaneChange } from './base/constants';
 import { Optimized, Regular, HelperMethods } from './index';
 import { ColumnsDialog } from './implementation/dialogs/columns-dialog';
@@ -51,6 +51,8 @@ import { DatePickerDialog } from './implementation/dialogs/datepicker-dialog';
 import { ContentControlPropertiesDialog } from './implementation/dialogs/content-control-properties-dialog';
 import { PicContentControlDialog } from './implementation/dialogs/pic-contentControl-dialog';
 import { DialogUtility, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
+import { Comment } from './base/events-helper';
+import { FieldSettingsModel } from '@syncfusion/ej2-dropdowns';
 /**
  * The `DocumentEditorSettings` module is used to provide the customize property of Document Editor.
  */
@@ -1168,6 +1170,47 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
         return this.documentHelper.pages.length;
     }
+    /**
+     * Gets the entire document's comment information.
+     *
+     * @returns {CommentInfo[]} Returns the collection of comments.
+     */
+    public getComments(): CommentInfo[] {
+        let data: CommentInfo[] = [];
+        
+        const commentCollection: CommentElementBox[] = this.documentHelper.comments;
+      
+        if (commentCollection.length > 0) {
+            let tempData: any = [];
+            for(let comment of this.documentHelper.comments) {
+                tempData = [];
+                let commentProperties: CommentProperties = {
+                    author: comment.author,
+                    isResolved: comment.isResolved ? comment.isResolved : false,
+                    dateTime: this.editor.parseDateTime(comment.createdDate),
+                };
+                for(let replyComment of comment.replyComments) {
+                        let replyCommentProperties: CommentProperties = {
+                            author: replyComment.author,
+                            isResolved: replyComment.isResolved ? comment.isResolved : false,
+                            dateTime: this.editor.parseDateTime(replyComment.createdDate),
+                        };
+                        let newComment: Comment = new Comment(comment.commentId, replyCommentProperties, HelperMethods.parseCommentAsText(replyComment));
+                        tempData.push(newComment);
+                    }
+                
+                let commentInfo: CommentInfo = {
+                    id: comment.commentId,
+                    text: HelperMethods.parseCommentAsText(comment),
+                    commentProperties: commentProperties,
+                    replies: tempData,
+                }
+                data.push(commentInfo);
+            }
+        }
+        return data;
+    }
+
     /**
      * Gets the selection object of the document editor.
      *

@@ -402,8 +402,8 @@ describe('Pager base module', () => {
         element.innerHTML = '<span class ="e-pagenomsg">${currentPage} of ${totalPages} pages</span>'
         beforeAll((done: Function) => {
             let created: EmitType<Object> = () => { done(); };
+            document.body.appendChild(element);
             document.body.appendChild(elem);
-            elem.appendChild(element)
             pagerObj = new Pager({
                 template: '#pagertemplate', totalRecordsCount: 100, created: created
             });

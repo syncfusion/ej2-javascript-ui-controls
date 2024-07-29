@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 26.2.7 (2024-07-30)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I600937` - Now, the entered value works properly when typed in Korean in the Rich Text Editor.
+
+- `#I612147` - Now, deleting the list content by selecting deletes only the selected list elements instead of the whole list in Rich Text Editor.
+
 ## 26.2.4 (2024-07-24)
 
 ### RichTextEditor
@@ -38,11 +48,7 @@
 
 - `#I585350` - Now, the list format is reverted properly when using the `executeCommand` method to apply and revert the list in the Rich Text Editor.
 
-- `#I600937` - Now, the entered value works properly when typed in Korean in the Rich Text Editor.
-
 - `#I571199` - Now, improved the memory performance of the Rich Text Editor. The Rich Text Editor instance will now be properly cleared when using the destroy method.
-
-- Now, the toolbar and quick toolbar tooltip will be rendered inside the Rich Text Editor Element instead of on the body.
 
 ## 26.1.40 (2024-07-02)
 

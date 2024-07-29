@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 26.2.7 (2024-07-30)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I597088` - Resolved the footnote and endnote numbers appearing as box issue.
+- `#I613353`, `#I610202` - Resolved the issue occurs when copying the paragraph.
+- `#I607408` - Resolved the copy pasting issue with certain chars on enabling local paste.
+- `#I605357`, `I605371` - Resolved the footnote and endnote inconsistent behaviour with track changes.
+- `#I609576` - Resolved the content layout issue on protected edit region.
+- `#I607325` - Resolved the content gets overlapped issue when selection moves to header.
+- `#I607277` - Resolved the script error when applying border for merged cells.
+- `#I606994` - Resolved the script error issue when copy pasting list.
+- `#I606137` - Resolved the content overlapping issue when the track changes alert dialog closed.
+- `#I610807` - Resolved the script error issue when exporting document as PDF.
+
 ## 26.2.4 (2024-07-24)
 
 ### DocumentEditor

@@ -983,7 +983,8 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
             this.getPagerTemplate()(data, this, 'template', tempId, null, null, this.element);
             this.renderReactTemplates();
         } else {
-            result = this.isVue ? this.getPagerTemplate()(data, this, 'template') as Element[] : this.getPagerTemplate()(data);
+            result = this.isVue ? this.getPagerTemplate()(data, this, 'template', null, null, null, null, this.root) as Element[]
+                : this.getPagerTemplate()(data);
             appendChildren(this.element, result);
         }
     }
@@ -1018,6 +1019,8 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
                 } else {
                     if (document.querySelectorAll(template).length) {
                         this.templateFn = templateCompiler(document.querySelector(template).innerHTML.trim());
+                    } else {
+                        this.templateFn = templateCompiler(template);
                     }
                 }
             } catch (e) {

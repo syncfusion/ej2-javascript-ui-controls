@@ -32,6 +32,14 @@
   line-height: $line-height;
 }
 
+@mixin ribbon-items-icon-images($items-size) {
+  min-height: $items-size;
+  min-width: $items-size;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+}
+
 @mixin ribbon-font-props($font-size, $line-height) {
   font-size: $font-size;
   line-height: $line-height;
@@ -700,6 +708,7 @@
           }
 
           .e-btn-icon:not(.e-caret) {
+            @include ribbon-items-icon-images($ribbon-large-items-min-width-height);
             font-size: $ribbon-large-items-icon-size;
             font-weight: $ribbon-items-font-weight;
             padding: $ribbon-large-items-icon-padding;
@@ -818,6 +827,9 @@
           .e-btn-icon {
             @include ribbon-font-props(16px, 16px);
             margin: $ribbon-items-margin;
+            &:not(.e-caret) {
+              @include ribbon-items-icon-images($ribbon-items-min-width-height);
+            }
           }
         }
 
@@ -959,6 +971,13 @@
         width: 100%;
         height: $ribbon-medium-item-height;
 
+        .e-btn .e-btn-icon {
+          &:not(.e-caret) {
+            min-width: $ribbon-overflow-items-min-width-height;
+            min-height: $ribbon-overflow-items-min-width-height;
+          }
+        }
+
         .e-btn .e-btn-icon.e-icon-left {
           margin: 0;
         }
@@ -997,7 +1016,7 @@
 
       &.e-ribbon-medium-item {
         .e-btn .e-btn-icon.e-icon-left {
-          padding: $ribbon-button-icon-padding;
+          margin: $ribbon-button-icon-padding;
         }
 
         &:not(:has(.e-colorpicker-wrapper)) .e-btn {
@@ -1036,7 +1055,7 @@
         
         &.e-ribbon-medium-item {
           .e-btn .e-btn-icon.e-icon-left {
-            padding: $ribbon-rtl-button-icon-padding;
+            margin: $ribbon-rtl-button-icon-padding;
           }
 
           &:not(:has(.e-colorpicker-wrapper)) .e-btn {
@@ -1488,6 +1507,7 @@
           max-width: $ribbon-bigger-large-items-max-width;
 
           .e-btn-icon:not(.e-caret) {
+            @include ribbon-items-icon-images($ribbon-bigger-large-items-min-width-height);
             font-size: $ribbon-bigger-large-items-icon-size;
             padding: $ribbon-bigger-large-items-icon-padding;
           }
@@ -1518,6 +1538,10 @@
           .e-btn-icon {
             @include ribbon-font-props($ribbon-bigger-items-icon-size, $ribbon-bigger-items-icon-height);
             margin: $ribbon-bigger-items-margin;
+            &:not(.e-caret) {
+              min-width: $ribbon-bigger-items-min-width-height;
+              min-height: $ribbon-bigger-items-min-width-height;
+            }
           }
         }
 
@@ -1574,6 +1598,10 @@
         }
         .e-btn .e-btn-icon {
           font-size: $ribbon-bigger-items-btn-icon-size;
+          &:not(.e-caret) {
+            min-width: $ribbon-bigger-overflow-items-min-width-height;
+            min-height: $ribbon-bigger-overflow-items-min-width-height;
+          }
           &.e-icon-left {
             margin: 0;
           }
@@ -1610,7 +1638,7 @@
 
         &.e-ribbon-medium-item {
           .e-btn .e-btn-icon.e-icon-left {
-            padding: $ribbon-bigger-button-icon-padding;
+            margin: $ribbon-bigger-button-icon-padding;
           }
           
           &:not(:has(.e-colorpicker-wrapper)) .e-btn {
@@ -1646,7 +1674,7 @@
 
         &.e-ribbon-medium-item {
           .e-btn .e-btn-icon.e-icon-left {
-            padding: $ribbon-bigger-rtl-button-icon-padding;
+            margin: $ribbon-bigger-rtl-button-icon-padding;
           }
             
           &:not(:has(.e-colorpicker-wrapper)) .e-btn {

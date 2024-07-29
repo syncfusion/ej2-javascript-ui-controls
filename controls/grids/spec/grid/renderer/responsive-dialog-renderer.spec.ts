@@ -105,8 +105,8 @@ describe('Adaptive renderer', () => {
 
         it('Ensure toolbar edit and delete after deselecting a row', (done: Function) => {
             let rowDeselected = (args?: any): void => {
-                expect(document.querySelector('.e-toolbar-item[title=Edit]').classList.contains('e-hidden')).toBeFalsy();
-                expect(document.querySelector('.e-toolbar-item[title=Delete]').classList.contains('e-hidden')).toBeFalsy();
+                expect(document.querySelector('.e-toolbar-item[title=Edit]').classList.contains('e-hidden')).toBeTruthy();
+                expect(document.querySelector('.e-toolbar-item[title=Delete]').classList.contains('e-hidden')).toBeTruthy();
                 expect(document.querySelector('.e-toolbar-item[title=Update]').classList.contains('e-hidden')).toBeTruthy();
                 expect(document.querySelector('.e-toolbar-item[title=Cancel]').classList.contains('e-hidden')).toBeTruthy();
                 gridObj.rowDeselected = null;

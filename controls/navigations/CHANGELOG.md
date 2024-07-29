@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.2.7 (2024-07-30)
+
+### TreeView
+
+#### Bug fixes
+
+- `#I611332` - The issue with the TreeView checkbox template sample with autoCheck property in the TreeView component has been resolved.
+
 ## 26.1.41 (2024-07-09)
 
 ### TreeView

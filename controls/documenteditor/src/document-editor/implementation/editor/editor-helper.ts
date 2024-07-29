@@ -1,10 +1,10 @@
 import { isNullOrUndefined, NumberFormatOptions, Internationalization, DateFormatOptions, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
 import { LineWidget, ElementBox, BodyWidget, ParagraphWidget, TextElementBox, BlockWidget, TableRowWidget, TableCellWidget, TableWidget } from '../viewer/page';
-import { WCharacterFormat, WCellFormat, TextPosition, TextSearchResults, WList, WAbstractList, Revision } from '../index';
+import { WCharacterFormat, WCellFormat, TextPosition, TextSearchResults, WList, WAbstractList, Revision, CommentElementBox } from '../index';
 import { HighlightColor, TextFormFieldType, CheckBoxSizeType, RevisionType, CollaborativeEditingAction, CompatibilityMode, BaselineAlignment, Underline, Strikethrough, BiDirectionalOverride, BreakClearType, LineStyle, TextAlignment, LineSpacingType, OutlineLevel, VerticalAlignment } from '../../base/types';
 import { Widget, FieldElementBox, CommentCharacterElementBox } from '../viewer/page';
-import { Dictionary } from '../..';
+import { Dictionary, MentionDataEditInfo } from '../..';
 import { WBorder, WBorders, WParagraphFormat } from '../format';
 import {
     boldProperty, italicProperty, fontSizeProperty, fontFamilyProperty, underlineProperty,
@@ -18,7 +18,7 @@ import {
     keepLinesTogetherProperty, keepWithNextProperty, contextualSpacingProperty, widowControlProperty,
     topProperty, leftProperty, rightProperty, bottomProperty, horizontalProperty, verticalProperty,
     colorProperty, hasNoneStyleProperty, lineStyleProperty, lineWidthProperty, shadowProperty, spaceProperty, inlinesProperty,
-    characterFormatProperty, textProperty, fieldTypeProperty, hasFieldEndProperty
+    characterFormatProperty, textProperty, fieldTypeProperty, hasFieldEndProperty, 
 } from '../../index';
 import { FieldSettingsModel } from '@syncfusion/ej2-navigations';
 
@@ -922,11 +922,51 @@ export class HelperMethods {
         });
         return blocks;
     }
+    public static parseCommentAsText(comment: CommentElementBox): string {
+        // Create a temporary DOM element to manipulate the input string
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = comment.text;
 
+        // Find all span elements with the class 'e-mention-chip'
+        const spanElements = tempDiv.querySelectorAll('span.e-mention-chip');
+        const inputDataStr: string = JSON.stringify(comment.mentions);
+        const inputData: MentionDataEditInfo[] = JSON.parse(inputDataStr);
+        let index = 0;
+        if (spanElements.length !== inputData.length) {
+            throw new Error("The lengths of spanElements and inputData do not match");
+        }
+
+        spanElements.forEach((span) => {
+            if (index in inputData) {
+                const data: MentionDataEditInfo = inputData[index] as MentionDataEditInfo;
+
+                if (data && typeof data.value === 'string' && typeof data.text === 'string') {
+                    const anchor = document.createElement('a');
+                    anchor.href = `mailto:${data.value}`;
+                    anchor.textContent = `@${data.text}`;
+                    span.replaceWith(anchor);
+                }
+
+                index++;
+            }
+        });
+
+        // Get the updated innerHTML
+        let result = tempDiv.innerHTML;
+
+        // Replace <br> with appropriate newline characters
+        result = result.replace(/<br>/g, '\r\n');
+
+        return result;
+    }
     private static getEmailIdByName(name: string, mentions: FieldSettingsModel[]): string {
         for (let item of mentions) {
-            if (item["Name"] === name) {
-                return item["EmailId"];
+            if (item["text"] === name) {
+                if(!isNullOrUndefined(item["value"])) {
+                    return item["value"];
+                } else {
+                    return item["text"] + '.com';
+                }
             }
         }
         return "";
@@ -940,7 +980,7 @@ export class HelperMethods {
         block[inlinesProperty[keywordIndex]].push(inlines);
         var inlines2 = {};
         inlines2[characterFormatProperty[keywordIndex]] = {};
-        inlines2[textProperty[keywordIndex]] = ' HYPERLINK \"' + email + '\" ';
+        inlines2[textProperty[keywordIndex]] = ' HYPERLINK \"mailto:' + email + '\" ';
         block[inlinesProperty[keywordIndex]].push(inlines2);
         var inlines3 = {};
         inlines3[characterFormatProperty[keywordIndex]] = {};
@@ -1113,9 +1153,11 @@ export class HelperMethods {
         const dateTime: string = dateString + ' ' + time;
         return dateTime;
     }
-    public static getUtcDate(): string {
-        const now = new Date();
-        return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString();
+    public static getUtcDate(dateTime?: Date): string {
+        if (isNullOrUndefined(dateTime)) {
+            dateTime = new Date();
+        }
+        return new Date(dateTime.getTime() - dateTime.getTimezoneOffset() * 60000).toISOString();
     }
     public static getLocaleDate(date: string): Date {
         const dt: Date = new Date(date);

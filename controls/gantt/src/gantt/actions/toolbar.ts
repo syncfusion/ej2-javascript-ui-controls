@@ -446,7 +446,22 @@ export class Toolbar {
         }      
         if (gObj.selectionModule && gObj.selectionSettings.type === 'Multiple' && gObj.selectionModule.selectedRowIndexes.length > 1) {
             isSelected = false;
-        }      
+        }
+        let isPersist: boolean = false;
+        if (gObj.selectionModule && gObj.selectionSettings.persistSelection) {
+            const selectedRecords: number = gObj.selectionModule.getSelectedRecords().length;
+            if (gObj.selectionSettings.persistSelection && selectedRecords === 1) {
+                for (let i: number = 0; i < selectedRecords; i++) {
+                    const index: number = gObj.currentViewData.indexOf(gObj.selectionModule.getSelectedRecords()[i as number]);
+                    if (index === -1) {
+                        isPersist = true;
+                    }
+                }
+            }
+            if (isPersist) {
+                isSelected = false;
+            }
+        }
         const toolbarItems: ItemModel[] = this.toolbar ? this.toolbar.items : [];
         const toolbarDefaultItems: string[] = [gID + '_add', gID + '_edit', gID + '_delete',
             gID + '_update', gID + '_cancel', gID + '_indent', gID + '_outdent'];
@@ -481,9 +496,26 @@ export class Toolbar {
                     }
                 }
             }
-            const isDeleteSelected: boolean = gObj.selectionModule ? gObj.selectionModule.getSelectedRecords().length > 0 ||
+            let isDeleteSelected: boolean = gObj.selectionModule ? gObj.selectionModule.getSelectedRecords().length > 0 ||
                 gObj.selectionModule.getSelectedRowCellIndexes().length > 0 ? true : false : false;
-            // eslint-disable-next-line
+            if (gObj.selectionModule && gObj.selectionSettings.persistSelection) {
+                if (isPersist) {
+                    isDeleteSelected = false;
+                }
+                let selectedRecords: IGanttData[] = gObj.selectionModule.getSelectedRecords();
+                const selectedRecordsCount: number = selectedRecords.length;
+                if (gObj.selectionSettings.persistSelection && selectedRecordsCount > 1) {
+                    for (var i = 0; i < selectedRecordsCount; i++) {
+                        var index = gObj.currentViewData.indexOf(selectedRecords[i as number]);
+                        if (index > -1) {
+                            isDeleteSelected = true;
+                            break;
+                        } else {
+                            isDeleteSelected = false;
+                        }
+                    }
+                }
+            }
             edit.allowDeleting && hasData && isDeleteSelected && !touchEdit ?
                 enableItems.push(gID + '_delete') : disableItems.push(gID + '_delete');
             if (gObj.editSettings.mode === 'Auto' && !isNullOrUndefined(gObj.editModule.cellEditModule)

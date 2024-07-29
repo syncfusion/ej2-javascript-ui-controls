@@ -450,7 +450,10 @@ export class VerticalEvent extends EventBase {
         const field: EventFieldsMapping = this.parent.eventFields;
         const schedule: Record<string, Date> = util.getStartEndHours(currentDate, this.startHour, this.endHour);
         const event: Record<string, any> = extend({}, record, null, true) as Record<string, any>;
-        event.isSpanned = { isBottom: false, isTop: false };
+        event.isSpanned = {
+            isBottom: false, isTop: false,
+            isSameDuration: event[field.startTime].getTime() === event[field.endTime].getTime()
+        };
         if ((<Date>record[field.startTime]).getTime() < schedule.startHour.getTime()) {
             event[field.startTime] = schedule.startHour;
             (event.isSpanned as Record<string, any>).isTop = true;
@@ -568,7 +571,7 @@ export class VerticalEvent extends EventBase {
             return;
         }
         if (eStart <= eEnd && isValidEvent && this.isWorkDayAvailable(resource, eStart)) {
-            const appHeight: number = this.getHeight(eStart, eEnd);
+            const appHeight: number = record.isSpanned.isSameDuration ? this.cellHeight : this.getHeight(eStart, eEnd);
             if (eStart.getTime() >= schedule.startHour.getTime()) {
                 topValue = this.getTopValue(eStart, dayIndex, resource);
             }

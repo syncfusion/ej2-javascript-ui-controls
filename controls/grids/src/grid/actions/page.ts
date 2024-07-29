@@ -91,6 +91,7 @@ export class Page implements IAction {
             ['parentObj', 'propName']);
         pagerObj.cssClass = this.parent.cssClass ? this.parent.cssClass : '';
         this.pagerObj = new Pager(pagerObj, undefined, this.parent);
+        this.pagerObj.root = gObj.root ? gObj.root : gObj;
         this.pagerObj.hasParent = true;
         this.pagerObj.on(events.pagerRefresh, this.renderReactPagerTemplate, this);
         this.pagerObj.allowServerDataBinding = false;
@@ -290,7 +291,8 @@ export class Page implements IAction {
         this.parent.element.appendChild(this.element);
         this.parent.setGridPager(this.element);
         this.pagerObj.isReact = this.parent.isReact;
-        this.pagerObj.isVue = this.parent.isVue;
+        this.pagerObj.isVue = this.parent.isVue || (this.parent.parentDetails && this.parent.parentDetails.parentInstObj
+            && this.parent.parentDetails.parentInstObj.isVue);
         this.pagerObj.appendTo(this.element);
         this.isInitialLoad = false;
     }

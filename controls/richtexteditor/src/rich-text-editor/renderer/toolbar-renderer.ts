@@ -1,4 +1,4 @@
-import { addClass, Browser, L10n, removeClass, formatUnit, isNullOrUndefined, isNullOrUndefined as isNOU, EventHandler } from '@syncfusion/ej2-base';
+import { addClass, Browser, L10n, removeClass, formatUnit, isNullOrUndefined, isNullOrUndefined as isNOU, EventHandler, detach } from '@syncfusion/ej2-base';
 import { getInstance, closest, MouseEventArgs, selectAll } from '@syncfusion/ej2-base';
 import { Toolbar, ClickEventArgs, BeforeCreateArgs, OverflowMode } from '@syncfusion/ej2-navigations';
 import { DropDownButton, MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
@@ -185,7 +185,6 @@ export class ToolbarRenderer implements IRenderer {
         if (this.parent.showTooltip && args.type === 'toolbar') {
             this.tooltip = new Tooltip({
                 target: '#' + this.parent.getID() + '_toolbar_wrapper [title]',
-                container: this.toolbarPanel as HTMLElement,
                 showTipPointer: true,
                 openDelay: 400,
                 opensOn: 'Hover',
@@ -198,6 +197,12 @@ export class ToolbarRenderer implements IRenderer {
         }
     }
 
+    public tooltipBeforeOpen(args: TooltipEventArgs): void {
+        if (args.element) {
+            args.element.setAttribute('data-rte-id', this.parent.getID());
+        }
+    }
+    
     /**
      * renderDropDownButton method
      *
@@ -728,6 +733,13 @@ export class ToolbarRenderer implements IRenderer {
         if (this.isDestroyed) { return; }
         if (this.tooltip && !this.tooltip.isDestroyed) {
             this.tooltip.destroy();
+            const tooltipElements: NodeListOf<Element> = document.querySelectorAll('[data-rte-id="' + this.parent.getID() + '"]');
+            for (let i: number = 0; i < tooltipElements.length; i++) {
+                const tooltipEle: Element = tooltipElements[i as number] as Element;
+                if (this.parent.getID() === tooltipEle.getAttribute('data-rte-id') as string) {
+                    detach(tooltipEle);
+                }
+            }
         }
         this.unWireEvent();
         this.mode = null;

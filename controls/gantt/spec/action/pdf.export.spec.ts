@@ -5995,3 +5995,98 @@ describe('Gantt PDF Export for big font size', () => {
         }
     });
 });
+describe('Gantt PDF Export for baseline task', () => {
+    let ganttObj: Gantt;
+    let datasource: Object[]=  [
+        {
+            TaskId: 1, TaskName: 'Receive vehicle and create job card', BaselineStartDate: new Date('03/05/2024 10:00:00 AM'),
+            BaselineEndDate: new Date('12/05/2024 10:00:00 AM'), StartDate: new Date('03/05/2024 10:00:00 AM'),
+            EndDate: new Date('06/05/2024 10:00:00 AM')
+        },
+    ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: datasource,
+                taskFields: {
+                    id: 'TaskId',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    progress: 'Progress',
+                    baselineStartDate: 'BaselineStartDate',
+                    baselineEndDate: 'BaselineEndDate',
+                    child: 'subtasks'
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
+                'PrevTimeSpan', 'NextTimeSpan','ExcelExport', 'CsvExport', 'PdfExport'],
+            
+                toolbarClick: (args?: ClickEventArgs) => {
+                    if (args.item.id === 'ganttContainer_excelexport') {
+                        ganttObj.excelExport();
+                    } else if (args.item.id === 'ganttContainer_csvexport') {
+                        ganttObj.csvExport();
+                    } else if (args.item.id === 'ganttContainer_pdfexport') {
+                        let exportProperties: PdfExportProperties = {
+                            fitToWidthSettings: {       
+                                isFitToWidth: true,       
+                            }       
+                        };
+                        ganttObj.pdfExport(exportProperties);
+                    }
+                },
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowSelection: true,
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                allowResizing: true,
+                readOnly: false,
+                height: '550px',
+              //  connectorLineBackground: "red",
+              //  connectorLineWidth: 3,
+              projectStartDate:new Date('03/05/2024'),
+              projectEndDate:new Date('10/05/2024'),
+            }, done);
+    });
+    it('Export data with baseline', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

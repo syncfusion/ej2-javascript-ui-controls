@@ -269,7 +269,6 @@ export class BaseQuickToolbar implements IBaseQuickToolbar {
                     this.tooltip  = new Tooltip({
                         target: '#' + this.element.id + ' [title]',
                         openDelay: 400,
-                        container: this.parent.rootContainer,
                         showTipPointer: true,
                         beforeRender: this.tooltipBeforeRender.bind(this),
                         windowCollision: true,

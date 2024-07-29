@@ -1972,16 +1972,24 @@ export class ChartRows extends DateProcessor {
             return;
         }
         let taskbarElement: Element;
+        let currentData: IGanttData = data;
         if (!(!isNullOrUndefined(data.ganttProperties.segments) && data.ganttProperties.segments.length > 0)) {
-            const taskbarElements: NodeListOf<Element> = trElement.querySelectorAll('.' + cls.taskBarMainContainer);
-            let currentData: IGanttData = data;
-            for (let i: number = 0; i < taskbarElements.length; i++) {
-                taskbarElement = taskbarElements[i as number];
-                currentData = (!data.expanded && data.hasChildRecords) ? data.childRecords[i as number] : currentData;
-                const id: string = this.parent.viewType === 'ResourceView' ?
-                    taskbarElement.getAttribute('rowUniqueId') : currentData.ganttProperties.taskId.toString();
-                trElement = this.parent.getRowByID(id);
-                trElement = trElement ? trElement : (taskbarElement.querySelector('.e-gantt-child-taskbar'));
+            if (this.parent.enableMultiTaskbar) {
+                const taskbarElements: NodeListOf<Element> = trElement.querySelectorAll('.' + cls.taskBarMainContainer);
+                for (let i: number = 0; i < taskbarElements.length; i++) {
+                    taskbarElement = taskbarElements[i as number];
+                    currentData = (!data.expanded && data.hasChildRecords) ? data.childRecords[i as number] : currentData;
+                    const id: string = this.parent.viewType === 'ResourceView' ?
+                        taskbarElement.getAttribute('rowUniqueId') : currentData.ganttProperties.taskId.toString();
+                    trElement = this.parent.getRowByID(id);
+                    trElement = trElement ? trElement : (taskbarElement.querySelector('.e-gantt-child-taskbar'));
+                    if (trElement) {
+                        this.customizeTaskbars(currentData, trElement, taskbarElement);
+                    }
+                }
+            }
+            else {
+                const taskbarElement: Element = trElement.querySelector('.' + cls.taskBarMainContainer);
                 if (trElement) {
                     this.customizeTaskbars(currentData, trElement, taskbarElement);
                 }

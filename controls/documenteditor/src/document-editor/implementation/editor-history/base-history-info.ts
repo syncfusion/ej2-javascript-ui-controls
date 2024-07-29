@@ -2898,7 +2898,7 @@ export class BaseHistoryInfo {
                         if (this.fieldBegin.formFieldData && element.nextNode instanceof BookmarkElementBox) {
                             let elementBox: BookmarkElementBox = element.nextNode;
                             insertedText = elementBox.bookmarkType === 0 ? CONTROL_CHARACTERS.Marker_Start : CONTROL_CHARACTERS.Marker_End;
-                            if (element.revisions.length > 0) {
+                            if (elementBox.revisions.length > 0) {
                                 Data = this.owner.editorModule.getRevisionMarkerData(Data, elementBox.revisions[0]);
                             }
                             if (isNullOrUndefined(Data)) {

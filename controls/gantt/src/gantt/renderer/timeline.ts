@@ -1702,6 +1702,8 @@ export class Timeline {
                     (pdc: IGanttData) => { return !isNullOrUndefined(pdc.ganttProperties.endDate); });
                 let minStartDate: Date = filteredStartDateRecord.length > 0 ?
                     new Date(DataUtil.aggregates.min(filteredStartDateRecord, 'ganttProperties.startDate')) : null;
+                let minEndDate: Date = filteredStartDateRecord.length > 0 ?
+                    new Date(DataUtil.aggregates.min(filteredEndDateRecord, 'ganttProperties.endDate')) : null;    
                 let maxEndDate: Date = filteredEndDateRecord.length > 0 ?
                     new Date(DataUtil.aggregates.max(filteredEndDateRecord, 'ganttProperties.endDate')) : null;
                 const validStartDate: Date = new Date(this.parent.dataOperation.checkStartDate(this.timelineStartDate).getTime());
@@ -1736,6 +1738,14 @@ export class Timeline {
                     this.performTimeSpanAction(isChanged, action, minStartDate, maxEndDate);
                 } else if (!isNullOrUndefined(temp[0].ganttProperties.segments)) {
                     this.parent.dataOperation.updateWidthLeft(temp[0]);
+                }
+                if (!isNullOrUndefined(minStartDate) && !isNullOrUndefined(minEndDate) && minEndDate <= minStartDate && (action === "CellEditing" ||action === "DialogEditing") && this.parent.allowUnscheduledTasks){
+                    minStartDate = new Date(Math.min(minStartDate.getTime(), minEndDate.getTime()));
+                    minStartDate = new Date(Math.min(minStartDate.getTime(), this.timelineStartDate.getTime()));
+                    this.performTimeSpanAction('prevTimeSpan', action, minStartDate, maxEndDate);
+                } else if(isNullOrUndefined(minEndDate) && minEndDate <= minStartDate && (action === "CellEditing" ||action === "DialogEditing") && this.parent.allowUnscheduledTasks && tempArray[0].length === 1 && !isNullOrUndefined(tempArray[0][0].ganttProperties.endDate)){
+                    minStartDate = new Date(Math.min(tempArray[0][0].ganttProperties.endDate.getTime(), minStartDate.getTime()));
+                    this.performTimeSpanAction('prevTimeSpan', action, minStartDate, maxEndDate);
                 }
                 break;
             }

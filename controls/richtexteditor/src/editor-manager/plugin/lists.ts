@@ -325,12 +325,12 @@ export class Lists {
             const commonAncestor: Node = range.commonAncestorContainer;
             const startEle: Node = range.startContainer;
             const endEle: Node = range.endContainer;
-            const startNode: Node = startEle.nodeType === 3 ? startEle.parentElement : startEle;
-            const endNode: Node = endEle.nodeType === 3 ? endEle.parentElement : endEle;
+            const startNode: Node = startEle.nodeType === 3 ? this.domNode.blockParentNode((startEle as Element)) : startEle;
+            const endNode: Node = endEle.nodeType === 3 ? this.domNode.blockParentNode((endEle as Element)) : endEle;
             if ((commonAncestor.nodeName === 'UL' || commonAncestor.nodeName === 'OL') && startNode !== endNode
                 && (!isNullOrUndefined(closest(startNode, 'ul')) || !isNullOrUndefined(closest(startNode, 'ol')))
                 && (!isNullOrUndefined(closest(endNode, 'ul')) || !isNullOrUndefined(closest(endNode, 'ol')))
-                && ((commonAncestor as HTMLElement).lastElementChild === closest(endNode, 'li')) && !range.collapsed) {
+                && (((commonAncestor as HTMLElement).lastElementChild === closest(endNode, 'li') && commonAncestor.lastChild !== endNode)) && !range.collapsed) {
                 detach(commonAncestor);
             }
             this.removeList(range, e);
