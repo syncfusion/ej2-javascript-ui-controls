@@ -58,7 +58,8 @@ export class FilterCellRenderer extends CellRenderer implements ICellRenderer<Co
                     column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID, null, null, node);
                     this.parent.renderTemplates();
                 } else {
-                    const element: Element[] = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID);
+                    const element: Element[] = column.getFilterTemplate()(
+                        fltrData, this.parent, 'filterTemplate', tempID, null, null, null, this.parent.root);
                     appendChildren(node, element);
                 }
             } else { node.classList.add('e-hide'); }

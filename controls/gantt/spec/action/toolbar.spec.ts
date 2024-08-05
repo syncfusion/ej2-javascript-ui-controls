@@ -1686,3 +1686,43 @@ describe('CR:890397-When adding a record via dialog, if the startDate is set to 
         destroyGantt(ganttObj);
     });
 });
+describe('B900782-Taskbar render in incorrect postion after zoom to fit', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: projectNewData1,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    endDate: 'EndDate',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks'
+                },
+                editSettings: {
+                    allowAdding: true
+                },
+                   toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                    'PrevTimeSpan', 'NextTimeSpan','ZoomToFit'],
+                height: '550px',
+                dayWorkingTime : [{ from: 0, to: 24 }],
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019')
+            }, done);
+    });
+    it('Performing zoom to fit action', (done:Function) => {
+        ganttObj.actionComplete = function (args: any): void {
+            if (args.requestType === "AfterZoomToProject") {
+                expect(ganttObj.flatData[0].ganttProperties.startDate.getHours()).toBe(0)
+                done();
+            }
+        };
+        ganttObj.fitToProject()
+    });
+    afterAll(() => {
+        destroyGantt(ganttObj);
+    });
+});

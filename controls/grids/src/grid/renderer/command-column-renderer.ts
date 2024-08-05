@@ -83,7 +83,8 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
                 cell.column.getColumnTemplate()(data, this.parent, 'commandsTemplate', tempID, null, null, node.firstElementChild);
                 this.parent.renderTemplates();
             } else {
-                appendChildren(node.firstElementChild, cell.column.getColumnTemplate()(data));
+                appendChildren(node.firstElementChild, cell.column.getColumnTemplate()(
+                    data, this.parent, 'commandsTemplate', null, null, null, null, this.parent.root));
             }
         } else {
             for (const command of cell.commands) {

@@ -2031,7 +2031,9 @@ export class MultiSelect extends DropDownBase implements IInput {
     private expandTextbox(): void {
         let size: number = 5;
         if (this.placeholder) {
-            size = size > this.inputElement.placeholder.length ? size : this.inputElement.placeholder.length;
+            let codePoint: number = this.placeholder.charCodeAt(0);
+            let sizeMultiplier: number = (0xAC00 <= codePoint && codePoint <= 0xD7AF) ? 1.5 : (0x4E00 <= codePoint && codePoint <= 0x9FFF) ? 2 : 1;
+            size = size > this.inputElement.placeholder.length ? size : this.inputElement.placeholder.length*sizeMultiplier;
         }
         if (this.inputElement.value.length > size) {
             this.inputElement.size = this.inputElement.value.length;
@@ -3696,7 +3698,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.mode === 'CheckBox') {
             this.refreshPlaceHolder();
             this.refreshInputHight();
-            if (!this.changeOnBlur && isClearAll && (isNullOrUndefined(this.value) || this.value.length === 0)) {
+            if (this.changeOnBlur && isClearAll && (isNullOrUndefined(this.value) || this.value.length === 0)) {
                 this.updateValueState(e, this.value, this.tempValues);
             }
         }
@@ -5401,6 +5403,10 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.addValidInputClass();
                 if (!this.closePopupOnSelect && this.isPopupOpen()) {
                     this.refreshPopup();
+                }
+                if (this.isPopupOpen() && this.mode === 'CheckBox' && this.list && this.list.querySelector('.e-active.e-disable')) {
+                    const activeItems: NodeListOf<Element> = <NodeListOf<HTMLElement>>this.list.querySelectorAll('li.'+ dropDownBaseClasses.li + '.e-active' + '.e-disable');
+                    removeClass(activeItems, 'e-disable');
                 }
                 this.preventChange = this.isAngular && this.preventChange ? !this.preventChange : this.preventChange;
                 break;

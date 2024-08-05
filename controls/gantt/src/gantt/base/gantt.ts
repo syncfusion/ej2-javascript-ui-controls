@@ -2201,6 +2201,9 @@ export class Gantt extends Component<HTMLElement>
         } else {
             this.showSpinner();
         }
+        if (this.dataMap) {
+            this.dataMap.clear();
+        }
         this.dataOperation.checkDataBinding();
     }
     private actionFailures(): void {
@@ -4227,7 +4230,8 @@ export class Gantt extends Component<HTMLElement>
         if (isNullOrUndefined(cloneParent)) {
             return null;
         }
-        if (!this.autoCalculateDateScheduling && this.dataMap && this.dataMap.size > 0 && !this.taskFields.hasChildMapping) {
+        if (!this.autoCalculateDateScheduling && this.dataMap && this.dataMap.size > 0 && !this.taskFields.hasChildMapping &&
+            this.isLoad) {
             const parent = this.dataMap.get(cloneParent.uniqueID);
             if (parent) {
                 return parent;

@@ -5615,20 +5615,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 this.grid.width = this.renderModule.calculateGridWidth();
                 this.renderModule.calculateGridHeight(true);
                 if (this.gridSettings.allowAutoResizing) {
-                    let vSortColumn: ColumnModel; let vSortColumnWidth: string | number;
-                    if (this.renderModule.vSortColumnPos.length > 0) {
-                        vSortColumn = this.renderModule.getValueSortColumn(
-                            this.grid.columns as ColumnModel[],
-                            this.renderModule.vSortColumnPos.slice(1, this.renderModule.vSortColumnPos.length)
-                        ) as ColumnModel;
-                        if (!isNullOrUndefined(vSortColumn)) {
-                            vSortColumnWidth = vSortColumn.width;
-                        }
-                    }
                     this.setCommonColumnsWidth(this.grid.columns as ColumnModel[], colWidth);
-                    if (!isNullOrUndefined(vSortColumn) && !isNullOrUndefined(vSortColumnWidth)) {
-                        vSortColumn.width = vSortColumnWidth;
-                    }
                 }
                 this.pivotColumns = [];
                 this.totColWidth = 0;
@@ -5636,6 +5623,11 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 this.posCount = 0;
                 this.setGridColumns(this.grid.columns as ColumnModel[]);
                 this.grid.refreshColumns();
+                if (this.renderModule.isAutoFitEnabled) {
+                    this.renderModule.addPivotAutoFitClass();
+                } else {
+                    this.renderModule.removePivotAutoFitClass();
+                }
                 const e: HTMLElement = this.element.querySelector('.' + cls.GRID_CLASS) as HTMLElement;
                 e.querySelector('colGroup').innerHTML = this.grid.getHeaderContent().querySelector('colgroup').innerHTML;
                 if (this.showGroupingBar && this.groupingBarModule && this.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {

@@ -235,7 +235,10 @@ export class Toolbar {
             this.element.classList.add('e-res-toolbar');
         }
         if (this.parent.toolbarTemplate) {
-            if (typeof (this.parent.toolbarTemplate) === 'string') {
+            const isVue: boolean = this.parent.isVue
+                || (this.parent.parentDetails && this.parent.parentDetails.parentInstObj && this.parent.parentDetails.parentInstObj.isVue);
+            if (typeof (this.parent.toolbarTemplate) === 'string'
+                && !(isVue && !document.querySelectorAll(this.parent.toolbarTemplate).length)) {
                 this.toolbar.appendTo(this.parent.toolbarTemplate);
                 this.element = this.toolbar.element;
             } else {
@@ -247,7 +250,8 @@ export class Toolbar {
                     templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate', ID, null, null, this.element);
                     this.parent.renderTemplates();
                 } else {
-                    appendChildren(this.element, templateCompiler(this.parent.toolbarTemplate)({}, this.parent, 'toolbarTemplate'));
+                    appendChildren(this.element, templateCompiler(this.parent.toolbarTemplate)(
+                        {}, this.parent, 'toolbarTemplate', null, null, null, null, this.parent.root));
                 }
             }
             this.element.classList.add('e-temp-toolbar');

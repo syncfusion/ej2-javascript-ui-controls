@@ -21,6 +21,7 @@ export class VirtualScroll {
     private prevendIndex: number = -1;
     private visualData: ITreeData[];
     private prevrequestType: string;
+    public prevSelectedRecord: object;
 
     /**
      * Constructor for VirtualScroll module
@@ -79,6 +80,10 @@ export class VirtualScroll {
         };
         if (this.parent.enableVirtualization && this.parent.selectionSettings.mode === 'Cell' ||
         this.parent.selectionSettings.mode === 'Row' && !this.parent.selectionSettings.persistSelection) {
+            this.parent.grid.clearSelection();
+        }
+        if (getValue('isCollapseAll', this.parent) && this.parent.selectionSettings.persistSelection && this.parent.getSelectedRecords().length > 0) {
+            this.prevSelectedRecord = this.parent.getSelectedRecords();
             this.parent.grid.clearSelection();
         }
         const requestType: string = getValue('isCollapseAll', this.parent) ? 'collapseAll' : 'refresh';

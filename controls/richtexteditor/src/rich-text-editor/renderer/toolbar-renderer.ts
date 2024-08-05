@@ -189,6 +189,7 @@ export class ToolbarRenderer implements IRenderer {
                 openDelay: 400,
                 opensOn: 'Hover',
                 beforeRender: this.tooltipBeforeRender.bind(this),
+                beforeOpen: this.tooltipBeforeOpen.bind(this),
                 cssClass: this.parent.getCssClass(),
                 windowCollision: true,
                 position: 'BottomCenter'

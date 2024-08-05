@@ -497,3 +497,9 @@
 .e-dialog .e-footer-content {
   box-sizing: border-box;
 }
+
+@if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' or $skin-name == 'bootstrap5' or $skin-name == 'tailwind' {
+  .e-dialog .e-dlg-content .e-richtexteditor .e-rte-container .e-rte-tb-float {
+    top: -$dialog-content-padding-top !important; /* stylelint-disable-line declaration-no-important */
+  }
+}

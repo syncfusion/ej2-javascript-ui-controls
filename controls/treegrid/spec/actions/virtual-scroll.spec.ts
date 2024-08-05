@@ -3326,4 +3326,59 @@ describe("Checking For Selected Record", () => {
   afterAll(() => {
     destroy(treegrid);
   });
-}); 
+});
+
+describe("Row selection is incorrect when enableVirtualization is enabled", () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: editVirtualData,
+        enableVirtualization: true,
+        height: 450,
+        treeColumnIndex: 1,
+        allowSelection: true,
+        selectionSettings: {
+          enableToggle: true,
+          persistSelection: true,
+          mode: 'Row',
+          type: 'Multiple',
+        },
+        childMapping: "Crew",
+        columns: [
+          {
+            field: "TaskID",
+            headerText: "Player Jersey",
+            isPrimaryKey: true,
+            width: 140,
+            textAlign: "Right",
+          },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+        ],
+      },
+      done
+    );
+  });
+  it('Check row selection with expand/collpae action', () => {
+    gridObj.selectRow(1);
+    gridObj.collapseAll();
+    expect(gridObj.getRows()[1].hasAttribute('aria-selected')).toBeFalsy();
+    gridObj.expandAll();
+    expect(gridObj.getRows()[1].hasAttribute('aria-selected')).toBeTruthy();
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.2.8 (2024-08-06)
+
+### MultiColumn ComboBox
+
+#### Features
+
+- `#I609891` - Now we have provided support for text wrapping in MultiColumn ComboBox column cells.
+
 ## 26.1.39 (2024-06-25)
 
 ### MultiColumn ComboBox

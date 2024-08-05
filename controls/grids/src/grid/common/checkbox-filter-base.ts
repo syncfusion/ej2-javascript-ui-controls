@@ -1515,7 +1515,8 @@ export class CheckBoxFilterBase {
                 this.options.template(dummyData, this.parent, 'filterItemTemplate', null, null, null, label);
                 this.parent.renderTemplates();
             } else {
-                appendChildren(label, this.options.template(dummyData, this.parent, 'filterItemTemplate'));
+                appendChildren(label, this.options.template(
+                    dummyData, this.parent, 'filterItemTemplate', null, null, null, null, this.parent.root));
             }
         }
         return elem;

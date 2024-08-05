@@ -1,6 +1,7 @@
 /**
  * Query Builder Source
  */
+/* eslint-disable max-len */
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, getComponent, MouseEventArgs, Browser, compile, append, ModuleDeclaration, Draggable, remove } from '@syncfusion/ej2-base';
 import { Property, ChildProperty, Complex, L10n, closest, extend, isNullOrUndefined, Collection, cldrData } from '@syncfusion/ej2-base';
 import { getInstance, addClass, removeClass, rippleEffect, detach, classList } from '@syncfusion/ej2-base';
@@ -16,7 +17,7 @@ import { TextBoxModel, NumericTextBoxModel } from '@syncfusion/ej2-inputs';
 import { DatePicker, ChangeEventArgs as CalendarChangeEventArgs, DatePickerModel } from '@syncfusion/ej2-calendars';
 import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { Tooltip, createSpinner, showSpinner, hideSpinner, TooltipEventArgs } from '@syncfusion/ej2-popups';
-import { compile as templateCompiler } from '@syncfusion/ej2-base';
+import { compile as templateCompiler, getNumericObject } from '@syncfusion/ej2-base';
 
  type ReturnType = { result: Object[], count: number, aggregates?: Object };
  type ruleObj = { condition: string, not: boolean, isLocked?: boolean };
@@ -392,6 +393,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private dragElement: HTMLElement;
     private prvtEvtTgrDaD: boolean;
     private isDragEventPrevent: boolean;
+    private isValueEmpty: boolean = false;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private ddTree: any;
 
@@ -2380,8 +2382,13 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 value = Number((args as any).currentTarget.value) as number;
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const elem: HTMLElement = (args as any).currentTarget as HTMLElement;
+                const elem: any = (args as any).currentTarget as HTMLElement;
                 const numericTextBoxObj: NumericTextBox = getInstance(elem, NumericTextBox) as NumericTextBox;
+                const decimalSeparator: string = getValue('decimal', getNumericObject(this.locale));
+                if (isNaN(value) && elem.value.indexOf(decimalSeparator) !== -1) {
+                    let numberValue: number = parseFloat((args as any).currentTarget.value);
+                    value = numberValue;
+                }
                 numericTextBoxObj.value = value;
                 this.isNumInput = true;
             }
@@ -2739,7 +2746,15 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     operatorList = this.customOperators[this.selectedColumn.type + 'Operator'];
                 }
                 const height: string = (this.element.className.indexOf('e-device') > -1) ? '250px' : '200px';
-                let value: string = operatorList[0].value as string;
+                let operator: string | undefined;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                operatorList.forEach((obj: any) => {
+                    if ('value' in obj && typeof obj.value === 'string' && obj.value.toLowerCase() === rule.operator.toLowerCase()) {
+                        operator = obj.value;
+                    }
+                });
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                let value: any = operator ? operator : operatorList[0].value;
                 let ddlIdx: number = 0;
                 if (!this.autoSelectOperator) { value = ''; ddlIdx = -1; }
                 if (this.isImportRules || (this.ruleIndex > -1 || this.groupIndex > -1 || this.prvtEvtTgrDaD)) {
@@ -5162,6 +5177,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      * @returns {RuleModel} - Valid rule or rules collection
      */
     public getValidRules(currentRule?: RuleModel): RuleModel {
+        this.isValueEmpty = true;
         if (!currentRule) {
             currentRule = this.getRules();
         }
@@ -5171,6 +5187,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         const rule: RuleModel = !isNullOrUndefined(currentRule.isLocked) ?
             this.getRuleCollection({condition: ruleCondtion, rules: ruleColl, not: notCondition, isLocked: currentRule.isLocked}, true) :
             this.getRuleCollection({condition: ruleCondtion, rules: ruleColl, not: notCondition}, true);
+        this.isValueEmpty = false;
         return rule;
     }
     private getRuleCollection(rule: RuleModel, isValidRule: boolean): RuleModel {
@@ -5198,8 +5215,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     rule.value = null;
                 }
             }
-            if ((this.isRefreshed && this.enablePersistence) || (rule.field !== '' && rule.operator !== '' && (rule.value !== '' &&
-            rule.value !== undefined)) || (customObj && customObj.isQuestion)) {
+            if ((this.isRefreshed && this.enablePersistence) || (rule.field !== '' && rule.operator !== '' &&
+                (this.isValueEmpty ? rule.value !== '' && rule.value !== undefined : rule.value !== undefined)) ||
+                (customObj && customObj.isQuestion)) {
                 const condition: string = rule.condition; const lockedRule: boolean = rule.isLocked;
                 rule = { 'label': rule.label, 'field': rule.field, 'operator': rule.operator, 'type': rule.type, 'value': rule.value };
                 if (!isNullOrUndefined(lockedRule)) {

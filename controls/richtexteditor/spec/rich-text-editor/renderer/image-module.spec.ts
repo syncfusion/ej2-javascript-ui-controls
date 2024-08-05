@@ -3158,52 +3158,90 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
     
-    // describe('Insert image imageSelected, imageUploading and imageUploadSuccess event - ', () => {
-    //     let rteObj: RichTextEditor;
-    //     let imageSelectedSpy: jasmine.Spy = jasmine.createSpy('onImageSelected');
-    //     let imageUploadingSpy: jasmine.Spy = jasmine.createSpy('onImageUploading');
-    //     let imageUploadSuccessSpy: jasmine.Spy = jasmine.createSpy('onImageUploadSuccess');
-    //     beforeEach((done: Function) => {
-    //         rteObj = renderRTE({
-    //             imageSelected: imageSelectedSpy,
-    //             imageUploading: imageUploadingSpy,
-    //             imageUploadSuccess: imageUploadSuccessSpy,
-    //             insertImageSettings: {
-    //                 saveUrl:"https://services.syncfusion.com/js/production/api/FileUploader/Save",
-    //                 path: "../Images/"
-    //             }
-    //         });
-    //         done();
-    //     })
-    //     afterEach((done: Function) => {
-    //         destroy(rteObj);
-    //         done();
-    //     })
-    //     it(' Test the component insert image events - case 1 ', (done) => {
-    //         let rteEle: HTMLElement = rteObj.element;
-    //         (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
-    //         let args = { preventDefault: function () { } };
-    //         let range = new NodeSelection().getRange(document);
-    //         let save = new NodeSelection().save(range, document);
-    //         let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
-    //         (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[9] as HTMLElement).click();
-    //         let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
-    //         (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
-    //         (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
-    //         let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
-    //         let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
-    //         (<any>rteObj).imageModule.uploadObj.onSelectFiles(eventArgs);
-    //         expect(imageSelectedSpy).toHaveBeenCalled();
-    //         expect(imageUploadingSpy).toHaveBeenCalled();
-    //         setTimeout(() => {
-    //             expect(imageUploadSuccessSpy).toHaveBeenCalled();
-    //             evnArg.selectNode = [rteObj.element];
-    //             (<any>rteObj).imageModule.deleteImg(evnArg);
-    //             (<any>rteObj).imageModule.uploadObj.upload((<any>rteObj).imageModule.uploadObj.filesData[0]);
-    //             done();
-    //         }, 5500);
-    //     });
-    // });
+    describe('Insert image imageSelected, imageUploading and imageUploadSuccess event - ', () => {
+        let rteObj: RichTextEditor;
+        let imageSelectedSpy: jasmine.Spy = jasmine.createSpy('onImageSelected');
+        let imageUploadingSpy: jasmine.Spy = jasmine.createSpy('onImageUploading');
+        let imageUploadSuccessSpy: jasmine.Spy = jasmine.createSpy('onImageUploadSuccess');
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                imageSelected: imageSelectedSpy,
+                imageUploading: imageUploadingSpy,
+                imageUploadSuccess: imageUploadSuccessSpy,
+                insertImageSettings: {
+                    saveUrl: "https://services.syncfusion.com/js/production/api/FileUploader/Save",
+                    path: "../Images/"
+                }
+            });
+            done();
+        })
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        })
+        it(' Test the component insert image events - case 1 ', (done) => {
+            let rteEle: HTMLElement = rteObj.element;
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+			let args = { preventDefault: function () { } };
+            let range = new NodeSelection().getRange(document);
+            let save = new NodeSelection().save(range, document);
+            let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[9] as HTMLElement).click();
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            if (dialogEle) {
+                (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+                (dialogEle.querySelector('.e-img-url') as HTMLInputElement).dispatchEvent(new Event("input"));
+            }
+            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "override/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+
+            if ((<any>rteObj).imageModule && (<any>rteObj).imageModule.uploadObj) {
+                let uploadObj = (<any>rteObj).imageModule.uploadObj;
+                uploadObj.onSelectFiles(eventArgs);
+                expect(imageSelectedSpy).toHaveBeenCalled();
+                expect(imageUploadingSpy).toHaveBeenCalled();
+                setTimeout(() => {
+                    // Mock event object
+                    const mockEvent = {
+                        e: new ProgressEvent('load', {
+                            lengthComputable: false,
+                            loaded: 25,
+                            total: 0
+                        }),
+                        detectImageSource: 'Uploaded',
+                        file: {
+                            name: 'Screenshot (558).png',
+                            rawFile: new File(['Dummy content'], 'Sampleimage.png', { type: 'image/png' }),
+                            size: 395962,
+                            status: 'File uploaded successfully',
+                            type: 'png'
+                        },
+                        operation: 'upload',
+                        response: {
+                            readyState: 4,
+                            statusCode: 200,
+                            statusText: 'OK',
+                            headers: 'content-type: text/plain; charset=utf-8\r\n',
+                            withCredentials: false
+                        },
+                        statusText: 'File uploaded successfully'
+                    };
+                    if (uploadObj && typeof uploadObj.success === 'function') {
+                        uploadObj.success(mockEvent);
+                        uploadObj.success(mockEvent);
+                        expect(imageUploadSuccessSpy).toHaveBeenCalled();
+                    } else {
+                        fail('uploadObj or uploadObj.success is not available');
+                        done();
+                    }
+                    done();
+                }, 100);
+            } else {
+                fail('uploadObj is not initialized or does not exist');
+                done();
+            }
+        }, 500);
+    });
 
     describe('EJ2CORE-479 - Insert image imageSelected event args cancel true - ', () => {
         let rteObj: RichTextEditor;

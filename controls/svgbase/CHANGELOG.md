@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## 26.2.8 (2024-08-06)
+
+### Svg Base
+
+- `#I604910` - Provided support for star type marker in tooltip.
+
 ## 26.1.39 (2024-06-25)
 
 ### Svg Base

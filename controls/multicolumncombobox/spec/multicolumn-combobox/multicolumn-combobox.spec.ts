@@ -668,6 +668,27 @@ describe('MultiColumnComboBox control', () => {
             multiColObj.appendTo(element);
             expect((multiColObj as any).gridObj.columns[1].displayAsCheckBox).toBe(true);
         });
+        it(' allowTextWrap and textWrapMode property', () => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: [
+                    { id: 101, text: 'PHP' }, { id: 102, text: 'HTML' }, { id: 103, text: 'PERL' },
+                    { id: 104, text: 'JAVA' }, { id: 105, text: 'PYTHON' }, { id: 106, text: 'HTMLCSS' }
+                ],
+                fields: { text: 'text', value: 'id' },
+                columns: [{ field: 'text', header: 'Languages known' }, { field: 'id', header: 'ID' }],
+                allowTextWrap: true,
+                textWrapMode: 'Both'
+            });
+            multiColObj.appendTo(element);
+            expect((multiColObj as any).gridObj.allowTextWrap).toBe(true);
+            expect((multiColObj as any).gridObj.textWrapSettings.wrapMode).toBe('Both');
+            (multiColObj as any).textWrapMode = 'Content';
+            multiColObj.dataBind();
+            expect((multiColObj as any).gridObj.textWrapSettings.wrapMode).toBe('Content');
+            (multiColObj as any).allowTextWrap = false;
+            multiColObj.dataBind();
+            expect((multiColObj as any).gridObj.allowTextWrap).toBe(false);
+        });
         it(' groupBy property ', () => {
             multiColObj = new MultiColumnComboBox({
                 dataSource: languageData,

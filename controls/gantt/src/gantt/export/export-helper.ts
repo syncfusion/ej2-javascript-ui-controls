@@ -368,6 +368,37 @@ export class ExportHelper {
         args.value = this.exportValueFormatter.formatCellValue(args);
         if (this.parent.pdfQueryCellInfo) {
             this.parent.trigger('pdfQueryCellInfo', args);
+            if (args.style.backgroundColor) {
+                cell.style.backgroundColor = args.style.backgroundColor;
+            }
+            if (args.style.borderColor) {
+                cell.style.borderColor = args.style.borderColor;
+            }
+            if (args.style.fontBrush) {
+                cell.style.fontBrush = args.style.fontBrush;
+            }
+            if (args.style.fontColor) {
+                cell.style.fontColor = args.style.fontColor;
+            }
+            if (args.style.fontFamily) {
+                const font: any = args.style.fontFamily;
+                const fontFamily: number = this.getFontFamily(font);
+                cell.style.fontFamily = fontFamily;
+            }
+            if (args.style.fontSize) {
+                cell.style.fontSize = args.style.fontSize;
+            }
+            if (args.style.fontStyle) {
+                const style: any = args.style.fontStyle;
+                const fontStyle: number = this.getFontStyle(style);
+                cell.style.fontStyle = fontStyle;
+            }
+            if (args.style.format) {
+                cell.style.format = args.style.format;
+            }
+            if (args.style.padding) {
+                cell.style.padding = args.style.padding;
+            }
         }
         if (!isNullOrUndefined(args.image) && !isNullOrUndefined(args.image.base64)) {
             args.value = new PdfBitmap(args.image.base64);
@@ -686,6 +717,21 @@ export class ExportHelper {
             return 4;
         default:
             return 0;
+        }
+    }
+
+    private getFontStyle(fontStyle: string): number {
+        switch (fontStyle) {
+            case 'Strikeout':
+                return 8;
+            case 'Underline':
+                return 4;
+            case 'Italic':
+                return 2;
+            case 'Bold':
+                return 1;
+            default:
+                return 0;
         }
     }
 

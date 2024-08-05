@@ -481,13 +481,50 @@ export class ChartRows extends DateProcessor {
             }
         }
         mergeData[taskFields.segments] = modifiedSegments;
+        this.updateSegment(mergeData.ganttProperties.segments, taskId)
         this.refreshChartAfterSegment(mergeData, 'mergeSegment');
     }
 
+    public updateSegment(segmentData: any, taskId: number | string): void {
+        if (!isNullOrUndefined(this.parent.taskFields.segmentId)) {
+            if (!isNullOrUndefined(segmentData)) {
+                let segmentsArray: Object[] = [];
+                for (var i = 0; i < segmentData.length; i++) {
+                    let segmentObj = {};
+                    let segment = segmentData[i as number];
+                    segmentObj[this.parent.taskFields.segmentId] = taskId;
+                    if (!isNullOrUndefined(this.parent.taskFields.startDate)) {
+                        segmentObj[this.parent.taskFields.startDate] = segment.startDate;
+                    }
+                    if (!isNullOrUndefined(this.parent.taskFields.duration)) {
+                        segmentObj[this.parent.taskFields.duration] = segment.duration;
+                    }
+                    if (!isNullOrUndefined(this.parent.taskFields.endDate)) {
+                        segmentObj[this.parent.taskFields.endDate] = segment.endDate;
+                    }
+                    segmentsArray.push(segmentObj);
+                }
+                const filterData = this.parent.segmentData.filter((data: any) => {
+                    return !(taskId === data[this.parent.taskFields.segmentId]);
+                });
+                for (var i = 0; i < segmentsArray.length; i++) {
+                    filterData.push(segmentsArray[i as number]);
+                }
+                this.parent.segmentData = filterData;
+            }
+            else {
+                const filterData = this.parent.segmentData.filter((data: any) => {
+                    return !(taskId === data[this.parent.taskFields.segmentId]);
+                });
+                this.parent.segmentData = filterData;
+            }
+        }
+    }
     private refreshChartAfterSegment(data: IGanttData, requestType: string): void {
         this.parent.setRecordValue('segments', this.parent.dataOperation.setSegmentsInfo(data, false), data.ganttProperties, true);
         this.parent.dataOperation.updateMappingData(data, 'segments');
         this.parent.dataOperation.updateWidthLeft(data);
+        this.parent.dataOperation.updateParentItems(data);
         if (this.parent.predecessorModule && this.parent.taskFields.dependency) {
             this.parent.predecessorModule.updatedRecordsDateByPredecessor();
             this.parent.connectorLineModule.removePreviousConnectorLines(this.parent.flatData);
@@ -498,7 +535,7 @@ export class ChartRows extends DateProcessor {
             }
             this.refreshRecords(this.parent.currentViewData);
         } else {
-            this.refreshRow(this.parent.currentViewData.indexOf(data));
+            this.refreshRecords(this.parent.currentViewData);
         }
         const tr: Element = this.ganttChartTableBody.querySelectorAll('tr')[this.parent.currentViewData.indexOf(data)];
         const args: CObject = {
@@ -604,7 +641,8 @@ export class ChartRows extends DateProcessor {
                             this.parent.dataOperation.updateMappingData(splitRecord, 'endDate');
                         }
                     }
-                    this.refreshChartAfterSegment(splitRecord, 'splitTaskbar');
+                    this.updateSegment(splitRecord.ganttProperties.segments, taskId)
+                    this.refreshChartAfterSegment(splitRecord, 'splitTaskbar');      
                 }
             }
         } else {
@@ -617,6 +655,7 @@ export class ChartRows extends DateProcessor {
                 ),
                 splitRecord.ganttProperties, true
             );
+            this.updateSegment(splitRecord.ganttProperties.segments,taskId)
             this.refreshChartAfterSegment(splitRecord, 'splitTask');
         }
     }

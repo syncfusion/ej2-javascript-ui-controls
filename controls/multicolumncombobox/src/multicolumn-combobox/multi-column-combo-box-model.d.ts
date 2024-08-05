@@ -1,5 +1,5 @@
 import { Component, EventHandler, INotifyPropertyChanged, Property, NotifyPropertyChanges, closest, attributes, append, compile, detach, KeyboardEvents } from '@syncfusion/ej2-base';import { ChildProperty, prepend, Collection, getUniqueID, Complex, isNullOrUndefined as isNOU, select, L10n, Browser } from '@syncfusion/ej2-base';import { formatUnit, addClass, removeClass, NumberFormatOptions, DateFormatOptions, Event, EmitType, AnimationModel, Animation, KeyboardEventArgs } from '@syncfusion/ej2-base';import { Input, InputObject } from '@syncfusion/ej2-inputs';import { DataManager, Query, Group } from '@syncfusion/ej2-data';import { Popup } from '@syncfusion/ej2-popups';import { Grid, FailureEventArgs, VirtualScroll, Group as GridGroup, Edit, Sort, GridColumnModel } from '@syncfusion/ej2-grids';
-import {TextAlign,GridLine,DataResult,FilterType,FloatLabelType,SortOrder,SortType,PopupEventArgs,FilteringEventArgs,SelectEventArgs,ChangeEventArgs} from "./multi-column-combo-box";
+import {TextAlign,GridLine,DataResult,FilterType,FloatLabelType,SortOrder,SortType,WrapMode,PopupEventArgs,FilteringEventArgs,SelectEventArgs,ChangeEventArgs} from "./multi-column-combo-box";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -394,6 +394,23 @@ export interface MultiColumnComboBoxModel extends ComponentModel{
      * @default null
      */
     query?: Query;
+
+    /**
+     * Specifies whether to allow text wrapping of the popup grid content.
+     *
+     * @default false
+     */
+    allowTextWrap?: boolean;
+
+    /**
+     * Specifies the mode for text wrapping in the popup grid content. Options include 'Both', 'Content', and 'Header'.
+     * 
+     * @isenumeration true
+     *
+     * @default WrapMode.Both
+     * @asptype WrapMode
+     */
+    textWrapMode?: WrapMode | string;
 
     /**
      * Accepts the template design and assigns it to each items present in the popup.

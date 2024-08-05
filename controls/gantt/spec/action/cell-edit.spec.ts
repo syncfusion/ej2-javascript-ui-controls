@@ -5095,3 +5095,153 @@ describe('Dependency offset value not updating properly with unscheduled tasks F
         }
     });
 });
+describe('Dependency offset value not updating properly with unscheduled tasks SF', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                      taskName: 'New Task 1',
+                      startDate: '2024-07-22',
+                      endDate: '2024-07-22',
+                      duration: 1,
+                      realized: 0,
+                      dependencies: '',
+                      cost: '',
+                      taskId: '1',
+                      parts: '',
+                      parentId: null,
+                      taskIndex: 0,
+                    },
+                    {
+                      taskName: 'New Task 1',
+                      startDate: '2024-07-15',
+                      endDate: '2024-07-19',
+                      duration: 4,
+                      realized: 0,
+                      dependencies: '1SF-3days',
+                      cost: '',
+                      taskId: '2',
+                      parts: [
+                        {
+                          startDate: '2024-07-15',
+                          endDate: '2024-07-17',
+                          duration: 3,
+                        },
+                        {
+                          startDate: '2024-07-19',
+                          endDate: '2024-07-19',
+                          duration: 1,
+                        },
+                      ],
+                      parentId: null,
+                      taskIndex: 1,
+                    },
+                  ],
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                taskFields: {
+                    id: 'taskId',
+                    name: 'taskName',
+                    startDate: 'startDate',
+                    endDate: 'endDate',
+                    duration: 'duration',
+                    progress: 'realized',
+                    dependency: 'dependencies',
+                    segments: 'parts',
+                    parentID: 'parentId',
+                    baselineStartDate: 'baselineStartDate',
+                    baselineEndDate: 'baselineEndDate',
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'taskId', allowEditing: false, visible: true },
+                    { field: 'dependencies', visible: true },
+                    {
+                      field: 'index',
+                      headerText: "index",
+                      allowEditing: false,
+                      visible: true,
+                    },
+                    { field: 'wbs', headerText: 'WBS', allowEditing: false, visible: true },
+                    { field: 'taskName', visible: true },
+                    { field: 'startDate', visible: true },
+                    { field: 'endDate', visible: true },
+                    { field: 'duration', visible: true },
+                    { field: 'realized', visible: true },
+                    {
+                      field: 'cost', headerText: "cost",
+                      visible: true,
+                    },
+                  ],
+               
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 
+                'PrevTimeSpan', 'NextTimeSpan','ExcelExport', 'CsvExport', 'PdfExport'],
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowSelection: true,
+                allowRowDragAndDrop: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "50%",
+                   // columnIndex: 4
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                filterSettings: {
+                    type: 'Menu'
+                },
+                allowFiltering: true,
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+            
+                labelSettings: {
+                    leftLabel: 'TaskID',
+                    rightLabel: 'Task Name: ${taskData.TaskName}',
+                    taskLabel: '${Progress}%'
+                },
+                allowResizing: true,
+                readOnly: false,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                allowUnscheduledTasks: true,
+            }, done);
+    });
+    it('updating properly with unscheduled tasks offset value SF', () => {
+        expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.startDate,'MM/dd/yyyy')).toBe('07/10/2024');   
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

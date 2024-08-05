@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.2.8 (2024-08-06)
+
+### DatePicker
+
+#### Bug Fixes
+
+- `#F188894` - Fixed the issue where, in Mobile Mode, opening the popup and pressing the back button without selecting any date would apply an overlay to the entire page.
+
 ## 26.1.41 (2024-07-09)
 
 ### DatePicker

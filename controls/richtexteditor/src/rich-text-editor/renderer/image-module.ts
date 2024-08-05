@@ -154,6 +154,7 @@ export class Image {
             if (this.parent.insertImageSettings.resize) {
                 EventHandler.remove(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart);
                 (this.parent.element.ownerDocument as Document).removeEventListener('mousedown', this.docClick, true);
+                this.docClick = null;
                 EventHandler.remove(this.contentModule.getEditPanel(), 'cut', this.onCutHandler);
                 EventHandler.remove(this.contentModule.getDocument(), Browser.touchMoveEvent, this.resizing);
             }

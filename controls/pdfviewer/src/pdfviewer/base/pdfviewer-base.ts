@@ -1,6 +1,6 @@
 import { createElement, Browser, isNullOrUndefined, isBlazor, Internationalization, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { PdfViewer, TextLayer, ContextMenu, Signature, AnnotationType, TileRenderingSettingsModel, PdfFormFieldBase, AccessibilityTags, KeyboardCommand } from '../index';
+import { PdfViewer, TextLayer, ContextMenu, Signature, AnnotationType, TileRenderingSettingsModel, PdfFormFieldBase, AccessibilityTags, KeyboardCommand, PdfAnnotationBase } from '../index';
 import { NavigationPane } from './navigation-pane';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { TextMarkupAnnotation, StampAnnotation, IPageAnnotations, Annotation, IPoint } from '../annotation';
@@ -1205,6 +1205,41 @@ export class PdfViewerBase {
         }
     }
 
+    private isValidBase64(str: string): boolean {
+        try {
+            if (str.length % 4 !== 0) {
+                return false;
+            }
+            const base64Regex: RegExp = /^[A-Za-z0-9+/=]+$/;
+            return base64Regex.test(str);
+        } catch (e) {
+            return false;
+        }
+    }
+    private isUrl(str: string): boolean {
+        try {
+            new URL(str);
+            return true;
+        } catch (_) {
+            return false;
+        }
+    }
+
+    private isBase64(str: string): boolean {
+        const base64Regex: RegExp = /^[A-Za-z0-9+/=]+$/;
+        return base64Regex.test(str);
+    }
+
+    private identifyDataType(input: string): string {
+        if (this.isUrl(input)) {
+            return 'URL';
+        } else if (this.isBase64(input)) {
+            return 'Base64';
+        } else {
+            return 'Unknown';
+        }
+    }
+
     private createAjaxRequest(jsonObject: any, documentData: string, password: string): void {
         let proxy: PdfViewerBase = null;
         // eslint-disable-next-line
@@ -1217,39 +1252,46 @@ export class PdfViewerBase {
             jsonObject['action'] = 'Load';
             jsonObject['elementId'] = this.pdfViewer.element.id;
             if (this.clientSideRendering) {
-                this.getPdfBase64(documentData).then((pdfBase64: string) => {
-                    let data: any = this.pdfViewer.pdfRendererModule.load(pdfBase64, this.documentId, password, jsonObject);
-                    if (data) {
-                        if (typeof data !== 'object') {
-                            try {
-                                data = JSON.parse(data);
-                            } catch (error) {
-                                proxy.onControlError(500, data, this.pdfViewer.serverActionSettings.load);
-                                data = null;
-                            }
-                        }
+                const dataType: string = this.identifyDataType(documentData);
+                const isDataType: boolean = dataType === 'URL';
+                const isValidData: boolean = isDataType || this.isValidBase64(documentData);
+                if (isValidData) {
+                    this.getPdfBase64(documentData).then((pdfBase64: string) => {
+                        let data: any = this.pdfViewer.pdfRendererModule.load(pdfBase64, this.documentId, password, jsonObject);
                         if (data) {
-                            while (typeof data !== 'object') {
-                                data = JSON.parse(data);
-                                if (typeof parseInt(data, 10) === 'number' && !isNaN(parseInt(data, 10))) {
-                                    data = parseInt(data, 10);
-                                    break;
+                            if (typeof data !== 'object') {
+                                try {
+                                    data = JSON.parse(data);
+                                } catch (error) {
+                                    proxy.onControlError(500, data, this.pdfViewer.serverActionSettings.load);
+                                    data = null;
                                 }
                             }
-                            if (data.uniqueId === proxy.documentId || (typeof parseInt(data, 10) === 'number' && !isNaN(parseInt(data, 10)))) {
-                                proxy.updateFormFieldName(data);
-                                proxy.pdfViewer.fireAjaxRequestSuccess(this.pdfViewer.serverActionSettings.load, data);
-                                if (!isNullOrUndefined(data['isTaggedPdf']) && data['isTaggedPdf']) {
-                                    proxy.isTaggedPdf = true;
+                            if (data) {
+                                while (typeof data !== 'object') {
+                                    data = JSON.parse(data);
+                                    if (typeof parseInt(data, 10) === 'number' && !isNaN(parseInt(data, 10))) {
+                                        data = parseInt(data, 10);
+                                        break;
+                                    }
                                 }
-                                proxy.requestSuccess(data, documentData, password);
+                                if (data.uniqueId === proxy.documentId || (typeof parseInt(data, 10) === 'number' && !isNaN(parseInt(data, 10)))) {
+                                    proxy.updateFormFieldName(data);
+                                    proxy.pdfViewer.fireAjaxRequestSuccess(this.pdfViewer.serverActionSettings.load, data);
+                                    if (!isNullOrUndefined(data['isTaggedPdf']) && data['isTaggedPdf']) {
+                                        proxy.isTaggedPdf = true;
+                                    }
+                                    proxy.requestSuccess(data, documentData, password);
+                                }
                             }
+                        } else {
+                            proxy.invalidFilePopup();
                         }
-                    } else {
-                        proxy.showLoadingIndicator(false);
-                        proxy.openImportExportNotificationPopup(proxy.pdfViewer.localeObj.getConstant('Import PDF Failed'));
-                    }
-                });
+                    });
+                }
+                else {
+                    proxy.invalidFilePopup();
+                }
             }
             else {
                 this.loadRequestHandler.send(jsonObject);
@@ -1310,7 +1352,10 @@ export class PdfViewerBase {
             }
         }
     }
-
+    private invalidFilePopup(): void {
+        this.showLoadingIndicator(false);
+        this.openImportExportNotificationPopup(this.pdfViewer.localeObj.getConstant('Import PDF Failed'));
+    }
     // EJ2-60380 - As of now, in form designer the element name is taken fromfield.ActualFieldName (with hypen) but for
     // Form fields it is taken from field.FieldName (without hypen).
     // For this reason when user taken the form feilds on button click, name of the form feilds are different with and without form designer module
@@ -4100,7 +4145,7 @@ export class PdfViewerBase {
                 }
                 break;
             case 67: // c key
-                if (this.pdfViewer.textSelectionModule && this.pdfViewer.enableTextSelection && !this.isTextSelectionDisabled) {
+                if (this.pdfViewer.textSelectionModule && this.pdfViewer.enableTextSelection && !this.isTextSelectionDisabled && this.isTargetClassNameValid(event)) {
                     event.preventDefault();
                     this.pdfViewer.textSelectionModule.copyText();
                 }
@@ -4158,7 +4203,7 @@ export class PdfViewerBase {
                     if (searchBoxId) {
                         isSearchboxDialogOpen = searchBoxId.style.display !== 'none';
                     }
-                    if (!isSearchboxDialogOpen && this.pdfViewer.formDesigner && !this.pdfViewer.formDesigner.isPropertyDialogOpen) {
+                    if (!isSearchboxDialogOpen && this.pdfViewer.formDesigner && this.isTargetClassNameValid(event) && (event.target as any).className !== 'e-pv-properties-tooltip-prop-input e-input e-lib e-textbox e-control') {
                         this.pdfViewer.paste();
                         this.contextMenuModule.previousAction = 'Paste';
                     }
@@ -4267,6 +4312,13 @@ export class PdfViewerBase {
             this.pdfViewer.magnificationModule.magnifyBehaviorKeyDown(event);
         }
     };
+
+    private isTargetClassNameValid(event: KeyboardEvent): boolean {
+        return (event.target as any).className !== 'e-pv-formfield-input' &&
+            (event.target as any).className !== 'e-pv-formfield-textarea' &&
+            (event.target as any).className !== 'e-pv-properties-name-edit-input e-input e-lib e-textbox e-control' &&
+            (event.target as any).className !== 'e-pv-properties-value-input e-input e-lib e-textbox e-control';
+    }
 
     private DeleteKeyPressed(event: KeyboardEvent): void {
         let isSearchboxDialogOpen: boolean;
@@ -11894,7 +11946,18 @@ export class PdfViewerBase {
             else {
                 currentAnnotation = proxy.pdfViewer.annotations.filter(function (s: { annotName: any; }): boolean
                 { return s.annotName === proxy.pdfViewer.annotationCollection[parseInt(j.toString(), 10)].annotationId; })[0];
-                const undoElement: any = proxy.pdfViewer.annotation.modifyInCollections(currentAnnotation, 'delete');
+                if (isNullOrUndefined(currentAnnotation)) {
+                    currentAnnotation = new PdfAnnotationBase(this.pdfViewer, 'annotations', proxy.pdfViewer.annotationCollection[parseInt(j.toString(), 10)] as PdfAnnotationBase, true);
+                    currentAnnotation.id = proxy.pdfViewer.annotationCollection[parseInt(j.toString(), 10)].uniqueId;
+                    currentAnnotation.annotName = proxy.pdfViewer.annotationCollection[parseInt(j.toString(), 10)].annotationId;
+                    currentAnnotation.annotationId = null;
+                }
+                let undoElement: any = proxy.pdfViewer.annotation.modifyInCollections(currentAnnotation, 'delete');
+                if (isNullOrUndefined(undoElement)) {
+                    undoElement = proxy.pdfViewer.annotationCollection[parseInt(j.toString(), 10)];
+                    undoElement.annotName = proxy.pdfViewer.annotationCollection[parseInt(j.toString(), 10)].annotationId;
+                    delete undoElement.annotationId;
+                }
                 proxy.pdfViewer.annotation.undoCommentsElement.push(undoElement);
                 proxy.pdfViewer.annotation.addAction(currentAnnotation.pageIndex, null, currentAnnotation, 'Delete', '', undoElement, currentAnnotation);
                 proxy.pdfViewer.annotation.textMarkupAnnotationModule.manageAnnotations(currentAnnotation, currentAnnotation.pageNumber);

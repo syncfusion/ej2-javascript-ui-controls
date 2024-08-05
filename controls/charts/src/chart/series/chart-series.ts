@@ -216,7 +216,8 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
      * * Pentagon
      * * InvertedTriangle
      * * Image
-     *
+     * * Star
+     * 
      * @default null
      */
 

@@ -4115,6 +4115,23 @@ describe('RTE CR issues ', () => {
         });
     });
 
+    describe('898856 - Change event not triggered when we dynamically change the readOnly mode in the RichTextEditor.', () => {
+        let editor: RichTextEditor;
+        beforeAll(() => {
+            editor = renderRTE({readonly: true});
+        });
+        afterAll(() => {
+            destroy(editor);
+        });
+        it('Should re bind the focus event when the readonly is set to false.', () => {
+            editor.readonly = false;
+            editor.dataBind();
+            expect(typeof (editor as any).onFocusHandler).toBe('function');
+            expect(typeof (editor as any).onBlurHandler).toBe('function');
+            expect(typeof (editor as any).onResizeHandler).toBe('function');
+        });
+    });
+
     describe('875856 - Using indents on Numbered or Bulleted list turns into nested list in RichTextEditor', () => {
         let rteObj: RichTextEditor;
         let rteEle: Element;
@@ -4726,7 +4743,7 @@ describe('RTE CR issues ', () => {
             }, 400);
         });
     });
-    describe('895384 - The placeholder does not show up after cleaning up all the content in the Rich Text Editor.', () => {
+    describe('898140 - Delete action inside the list not working properly.', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let keyBoardEventDel: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
@@ -4745,7 +4762,7 @@ describe('RTE CR issues ', () => {
             destroy(rteObj);
             done();
         });
-        it('select all content in rte and press delete ', (done: DoneFn) => {
+        it('select all last two contents of list and press delete ', (done: DoneFn) => {
             rteObj.inputElement.innerHTML=innerHTML;
             rteObj.dataBind();
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#one').childNodes[0], rteObj.element.querySelector('#two'), 0, 1);
@@ -4756,6 +4773,111 @@ describe('RTE CR issues ', () => {
             (rteObj as any).keyUp(keyBoardEventDel);
             setTimeout(() => {
                 expect(rteObj.inputElement.innerHTML==='<p>hello</p><ul><li>world</li></ul><p>me</p>').toBe(true);
+                done();
+            }, 100);
+        });
+        it('select all last two contents of list and press delete  for user case ', (done: DoneFn) => {
+            rteObj.inputElement.innerHTML=`<p>assaassa</p><ol>
+                <li>sssasa</li>
+                <li id='one' >assaasas</li>
+                <li id='two'>assasaas</li>
+              </ol><p>assaassasa</p>`;
+            rteObj.dataBind();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#one').childNodes[0], rteObj.element.querySelector('#two'), 0, 1);
+            keyBoardEventDel.keyCode = 46;
+            keyBoardEventDel.code = 'Delete';
+            keyBoardEventDel.action = 'delete';
+            (rteObj as any).keyDown(keyBoardEventDel);
+            (rteObj as any).keyUp(keyBoardEventDel);
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML==='<p>assaassa</p><ol>\n                <li>sssasa</li>\n                \n              </ol><p>assaassasa</p>').toBe(true);
+                done();
+            }, 100);
+        });
+        it('select all entire of list and press delete  for user case for p tag wrapped', (done: DoneFn) => {
+            rteObj.inputElement.innerHTML=`<p><b>Key features:</b></p><ul>
+                    <li>
+                        <p>Provides &lt;IFRAME&gt; and &lt;DIV&gt; modes</p>
+                    </li>
+                    <li>
+                        <p>Capable of handling markdown editing.</p>
+                    </li>
+                    <li>
+                        <p id='one'>Contains a modular library to load the necessary functionality on demand.</p>
+                    </li>
+                    <li><p id='two'>Provides a fully customizable toolbar.</p></li>
+                    
+                </ul>`;
+            rteObj.dataBind();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#one').childNodes[0], rteObj.element.querySelector('#two'), 0, 1);
+            keyBoardEventDel.keyCode = 46;
+            keyBoardEventDel.code = 'Delete';
+            keyBoardEventDel.action = 'delete';
+            (rteObj as any).keyDown(keyBoardEventDel);
+            (rteObj as any).keyUp(keyBoardEventDel);
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML==='<p><b>Key features:</b></p><ul>\n                    <li>\n                        <p>Provides &lt;IFRAME&gt; and &lt;DIV&gt; modes</p>\n                    </li>\n                    <li>\n                        <p>Capable of handling markdown editing.</p>\n                    </li>\n                    \n                    \n                </ul>').toBe(true);
+                done();
+            }, 100);
+        });
+        it('select all entire of list and press delete  for user case for p tag wrapped', (done: DoneFn) => {
+            rteObj.inputElement.innerHTML=`<p><b>Key features:</b></p><ul>
+                    <li>
+                        <p id='one'>Provides &lt;IFRAME&gt; and &lt;DIV&gt; modes</p>
+                    </li>
+                    <li>
+                        <p>Capable of handling markdown editing.</p>
+                    </li>
+                    <li>
+                        <p>Contains a modular library to load the necessary functionality on demand.</p>
+                    </li>
+                    <li><p id='two'>Provides a fully customizable toolbar.</p></li>
+                    
+                </ul>`;
+            rteObj.dataBind();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.element.querySelector('#one').childNodes[0], rteObj.element.querySelector('#two'), 0, 1);
+            keyBoardEventDel.keyCode = 46;
+            keyBoardEventDel.code = 'Delete';
+            keyBoardEventDel.action = 'delete';
+            (rteObj as any).keyDown(keyBoardEventDel);
+            (rteObj as any).keyUp(keyBoardEventDel);
+            setTimeout(() => {
+                expect(rteObj.inputElement.innerHTML==='<p><b>Key features:</b></p>').toBe(true);
+                done();
+            }, 100);
+        });
+    });
+    describe('898710 - Not able to do backspace inside the input field in the RichTextEditor', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyBoardEventDel: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: false, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46};
+        let innerHTML: string = `<div style=" color: rgb(0, 0, 0); font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); font-family: Aptos, Aptos_EmbeddedFont, Aptos_MSFontService, Calibri, Helvetica, sans-serif; font-size: 12pt; margin: 0px;"><b style=" font-weight: 500;">Input field:</b></div><div style=" color: rgb(0, 0, 0); font-style: normal; font-weight: 400; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); font-family: Aptos, Aptos_EmbeddedFont, Aptos_MSFontService, Calibri, Helvetica, sans-serif; font-size: 12pt; margin: 1em 0px; text-align: left;">&nbsp;<label style=" color: var(--text-secondary-color,rgba(0, 0, 0, .55)); display: inline-block; max-width: 100%; margin: 0px 0px 0.5rem; font-size: 15px; font-family: Verdana, sans-serif;"><div style=" margin: 0px;">First name:</div></label><input type="text" value="John" style=" color: inherit; font-family: &quot;Segoe UI VSS (Regular)&quot;, &quot;Segoe UI&quot;, -apple-system, BlinkMacSystemFont, Roboto, &quot;Helvetica Neue&quot;, Helvetica, Ubuntu, Arial, sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px; background-color: var(--background-color,rgba(255, 255, 255, 1)); margin: 0px;"><br></div>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                value: innerHTML
+
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+        it('select all content in rte and press delete ', (done: DoneFn) => {
+            rteObj.inputElement.innerHTML=innerHTML;
+            rteObj.dataBind();
+            let input = rteObj.element.querySelector('input');
+            input.focus();
+            input.setSelectionRange(2, 2);
+            keyBoardEventDel.keyCode = 46;
+            keyBoardEventDel.code = 'Delete';
+            keyBoardEventDel.action = 'delete';
+            (rteObj as any).keyUp(keyBoardEventDel);
+            setTimeout(() => {
+                expect(input.value ==='John').toBe(true);
                 done();
             }, 100);
         });

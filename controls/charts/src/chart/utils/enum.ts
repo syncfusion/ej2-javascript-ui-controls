@@ -245,6 +245,8 @@ export type ChartShape =
     'InvertedTriangle' |
     /** Specifies the shape of the marker as a Image symbol. */
     'Image' |
+    /** Specifies the shape of the marker as a Star symbol. */
+    'Star' |
     /** Specifies the shape of the marker as a none */
     'None';
 

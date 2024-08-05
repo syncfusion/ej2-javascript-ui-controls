@@ -1064,11 +1064,11 @@ export class RowDD {
             if ((gObj.enableVirtualization || (gObj.enableInfiniteScrolling && gObj.infiniteScrollSettings.enableCache))
                 && gObj.allowGrouping && gObj.groupSettings.columns.length && gObj.getSelectedRows().length) {
                 this.rows = gObj.getSelectedRows();
-                this.rowData = gObj.getSelectedRecords();
+                this.rowData = Array.from(this.rows, row => gObj.getRowObjectFromUID(row.getAttribute('data-uid')).data);
             }
         } else {
             this.rows = gObj.getSelectedRows();
-            this.rowData = gObj.getSelectedRecords();
+            this.rowData = Array.from(this.rows, row => gObj.getRowObjectFromUID(row.getAttribute('data-uid')).data);
         }
     }
 }

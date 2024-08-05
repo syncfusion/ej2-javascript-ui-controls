@@ -10,6 +10,7 @@
  * * pentagon- Renders a pentagon.
  * * invertedTriangle - Renders a invertedTriangle.
  * * image - Renders a image
+ * * star - Renders a star
  */
 export type TooltipShape =
     /** Render a circle. */
@@ -34,6 +35,8 @@ export type TooltipShape =
     'InvertedTriangle' |
     /** Render a Image. */
     'Image' |
+    /** Render a Star. */
+    'Star' |
     /** Render a None */
     'None';
 

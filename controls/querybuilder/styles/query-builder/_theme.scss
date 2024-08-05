@@ -199,7 +199,7 @@
 .e-query-builder .e-btn.e-round.e-small {
   @if $theme-name == 'fluent2' {
     &:hover {
-      background: transparent !important; /* stylelint-disable-line declaration-no-important */
+      background: $content-bg-color-hover !important; /* stylelint-disable-line declaration-no-important */
     }
 
     &:focus {

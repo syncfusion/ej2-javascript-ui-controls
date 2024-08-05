@@ -2314,6 +2314,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             if (this.pageSettings.pageSizeMode === 'Root') {
                 this.grid.selectionModule['totalRecordsCount'] = this.grid.currentViewData.length;
             }
+            if (this.enableVirtualization && args.rowIndex === this.selectedRowIndex) {
+                args.cancel = true;
+            }
             this.trigger(events.rowSelecting, args);
         };
         this.grid.rowDeselecting = (args: RowDeselectingEventArgs): void => {
@@ -4268,6 +4271,19 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
             }
             else if (!this.isExpandAll) {
                 this.trigger(events.expanded, expandArgs);
+            }
+            if ((record as ITreeData).expanded && this.enableVirtualization && this.selectionSettings.persistSelection
+                && !isNullOrUndefined((this as any).virtualScrollModule.prevSelectedRecord)) {
+                for (let i: number = 0; i < (this as any).virtualScrollModule.prevSelectedRecord.length; i++) {
+                    if ((record as ITreeData).uniqueID ===
+                        (this as any).virtualScrollModule.prevSelectedRecord[parseInt(i.toString(), 10)].parentItem.uniqueID) {
+                        const updateRowSelection: string = 'updateRowSelection';
+                        const index: number =
+                        // eslint-disable-next-line max-len
+                            this.getCurrentViewRecords().indexOf((this as any).virtualScrollModule.prevSelectedRecord[parseInt(i.toString(), 10)]);
+                        this.grid.selectionModule[`${updateRowSelection}`](this.getRows()[parseInt(index.toString(), 10)], index);
+                    }
+                }
             }
         }
     }

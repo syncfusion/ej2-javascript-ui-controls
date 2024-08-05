@@ -95,6 +95,7 @@ export class Audio {
             EventHandler.remove(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.touchStart);
             EventHandler.remove(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.audioClick);
             (this.parent.element.ownerDocument as Document).removeEventListener('mousedown', this.docClick, true);
+            this.docClick = null;
         }
     }
 

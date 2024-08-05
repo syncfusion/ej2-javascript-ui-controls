@@ -619,6 +619,7 @@ export class DateTimePicker extends DatePicker {
         if (this.showClearButton) {
             this.clearButton = document.getElementsByClassName('e-clear-icon')[0] as HTMLElement;
         }
+        this.hide(null);
         if (this.popupObject && this.popupObject.element.classList.contains(POPUP)) {
             this.popupObject.destroy();
             detach(this.dateTimeWrapper);

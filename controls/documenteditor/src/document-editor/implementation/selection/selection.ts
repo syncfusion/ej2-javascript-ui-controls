@@ -57,6 +57,10 @@ export class Selection {
     /**
     * @private
     */
+    public isExcludeBookmarkStartEnd: boolean = false;
+    /**
+    * @private
+    */
     public documentHelper: DocumentHelper;
     private contextTypeInternal: ContextType = undefined;
     /**
@@ -94,6 +98,7 @@ export class Selection {
     private toolTipField: FieldElementBox | string;
     private isMoveDownOrMoveUp: boolean = false;
     private pasteDropDwn: DropDownButton;
+    private isSelectBookmark: boolean = false;
     /**
      * @private
      * This will holds the selection html content to set data in clipboard. Avoid to use this field for other purpose.
@@ -2240,7 +2245,12 @@ export class Selection {
     public getDocumentEnd(): TextPosition {
         let textPosition: TextPosition = undefined;
         const documentStart: TextPosition = this.owner.documentStart;
-        const lastPage: Page = this.documentHelper.pages[this.documentHelper.pages.length - 1];
+        let lastPage: Page = this.documentHelper.pages[this.documentHelper.pages.length - 1];
+        // Bug 893168: If the length of the page's body widgets is 1 and the length of the child widgets is 0, then it is necessary to check the previous page.
+        while (lastPage.previousPage && lastPage.bodyWidgets.length === 1 
+            && lastPage.bodyWidgets[0].childWidgets.length === 0) {
+            lastPage = lastPage.previousPage;
+        }
         if (!isNullOrUndefined(documentStart) && lastPage.bodyWidgets[lastPage.bodyWidgets.length - 1].childWidgets.length > 0) {
             let block: BlockWidget = undefined;
             const section: BodyWidget = lastPage.bodyWidgets[lastPage.bodyWidgets.length - 1] as BodyWidget;
@@ -6499,7 +6509,7 @@ export class Selection {
                         && point.y <= floatWidget.y + floatWidget.height && point.y >= floatWidget.y) {
                         return this.getLineWidgetTableWidget(floatWidget, point);
                     }
-                } else if (floatWidget instanceof ShapeBase && floatWidget.x <= point.x && (floatWidget.x + floatWidget.width) >= point.x
+                } else if (floatWidget instanceof ShapeBase && floatWidget.textWrappingStyle !== 'Behind' && floatWidget.x <= point.x && (floatWidget.x + floatWidget.width) >= point.x
                     && floatWidget.y <= point.y && (floatWidget.y + floatWidget.height) >= point.y) {
                     return floatWidget.line;
                 }
@@ -7614,6 +7624,9 @@ export class Selection {
      * @private
      */
     public fireSelectionChanged(isSelectionChanged: boolean, isKeyBoardNavigation?: boolean, isBookmark?: boolean): void {
+        if (!this.isSelectBookmark) {
+            this.isExcludeBookmarkStartEnd = false;
+        }
         if (!this.isEmpty) {
             if (this.isForward) {
                 this.start.updatePhysicalPosition(true);
@@ -10793,7 +10806,10 @@ export class Selection {
      * @param excludeBookmarkStartEnd Specify true to exclude bookmark start and end from selection, otherwise false.
      */
     public selectBookmark(name: string, excludeBookmarkStartEnd?: boolean): void {
+        this.isSelectBookmark = true;
+        this.isExcludeBookmarkStartEnd = excludeBookmarkStartEnd;
         this.navigateBookmark(name, undefined, excludeBookmarkStartEnd);
+        this.isSelectBookmark = false;
     }
     /**
      * Returns the toc field from the selection.
@@ -11440,6 +11456,11 @@ export class Selection {
                 start = this.end;
                 end = this.start;
             }
+        }
+        if (this.editRangeCollection.length > 0 && this.isFootEndNoteParagraph(start.paragraph) && this.isFootEndNoteParagraph(end.paragraph) && start.paragraph.containerWidget == end.paragraph.containerWidget) {
+            let position: TextPosition = this.getElementPosition((start.paragraph.containerWidget as BodyWidget).footNoteReference, true).startPosition;
+            start = position;
+            end = position;
         }
         for (let i: number = 0; i < this.editRangeCollection.length; i++) {
             let editRangeStart: EditRangeStartElementBox = this.editRangeCollection[i];

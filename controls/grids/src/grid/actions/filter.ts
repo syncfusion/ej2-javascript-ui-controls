@@ -799,10 +799,23 @@ export class Filter implements IAction {
     private checkAlreadyColFiltered(field: string): boolean {
         const columns: PredicateModel[] = this.filterSettings.columns;
         for (const col of columns) {
-            if (col.field === field && col.value === this.value &&
+            if (col.field === field && this.parent.filterSettings.type === 'Menu' &&
+                (col.type === 'date' || col.type === 'datetime')) {
+                return (this.checkDateColumnValue(col.value, this.value) &&
+                    col.operator === this.operator && col.predicate === this.predicate);
+            } else if (col.field === field && col.value === this.value &&
                 col.operator === this.operator && col.predicate === this.predicate) {
                 return true;
             }
+        }
+        return false;
+    }
+
+    private checkDateColumnValue(colDate: string | number | boolean | Date, filterDate: string | number | boolean | Date): boolean {
+        if (isNullOrUndefined(colDate) && isNullOrUndefined(filterDate)) {
+            return true;
+        }  else if (colDate instanceof Date && filterDate instanceof Date) {
+            return colDate.getTime() === filterDate.getTime();
         }
         return false;
     }

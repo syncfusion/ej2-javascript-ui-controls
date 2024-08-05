@@ -258,6 +258,7 @@ export class ContextMenu {
                 this.parent.showSpinner();
             }
             this.parent.chartRowsModule.splitTask(this.rowData[taskSettings.id], currentClickedDate);
+            this.parent.chartRowsModule.updateSegment(this.rowData.ganttProperties.segments, this.rowData.ganttProperties.taskId);
             if (this.parent.projectEndDate >= this.rowData.ganttProperties.endDate) {
             this.parent.nextTimeSpan()
             }

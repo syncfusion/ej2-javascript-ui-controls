@@ -955,10 +955,10 @@ export class TextPosition {
         } else if (inline instanceof FieldElementBox && (inline as FieldElementBox).fieldType === 0) {
 
             this.getNextWordOffsetFieldBegin(inline as FieldElementBox, indexInInline, type, isInField, endSelection, endPosition, excludeSpace);
-        } else if (inline instanceof FieldElementBox && (inline as FieldElementBox).fieldType === 2 || inline instanceof BookmarkElementBox) {
+        } else if ((inline instanceof FieldElementBox && (inline as FieldElementBox).fieldType === 2) || (inline instanceof BookmarkElementBox && inline.bookmarkType === 0)) {
 
             this.getNextWordOffsetFieldSeparator(inline as FieldElementBox, indexInInline, type, isInField, endSelection, endPosition, excludeSpace);
-        } else if (inline instanceof FieldElementBox && (inline as FieldElementBox).fieldType === 1) {
+        } else if ((inline instanceof FieldElementBox && (inline as FieldElementBox).fieldType === 1) || (inline instanceof BookmarkElementBox && inline.bookmarkType === 1)) {
 
             this.getNextWordOffsetFieldEnd(inline as FieldElementBox, indexInInline, type, isInField, endSelection, endPosition, excludeSpace);
         } else if (inline instanceof CommentCharacterElementBox) {

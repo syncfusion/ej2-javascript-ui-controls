@@ -277,6 +277,8 @@ export class InsertHtml {
                     }
                     const rangeElement: Node = closest(nearestAnchor, 'span');
                     rangeElement.appendChild(tempSpan);
+                } else if (nodes[0].nodeName === '#text' && nodes[0].nodeValue.includes('\u200B') && !isNOU(nodes[0].parentElement) && !isNOU(nodes[0].parentElement.previousElementSibling) && nodes[0].parentElement.previousElementSibling.classList.contains('e-mention-chip')) {
+                    range.startContainer.parentElement.insertAdjacentElement('afterend', tempSpan);
                 } else {
                     range.insertNode(tempSpan);
                 }
@@ -352,17 +354,7 @@ export class InsertHtml {
         } else {
             this.cursorPos(lastSelectionNode, node, nodeSelection, docElement, editNode, enterAction);
         }
-        const spanAligns: NodeListOf<HTMLElement> = editNode.querySelectorAll('span[style*="text-align"]');
-        if (spanAligns.length > 0) {
-            spanAligns.forEach((spanAlign: HTMLElement) => {
-                if (!isNOU(spanAlign)) {
-                    const blockAlign: Node = this.getImmediateBlockNode(spanAlign, null);
-                    if (blockAlign && (blockAlign as HTMLElement).textContent.trim() === spanAlign.textContent.trim()) {
-                        (blockAlign as HTMLElement).style.textAlign = spanAlign.style.textAlign;
-                    }
-                }
-            });
-        }
+        this.alignCheck(editNode as HTMLElement);
     }
     private static placeCursorEnd(
         lastSelectionNode: Node, node: Node, nodeSelection: NodeSelection, docElement: Document, editNode?: Element): void {
@@ -598,5 +590,26 @@ export class InsertHtml {
             parentNode.appendChild(insertNode);
         }
         insertNode.classList.add('ignore-table');
+    }
+    private static alignCheck (editNode: HTMLElement): void {
+        const spanAligns: NodeListOf<Element> = editNode.querySelectorAll('span[style*="text-align"]');
+        for (let i: number = 0; i < spanAligns.length; i++) {
+            const spanAlign: HTMLElement = spanAligns[i as number] as HTMLElement;
+            if (spanAlign) {
+                const blockAlign: HTMLElement = this.getImmediateBlockNode(spanAlign, null) as HTMLElement;
+                if (blockAlign) {
+                    let totalSpanText: string = '';
+                    for (let j: number = 0; j < spanAligns.length; j++) {
+                        const span: HTMLElement = spanAligns[j as number] as HTMLElement;
+                        if (blockAlign.contains(span)) {
+                            totalSpanText += span.textContent;
+                        }
+                    }
+                    if (blockAlign.textContent.trim() === totalSpanText.trim()) {
+                        blockAlign.style.textAlign = spanAlign.style.textAlign;
+                    }
+                }
+            }
+        }
     }
 }

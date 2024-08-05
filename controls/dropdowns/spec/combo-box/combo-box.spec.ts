@@ -278,6 +278,39 @@ describe('ComboBox', () => {
         });
     });
 
+    describe('Custom object value with preselect', () => {
+        let comboBoxObj: any;
+        let popupObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'combobox' });
+        let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down', keyCode: 72 };
+        let languageData: { [key: string]: Object }[] = [
+            { id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }, { id: 'id3', text: 'PERL' },
+            { id: 'list1', text: 'JAVA' }, { id: 'list2', text: 'PYTHON' }, { id: 'list5', text: 'HTMLCSS' }];
+        beforeEach(() => {
+            Browser.userAgent = navigator.userAgent;
+            document.body.appendChild(element);
+        });
+        afterEach(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        it(' value property -  custom value - not exist value  ', () => {
+            comboBoxObj = new ComboBox({
+                dataSource: languageData,
+                allowCustom: true,
+                allowObjectBinding: true,
+                value: { id: 'id7', text: 'REACT' },
+                fields: { text: 'text', value: 'id' }
+            });
+            comboBoxObj.appendTo(element);
+            expect(comboBoxObj.inputElement.value).toBe('REACT');
+            expect(comboBoxObj.text).toBe('REACT');
+            expect(comboBoxObj.index).toBe(null);
+        });
+    });
+
     describe('dynamic change', () => {
         let comboBoxObj: any;
         let popupObj: any;

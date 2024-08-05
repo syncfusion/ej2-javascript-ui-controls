@@ -3871,6 +3871,7 @@ export class DocumentHelper {
      */
     public removeEmptyPages(): void {
         let scrollToLastPage: boolean = false;
+        let isLayoutEndnote: boolean = false;
         let pageIndex: number = this.selection.startPage - 1;
         for (let j: number = 0; j < this.pages.length; j++) {
             let page: Page = this.pages[j];
@@ -3904,8 +3905,7 @@ export class DocumentHelper {
                             bodyWidget.page = previousPage;
                             k--;
                         }
-                        this.layout.isRelayoutEndnote = true;
-                        scrollToLastPage = false;
+                        isLayoutEndnote = true;
                     }
                 }
                 this.removePage(this.pages[j]);
@@ -3921,6 +3921,9 @@ export class DocumentHelper {
             if (page.footerWidget) {
                 page.footerWidget.page = page;
             }
+        }
+        if (isLayoutEndnote) {
+            this.layout.reLayoutEndnote();
         }
         if (scrollToLastPage) {
             this.scrollToBottom();

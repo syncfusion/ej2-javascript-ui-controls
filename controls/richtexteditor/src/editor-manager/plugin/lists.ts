@@ -331,7 +331,9 @@ export class Lists {
                 && (!isNullOrUndefined(closest(startNode, 'ul')) || !isNullOrUndefined(closest(startNode, 'ol')))
                 && (!isNullOrUndefined(closest(endNode, 'ul')) || !isNullOrUndefined(closest(endNode, 'ol')))
                 && (((commonAncestor as HTMLElement).lastElementChild === closest(endNode, 'li') && commonAncestor.lastChild !== endNode)) && !range.collapsed) {
-                detach(commonAncestor);
+                if (this.areAllListItemsSelected(commonAncestor as HTMLElement, range)) {
+                    detach(commonAncestor);
+                }
             }
             this.removeList(range, e);
         }
@@ -1006,5 +1008,17 @@ export class Lists {
         if (this.domNode) {
             this.domNode = null;
         }
+    }
+    public areAllListItemsSelected(list: HTMLElement, range: Range): boolean {
+        const listItems: NodeListOf<HTMLLIElement> = list.querySelectorAll('li');
+        for (let i: number = 0; i < listItems.length; i++) {
+            const listItem: HTMLLIElement = listItems[i as number];
+            const listItemRange: Range = this.parent.currentDocument.createRange();
+            listItemRange.selectNodeContents(listItem);
+            if (!range.intersectsNode(listItem)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

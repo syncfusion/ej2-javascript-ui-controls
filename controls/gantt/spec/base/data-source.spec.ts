@@ -29,6 +29,22 @@ export let dataSource1: Object[] = [
         parentID: 1
     }
 ];
+export let dataSource2: Object[] = [
+    {
+        taskId: 1,
+        taskName: "Project initiation",
+        startDate: new Date('03/29/2019'),
+        endDate: new Date('04/21/2019'),
+    }, {
+        taskId: 2,
+        taskName: "Identify Site location",
+        startDate: new Date('03/29/2019'),
+        duration: "2",
+        progress: 30,
+        parentID: 1,
+        predecessor: null
+    }
+];
 export let cr884998 = [
     {
         taskId: 8,
@@ -13920,3 +13936,97 @@ export let actionFailureData : object[] = [
         progress: '75',
         parentID: 2
     }]
+
+export let sengmentData: Object[] =[{
+        taskId : 1,
+        taskName :"Project initiation",
+        startDate : new Date(2019, 3, 29),
+        endDate : new Date(2019, 4, 21),
+        parentID : null,
+    },
+    {
+        taskId : 2,
+        taskName : "Identify Site location",
+        startDate: new Date(2019, 3, 29),
+        duration : "6",
+        progress : 30,
+        parentID : 1,
+    },
+    {
+        taskId : 3,
+        taskName : "Perform soil test",
+        startDate : new Date(2019, 3, 29),
+       duration : "4",
+       parentID : 1,
+    }
+
+];
+
+  export  let sengmentCollection:Object[] = [
+        {
+            segmentId: 2,
+            startDate: new Date(2019, 2, 29),
+            duration: 2
+        },
+        {
+            segmentId: 2,
+            startDate: new Date(2019, 3, 2),
+            duration: 1
+        },
+        {
+            segmentId: 3,
+            startDate: new Date(2019, 3, 2),
+            duration: 1
+        },
+        {
+            segmentId: 3,
+            startDate: new Date(2019, 3, 4),
+            duration: 1
+        }
+    ]
+
+export let pdfquerycelldata: Object[] =  [
+        {
+            TaskID: 1,
+            TaskName: 'Project Initiation',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 2, TaskName: 'Identify Site location', StartDate: new Date('04/02/2019'), Duration: 4, Progress: 10 },
+                { TaskID: 3, TaskName: 'Perform Soil test', StartDate: new Date('04/02/2019'), Duration: 4, Progress: 20  },
+                { TaskID: 4, Predecessor: '3FS', TaskName: 'Soil test approval', StartDate: new Date('04/02/2019'), Duration: 4, Progress: 30 },
+            ]
+        },
+        {
+            TaskID: 5,
+            TaskName: 'Project Estimation',
+            StartDate: new Date('04/02/2019'),
+            EndDate: new Date('04/21/2019'),
+            subtasks: [
+                { TaskID: 6, TaskName: 'Develop floor plan for estimation', StartDate: new Date('04/04/2019'), Duration: 3, Progress: 45 },
+                { TaskID: 7, TaskName: 'List materials', StartDate: new Date('04/04/2019'), Duration: 3, Progress: 55 },
+                { TaskID: 8, TaskName: 'Estimation approval', StartDate: new Date('04/04/2019'), Duration: 3, Progress: 70 }
+            ]
+        },
+    ];
+export let cr898103: Object[] = [
+    {
+        TaskID: 1,
+        TaskName: 'Project initiation',
+        StartDate: new Date('04/02/2024'),
+        EndDate: new Date('04/21/2024'),
+        subtasks: [
+            {
+                TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('04/02/2024'), Duration: 0,
+                Progress: 30, resources: [1], info: 'Measure the total property area alloted for construction'
+            },
+            {
+                TaskID: 3, TaskName: 'Perform soil test', StartDate: new Date('04/02/2024'), Duration: 4, Predecessor: '2',
+                resources: [2, 3, 5], info: 'Obtain an engineered soil test of lot where construction is planned.' +
+                    'From an engineer or company specializing in soil testing'
+            },
+            { TaskID: 4, TaskName: 'Soil test approval', StartDate: new Date('04/02/2024'), Duration: 0, Predecessor: '3', Progress: 30 },
+        ]
+    }
+];
+

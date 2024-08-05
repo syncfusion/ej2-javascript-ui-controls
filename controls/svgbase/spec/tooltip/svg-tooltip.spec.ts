@@ -119,6 +119,21 @@ describe('SVG Tooltip', () => {
        tooltip.refresh();
     });
 
+    it('Checking Tooltip with shared', () => {
+        tooltip.loaded = (args: Object) => {
+            svgObject = getElement('tooltipcontainer_svg');
+            expect(svgObject).not.toBe(null);
+            let groupElement: Element = document.getElementById('tooltipcontainer_group');
+            expect(groupElement.childElementCount).toBe(3);
+            expect(document.getElementById('tooltipcontainer_path').getAttribute('d').lastIndexOf('Q')).toBe(95);
+           
+        };
+       tooltip.content = ['TooltipText'];
+       tooltip.shared = true;
+       tooltip.shapes = ['Star'];
+       tooltip.refresh();
+    });
+
     it('Header and text in bold', () => {
         tooltip.loaded = (args: Object) => {
             svgObject = getElement('tooltipcontainer_svg');        

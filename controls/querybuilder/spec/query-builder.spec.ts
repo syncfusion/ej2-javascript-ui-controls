@@ -617,6 +617,15 @@ describe('QueryBuilder', () => {
             'value': '12/12/2001'
         }]
     };
+    let noValue: RuleModel = {
+        'condition': 'or',
+        'rules': [{
+            'label': 'DOB',
+            'field': 'DOB',
+            'type': 'date',
+            'operator': 'equal'
+        }]
+    };
     let eRules: RuleModel = {
         'condition': 'and',
         'rules': [{
@@ -1676,10 +1685,10 @@ describe('QueryBuilder', () => {
             expect(queryBuilder.getPredicate(queryBuilder.rule).predicates[0].value.toDateString()).toEqual('Wed Feb 10 2021');
             queryBuilder.element.querySelector('.e-rule-delete').click();
             queryBuilder.addRules([{ 'label': 'DOB', 'field': 'DOB', 'type': 'date', 'operator': 'greaterthan', 'value': '2/10/2021' }], 'group0');
-            expect(queryBuilder.getPredicate(queryBuilder.rule).predicates[0].value.toDateString()).toEqual('Wed Feb 10 2021');
+            expect(queryBuilder.getPredicate(queryBuilder.rule).value.toDateString()).toEqual('Wed Feb 10 2021');
             queryBuilder.element.querySelector('.e-rule-delete').click();
             queryBuilder.addRules([{ 'label': 'DOB', 'field': 'DOB', 'type': 'date', 'operator': 'lessthanorequal', 'value': '2/10/2021' }], 'group0');
-            expect(queryBuilder.getPredicate(queryBuilder.rule).predicates[0].value.toDateString()).toEqual('Wed Feb 10 2021');
+            expect(queryBuilder.getPredicate(queryBuilder.rule).value.toDateString()).toEqual('Wed Feb 10 2021');
             let datePObj: DatePicker = queryBuilder.element.querySelectorAll('.e-rule-value .e-control')[0].ej2_instances;
             datePObj[0].show();
             (<HTMLElement>document.querySelectorAll('.e-datepicker.e-popup .e-cell')[5]).click();
@@ -3648,6 +3657,29 @@ describe('QueryBuilder', () => {
             }, '#querybuilder');
             queryBuilder.setRulesFromSql("Name = '|_fn { keyword ' kFinishedProduct '}_|' OR ID = 8")
             expect(queryBuilder.getSqlFromRules(queryBuilder.rule)).toEqual("Name = '|_fn { keyword ' kFinishedProduct '}_|' OR ID = 8");
+        });
+
+        it('EJ2 - 898205 - While setting rule.value as an empty string the rule was not created in QueryBuilder', () => {
+            queryBuilder = new QueryBuilder({
+                columns: columnData,
+                rule: noValue,
+            }, '#querybuilder');
+            expect(queryBuilder.getRule(document.getElementById('querybuilder_group0_rule0')).field).toEqual('DOB');
+            expect(queryBuilder.getRule(document.getElementById('querybuilder_group0_rule0')).label).toEqual('DOB');
+            expect(queryBuilder.getRule(document.getElementById('querybuilder_group0_rule0')).operator).toEqual('equal');
+            expect(queryBuilder.getRule(document.getElementById('querybuilder_group0_rule0')).value).toEqual(null);
+        });
+        it('EJ2 - 896995 - Operator is not set properly when using the addRules method', () => {
+            queryBuilder = new QueryBuilder({
+                columns: columnData,
+                rule: dateRules,
+            }, '#querybuilder');
+            queryBuilder.element.querySelector('.e-rule-delete').click();
+            queryBuilder.addRules([{ 'label': 'DOB', 'field': 'DOB', 'type': 'date', 'operator': 'greaterthan', 'value': '2/10/2021' }], 'group0');
+            expect(queryBuilder.getPredicate(queryBuilder.rule).operator).toEqual('greaterthan');
+            queryBuilder.element.querySelector('.e-rule-delete').click();
+            queryBuilder.addRules([{ 'label': 'DOB', 'field': 'DOB', 'type': 'date', 'operator': 'lessthanorequal', 'value': '2/10/2021' }], 'group0');
+            expect(queryBuilder.getPredicate(queryBuilder.rule).operator).toEqual('lessthanorequal');
         });
 
 	it("field name with number literal", () => {

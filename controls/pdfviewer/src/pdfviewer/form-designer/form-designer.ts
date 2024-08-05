@@ -1317,94 +1317,106 @@ export class FormDesigner {
         const element: DiagramHtmlElement = updatedFormFields.wrapper.children[0] as DiagramHtmlElement;
         const data: string = this.pdfViewerBase.getItemFromSessionStorage('_formDesigner');
         const formFieldsData: any = JSON.parse(data);
-        for (let i: number = 0; i < formFieldsData.length; i++) {
-            if (formFieldsData[parseInt(i.toString(), 10)].FormField.formFieldAnnotationType === 'RadioButton') {
-                for (let j: number = 0; j < formFieldsData[parseInt(i.toString(), 10)].FormField.radiobuttonItem.length; j++) {
-                    if (element.id === formFieldsData[parseInt(i.toString(), 10)].
-                        FormField.radiobuttonItem[parseInt(j.toString(), 10)].id) {
-                        const radioButtonItemUpdate: IRadiobuttonItem = {
-                            id: element.id, lineBound: { X: element.bounds.x * zoomValue, Y: element.bounds.y * zoomValue,
-                                Width: element.bounds.width * zoomValue, Height: element.bounds.height * zoomValue },
-                            name: updatedFormFields.name, zoomValue: zoomValue, pageNumber: updatedFormFields.pageNumber,
-                            value: updatedFormFields.value, formFieldAnnotationType: updatedFormFields.formFieldAnnotationType,
-                            fontFamily: updatedFormFields.fontFamily, fontSize: updatedFormFields.fontSize,
-                            fontStyle: updatedFormFields.fontStyle,
-                            fontColor: this.getRgbCode(updatedFormFields.color) as unknown as string,
-                            backgroundColor: this.getRgbCode(updatedFormFields.backgroundColor) as unknown as string,
-                            borderColor: this.getRgbCode(updatedFormFields.borderColor) as unknown as string,
-                            thickness: updatedFormFields.thickness, textAlign: updatedFormFields.alignment,
-                            isChecked: updatedFormFields.isChecked, isSelected: updatedFormFields.isSelected,
-                            isReadonly: updatedFormFields.isReadonly, visibility: updatedFormFields.visibility,
-                            maxLength: updatedFormFields.maxLength, isRequired: updatedFormFields.isRequired,
-                            isPrint: updatedFormFields.isPrint, rotation: 0, tooltip: updatedFormFields.tooltip,
-                            isMultiline: updatedFormFields.isMultiline, insertSpaces: updatedFormFields.insertSpaces,
-                            isTransparent: updatedFormFields.isTransparent, zIndex: updatedFormFields.zIndex, customData: updatedFormFields.customData
-                        };
-                        formFieldsData[parseInt(i.toString(), 10)].FormField.radiobuttonItem[parseInt(j.toString(), 10)] =
-                         radioButtonItemUpdate;
-                        if (this.pdfViewerBase.formFieldCollection[parseInt(i.toString(), 10)] &&
-                         this.pdfViewerBase.formFieldCollection[parseInt(i.toString(), 10)].FormField &&
-                          this.pdfViewerBase.formFieldCollection[parseInt(i.toString(), 10)].
-                              FormField.radiobuttonItem[parseInt(j.toString(), 10)]) {
-                            this.pdfViewerBase.formFieldCollection[parseInt(i.toString(), 10)].
-                                FormField.radiobuttonItem[parseInt(j.toString(), 10)] = radioButtonItemUpdate;
+        if (!isNullOrUndefined(element)) {
+            for (let i: number = 0; i < formFieldsData.length; i++) {
+                if (formFieldsData[parseInt(i.toString(), 10)].FormField.formFieldAnnotationType === 'RadioButton') {
+                    for (let j: number = 0; j < formFieldsData[parseInt(i.toString(), 10)].FormField.radiobuttonItem.length; j++) {
+                        if (element.id === formFieldsData[parseInt(i.toString(), 10)].
+                            FormField.radiobuttonItem[parseInt(j.toString(), 10)].id) {
+                            const radioButtonItemUpdate: IRadiobuttonItem = {
+                                id: element.id, lineBound: {
+                                    X: element.bounds.x * zoomValue, Y: element.bounds.y * zoomValue,
+                                    Width: element.bounds.width * zoomValue, Height: element.bounds.height * zoomValue
+                                },
+                                name: updatedFormFields.name, zoomValue: zoomValue, pageNumber: updatedFormFields.pageNumber,
+                                value: updatedFormFields.value, formFieldAnnotationType: updatedFormFields.formFieldAnnotationType,
+                                fontFamily: updatedFormFields.fontFamily, fontSize: updatedFormFields.fontSize,
+                                fontStyle: updatedFormFields.fontStyle,
+                                fontColor: this.getRgbCode(updatedFormFields.color) as unknown as string,
+                                backgroundColor: this.getRgbCode(updatedFormFields.backgroundColor) as unknown as string,
+                                borderColor: this.getRgbCode(updatedFormFields.borderColor) as unknown as string,
+                                thickness: updatedFormFields.thickness, textAlign: updatedFormFields.alignment,
+                                isChecked: updatedFormFields.isChecked, isSelected: updatedFormFields.isSelected,
+                                isReadonly: updatedFormFields.isReadonly, visibility: updatedFormFields.visibility,
+                                maxLength: updatedFormFields.maxLength, isRequired: updatedFormFields.isRequired,
+                                isPrint: updatedFormFields.isPrint, rotation: 0, tooltip: updatedFormFields.tooltip,
+                                isMultiline: updatedFormFields.isMultiline, insertSpaces: updatedFormFields.insertSpaces,
+                                isTransparent: updatedFormFields.isTransparent, zIndex: updatedFormFields.zIndex, customData: updatedFormFields.customData
+                            };
+                            formFieldsData[parseInt(i.toString(), 10)].FormField.radiobuttonItem[parseInt(j.toString(), 10)] =
+                                radioButtonItemUpdate;
+                            if (this.pdfViewerBase.formFieldCollection[parseInt(i.toString(), 10)] &&
+                                this.pdfViewerBase.formFieldCollection[parseInt(i.toString(), 10)].FormField &&
+                                this.pdfViewerBase.formFieldCollection[parseInt(i.toString(), 10)].
+                                    FormField.radiobuttonItem[parseInt(j.toString(), 10)]) {
+                                this.pdfViewerBase.formFieldCollection[parseInt(i.toString(), 10)].
+                                    FormField.radiobuttonItem[parseInt(j.toString(), 10)] = radioButtonItemUpdate;
+                            }
+                            break;
                         }
-                        break;
                     }
-                }
-            } else if (formFieldsData[parseInt(i.toString(), 10)].Key === element.id) {
-                const formDesignObj: IFormField = {
-                    id: element.id, lineBound: { X: element.bounds.x * zoomValue, Y: element.bounds.y * zoomValue,
-                        Width: element.bounds.width * zoomValue, Height: element.bounds.height * zoomValue },
-                    name: updatedFormFields.name, zoomValue: zoomValue, pageNumber: updatedFormFields.pageNumber,
-                    value: updatedFormFields.value, formFieldAnnotationType: updatedFormFields.formFieldAnnotationType,
-                    fontFamily: updatedFormFields.fontFamily, fontSize: updatedFormFields.fontSize,
-                    fontStyle: updatedFormFields.fontStyle, fontColor: this.getRgbCode(updatedFormFields.color) as unknown as string,
-                    backgroundColor: this.getRgbCode(updatedFormFields.backgroundColor) as unknown as string,
-                    borderColor: this.getRgbCode(updatedFormFields.borderColor) as unknown as string,
-                    thickness: updatedFormFields.thickness, textAlign: updatedFormFields.alignment,
-                    isChecked: updatedFormFields.isChecked, isSelected: updatedFormFields.isSelected,
-                    isReadonly: updatedFormFields.isReadonly, font: { isBold: updatedFormFields.font.isBold,
-                        isItalic: updatedFormFields.font.isItalic, isStrikeout: updatedFormFields.font.isStrikeout,
-                        isUnderline: updatedFormFields.font.isUnderline }, selectedIndex: updatedFormFields.selectedIndex,
-                    radiobuttonItem: null, option: updatedFormFields.options ? updatedFormFields.options : [],
-                    visibility: updatedFormFields.visibility, maxLength: updatedFormFields.maxLength,
-                    isRequired: updatedFormFields.isRequired, isPrint: updatedFormFields.isPrint, rotation: 0,
-                    tooltip: updatedFormFields.tooltip,
-                    isMultiline: updatedFormFields.isMultiline, insertSpaces: updatedFormFields.insertSpaces,
-                    isTransparent: updatedFormFields.isTransparent, zIndex: updatedFormFields.zIndex, customData: updatedFormFields.customData
-                };
-                if (formFieldsData[parseInt(i.toString(), 10)].FormField.formFieldAnnotationType === 'SignatureField' || formFieldsData[parseInt(i.toString(), 10)].FormField.formFieldAnnotationType === 'InitialField') {
-                    const updatedSignatureFormFields: any = updatedFormFields;
+                } else if (formFieldsData[parseInt(i.toString(), 10)].Key === element.id) {
                     const formDesignObj: IFormField = {
-                        id: element.id, lineBound: { X: element.bounds.x * zoomValue, Y: element.bounds.y * zoomValue,
-                            Width: element.bounds.width * zoomValue, Height: element.bounds.height * zoomValue },
+                        id: element.id, lineBound: {
+                            X: element.bounds.x * zoomValue, Y: element.bounds.y * zoomValue,
+                            Width: element.bounds.width * zoomValue, Height: element.bounds.height * zoomValue
+                        },
                         name: updatedFormFields.name, zoomValue: zoomValue, pageNumber: updatedFormFields.pageNumber,
                         value: updatedFormFields.value, formFieldAnnotationType: updatedFormFields.formFieldAnnotationType,
                         fontFamily: updatedFormFields.fontFamily, fontSize: updatedFormFields.fontSize,
-                        fontStyle: updatedFormFields.fontStyle, fontColor: this.getRgbCode(updatedFormFields.color),
-                        backgroundColor: this.getRgbCode(updatedFormFields.backgroundColor),
-                        borderColor: this.getRgbCode(updatedFormFields.borderColor), thickness: updatedFormFields.thickness,
-                        textAlign: updatedFormFields.alignment, isChecked: updatedFormFields.isChecked,
-                        isSelected: updatedFormFields.isSelected,
-                        isReadonly: updatedFormFields.isReadonly, font: { isBold: updatedFormFields.font.isBold,
+                        fontStyle: updatedFormFields.fontStyle, fontColor: this.getRgbCode(updatedFormFields.color) as unknown as string,
+                        backgroundColor: this.getRgbCode(updatedFormFields.backgroundColor) as unknown as string,
+                        borderColor: this.getRgbCode(updatedFormFields.borderColor) as unknown as string,
+                        thickness: updatedFormFields.thickness, textAlign: updatedFormFields.alignment,
+                        isChecked: updatedFormFields.isChecked, isSelected: updatedFormFields.isSelected,
+                        isReadonly: updatedFormFields.isReadonly, font: {
+                            isBold: updatedFormFields.font.isBold,
                             isItalic: updatedFormFields.font.isItalic, isStrikeout: updatedFormFields.font.isStrikeout,
-                            isUnderline: updatedFormFields.font.isUnderline }, selectedIndex: updatedFormFields.selectedIndex,
+                            isUnderline: updatedFormFields.font.isUnderline
+                        }, selectedIndex: updatedFormFields.selectedIndex,
                         radiobuttonItem: null, option: updatedFormFields.options ? updatedFormFields.options : [],
                         visibility: updatedFormFields.visibility, maxLength: updatedFormFields.maxLength,
-                        isRequired: updatedFormFields.isRequired, isPrint: updatedFormFields.isPrint,
-                        rotation: 0, tooltip: updatedFormFields.tooltip,
-                        signatureType: updatedFormFields.signatureType, signatureBound: updatedSignatureFormFields.signatureBound,
+                        isRequired: updatedFormFields.isRequired, isPrint: updatedFormFields.isPrint, rotation: 0,
+                        tooltip: updatedFormFields.tooltip,
                         isMultiline: updatedFormFields.isMultiline, insertSpaces: updatedFormFields.insertSpaces,
                         isTransparent: updatedFormFields.isTransparent, zIndex: updatedFormFields.zIndex, customData: updatedFormFields.customData
                     };
-                    formFieldsData[parseInt(i.toString(), 10)].FormField = formDesignObj;
-                    this.pdfViewerBase.formFieldCollection[parseInt(i.toString(), 10)].FormField = formDesignObj;
-                } else {
-                    formFieldsData[parseInt(i.toString(), 10)].FormField = formDesignObj;
-                    this.pdfViewerBase.formFieldCollection[parseInt(i.toString(), 10)].FormField = formDesignObj;
+                    if (formFieldsData[parseInt(i.toString(), 10)].FormField.formFieldAnnotationType === 'SignatureField' || formFieldsData[parseInt(i.toString(), 10)].FormField.formFieldAnnotationType === 'InitialField') {
+                        const updatedSignatureFormFields: any = updatedFormFields;
+                        const formDesignObj: IFormField = {
+                            id: element.id, lineBound: {
+                                X: element.bounds.x * zoomValue, Y: element.bounds.y * zoomValue,
+                                Width: element.bounds.width * zoomValue, Height: element.bounds.height * zoomValue
+                            },
+                            name: updatedFormFields.name, zoomValue: zoomValue, pageNumber: updatedFormFields.pageNumber,
+                            value: updatedFormFields.value, formFieldAnnotationType: updatedFormFields.formFieldAnnotationType,
+                            fontFamily: updatedFormFields.fontFamily, fontSize: updatedFormFields.fontSize,
+                            fontStyle: updatedFormFields.fontStyle, fontColor: this.getRgbCode(updatedFormFields.color),
+                            backgroundColor: this.getRgbCode(updatedFormFields.backgroundColor),
+                            borderColor: this.getRgbCode(updatedFormFields.borderColor), thickness: updatedFormFields.thickness,
+                            textAlign: updatedFormFields.alignment, isChecked: updatedFormFields.isChecked,
+                            isSelected: updatedFormFields.isSelected,
+                            isReadonly: updatedFormFields.isReadonly, font: {
+                                isBold: updatedFormFields.font.isBold,
+                                isItalic: updatedFormFields.font.isItalic, isStrikeout: updatedFormFields.font.isStrikeout,
+                                isUnderline: updatedFormFields.font.isUnderline
+                            }, selectedIndex: updatedFormFields.selectedIndex,
+                            radiobuttonItem: null, option: updatedFormFields.options ? updatedFormFields.options : [],
+                            visibility: updatedFormFields.visibility, maxLength: updatedFormFields.maxLength,
+                            isRequired: updatedFormFields.isRequired, isPrint: updatedFormFields.isPrint,
+                            rotation: 0, tooltip: updatedFormFields.tooltip,
+                            signatureType: updatedFormFields.signatureType, signatureBound: updatedSignatureFormFields.signatureBound,
+                            isMultiline: updatedFormFields.isMultiline, insertSpaces: updatedFormFields.insertSpaces,
+                            isTransparent: updatedFormFields.isTransparent, zIndex: updatedFormFields.zIndex, customData: updatedFormFields.customData
+                        };
+                        formFieldsData[parseInt(i.toString(), 10)].FormField = formDesignObj;
+                        this.pdfViewerBase.formFieldCollection[parseInt(i.toString(), 10)].FormField = formDesignObj;
+                    } else {
+                        formFieldsData[parseInt(i.toString(), 10)].FormField = formDesignObj;
+                        this.pdfViewerBase.formFieldCollection[parseInt(i.toString(), 10)].FormField = formDesignObj;
+                    }
+                    break;
                 }
-                break;
             }
         }
         if (this.pdfViewerBase.formFieldCollection.length > 0) {
@@ -2052,7 +2064,7 @@ export class FormDesigner {
     }
 
     public setCheckBoxState(event: Event): void {
-        if ((Browser.isDevice) ? ((event.target as Element).className === '' || (event.target as Element).className === 'e-pv-checkbox-outer-div' || (event.target as Element).className === 'e-pv-checkbox-div') && (event.currentTarget as Element).className === 'e-pv-checkbox-outer-div' && !this.pdfViewer.designerMode : !this.pdfViewer.designerMode) {
+        if ((Browser.isDevice) ? ((event.target as Element).classList.contains('') || (event.target as Element).classList.contains('e-pv-checkbox-outer-div') || (event.target as Element).classList.contains('e-pv-checkbox-div')) && (event.currentTarget as Element).classList.contains('e-pv-checkbox-outer-div') && !this.pdfViewer.designerMode : !this.pdfViewer.designerMode) {
             const minCheckboxWidth: number = 20;
             let isChecked: boolean = false;
             let checkTarget: Element;
@@ -2232,9 +2244,11 @@ export class FormDesigner {
 
     private updateFormFieldSessions(): void {
         const fieldData: string = this.pdfViewerBase.getItemFromSessionStorage('_formfields');
-        const formFieldsDatas: any = JSON.parse(fieldData);
-        if (formFieldsDatas && this.pdfViewer.formFieldCollection.length === formFieldsDatas.length) {
-            this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formfields');
+        if (!isNullOrUndefined(fieldData)) {
+            const formFieldsDatas: any = JSON.parse(fieldData);
+            if (formFieldsDatas && this.pdfViewer.formFieldCollection.length === formFieldsDatas.length) {
+                this.pdfViewerBase.setItemInSessionStorage(this.pdfViewerBase.formFieldCollection, '_formfields');
+            }
         }
     }
 
@@ -5911,12 +5925,6 @@ export class FormDesigner {
 
     private hideSignatureValue(selectedItem: any, annotation: any, index: number, formFieldsData: any): void {
         selectedItem.wrapper.children.splice(selectedItem.wrapper.children.indexOf(annotation.wrapper.children[0]), 1);
-        selectedItem.value = '';
-        selectedItem.signatureType = '';
-        formFieldsData[parseInt(index.toString(), 10)].FormField.value = '';
-        formFieldsData[parseInt(index.toString(), 10)].FormField.signatureType = '';
-        this.pdfViewerBase.formFieldCollection[parseInt(index.toString(), 10)].FormField.value = '';
-        this.pdfViewerBase.formFieldCollection[parseInt(index.toString(), 10)].FormField.signatureType = '';
         this.pdfViewer.remove(annotation);
         this.pdfViewer.renderDrawing();
     }

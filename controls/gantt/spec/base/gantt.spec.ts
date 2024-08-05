@@ -4,7 +4,7 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { DataManager, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter,  ContextMenu, Sort, ColumnMenu, ITaskbarClickEventArgs, RecordDoubleClickEventArgs,ExcelExport ,PdfExport ,Reorder, Resize} from '../../src/index';
-import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData, selfReference, projectData1,baselineDatas, projectNewData2, totalDurationData, filterdata, projectNewData9, projectNewData10, projectNewData11, projectNewData12, selfData1, splitTasksData1, projectNewData13, publicProperty, cellEditData, resourcesData, cr884998,treeData, cR893051, invalidPrdcessor} from '../base/data-source.spec';
+import { unscheduledData, projectResources, resourceGanttData, dragSelfReferenceData, selfReference, projectData1,baselineDatas, projectNewData2, totalDurationData, filterdata, projectNewData9, projectNewData10, projectNewData11, projectNewData12, selfData1, splitTasksData1, projectNewData13, publicProperty, cellEditData, resourcesData, cr884998,treeData, cR893051, invalidPrdcessor, dataSource1, dataSource2} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 import { getValue, setValue } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -3409,5 +3409,72 @@ describe('Gantt editing action', () => {
         triggerMouseEvent(update, 'click');
         expect(ganttObj.currentViewData[1].ganttProperties.predecessorsName).toBe(null);
         expect(actionFailedFunction).toHaveBeenCalled();  
+    });
+});
+describe('CR899803-Updating datasource', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: dataSource1,
+                dateFormat: 'MMM dd, y',
+                treeColumnIndex: 1,
+                allowSelection: true,
+                showColumnMenu: false,
+                highlightWeekends: true,
+                allowUnscheduledTasks: true,
+                // projectStartDate={projectStartDate}
+                // projectEndDate={projectEndDate}
+                taskFields: {
+                    id: 'taskId',
+                    name: 'taskName',
+                    startDate: 'startDate',
+                    endDate: 'endDate',
+                    duration: 'duration',
+                    progress: 'progress',
+                    dependency: 'predecessor',
+                    parentID: 'parentID',
+                },
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'MMM dd, y',
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                    },
+                },
+                height: "410px",
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                },
+                gridLines: 'Both',
+                toolbar: [
+                    'Add',
+                    'Edit',
+                    'Update',
+                    'Delete',
+                    'Cancel',
+                    'ExpandAll',
+                    'CollapseAll',
+                    'Indent',
+                    'Outdent',
+                ],
+                enableVirtualization: true,
+                autoCalculateDateScheduling: false
+            }, done);
+    });
+    it('Changing DataSource', (done:Function) => {
+        ganttObj.actionComplete = function (args: any): void {
+            if (args.requestType === "refresh") {
+                expect(ganttObj.flatData.length).toBe(2);
+                done();
+            }
+        };
+        ganttObj.dataSource = dataSource2
     });
 });

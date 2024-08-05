@@ -3611,3 +3611,42 @@ describe('Bug 887848: Script Error shown in Column Template sample', () => {
         gridObj.renderModule.destroy();
     });
 })
+
+describe('check actionFailure', () => {
+    let gridObj: TreeGrid;
+    const actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
+
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: projectData,
+                idMapping: 'TaskID',
+                parentIdMapping: 'parentID',
+                allowSorting: true,
+                treeColumnIndex: 0,
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID', width: 140 },
+                    { field: 'TaskName', headerText: 'Task Name', width: 140 },
+                    { field: 'StartDate', headerText: 'Start Date', width: 150, type: 'date', format: 'yMd' },
+                    { field: 'EndDate', headerText: 'End Date', width: 150, type: 'date', format: 'yMd' },
+                    { field: 'Progress', headerText: 'Progress', width: 150 }
+                ],
+                height: 315,
+                actionFailure: actionFailedFunction
+            },
+            done
+        );
+    });
+
+    it('should not call actionFailure if idMapping and parentIdMapping are present', () => {
+        const hasIdMapping = 'idMapping' in gridObj;
+        const hasParentIdMapping = 'parentIdMapping' in gridObj;
+        if (hasIdMapping && hasParentIdMapping) {
+            expect(actionFailedFunction).not.toHaveBeenCalled();
+        }
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

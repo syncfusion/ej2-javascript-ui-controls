@@ -1249,13 +1249,13 @@
     }
     .e-btn-toggle {
         @if $skin-name=='fluent2' {
-            background-color: var(--color-sf-secondary-bg-color);
+            background-color: var(--color-sf-content-bg-color-pressed) !important;
         }
         @else{
             background-color: $de-toggle-bg-color !important;
         }
         @if $skin-name =='fluent2' {
-            background-color: $de-items-pressed;
+            color: var(--color-sf-toolbar-icon-color) !important;
         }
         @if $skin-name=='highcontrast' {
             color: $de-title-bar-font-clr !important;
@@ -1267,7 +1267,12 @@
         outline-offset: 0;
         box-shadow: $de-toggle-btn-border !important;
         #{if(&, '&', '*')}:hover {
-            background-color: $de-toggle-bg-color !important;
+            @if $skin-name=='fluent2' {
+                background-color: var(--color-sf-content-bg-color-pressed) !important;
+            }
+            @else {
+                background-color: $de-toggle-bg-color !important;
+            }
             @if $skin-name=='fabric' {
                 border-color: $de-toggle-bg-color !important;
             }
@@ -1282,6 +1287,14 @@
         }
         .e-btn-toggle>span {
             color: $de-title-bar-font-clr !important;
+        }
+    }
+    @if $skin-name=='fluent2' {
+        .e-btn-toggle .e-tbar-btn-text {
+            color: var(--color-sf-toolbar-icon-color) !important;
+        }
+        .e-btn-toggle>span {
+            color: var(--color-sf-toolbar-icon-color) !important;
         }
     }
     @if $skin-name=='bootstrap' or $skin-name=='bootstrap4' or $skin-name=='tailwind' or or $skin-name=='bootstrap5' or $skin-name =='FluentUI' {

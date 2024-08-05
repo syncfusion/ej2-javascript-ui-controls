@@ -68,7 +68,8 @@ export class SummaryCellRenderer extends CellRenderer implements ICellRenderer<A
                 this.parent.renderTemplates();
             }
         } else {
-            appendChildren(node, tempObj.fn(data[column.columnName], this.parent, tempObj.property, tempID));
+            appendChildren(node, tempObj.fn(
+                data[column.columnName], this.parent, tempObj.property, tempID, null, null, null, this.parent.root));
         }
         return false;
     }

@@ -1921,6 +1921,7 @@ export class Annotation {
                     if (shapeType === 'Stamp' || shapeType === 'Image') {
                         this.pdfViewer.annotation.stickyNotesAnnotationModule.findPosition(actionObject.annotation, sType, 'delete');
                         this.stampAnnotationModule.updateSessionStorage(actionObject.annotation, null, 'delete');
+                        this.modifyInCollections(actionObject.annotation, 'delete');
                         isUpdate = true;
                     }
                     if (shapeType === 'FreeText' || shapeType === 'HandWrittenSignature' || shapeType === 'SignatureText' || shapeType === 'SignatureImage') {

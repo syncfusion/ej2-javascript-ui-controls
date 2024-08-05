@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 26.2.8 (2024-08-06)
+
+### Grid
+
+#### Bug fixes
+
+- `#F189384` - Provided comma separation to the pager message for all `locale`.
+- `#I610850` - Event triggered in case of identical filter data in grid date time type column has been resolved.
+- `#F189325` - The issue with "Not null", "Null", "Empty", and "Not empty" filters not working with the filter template has been resolved.
+
 ## 26.2.7 (2024-07-30)
 
 ### Grid

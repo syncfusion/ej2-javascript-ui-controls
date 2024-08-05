@@ -490,7 +490,6 @@ export class ListBox extends DropDownBase {
         this.list.setAttribute('role', 'listbox');
         attributes(this.list, { 'role': 'listbox', 'aria-label': 'listbox', 'aria-multiselectable': this.selectionSettings.mode === 'Multiple' ? 'true' : 'false' });
         this.updateSelectionSettings();
-        this.resizeHandler();
     }
 
     private updateSelectionSettings(): void {
@@ -748,7 +747,9 @@ export class ListBox extends DropDownBase {
                 filterElem = (this.list.getElementsByClassName('e-input-filter')[0] as HTMLInputElement);
                 filterElem.selectionStart = txtLength;
                 filterElem.selectionEnd = txtLength;
-                filterElem.focus();
+                if (filterElem.value !== '') {
+                    filterElem.focus();
+                }
             }
         }
         if (this.toolbarSettings.items.length && this.scope && this.scope.indexOf('#') > -1 && !isNullOrUndefined(e)) {
@@ -1171,29 +1172,21 @@ export class ListBox extends DropDownBase {
         const liElement: HTMLElement[] | NodeListOf<HTMLLIElement> = this.list.querySelectorAll('.' + dropDownBaseClasses.li);
         if (items) {
             items = (items instanceof Array ? items : [items]) as { [key: string]: Object }[] | string[] | boolean[] | number[];
-            const fields: FieldSettingsModel = this.fields; let dataValue: string; let objValue: string;
-            const dupData: {[key: string]: Object }[] = []; let itemIdx: number;
+            const fields: FieldSettingsModel = this.fields; let dataValue: string; let objValue: { [key: string]: number } = {};
+            const dupData: {[key: string]: Object }[] = [];
             extend(dupData, [], this.jsonData as { [key: string]: Object }[]);
             const removeIdxes: number [] = []; const removeLiIdxes: number [] = [];
+            for (let i: number = 0; i < dupData.length; i++) {
+                const value: any = (dupData[i as number] instanceof Object) ? dupData[i as number][fields.value] : dupData[i as number].toString();
+                objValue[value as any] = i;
+            }
             for (let j: number = 0; j < items.length; j++) {
-                if (items[j as number] instanceof Object) {
-                    dataValue = getValue(fields.value, items[j as number]);
-                } else {
-                    dataValue = items[j as number].toString();
-                }
-                for (let i: number = 0, len: number = dupData.length; i < len; i++) {
-                    if (dupData[i as number] instanceof Object) {
-                        objValue = getValue(fields.value, dupData[i as number]);
-                    } else {
-                        objValue = dupData[i as number].toString();
-                    }
-                    if (objValue === dataValue) {
-                        itemIdx = this.getIndexByValue(dataValue);
-                        const idx: number = itemIdx === i ? itemIdx : i;
-                        liCollections.push(liElement[idx as number]);
-                        removeIdxes.push(idx);
-                        removeLiIdxes.push(idx);
-                    }
+                dataValue = (items[j as number] instanceof Object) ? (items[j as number] as any)[fields.value] : items[j as number].toString();
+                if (objValue.hasOwnProperty(dataValue)) {
+                    const idx: number = objValue[dataValue as string];
+                    liCollections.push(liElement[idx as number]);
+                    removeIdxes.push(idx);
+                    removeLiIdxes.push(idx);
                 }
             }
             for (let k: number = removeIdxes.length - 1; k >= 0; k--) {

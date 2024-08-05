@@ -109,7 +109,7 @@ export class PagerMessage implements IRender {
         const regExp: RegExpConstructor = RegExp;
         for (let i: number = 0; i < args.length; i++) {
             regx = new regExp('\\{' + (i) + '\\}', 'gm');
-            str = str.replace(regx, args[parseInt(i.toString(), 10)].toString());
+            str = str.replace(regx, args[parseInt(i.toString(), 10)].toLocaleString(this.pagerModule.locale));
         }
         return str;
     }

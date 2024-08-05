@@ -2498,6 +2498,14 @@ describe('Tooltip Control', () => {
             expect(element.querySelector('.e-tip-content').innerHTML).toEqual('<div>Blazor Content</div>');
             tooltip.close();
         });
+        it('Tooltip function template', () => {
+            tooltip = new Tooltip({ animation: { open: { effect: 'None' }, close: { effect: 'None' } } }, '#tstooltip');
+            tooltip.content = ()=>{return '<div>Blazor Content</div>'};
+            tooltip.isAngular = true;
+            tooltip.dataBind();
+            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.close();
+        });
     });
 
     describe('Tooltip starts with ID as number', () => {

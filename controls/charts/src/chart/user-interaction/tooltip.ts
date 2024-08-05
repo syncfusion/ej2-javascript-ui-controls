@@ -603,7 +603,7 @@ export class Tooltip extends BaseTooltip {
         } else if (isYPoint && !isNullOrUndefined(point[dataValue as string])) {
             customLabelFormat = axis.labelFormat && axis.labelFormat.match('{value}') !== null;
             value = dataValue === 'outliers' ? axis.format(point[dataValue as string][this.lierIndex - 4]) :
-                axis.format(point[dataValue as string]);
+                axis.format(+point[dataValue as string]);
             textValue = customLabelFormat ? axis.labelFormat.replace('{value}', value) : value;
 
         } else if (dataValue === 'size') {

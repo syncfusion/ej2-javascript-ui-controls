@@ -158,6 +158,8 @@ export class NonWorkingDay {
             new Date(this.parent.timelineModule.timelineEndDate.getTime());
         const nonWorkingIndex: number[] = this.parent.nonWorkingDayIndex;
         let isFirstCell: boolean = true;
+        let isFirstExecution: boolean = true;
+        this.weekendWidthUpdated = false;
         do {
             if (nonWorkingIndex.indexOf(startDate.getDay()) !== -1) {
                 const left: number = this.parent.dataOperation.getTaskLeft(startDate, false, true);
@@ -171,14 +173,22 @@ export class NonWorkingDay {
                     isFirstCell = false;
                 }
                 const sDate: Date = new Date(startDate);
+                const dubDate: Date = new Date(startDate);
                 sDate.setDate(sDate.getDate() + 1);
-                if (sDate.getTimezoneOffset() !== this.parent.timelineModule.timelineStartDate.getTimezoneOffset() &&
-                !this.weekendWidthUpdated) {
-                    if (this.parent.timelineModule.bottomTier === 'Hour' &&
-                    this.parent.timelineModule.customTimelineSettings.bottomTier.count === 1) {
-                        width = width - this.parent.timelineSettings.timelineUnitSize;
-                        this.weekendWidthUpdated = true;
+                const sDateOffset: number = sDate.getTimezoneOffset();
+                const dubDateOffset: number = dubDate.getTimezoneOffset();
+                if (!isFirstExecution) {
+                    if (sDateOffset !== this.parent.timelineModule.timelineStartDate.getTimezoneOffset() &&
+                        !this.weekendWidthUpdated) {
+                        if (this.parent.timelineModule.bottomTier === 'Hour' &&
+                            this.parent.timelineModule.customTimelineSettings.bottomTier.count === 1 &&
+                            sDateOffset < dubDateOffset) {
+                            width = width - (this.parent.perDayWidth / 24);
+                            this.weekendWidthUpdated = true;
+                        }
                     }
+                } else {
+                    isFirstExecution = false;
                 }
                 const align: string = this.parent.enableRtl ? `right:${left}px;` : `left:${left}px;`;
                 const weekendDiv: HTMLElement = createElement('div', {

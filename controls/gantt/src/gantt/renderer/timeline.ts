@@ -1123,13 +1123,29 @@ export class Timeline {
             if (isFirstCell && mode === 'Month') {
                 newTime = this.calculateQuarterEndDate(startDate, count).getTime();
             } else {
-                increment = this.getIncrement(startDate, count, mode);
+                increment = Math.abs(this.getIncrement(startDate, count, mode));
                 newTime = startDate.getTime() + increment;
             }
+            let dubStartDate: Date = new Date(startDate.getTime());
             isFirstCell = false;
             startDate.setTime(newTime);
+            let dubStartHour: number = dubStartDate.getHours();
+            let startHour: number = startDate.getHours();
+            let difference: number = startHour - dubStartHour;
+            if (difference != count && difference > 1) {
+                if ((!this.parent.isInDst(startDate) && this.parent.isInDst(dubStartDate)) ||
+                    (this.parent.isInDst(startDate) && !this.parent.isInDst(dubStartDate))) {
+                    if (startDate.getTimezoneOffset() > dubStartDate.getTimezoneOffset()) {
+                        startDate.setTime(startDate.getTime() - ((1000 * 60 * 60) * (difference - count)));
+                    }
+                    const differenceIncrement: number = ((increment / 60000) / count)
+                    if (mode === 'Minutes' && differenceIncrement != difference && count === 15) {
+                        startDate.setTime(startDate.getTime() - (60000 * (count * difference)));
+                    }
+                }
+            }
             if (startDate.getHours() === 5 && count === 2 && tier === 'bottomTier' &&
-                this.parent.timelineSettings.bottomTier.unit === 'Hour') {
+                parent.timelineModule.customTimelineSettings.bottomTier.unit === 'Hour') {
                 startDate.setTime(startDate.getTime() - (1000 * 60 * 60));
             }
             if (startDate.getHours() === 8 && count === 12 && tier === 'bottomTier' &&
@@ -1387,17 +1403,69 @@ export class Timeline {
             this.parent.globalize.formatDate(scheduleWeeks, { format: this.parent.getDateFormat() }) :
             this.customFormat(scheduleWeeks, format, tier, mode, formatter);
         thWidth = (this.getIncrement(scheduleWeeks, count, mode, isFirstCell) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
-        const newDate: Date = new Date(scheduleWeeks.getTime() + this.getIncrement(scheduleWeeks, count, mode));
+        let incrementValue: number = this.getIncrement(scheduleWeeks, count, mode);
+        const newDate: Date = new Date(scheduleWeeks.getTime() + incrementValue);
+        const dubNewDate: Date = new Date(scheduleWeeks.getTime() + ((60 * 60 * 1000) * count));
+        const newDateOffset: number = newDate.getTime();
+        const dubNewDateOffset: number = dubNewDate.getTime()
         if ((!this.parent.isInDst(newDate) && this.parent.isInDst(scheduleWeeks)) ||
-            (this.parent.isInDst(newDate) && !this.parent.isInDst(scheduleWeeks))) {
+            (this.parent.isInDst(newDate) && !this.parent.isInDst(scheduleWeeks)) || (newDateOffset != dubNewDateOffset && dubNewDateOffset > newDateOffset)) {
             let temp: number;
+            let totalHour: number = 0;
+            let incrementHour: number = incrementValue / (1000 * 60 * 60)
             if ((!this.parent.isInDst(newDate) && this.parent.isInDst(scheduleWeeks))) {
-                temp = this.getIncrement(scheduleWeeks, count, mode) - (1000 * 60 * 60);
+                switch (mode) {
+                    case 'Hour':
+                        totalHour = 1 * count
+                        break;
+                    case 'Day':
+                        totalHour = 24 * count
+                        break;
+                    case 'Week':
+                        totalHour = 7 * 24 * count;
+                        break;
+                    case 'Minutes':
+                        totalHour = count / 60;
+                        break;
+                }
+                if (incrementHour != totalHour && incrementHour > totalHour) {
+                    temp = this.getIncrement(scheduleWeeks, count, mode) - ((1000 * 60 * 60) * (incrementHour - totalHour));
+                    thWidth = (temp / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
+                    if (thWidth === 0 && mode === 'Minutes') {
+                        const perMinuteWidth: number = this.parent.perDayWidth / 1440;
+                        thWidth = perMinuteWidth * count
+                    }
+                }
             }
             else {
-                temp = this.getIncrement(scheduleWeeks, count, mode) + (1000 * 60 * 60);
+                const zoomOrTimeline: Object = this.parent.currentZoomingLevel ? this.parent.currentZoomingLevel :
+                    this.parent.timelineSettings;
+                const bottomTierSettings = zoomOrTimeline['bottomTier'] !== null ? zoomOrTimeline['bottomTier'] :
+                    zoomOrTimeline['topTier'];
+                const bottomTierCountIsOneAndUnitIsHour = (bottomTierSettings.count === 1 && bottomTierSettings.unit === 'Hour');
+                switch (mode) {
+                    case 'Hour':
+                        totalHour = 1 * count
+                        break;
+                    case 'Day':
+                        totalHour = 24 * count
+                        break;
+                    case 'Week':
+                        totalHour = 7 * 24 * count;
+                        break;
+                    case 'Minutes':
+                        totalHour = count / 60;
+                        break;
+                }
+                if (incrementHour != totalHour && incrementHour < totalHour && !(tier === 'topTier' && bottomTierCountIsOneAndUnitIsHour)) {
+                    temp = this.getIncrement(scheduleWeeks, count, mode) + (1000 * 60 * 60);
+                    thWidth = (temp / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
+                    if (thWidth === 0 && mode === 'Minutes') {
+                        const perMinuteWidth: number = this.parent.perDayWidth / 1440;
+                        thWidth = perMinuteWidth * count
+                    }
+                }
             }
-            thWidth = (temp / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
         }
         const cellWidth: number = thWidth;
         thWidth = isLast || (isFirstCell && mode !== 'Hour') ? isLast ? this.calculateWidthBetweenTwoDate(

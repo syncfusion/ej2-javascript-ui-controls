@@ -373,7 +373,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.isReactTemplate()) {
             this.off(this.pageRefresh, this.pagerTemplate);
             if (!this.hasParent) {
-                this.destroyTemplate(['template']);
+                this.destroyTemplate(['pagerTemplate']);
             }
         }
         this.removeListener();
@@ -980,10 +980,10 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         };
         const tempId: string = this.element.parentElement.id + '_template';
         if (this.isReactTemplate() && !this.isVue) {
-            this.getPagerTemplate()(data, this, 'template', tempId, null, null, this.element);
+            this.getPagerTemplate()(data, this, 'pagerTemplate', tempId, null, null, this.element);
             this.renderReactTemplates();
         } else {
-            result = this.isVue ? this.getPagerTemplate()(data, this, 'template', null, null, null, null, this.root) as Element[]
+            result = this.isVue ? this.getPagerTemplate()(data, this, 'pagerTemplate', null, null, null, null, this.root) as Element[]
                 : this.getPagerTemplate()(data);
             appendChildren(this.element, result);
         }

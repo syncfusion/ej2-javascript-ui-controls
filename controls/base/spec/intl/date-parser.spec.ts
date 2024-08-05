@@ -891,8 +891,8 @@ describe('DateParser', () => {
             });
             it('year only format input returns correct year value',()=>{
                 let tFormatter: Date = DateParser.dateParser('en', { format:'yy',calendar:'islamic' }, cldrData)('40');
-                let iFormatter: Date = DateParser.dateParser('en', { format:'y',calendar:'islamic' }, cldrData)('1446');
-                expect(iFormatter.getFullYear()).toBe(new Date().getFullYear());
+                let iFormatter: Date = DateParser.dateParser('en', { format:'y',calendar:'islamic' }, cldrData)('1445');
+                expect(iFormatter.getFullYear()).toBe(2023);
             });
             it('full  skeletom eleton returns proper value',()=>{
                 let iFormatter: Date = DateParser.dateParser('en', { skeleton: 'full',calendar:'islamic' }, cldrData)('Tuesday, Safar 19, 1437 AH');

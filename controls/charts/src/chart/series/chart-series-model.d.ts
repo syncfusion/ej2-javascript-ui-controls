@@ -169,7 +169,8 @@ export interface MarkerSettingsModel {
      * * Pentagon
      * * InvertedTriangle
      * * Image
-     *
+     * * Star
+     * 
      * @default null
      */
 

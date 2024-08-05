@@ -361,6 +361,17 @@ describe('Chart Control', () => {
             chartObj.series[0].marker.shape = 'Cross';
             chartObj.refresh();
         });
+        it('checking with marker shape star', (done: Function) => {
+            loaded = (args: Object): void => {
+                marker = document.getElementById('container_Series_0_Point_0_Symbol');
+                expect(marker.getAttribute('fill') === 'brown').toBe(true);
+                expect(marker.getAttribute('d') !== '').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].marker.shape = 'Star';
+            chartObj.refresh();
+        });
         it('checking with null point', (done: Function) => {
             loaded = (args: Object): void => {
                 marker = document.getElementById('container_Series_0_Point_3_Symbol');

@@ -721,8 +721,14 @@ export class Dependency {
                 date.setDate(date.getDate() - 1);
                 tempDate = this.dateValidateModule.checkEndDate(tempDate, ganttProperty);
             }
-            returnStartDate = this.dateValidateModule.getStartDate(
-                tempDate, ganttProperty.duration, ganttProperty.durationUnit, ganttProperty);
+            if (ganttProperty.segments && ganttProperty.segments.length !== 0) {
+                const duration = this.dateValidateModule.getDuration(ganttProperty.startDate, ganttProperty.endDate, ganttProperty.durationUnit, ganttProperty.isAutoSchedule, ganttProperty.isMilestone)
+                returnStartDate = this.dateValidateModule.getStartDate(
+                    tempDate, duration, ganttProperty.durationUnit, ganttProperty);
+            } else {
+                returnStartDate = this.dateValidateModule.getStartDate(
+                    tempDate, ganttProperty.duration, ganttProperty.durationUnit, ganttProperty);
+            }
             break;
         case 'SS':
             tempDate = this.dateValidateModule.getValidStartDate(parentRecordProperty);

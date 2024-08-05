@@ -357,6 +357,12 @@ export class Selection implements IAction {
                 if (this.isCancelDeSelect) {
                     return;
                 }
+                if (!this.parent.isCheckBoxSelection) {
+                    this.selectedRowIndexes = [];
+                    this.selectedRecords = [];
+                    this.isRowSelected = false;
+                    this.selectRowIndex(-1);
+                }
                 this.rowDeselect(events.rowDeselected, [rowObj.index], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], this.actualTarget, undefined, undefined, undefined);
             }
             this.rowSelectingCallBack(args, isToggle, index, selectData, isRemoved, isRowSelected, can)(args);

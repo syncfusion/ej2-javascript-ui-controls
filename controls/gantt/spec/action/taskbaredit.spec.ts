@@ -3,7 +3,7 @@
  */
 import { Gantt, ITaskbarEditedEventArgs, Edit, RowDD, ContextMenu } from '../../src/index';
 import { DataManager } from '@syncfusion/ej2-data';
-import { baselineData, scheduleModeData, splitTasksData, editingData, scheduleModeData1, dragSelfReferenceData, multiTaskbarData, resources, projectData, resourcesData, resourceCollection, multiResources, predecessorOffSetValidation, customCRData, customCrIssue,crDialogEditData, projectSplitTask, cR893051 } from '../base/data-source.spec';
+import { baselineData, scheduleModeData, splitTasksData, editingData, scheduleModeData1, dragSelfReferenceData, multiTaskbarData, resources, projectData, resourcesData, resourceCollection, multiResources, predecessorOffSetValidation, customCRData, customCrIssue,crDialogEditData, projectSplitTask, cR893051,sengmentData,sengmentCollection } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { falseLine } from '../../src/gantt/base/css-constants';
@@ -5783,6 +5783,46 @@ describe('Split task left resize', () => {
             triggerMouseEvent(dragElement, 'mousemove', 180, 0);
             triggerMouseEvent(dragElement, 'mouseup');
             expect(ganttObj.flatData[3].ganttProperties.predecessor[0].offset).toBe(0)
+        });   
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('Checking update segmentData', () => {
+        Gantt.Inject(Edit);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: sengmentData,
+                    segmentData:sengmentCollection,
+                    enableContextMenu: true,
+                    allowSorting: true,
+                    taskFields: {
+                        id: 'taskId',
+                        name: 'taskName',
+                        startDate: 'startDate',
+                        duration: 'duration',
+                        progress: 'progress',
+                        parentID: 'parentID',
+                        segmentId: 'segmentId'
+                    },
+                    editSettings: {
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                }, done);
+        });
+        it('Moving Taskbar', () => {
+            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container >div.e-segment-last') as HTMLElement;
+            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
+            triggerMouseEvent(dragElement, 'mousemove', -300, 0);
+            triggerMouseEvent(dragElement, 'mouseup');
+            expect(ganttObj.segmentData.length).toBe(2)
         });   
         afterAll(() => {
             if (ganttObj) {

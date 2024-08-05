@@ -139,8 +139,9 @@ export class NormalEdit {
             (this.parent.enableInfiniteScrolling && !this.previousData)) {
             this.previousData = e.data;
         } else if (!this.parent.enableVirtualization) {
-            this.previousData = extend({}, {}, this.parent.getForeignKeyColumns().length ? this.parent.getRowObjectFromUID(tr.getAttribute('data-uid')).data : 
-            gObj.getCurrentViewRecords()[this.rowIndex], true);
+            this.previousData = extend({}, {}, this.parent.getForeignKeyColumns().length ?
+                this.parent.getRowObjectFromUID(tr.getAttribute('data-uid')).data :
+                gObj.getCurrentViewRecords()[this.rowIndex], true);
         }
         const editedData: Object = extend({}, {}, e.data || this.previousData, true);
         this.uid = tr.getAttribute('data-uid');

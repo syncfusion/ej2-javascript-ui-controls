@@ -1003,7 +1003,7 @@ export class GanttTreeGrid {
 
     
     private dependencyValueAccessor(field: string, data: IGanttData, column: GanttColumnModel): string {
-        if (!isNullOrUndefined(data.ganttProperties.predecessorsName)) {
+        if (data && data.ganttProperties && !isNullOrUndefined(data.ganttProperties.predecessorsName)) {
             let value: string = "";
             let predecessorsName = data.ganttProperties.predecessorsName;
             let splitString = (predecessorsName as string).split(",");

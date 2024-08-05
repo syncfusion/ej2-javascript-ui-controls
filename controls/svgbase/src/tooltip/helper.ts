@@ -327,6 +327,22 @@ export function calculateShapes(location: TooltipLocation, size: Size, shape: st
         functionName = 'Image';
         merge(options, { 'href': url, 'height': height, 'width': width, x: x, y: y });
         break;
+    case 'Star': {
+        const cornerPoints: number = 5;
+        const outerRadius: number = Math.min(width, height) / 2;
+        const innerRadius: number = outerRadius / 2;
+        const angle: number = Math.PI / cornerPoints;
+        let starPath: string = '';
+        for (let i: number = 0; i < 2 * cornerPoints; i++) {
+            const radius: number = (i % 2 === 0) ? outerRadius : innerRadius;
+            const currentX: number = locX + radius * Math.cos(i * angle - Math.PI / 2);
+            const currentY: number = locY + radius * Math.sin(i * angle - Math.PI / 2);
+            starPath += (i === 0 ? 'M' : 'L') + currentX + ',' + currentY;
+        }
+        starPath += 'Z';
+        merge(options, { 'd': starPath });
+        break;
+    }
     }
     return { renderOption: options, functionName: functionName };
 }

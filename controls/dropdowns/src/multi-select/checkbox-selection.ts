@@ -510,7 +510,9 @@ export class CheckBoxSelection {
             if (l10n.getConstant('selectAllText') === '') {
                 l10n = new L10n('dropdowns', l10nLocale, this.parent.locale);
             }
-            this.selectAllSpan.textContent = unSelect ? l10n.getConstant('unSelectAllText') : l10n.getConstant('selectAllText');
+            if (!isNullOrUndefined(this.selectAllSpan)) {
+                this.selectAllSpan.textContent = unSelect ? l10n.getConstant('unSelectAllText') : l10n.getConstant('selectAllText');
+            }
         }
     }
     private getActiveList(args: IUpdateListArgs): void {

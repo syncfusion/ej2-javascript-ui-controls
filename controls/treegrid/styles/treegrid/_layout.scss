@@ -9,7 +9,7 @@
 }
 @mixin display-align {
   display: inline-block;
-  vertical-align: middle;
+  vertical-align: text-bottom;
 }
 @mixin drop-bottom-child {
   box-shadow: 0 1px 0 0 $childborder-color;
@@ -37,6 +37,12 @@
         font-size: $treegrid-bigger-icon-font-size;
         height: $treegrid-bigger-icon-size;
         width: $treegrid-bigger-icon-size;
+        vertical-align: bottom;
+      }
+      .e-treegridexpand{
+        @if $skin-name == 'highcontrast'{
+          vertical-align: middle;
+        }
       }
 
       .e-hierarchycheckbox {
@@ -55,6 +61,10 @@
 
       .e-treecell {
         line-height: $treegrid-bigger-icon-size;
+      }
+
+      .e-treecolumn-container span {
+        vertical-align: middle;
       }
 
       .e-row[aria-expanded = 'true'] .e-treecell {
@@ -97,16 +107,27 @@
       vertical-align: $treegrid-right-arrow-icon-vertical-align;
     }
 
+    span.e-icons.e-treegridcollapse{
+      @if $skin-name == 'highcontrast'{
+        text-align: center;
+        vertical-align: baseline;
+      }
+    }
+
     .e-rowcell:not(.e-gridclip) {
       .e-treecolumn-container {
         display: block;
         @include rowcell-container;
 
         span.e-treecell {
-          display: inline;
+          display: contents;
           @include rowcell-container;
         }
       }
+    }
+
+    .e-templatecell .e-treecolumn-container span {
+      vertical-align: middle;
     }
 
     .e-treegridexpand:hover::before,
@@ -164,6 +185,10 @@
         @include display-align;
       }
     }
+
+    .e-templatecell .e-treecolumn-container span {
+      vertical-align: middle;
+    }
     
     .e-cloneproperties .e-treecolumn-container {
       span {
@@ -202,7 +227,7 @@
       height: $treegrid-right-arrow-icon-height;
       padding: $treegrid-right-arrow-icon-padding;
       text-align: center;
-      vertical-align: bottom;
+      vertical-align: text-bottom;
       width: $treegrid-right-arrow-icon-width;
     }
 

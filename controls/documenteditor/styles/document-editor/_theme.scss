@@ -3520,7 +3520,8 @@
         .e-de-style-paragraph-group-button .e-btn.e-active,
         .e-de-style-font-group-button .e-btn.e-active {
             @if $skin-name =='fluent2' {
-            background-color: var(--color-sf-secondary-bg-color);
+            background-color: var(--color-sf-content-bg-color-pressed);
+            color: var(--color-sf-toolbar-icon-color);
             }
         }
         .e-de-hyperlink-bookmark-check .e-checkbox-wrapper .e-frame {

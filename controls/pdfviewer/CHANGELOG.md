@@ -2,14 +2,33 @@
 
 ## [Unreleased]
 
+## 26.2.8 (2024-08-06)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I612530` - Now, able to copy text from form field text boxes using Ctrl+C.
+- `#I608686` - Now, the script error no longer occurs when deleting the added annotations using the `deleteAnnotations` API.
+- `#I607610` - Now, we are able to click the checkbox field in the customer-provided document on mobile devices.
+- `#609340`- Now, the invalid error message is not displayed when loading an incorrect file path in stand-alone mode.
+
 ## 26.2.7 (2024-07-30)
 
 ### PDF Viewer
 
 #### Bug Fixes
 
+- `#I608779` - Now, the signature field value is not removed from `formFieldCollections` when updating visibility programmatically.
+
+## 26.2.5 (2024-07-26)
+
+### PDF Viewer
+
+#### Bug Fixes
+
 - `#I605917` - Now, duplicate form fields are not added to the collection when loading the provided document.
-- `#I610387` - Now, the spinner shown properly when we click the save button.
+- `#I610387` - Now, the spinner shown properly when we click the save button in the organize dialog.
 - `#I611496` - Now, the page render request is sent correctly when the `zoomMode` is set with a specific viewer container size and the page render request is not sent if `restrictZoomRequest` is set to true and `enableTileRendering` is set to false.
 
 ## 26.2.4 (2024-07-24)

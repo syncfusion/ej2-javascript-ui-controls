@@ -1839,6 +1839,7 @@ export class DatePicker extends Calendar implements IInput {
         if (this.showClearButton) {
             this.clearButton = document.getElementsByClassName('e-clear-icon')[0] as HTMLElement;
         }
+        this.hide(null);
         super.destroy();
         Input.destroy({
             element: this.inputElement,

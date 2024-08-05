@@ -836,3 +836,5 @@ export const PIVOT_HIDE_LOADER: string = 'e-hide-loader';
 export const COLLAPSIBLE: string = 'e-icon-collapsible';
 /** @hidden */
 export const EXPANDABLE: string = 'e-icon-expandable';
+/** @hidden */
+export const PIVOT_VIEW_AUTOFIT: string = 'e-pivotview-autofit';

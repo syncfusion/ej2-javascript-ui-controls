@@ -2,7 +2,7 @@ import { _PdfCrossReference } from './../pdf-cross-reference';
 import { PdfPage, PdfDestination } from './../pdf-page';
 import { _PdfDictionary, _PdfName, _PdfReference } from './../pdf-primitives';
 import { PdfFormFieldVisibility, _PdfCheckFieldState, PdfAnnotationFlag, PdfBorderStyle, PdfHighlightMode, PdfLineCaptionType, PdfLineEndingStyle, PdfLineIntent, PdfRotationAngle, PdfTextAlignment , PdfBorderEffectStyle, PdfMeasurementUnit, _PdfGraphicsUnit, PdfCircleMeasurementType, PdfRubberStampAnnotationIcon, PdfCheckBoxStyle, PdfTextMarkupAnnotationType, PdfPopupIcon, PdfAnnotationState, PdfAnnotationStateModel, PdfAttachmentIcon, PdfAnnotationIntent, _PdfAnnotationType, PdfDestinationMode, PdfBlendMode, PdfDashStyle, PdfLineCap } from './../enumerator';
-import { _checkField, _removeDuplicateReference, _updateVisibility, _getPageIndex, _checkComment, _checkReview, _mapAnnotationStateModel, _mapAnnotationState, _decode, _setMatrix, _convertToColor, _findPage, _getItemValue, _areNotEqual, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _getUpdatedBounds, _mapBorderStyle, _mapLineEndingStyle, _reverseMapEndingStyle, _toRectangle, _mapBorderEffectStyle, _getStateTemplate, _mapMeasurementUnit, _mapGraphicsUnit, _stringToStyle, _styleToString, _mapMarkupAnnotationType, _reverseMarkupAnnotationType, _reverseMapAnnotationState, _reverseMapAnnotationStateModel, _mapPopupIcon, _mapRubberStampIcon, _mapAttachmentIcon, _mapAnnotationIntent, _reverseMapPdfFontStyle, _fromRectangle, _getNewGuidString, _getFontStyle, _mapFont, _checkInkPoints, _updateBounds } from './../utils';
+import { _checkField, _removeDuplicateReference, _updateVisibility, _getPageIndex, _checkComment, _checkReview, _mapAnnotationStateModel, _mapAnnotationState, _decode, _setMatrix, _convertToColor, _findPage, _getItemValue, _areNotEqual, _calculateBounds, _parseColor, _mapHighlightMode, _reverseMapHighlightMode, _getUpdatedBounds, _mapBorderStyle, _mapLineEndingStyle, _reverseMapEndingStyle, _toRectangle, _mapBorderEffectStyle, _getStateTemplate, _mapMeasurementUnit, _mapGraphicsUnit, _stringToStyle, _styleToString, _mapMarkupAnnotationType, _reverseMarkupAnnotationType, _reverseMapAnnotationState, _reverseMapAnnotationStateModel, _mapPopupIcon, _mapRubberStampIcon, _mapAttachmentIcon, _mapAnnotationIntent, _reverseMapPdfFontStyle, _fromRectangle, _getNewGuidString, _getFontStyle, _mapFont, _checkInkPoints, _updateBounds, _stringToBytes } from './../utils';
 import { PdfField, PdfRadioButtonListField, _PdfDefaultAppearance, PdfListBoxField, PdfCheckBoxField, PdfComboBoxField } from './../form/field';
 import { PdfTemplate } from './../graphics/pdf-template';
 import { _TextRenderingMode, PdfBrush, PdfGraphics, PdfPen, PdfGraphicsState, _PdfTransformationMatrix, _PdfUnitConvertor } from './../graphics/pdf-graphics';
@@ -15,6 +15,7 @@ import { PdfAppearance } from './pdf-appearance';
 import { PdfPopupAnnotationCollection } from './annotation-collection';
 import { _PdfPaddings } from './pdf-paddings';
 import { PdfForm } from '../form';
+import { _PdfCatalog } from '../pdf-catalog';
 /**
  * Represents the base class for annotation objects.
  * ```typescript
@@ -8359,6 +8360,11 @@ export class PdfDocumentLinkAnnotation extends PdfAnnotation {
                         if (Array.isArray(referenceValue)) {
                             referenceArray = referenceValue;
                         }
+                    } else if (typeof reference === 'string') {
+                        const document: PdfDocument = this._crossReference._document;
+                        if (document) {
+                            referenceArray = this._getNamedDestination(document, reference);
+                        }
                     }
                     if (referenceArray && (referenceArray[0] instanceof _PdfReference || typeof referenceArray[0] === 'number')) {
                         const document: PdfDocument = this._crossReference._document;
@@ -8410,6 +8416,130 @@ export class PdfDocumentLinkAnnotation extends PdfAnnotation {
             }
         }
         return this._destination;
+    }
+    _getNamedDestination(document: PdfDocument, result: string): any[] { // eslint-disable-line
+        let destination: any[]; // eslint-disable-line
+        const catalog: _PdfCatalog = document._catalog;
+        if (catalog && catalog._catalogDictionary && catalog._catalogDictionary.has('Names')) {
+            const names: _PdfDictionary = catalog._catalogDictionary.get('Names');
+            if (names && names.has('Dests')) {
+                const kids: _PdfDictionary = names.get('Dests');
+                if (kids) {
+                    const ref: _PdfReference = this._getNamedObjectFromTree(kids, result);
+                    destination = this._extractDestination(ref, document);
+                }
+            }
+        }
+        return destination;
+    }
+    _extractDestination(ref: any, document: PdfDocument): any[] { // eslint-disable-line
+        let dict: _PdfDictionary;
+        let destinationArray: any[]; // eslint-disable-line
+        if (ref instanceof _PdfReference) {
+            dict = document._crossReference._fetch(ref);
+        }
+        if (dict && dict.has('D')) {
+            destinationArray = dict.getRaw('D');
+        }
+        return destinationArray;
+    }
+    _getNamedObjectFromTree(kids: _PdfDictionary, name: string): _PdfReference {
+        let found: boolean = false;
+        let currentDictionary: _PdfDictionary = kids;
+        let reference: _PdfReference;
+        while (!found && currentDictionary) {
+            if (currentDictionary && currentDictionary.has('Kids')) {
+                currentDictionary = this._getProperKid(currentDictionary, name);
+            }
+            else if (currentDictionary && currentDictionary.has('Names')) {
+                reference = this._findName(currentDictionary, name);
+                found = true;
+            }
+        }
+        return reference;
+    }
+    _findName(current: _PdfDictionary, name: string): _PdfReference {
+        const names: any[] = current.get('Names'); // eslint-disable-line
+        const halfLength: number = names.length / 2;
+        let lowerIndex: number = 0;
+        let topIndex: number = halfLength - 1;
+        let half: number = 0;
+        let found: boolean = false;
+        let destinationReference: _PdfReference;
+        while (!found) {
+            half = Math.floor((lowerIndex + topIndex) / 2);
+            if (lowerIndex > topIndex) {
+                break;
+            }
+            let result: any = names[Number.parseInt(half.toString(), 10) * 2]; // eslint-disable-line
+            if (result && result instanceof _PdfReference) {
+                result = current._crossReference._fetch(result);
+            }
+            const cmp: number = this._stringCompare(name, result);
+            if (cmp > 0) {
+                lowerIndex = half + 1;
+            } else if (cmp < 0) {
+                topIndex = half - 1;
+            } else {
+                found = true;
+                break;
+            }
+        }
+        if (found) {
+            destinationReference = names[half * 2 + 1];
+        }
+        return destinationReference;
+    }
+    _getProperKid(kids: _PdfDictionary, name: string): _PdfDictionary {
+        let kidsArray: any; // eslint-disable-line
+        let kid: _PdfDictionary;
+        if (kids && kids.has('Kids')) {
+            kidsArray = kids.getRaw('Kids');
+        }
+        if (kidsArray && Array.isArray(kidsArray) && kidsArray.length !== 0) {
+            kidsArray = kids.getArray('Kids');
+            for (let i: number = 0; i < kidsArray.length; i++) {
+                kid = kidsArray[Number.parseInt(i.toString(), 10)];
+                if (this._checkLimits(kid, name)) {
+                    break;
+                }
+            }
+        }
+        return kid;
+    }
+    _checkLimits (kid: _PdfDictionary, result: string): boolean {
+        let found: boolean = false;
+        if (kid && kid.has('Limits')) {
+            const limits: any[] = kid.get('Limits'); // eslint-disable-line
+            const lowerLimit: string = limits[0];
+            const higherLimit: string = limits[1];
+            const lowCompare: number = this._stringCompare(lowerLimit, result);
+            const highCompare: number = this._stringCompare(higherLimit, result);
+            if (lowCompare === 0 || highCompare === 0) {
+                found = true;
+            } else if (lowCompare < 0 && highCompare > 0) {
+                found = true;
+            }
+        }
+        return found;
+    }
+    _stringCompare(limits: string, result: string): number {
+        const byteArray: Uint8Array = _stringToBytes(limits) as Uint8Array;
+        const byteArray1: Uint8Array = _stringToBytes(result) as Uint8Array;
+        const commonSize: number = Math.min(byteArray.length, byteArray1.length);
+        let resultValue: number = 0;
+        for (let i: number = 0; i < commonSize; i++) {
+            const byte: number = byteArray[Number.parseInt(i.toString(), 10)];
+            const byte1: number = byteArray1[Number.parseInt(i.toString(), 10)];
+            resultValue = byte - byte1;
+            if (resultValue !== 0) {
+                break;
+            }
+        }
+        if (resultValue === 0) {
+            resultValue = byteArray.length - byteArray1.length;
+        }
+        return resultValue;
     }
     _addDocument(): void {
         if (this.destination) {

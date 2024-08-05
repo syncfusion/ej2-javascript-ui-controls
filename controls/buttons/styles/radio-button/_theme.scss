@@ -33,6 +33,12 @@
           border-color: $radio-btn-focus-check-border-color;
           box-shadow: $radio-btn-focussed-box-shadow;
         }
+
+        & .e-ripple-container {
+          @if $skin-name == 'Material3' {
+            background-color: $radio-btn-focus-ripple-bgcolor;
+          }
+        }
       }
     }
 

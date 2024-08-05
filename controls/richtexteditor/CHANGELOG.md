@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 26.2.8 (2024-08-06)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I614247` - Now, the change event will triggered properly when toggling the readonly mode.
+
+- `#I613965` - Now, backspace works properly inside the input field in the Rich Text Editor.
+
+- `#I612147` - Now, deleting the list content by selecting deletes only the selected list elements instead of the whole list in Rich Text Editor.
+
+- `#I605021` - Now, Copy and pasting justified content from desktop Word desktop works properly in Rich Text Editor
+
+- `#I572346` - Now, the mention tags should not be added within the span while pasting in the Rich Text Editor.
+
 ## 26.2.7 (2024-07-30)
 
 ### RichTextEditor
@@ -9,8 +25,6 @@
 #### Bug Fixes
 
 - `#I600937` - Now, the entered value works properly when typed in Korean in the Rich Text Editor.
-
-- `#I612147` - Now, deleting the list content by selecting deletes only the selected list elements instead of the whole list in Rich Text Editor.
 
 ## 26.2.4 (2024-07-24)
 

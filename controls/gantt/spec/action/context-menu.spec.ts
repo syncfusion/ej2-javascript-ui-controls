@@ -1,7 +1,7 @@
 import { ContextMenuClickEventArgs, IGanttData, ITaskData, ContextMenuOpenEventArgs} from './../../src/gantt/base/interface';
 import { GanttModel } from './../../src/gantt/base/gantt-model.d';
 import { Gantt, Edit, Selection, ContextMenu, Sort, Resize, RowDD, ContextMenuItem,  Toolbar, Filter, DayMarkers, Reorder, ColumnMenu, VirtualScroll, ExcelExport, PdfExport} from '../../src/index';
-import { projectData1, scheduleModeData, selfReference, splitTasksData, selfData, editingData, customScheduleModeData, indentData, CR885011, MT889303} from '../base/data-source.spec';
+import { projectData1, scheduleModeData, selfReference, splitTasksData, selfData, editingData, customScheduleModeData, indentData, CR885011, MT889303, cr898103, resourceCollection} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import { ContextMenuItemModel } from '@syncfusion/ej2-grids';
@@ -2909,5 +2909,127 @@ describe('Selected row index after adding new record', () => {
         if (ganttObj) {
             destroyGantt(ganttObj);
         }
+    });
+});
+describe('CR 898103 - Add milestone-', () => {
+    let ganttObj: Gantt;
+    Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport);
+    beforeAll((done: Function) => {
+        ganttObj = createGantt( {
+            dataSource: cr898103,
+            dateFormat: 'MMM dd, y',
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks',
+                notes: 'info',
+                resourceInfo: 'resources'
+            },
+            allowSorting: true,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+            allowSelection: true,
+            gridLines: 'Both',
+            height: '450px',
+            treeColumnIndex: 1,
+            resourceFields: {
+                id: 'resourceId',
+                name: 'resourceName'
+            },
+            resources: resourceCollection,
+            highlightWeekends: true,
+            timelineSettings: {
+                topTier: {
+                    unit: 'Week',
+                    format: 'MMM dd, y',
+                },
+                bottomTier: {
+                    unit: 'Day',
+                },
+            },
+            allowResizing: true,
+            columns: [
+                { field: 'TaskID', width: 80 },
+                { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+                { field: 'StartDate' },
+                { field: 'Duration' },
+                { field: 'Progress' },
+                { field: 'Predecessor' }
+            ],
+            eventMarkers: [
+                { day: '4/17/2024', label: 'Project approval and kick-off' },
+                { day: '5/3/2024', label: 'Foundation inspection' },
+                { day: '6/7/2024', label: 'Site manager inspection' },
+                { day: '7/16/2024', label: 'Property handover and sign-off' },
+            ],
+            labelSettings: {
+                leftLabel: 'TaskName',
+                rightLabel: 'resources'
+            },
+            splitterSettings: {
+                position: "35%"
+            },
+            editDialogFields: [
+                { type: 'General', headerText: 'General' },
+                { type: 'Dependency' },
+                { type: 'Resources' },
+                { type: 'Notes' },
+            ],
+            enableContextMenu: true,
+            contextMenuClick: function (args) {
+                var record = args.rowData;
+                if (args.item.id === 'collapserow') {
+                    ganttObj.collapseByID(Number(record.ganttProperties.taskId));
+                }
+                if (args.item.id === 'expandrow') {
+                    ganttObj.expandByID(Number(record.ganttProperties.taskId));
+                }
+            },
+            contextMenuItems: contextMenuItems as ContextMenuItem[],
+            contextMenuOpen: function (args) {
+                var record = args.rowData;
+                if (args.type !== 'Header') {
+                    if (!record.hasChildRecords) {
+                        args.hideItems.push('Collapse the Row');
+                        args.hideItems.push('Expand the Row');
+                    } else {
+                        if(record.expanded) {
+                            args.hideItems.push('Expand the Row');
+                        } else {
+                            args.hideItems.push('Collapse the Row');
+                        }
+                    }
+                }
+            },
+        } , done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2)') as HTMLElement;
+        triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
+        setTimeout(done, 500);
+    });
+    it('Add record - Milestone', () => {
+        let e: ContextMenuClickEventArgs = {
+            item: { id: ganttObj.element.id + '_contextMenu_Milestone' },
+            element: null,
+        };
+        (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
+        expect(ganttObj.currentViewData.length).toBe(5);
     });
 });

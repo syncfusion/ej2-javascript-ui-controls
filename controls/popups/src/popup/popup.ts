@@ -627,7 +627,15 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
             if ((ele.classList.contains('e-dlg-modal') && anchor.tagName === 'BODY' && this.targetType === 'container')) {
                 anchorPos.left += (window.innerWidth - eleRect.width );
             } else if (this.targetType === 'container') {
-                anchorPos.left += (anchorRect.width - eleRect.width);
+                let scaleX: number = 1;
+                if (ele.offsetParent) {
+                    const transformStyle: string = getComputedStyle(ele.offsetParent).transform;
+                    if (transformStyle !== 'none') {
+                        const matrix: DOMMatrix = new DOMMatrix(transformStyle);
+                        scaleX = matrix.a;
+                    }
+                }
+                anchorPos.left += ((anchorRect.width - eleRect.width) / scaleX);
             } else {
                 anchorPos.left += (anchorRect.width);
             }

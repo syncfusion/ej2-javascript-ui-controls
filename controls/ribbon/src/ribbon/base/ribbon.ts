@@ -4582,7 +4582,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
                 this.createRibbonItem(ribbonItem, itemContainer);
                 if (itemProp.item.type === 'Gallery' && document.querySelector('#' + itemId + '_container').closest('.e-ribbon-overflow-target') && item.displayOptions !== DisplayMode.Overflow) {
                     this.createOverflowPopup(itemProp.item, itemProp.tabIndex, itemProp.group.enableGroupOverflow, itemProp.group.id,
-                        itemProp.group.header, itemContainer, groupContainer);
+                                             itemProp.group.header, itemContainer, groupContainer);
                 }
                 if (this.activeLayout === 'Simplified' && itemProp.group.enableGroupOverflow) {
                     if ((dropdown.target as HTMLElement).childElementCount === 0 ||
@@ -4670,7 +4670,7 @@ export class Ribbon extends Component<HTMLElement> implements INotifyPropertyCha
         if (itemProp.item.type === 'GroupButton') {
             ele = getItemElement(this, itemId + constants.RIBBON_GROUP_BUTTON_ID, itemProp);
         }
-        else if(itemProp.item.type === 'Gallery') {
+        else if (itemProp.item.type === 'Gallery') {
             ele = document.querySelector('#' + itemId);
             if (!ele) {
                 ele = document.querySelector('#' + itemId + '_galleryWrapper');

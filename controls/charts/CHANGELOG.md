@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 26.2.7 (2024-07-30)
+## 26.2.8 (2024-08-06)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I615273` - Now, the tooltip will render properly when a string is used as the y-value.
+
+## 26.2.5 (2024-07-26)
 
 ### Chart
 

@@ -483,6 +483,14 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     @Event()
     public destroyed: EmitType<Object>;
 
+    private windowResizeBound: () => void;
+
+    private keyDownBound: () => void;
+
+    private touchEndBound: () => void;
+
+    private scrollWheelBound: () => void;
+
     /**
      * Constructor for creating the Tooltip Component
      *
@@ -786,8 +794,13 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 const tempArr: Element[] = templateFunction(
                     {}, this, 'content', this.element.id + 'content', undefined, undefined, tooltipContent);
                 if (tempArr) {
+                    if (this.isAngular) {
+                        setTimeout(() => {
+                            this.reposition(target);
+                        }, 0);
+                    }
                     append(tempArr, tooltipContent);
-                }
+                }  
                 this.renderReactTemplates();
             }
         } else {
@@ -1362,10 +1375,15 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
         }
-        EventHandler.add(document, 'touchend', this.touchEnd, this);
-        EventHandler.add(document, 'scroll wheel', this.scrollHandler, this);
-        EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.windowResize, this);
-        EventHandler.add(document, 'keydown', this.keyDown, this);
+        this.windowResizeBound = this.windowResize.bind(this);
+        this.keyDownBound = this.keyDown.bind(this);
+        this.touchEndBound = this.touchEnd.bind(this);
+        this.scrollWheelBound = this.scrollHandler.bind(this);
+        document.addEventListener('wheel', this.scrollWheelBound);
+        document.addEventListener('scroll', this.scrollWheelBound);
+        document.addEventListener('touchend', this.touchEndBound);
+        document.addEventListener('keydown', this.keyDownBound);
+        window.addEventListener('resize', this.windowResizeBound);
     }
     private getTriggerList(trigger: string): string[] {
         if (!trigger) return []; 
@@ -1441,10 +1459,15 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
         }
-        EventHandler.remove(document, 'touchend', this.touchEnd);
-        EventHandler.remove(document, 'scroll wheel', this.scrollHandler);
-        EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.windowResize);
-        EventHandler.remove(document, 'keydown', this.keyDown);
+        document.removeEventListener('touchend', this.touchEndBound);
+        this.touchEndBound = null;
+        document.removeEventListener('wheel', this.scrollWheelBound);
+        document.removeEventListener('scroll', this.scrollWheelBound);
+        this.scrollWheelBound = null;
+        window.removeEventListener('resize', this.windowResizeBound);
+        this.windowResizeBound = null;
+        document.removeEventListener('keydown', this.keyDownBound);
+        this.keyDownBound = null;
     }
     private unwireFocusEvents(): void {
         if (!isNullOrUndefined(this.target)) {

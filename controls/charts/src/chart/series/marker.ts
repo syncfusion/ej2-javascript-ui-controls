@@ -12,7 +12,7 @@ import { MarkerExplode } from './marker-explode';
 import { getSaturationColor } from '../../common/utils/helper';
 import { ChartShape } from '../utils/enum';
 
-export const markerShapes: ChartShape[] = ['Circle', 'Triangle', 'Diamond', 'Rectangle', 'Pentagon', 'InvertedTriangle', 'VerticalLine', 'Cross', 'Plus', 'HorizontalLine'];
+export const markerShapes: ChartShape[] = ['Circle', 'Triangle', 'Diamond', 'Rectangle', 'Pentagon', 'InvertedTriangle', 'VerticalLine', 'Cross', 'Plus', 'HorizontalLine', 'Star'];
 /**
  * Marker module used to render the marker for line type series.
  */

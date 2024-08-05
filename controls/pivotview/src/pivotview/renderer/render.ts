@@ -5,7 +5,7 @@ import { Reorder, headerRefreshed, CellSelectEventArgs, RowSelectEventArgs, PdfE
 import { Grid, Resize, ColumnModel, Column, ExcelExport, PdfExport, ContextMenu, ResizeArgs, Freeze } from '@syncfusion/ej2-grids';
 import { PdfHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelHeaderQueryCellInfoEventArgs, HeaderCellInfoEventArgs, Selection, RowDeselectEventArgs } from '@syncfusion/ej2-grids';
-import { CellDeselectEventArgs, CellSelectingEventArgs, ExcelExportCompleteArgs } from '@syncfusion/ej2-grids';
+import { CellDeselectEventArgs, CellSelectingEventArgs, ExcelExportCompleteArgs, ActionEventArgs } from '@syncfusion/ej2-grids';
 import { createElement, setStyleAttribute, remove, isNullOrUndefined, EventHandler, getElement, closest, append, formatUnit } from '@syncfusion/ej2-base';
 import { addClass, removeClass, SanitizeHtmlHelper, select, selectAll } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
@@ -72,7 +72,6 @@ export class Render {
     private drilledLevelInfo: { [key: string]: boolean } = {};
     private timeOutObj: ReturnType<typeof setTimeout>;
     /** @hidden */
-    public vSortColumnPos: number[] = [];
     /** Constructor for render module
      *
      * @param {PivotView} parent - Instance of pivot table.
@@ -123,6 +122,11 @@ export class Render {
                 this.parent.resizeInfo = {};
             }
             this.parent.grid.refreshColumns();
+            if (this.isAutoFitEnabled) {
+                this.addPivotAutoFitClass();
+            } else {
+                this.removePivotAutoFitClass();
+            }
             const e: HTMLElement = this.parent.element.querySelector('.' + cls.GRID_CLASS) as HTMLElement;
             e.querySelector('colGroup').innerHTML = this.parent.grid.getHeaderContent().querySelector('colgroup').innerHTML;
             this.parent.grid.width = this.calculateGridWidth();
@@ -263,10 +267,37 @@ export class Render {
             pdfQueryCellInfo: this.pdfQueryCellInfo.bind(this),
             beforePdfExport: this.gridSettings.beforePdfExport ? this.gridSettings.beforePdfExport.bind(this) : undefined,
             pdfExportComplete: this.pdfExportComplete.bind(this),
-            excelExportComplete: this.excelExportComplete.bind(this)
+            excelExportComplete: this.excelExportComplete.bind(this),
+            actionComplete: this.actionComplete.bind(this)
         });
         this.parent.grid.on('header-refreshed', this.headerRefreshed.bind(this));
         this.parent.grid.on('export-DataBound', this.excelDataBound.bind(this));
+    }
+
+    private actionComplete(args: ActionEventArgs): void {
+        if (args && args.requestType === 'refresh' && this.isAutoFitEnabled) {
+            this.removePivotAutoFitClass()
+        }
+    }
+
+    /** @hidden */
+    public addPivotAutoFitClass(): void {
+        if (!document.body.classList.contains(cls.PIVOT_VIEW_CLASS)) {
+            document.body.classList.add(cls.PIVOT_VIEW_CLASS);
+        }
+        if (!document.body.classList.contains(cls.PIVOT_VIEW_AUTOFIT)) {
+            document.body.classList.add(cls.PIVOT_VIEW_AUTOFIT);
+        }
+    }
+
+    /** @hidden */
+    public removePivotAutoFitClass(): void {
+        if (document.body.classList.contains(cls.PIVOT_VIEW_CLASS)) {
+            document.body.classList.remove(cls.PIVOT_VIEW_CLASS);
+        }
+        if (document.body.classList.contains(cls.PIVOT_VIEW_AUTOFIT)) {
+            document.body.classList.remove(cls.PIVOT_VIEW_AUTOFIT);
+        }
     }
 
     private headerRefreshed(): void {
@@ -1777,16 +1808,7 @@ export class Render {
             (this.parent.actionObj.actionName === 'Sort field' && this.parent.actionObj.fieldInfo.axis === 'columns') ||
             (this.parent.pivotFieldListModule && this.parent.pivotFieldListModule.actionObj.actionName === 'Sort field' && this.parent.pivotFieldListModule.actionObj.fieldInfo.axis === 'columns')
         ) : false;
-        this.pivotColumns = []; let vSortColWidth: string | number;
-        if (this.vSortColumnPos.length > 0) {
-            const width: string | number = gridColumns[this.vSortColumnPos[0]].width.toString();
-            if (width.toString().indexOf('px')) {
-                gridColumns[this.vSortColumnPos[0]].width = (Number(width.split('px').join('')) - 16).toString().concat('px');
-            } else if (!isNaN(Number(width))) {
-                gridColumns[this.vSortColumnPos[0]].width = Number(width) - 16;
-            }
-            this.vSortColumnPos = [];
-        }
+        this.pivotColumns = [];
         if ((((this.parent.dataType === 'olap' && this.parent.dataSourceSettings.url !== '') ? true : (this.parent.dataSourceSettings.values.length > 0 && this.parent.dataSourceSettings.dataSource && this.parent.engineModule.data.length > 0)) ||
             (this.parent.dataSourceSettings.mode === 'Server' && this.parent.dataSourceSettings.url !== '' && this.engine.pivotValues.length > 0)) && !this.engine.isEmptyData) {
             let headerCnt: number = this.engine.headerContent.length;
@@ -1795,14 +1817,12 @@ export class Render {
             const colWidth: number = this.calculateColWidth(this.engine.pivotValues && this.engine.pivotValues[0] ?
                 this.engine.pivotValues[0].length : 0);
             const measureFlag: boolean = this.parent.dataType === 'olap' && !isNullOrUndefined((this.engine as OlapEngine).colMeasurePos) && (this.engine as OlapEngine).colDepth - 1 === this.parent.olapEngineModule.colMeasurePos;
-            let columnPos: number;
             do {
                 const columnModel: ColumnModel[] = [];
                 let actualCnt: number = 0;
                 headerCnt--;
                 const colField: IAxisSet[] = this.engine.headerContent[headerCnt as number];
                 const colCount: number = colField ? Object.keys(colField).length : 0;
-                columnPos = 0;
                 if (colField) {
                     for (let cCnt: number = 0, cLen: number = Object.keys(colField).length + (colField[0] ? 0 : 1); cCnt < cLen; cCnt++) {
                         let colSpan: number = (colField[cCnt as number] && colField[cCnt as number].colSpan) ?
@@ -1837,20 +1857,6 @@ export class Render {
                             if (cCnt === colCount) {
                                 this.lastColumnName = columnModel[actualCnt as number].field;
                             }
-                            if (this.parent.enableValueSorting &&
-                                !isNullOrUndefined(this.parent.dataSourceSettings.valueSortSettings.headerText)) {
-                                const levelName: string = colField[cCnt as number] && colField[cCnt as number].valueSort ?
-                                    colField[cCnt as number].valueSort.levelName as string : '';
-                                const width: string | number = this.autoFitValueSortingWidth(
-                                    formattedText, levelName, columnModel[actualCnt as number].field, actualCnt,
-                                    colField[cCnt as number] && colField[cCnt as number].hasChild
-                                );
-                                if (!isNullOrUndefined(width)) {
-                                    vSortColWidth = width;
-                                    this.vSortColumnPos[this.vSortColumnPos.length] = actualCnt;
-                                    this.vSortColumnPos[this.vSortColumnPos.length] = actualCnt;
-                                }
-                            }
                         } else if (headerSplit[cCnt as number]) {
                             // colSpan = (colField[cCnt as number] && colField[cCnt as number].type === 'grand sum' &&
                             //     colField[cCnt as number].memberType === 2) ? 1 : colSpan;
@@ -1884,13 +1890,6 @@ export class Render {
                                 this.isAutoFitEnabled = this.isAutoFitEnabled ? true : autoFitApplied;
                                 tmpSpan = tmpSpan - (headerSplit[innerPos as number] as number);
                                 innerPos = innerPos + (headerSplit[innerPos as number] as number);
-                                if (this.parent.enableValueSorting && this.vSortColumnPos.length > 0) {
-                                    if (this.vSortColumnPos[this.vSortColumnPos.length - 1] === columnPos) {
-                                        this.vSortColumnPos[this.vSortColumnPos.length - 1] = innerModel.length - 1;
-                                        this.vSortColumnPos[this.vSortColumnPos.length] = actualCnt;
-                                    }
-                                    columnPos++;
-                                }
                             }
                             columnModel[actualCnt as number].columns = innerModel;
                         }
@@ -1924,113 +1923,11 @@ export class Render {
         }
         this.parent.triggerColumnRenderEvent(this.pivotColumns);
         autoFitApplied = this.parent.pivotColumns.length > 0 && this.parent.pivotColumns[this.parent.pivotColumns.length - 1].autoFit;
-        if (this.parent.enableValueSorting && this.vSortColumnPos.length > 0) {
-            const pivotColumn: ColumnModel = this.getValueSortColumn(
-                this.pivotColumns, this.vSortColumnPos.slice(1, this.vSortColumnPos.length)
-            ) as ColumnModel;
-            if (!isNullOrUndefined(pivotColumn) && pivotColumn.autoFit) {
-                pivotColumn.autoFit = false;
-                pivotColumn.width = vSortColWidth;
-            }
-        }
         if (this.pivotColumns.length > 1 && !autoFitApplied) {
             const lastColumn: ColumnModel = this.pivotColumns[this.pivotColumns.length - 1];
             lastColumn.width = Number(lastColumn.width) - 2;
         }
         return this.pivotColumns;
-    }
-
-    /**
-     * It used to get the value sort column value.
-     *
-     * @param {ColumnModel[] | Column[] | string[]} pivotColumn - contains the pivot colum collection.
-     * @param {number[]} index - position of value sorting column.
-     * @returns {ColumnModel[]} - Returns grid columns.
-     * @hidden
-     */
-    public getValueSortColumn(
-        pivotColumn: ColumnModel[] | Column[] | string[], index: number[]
-    ): string | ColumnModel | ColumnModel[] | Column {
-        let column: ColumnModel[] | Column[] | string[] | ColumnModel | Column | string = pivotColumn[index[index.length - 1]];
-        if (!isNullOrUndefined(column) && (column as ColumnModel | Column).columns &&
-            (column as ColumnModel | Column).columns.length > 0) {
-            column = this.getValueSortColumn((column as ColumnModel | Column).columns, index.slice(0, index.length - 1));
-        }
-        return column;
-    }
-
-    private autoFitValueSortingWidth(
-        formattedText: string, levelName: string, fName: string, index: number, isChildAvail: boolean
-    ): string | number {
-        let width: number | string;
-        if (!isNullOrUndefined(this.parent.dataSourceSettings.valueSortSettings.headerText) && levelName !== '' &&
-            this.parent.dataSourceSettings.valueSortSettings.headerText === levelName) {
-            const tr1: HTMLTableRowElement = this.parent.grid.createElement('tr').cloneNode() as HTMLTableRowElement;
-            tr1.className = this.parent.grid.getHeaderTable().querySelector('tr').className;
-            const th: HTMLElement = this.parent.grid.createElement('th', {
-                className: 'e-headercell e-firstcell e-leftalign e-columnsheader e-valuesheader e-unfreeze'
-            }).cloneNode();
-            const div2: HTMLDivElement = this.parent.grid.createElement('div', { className: 'e-headercelldiv' }) as HTMLDivElement;
-            const div1: HTMLDivElement = this.parent.grid.createElement('div', { className: 'e-pivotcell-container' }) as HTMLDivElement;
-            const div: HTMLDivElement = this.parent.grid.createElement('div', { className: 'e-headertext e-cellvalue' }) as HTMLDivElement;
-            const subSpan: HTMLSpanElement = this.parent.grid.createElement('div', { className: 'e-headertext' }) as HTMLSpanElement;
-            let prefix: string = '';
-            if (this.parent.dataSourceSettings.valueIndex === -1 && this.parent.dataSourceSettings.columns.length === 0) {
-                prefix = this.parent.localeObj.getConstant('total') + ' ' + this.parent.localeObj.getConstant('of') + ' ' +
-                    this.parent.localeObj.getConstant(this.parent.dataSourceSettings.values[0].type) + ' ';
-            }
-            subSpan.textContent = prefix + formattedText;
-            div.appendChild(subSpan);
-            div1.appendChild(div);
-            div2.appendChild(div1);
-            th.appendChild(div2);
-            tr1.appendChild(th);
-            const headerWidth: number = this.getTableWidth(tr1, isChildAvail, true);
-            let tableValue: string = '';
-            const valueContent: IGridValues = this.engine.valueContent;
-            for (let i: number = 0, j: number = valueContent.length; i < j; i++) {
-                if (!isNullOrUndefined(valueContent[i as number]) && !isNullOrUndefined(valueContent[i as number][0])) {
-                    const value: string = valueContent[i as number][index as number].formattedText;
-                    tableValue = value.length > tableValue.length ? value : tableValue;
-                }
-            }
-            const tr2: HTMLTableRowElement = this.parent.grid.createElement('tr').cloneNode() as HTMLTableRowElement;
-            tr2.className = 'e-row';
-            const td: HTMLTableRowElement = this.parent.grid.createElement('td').cloneNode() as HTMLTableRowElement;
-            td.className = 'e-rowcell e-unfreeze e-valuescontent e-summary';
-            const span: HTMLSpanElement = this.parent.grid.createElement('span').cloneNode() as HTMLTableRowElement;
-            span.className = 'e-cellvalue';
-            span.innerText = tableValue;
-            td.appendChild(span);
-            tr2.appendChild(td);
-            const contentWidth: number = this.getTableWidth(tr2, isChildAvail, false);
-            if (!isNullOrUndefined(this.parent.grid.getUidByColumnField(fName))) {
-                width = formatUnit(Math.max(headerWidth, contentWidth));
-            }
-        }
-        return width;
-    }
-
-    private getTableWidth(tr: HTMLTableRowElement, isChildAvail: boolean, isHeader: boolean): number {
-        const myTable: HTMLTableElement = this.parent.grid.createElement('table', { attrs: { role: 'grid' } }) as HTMLTableElement;
-        myTable.className = this.parent.grid.getHeaderTable().className;
-        myTable.classList.add('e-resizetable');
-        myTable.style.cssText = 'table-layout: auto;width: auto';
-        const mySubDiv: HTMLDivElement = this.parent.grid.createElement('div') as HTMLDivElement;
-        mySubDiv.className = 'e-gridheader';
-        myTable.appendChild(tr);
-        mySubDiv.appendChild(myTable);
-        const myTableDiv: HTMLDivElement = this.parent.grid.createElement('div') as HTMLDivElement;
-        myTableDiv.className = this.parent.grid.element.className + (this.parent.grid.enableAdaptiveUI ? ' e-bigger' : '');
-        myTableDiv.style.cssText = 'display: inline-block;visibility:hidden;position:absolute';
-        myTableDiv.appendChild(mySubDiv);
-        document.body.appendChild(myTableDiv);
-        let width: number = Math.ceil(myTable.getBoundingClientRect().width);
-        if (isHeader) {
-            width = width + 16 + (isChildAvail ? 22 : 0);
-        }
-        document.body.removeChild(myTableDiv);
-        return width;
     }
 
     /** @hidden */

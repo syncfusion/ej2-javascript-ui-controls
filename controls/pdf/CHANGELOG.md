@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 26.2.7 (2024-07-30)
+## 26.2.8 (2024-08-06)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved the undefined issue while parsing the destination from the document link annotation.
+- Resolved the image preservation issues when importing PDF pages from an encrypted PDF document.
+
+## 26.2.4 (2024-07-24)
 
 ### PDF Parser
 

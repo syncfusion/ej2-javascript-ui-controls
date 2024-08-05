@@ -866,6 +866,9 @@ export class FormFieldsBase {
             annotation.border.width = 0;
             annotation.textAlignment = PdfTextAlignment.center;
             annotation.flags = PdfAnnotationFlag.print;
+            if (formFieldAttributes.visibility === "hidden") {
+                annotation.flags = PdfAnnotationFlag.hidden;
+            }
             if (!isFieldRotated) {
                 annotation.rotationAngle = Math.abs(this.getRotateAngle(page.rotation));
             }
@@ -904,6 +907,9 @@ export class FormFieldsBase {
             }
             rubberStampAnnotation._dictionary.set('T', currentFieldName);
             rubberStampAnnotation.flags = PdfAnnotationFlag.print;
+            if (formFieldAttributes.visibility === "hidden") {
+                rubberStampAnnotation.flags = PdfAnnotationFlag.hidden;
+            }
             page.annotations.add(rubberStampAnnotation);
         }
     }
@@ -1005,6 +1011,9 @@ export class FormFieldsBase {
             }
             const inkAnnotation: PdfInkAnnotation = new PdfInkAnnotation([left, top, width, height], linePoints);
             inkAnnotation.flags = PdfAnnotationFlag.print;
+            if (formFieldAttributes.visibility === "hidden") {
+                inkAnnotation.flags = PdfAnnotationFlag.hidden;
+            }
             inkAnnotation.bounds = { x: signBounds.X, y: signBounds.Y, width: signBounds.Width, height: signBounds.Height };
             inkAnnotation.border.width = 0;
             inkAnnotation.color = [0, 0, 0];

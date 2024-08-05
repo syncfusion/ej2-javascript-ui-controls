@@ -2,7 +2,7 @@
  * Gantt toolbar spec
  */
 import { Gantt, Edit, Toolbar, Selection, ZoomTimelineSettings, Filter, PdfQueryCellInfoEventArgs, PdfExport, CriticalPath, DayMarkers, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, ContextMenu, ExcelExport, PdfQueryTimelineCellInfoEventArgs } from '../../src/index';
-import { exportData, image, adventProFont, GanttData1, pdfData1, customZoomingdata, templateData, projectResourcestemplate, virtual1, criticalData1, resourcesData1, resourceCollection1, coulmntemplate, resourceCollectiontemplate1, splitTasks, headerFooter, weekEndData,pdfData, images, milestoneTemplate,datapdf } from '../base/data-source.spec';
+import { exportData, image, adventProFont, GanttData1, pdfData1, customZoomingdata, templateData, projectResourcestemplate, virtual1, criticalData1, resourcesData1, resourceCollection1, coulmntemplate, resourceCollectiontemplate1, splitTasks, headerFooter, weekEndData,pdfData, images, milestoneTemplate,datapdf, pdfquerycelldata } from '../base/data-source.spec';
 import { PdfExportProperties } from '../../src/gantt/base/interface';
 import { createGantt, destroyGantt } from '../base/gantt-util.spec';
 import { PdfDocument, PdfColor, PdfStandardFont, PdfFontFamily, PdfFontStyle } from '@syncfusion/ej2-pdf-export';
@@ -6088,5 +6088,84 @@ describe('Gantt PDF Export for baseline task', () => {
         if (ganttObj) {
             destroyGantt(ganttObj);
         }
+    });
+});
+describe('Gantt pdf export with pdfQueryCellInfo', () => {
+    let ganttObj: Gantt;
+    let exportComplete: () => void = () => true;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: pdfquerycelldata,
+                allowPdfExport: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks'
+                },
+                toolbar: ['PdfExport'],
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+                rowHeight: 40,
+                taskbarHeight: 30,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Year',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Month',
+                        count: 1
+                    }
+                },
+                pdfExportComplete: exportComplete,
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    taskLabel: 'Progress',
+                    rightLabel: 'TaskName'
+                },
+                beforePdfExport: (args: any) => {
+                    ganttObj.beforePdfExport = undefined;
+                    args.cancel = true;
+                },
+                pdfQueryCellInfo: (args: any) => {
+                    if (args.column.field == 'Progress') {
+                        if (args.value === 10) {
+                            args.style = { backgroundColor: new PdfColor(205, 92, 92) };
+                            args.style.fontStyle = 'Italic';
+                            args.style.fontFamily = 'TimesRoman';
+                            args.style.fontSize = 12
+                        }
+                        else if (args.value === 20) {
+                            args.style = { borderColor: new PdfColor(205, 92, 92) };
+                            args.style.fontStyle = 'Bold';
+                            args.style.fontFamily = 'TimesRoman';
+                            args.style.fontSize = 12
+                        }
+                        else if (args.value === 30) {
+                            args.style = { fontBrush: new PdfColor(205, 92, 92) };
+                            args.style.fontStyle = 'Strikeout';
+                            args.style.fontFamily = 'TimesRoman';
+                            args.style.fontSize = 12
+                        }
+                        else if (args.value === 40) {
+                            args.style = { backgroundColor: new PdfColor(205, 92, 92) };
+                            args.style.fontStyle = 'Regular';
+                            args.style.fontFamily = 'TimesRoman';
+                            args.style.fontSize = 12
+                        }
+                        else {
+                            args.style = { backgroundColor: '#A569BD' };
+                            args.style.fontStyle = 'Underline';
+                        }
+                    }
+                },
+            }, done);
+    });
+    it("Export cancel Check", () => {
+        ganttObj.pdfExport();
     });
 });

@@ -383,7 +383,7 @@ export class Render {
             const emptyRecordTemplateID: string = gObj.element.id + 'emptyRecordTemplate';
             td = this.parent.createElement('td', { attrs: { colspan: (gObj.getVisibleColumns().length +
                 spanCount + gObj.groupSettings.columns.length).toString() }});
-            if (gObj.isVue) {
+            if (gObj.isVue || (gObj.parentDetails && gObj.parentDetails.parentInstObj && gObj.parentDetails.parentInstObj.isVue)) {
                 td.appendChild(gObj.getEmptyRecordTemplate()(gObj.dataSource, gObj, 'emptyRecordTemplate', emptyRecordTemplateID,
                                                              undefined, undefined, undefined, this.parent['root'])[1]);
             } else {

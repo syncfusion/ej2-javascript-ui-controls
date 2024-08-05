@@ -1108,6 +1108,10 @@ export class Renderer {
                                 this.renderSingleBorder(color, startX, startY, endX, startY, 1, 'single');
                                 //right
                                 this.renderSingleBorder(color, endX, startY, endX, endY, 1, 'single');
+                                if (widgetInfo.length === 1) {
+                                    //bottom
+                                    this.renderSingleBorder(color, startX, endY, endX, endY, 1, 'single');
+                                }
                             }
                             if (i > 0 && i < widgetInfo.length - 1) {
                                 //left
@@ -1118,59 +1122,71 @@ export class Renderer {
                                 let widgets: SelectionWidgetInfo[] = widgetInfo.get(widgetInfo.keys[i - 1]);
                                 this.renderSingleBorder(color, startX, startY, widgets[j].left - 2, startY, 1, 'single');
                             }
-                            if (i == widgetInfo.length - 1) {
+                            if (i == widgetInfo.length - 1 && widgetInfo.length > 1) {
                                 // left
                                 this.renderSingleBorder(color, startX, startY, startX, endY, 1, 'single');
-                                //bottom
-                                this.renderSingleBorder(color, startX, endY, endX, endY, 1, 'single');
-                                //top
-                                if (widgetInfo.length > 1) {
-
-                                    let widgets: SelectionWidgetInfo[] = widgetInfo.get(widgetInfo.keys[i - 1]);
-                                    let endUpdated = this.documentHelper.getParagraphLeftPosition(lineWidget.paragraph) + this.getContainerWidth(lineWidget.paragraph, page) + HelperMethods.convertPointToPixel(lineWidget.paragraph.paragraphFormat.borders.right.space);
-                                    this.renderSingleBorder(color, endX, startY, endUpdated, startY, 1, 'single');
-                                    if (startX < widgets[j].left) {
-                                        this.renderSingleBorder(color, widgets[j].left - 2, startY, startX, startY, 1, 'single');
+                                //Top
+                                let widgets: SelectionWidgetInfo[] = widgetInfo.get(widgetInfo.keys[i - 1]);
+                                if (startX > widgets[j].left) {
+                                    this.renderSingleBorder(color, widgets[j].left - 2, startY, startX, startY, 1, 'single');
+                                }
+                                let lastLine: any = widgetInfo.keys[i].paragraph.lastChild;
+                                if (!isNullOrUndefined(lastLine) && widgetInfo.keys[i] === lastLine && lastLine.children[lastLine.children.length - 1] instanceof ContentControl  && lastLine.children[lastLine.children.length - 1] === contenControl.reference && contenControl.contentControlWidgetType === 'Block') {
+                                    //bottom
+                                    endX = this.documentHelper.getParagraphLeftPosition(widgetInfo.keys[i].paragraph) + this.getContainerWidth(widgetInfo.keys[i].paragraph, page) + HelperMethods.convertPointToPixel(widgetInfo.keys[i].paragraph.paragraphFormat.borders.right.space);
+                                    this.renderSingleBorder(color, startX, endY, endX, endY, 1, 'single');
+                                }
+                                else {
+                                    //bottom
+                                    this.renderSingleBorder(color, startX, endY, endX, endY, 1, 'single');
+                                    //top
+                                    if (widgetInfo.length > 1) {
+                                        let widgets: SelectionWidgetInfo[] = widgetInfo.get(widgetInfo.keys[i - 1]);
+                                        let endUpdated = this.documentHelper.getParagraphLeftPosition(lineWidget.paragraph) + this.getContainerWidth(lineWidget.paragraph, page) + HelperMethods.convertPointToPixel(lineWidget.paragraph.paragraphFormat.borders.right.space);
+                                        this.renderSingleBorder(color, endX, startY, endUpdated, startY, 1, 'single');
+                                        if (startX < widgets[j].left - 2) {
+                                            this.renderSingleBorder(color, widgets[j].left - 2, startY, startX, startY, 1, 'single');
+                                        }
                                     }
                                 }
                                 //right
                                 this.renderSingleBorder(color, endX, startY, endX, endY, 1, 'single');
-                                if (!isNullOrUndefined(contenControl) && (contenControl.contentControlProperties.type === 'ComboBox' || contenControl.contentControlProperties.type === 'DropDownList' || contenControl.contentControlProperties.type === 'Date')) {
-                                    let element = document.getElementById("contenticon");
-                                    if (element) {
-                                        element.style.display = 'block';
-                                        startX = this.getScaledValue(endX, 1);
-                                        startY = this.getScaledValue(startY, 2);
-                                        element.style.left = `${startX}px`; // Position to the right of the right border
-                                        element.style.top = `${startY}px`; // Align with the top of the border
-                                        element.style.border = '0.5px solid #7F7F7F';
-                                        element.style.backgroundColor = '#D3D3D3'
-                                        element.style.height = lineWidget.height + 'px';
-                                        element.addEventListener('click', this.documentHelper.owner.editorModule.contentControlDropDownChange.bind(this));
-                                    }
-                                    else {
-                                        let contentMark = document.createElement('div');
-                                        contentMark.id = "contenticon"
-                                        contentMark.style.display = 'block';
-                                        contentMark.style.position = 'sticky';
-                                        startX = this.getScaledValue(endX, 1);
-                                        startY = this.getScaledValue(startY, 2);
-                                        contentMark.style.left = `${startX}px`; // Position to the right of the right border
-                                        contentMark.style.top = `${startY}px`; // Align with the top of the border
-                                        contentMark.style.border = '0.5px solid #7F7F7F';
-                                        contentMark.style.backgroundColor = '#D3D3D3'
-                                        contentMark.style.height = lineWidget.height + 'px';
-                                        contentMark.classList.add('e-de-cmt-mark');
-                                        let span: HTMLElement = document.createElement('span');
-                                        span.classList.add('e-icons');
-                                        span.classList.add('e-chevron-down-fill');
-                                        contentMark.appendChild(span);
-                                        this.documentHelper.pageContainer.appendChild(contentMark);
-                                        contentMark.addEventListener('click', this.documentHelper.owner.editorModule.contentControlDropDownChange.bind(this));
-                                    }
-                                }
-
                             }
+                            if (i == widgetInfo.length - 1 && !isNullOrUndefined(contenControl) && (contenControl.contentControlProperties.type === 'ComboBox' || contenControl.contentControlProperties.type === 'DropDownList' || contenControl.contentControlProperties.type === 'Date')) {
+                                let element = document.getElementById("contenticon");
+                                if (element) {
+                                    element.style.display = 'block';
+                                    startX = this.getScaledValue(endX, 1);
+                                    startY = this.getScaledValue(startY, 2);
+                                    element.style.left = `${startX}px`; // Position to the right of the right border
+                                    element.style.top = `${startY}px`; // Align with the top of the border
+                                    element.style.border = '0.5px solid #7F7F7F';
+                                    element.style.backgroundColor = '#D3D3D3'
+                                    element.style.height = lineWidget.height + 'px';
+                                    element.addEventListener('click', this.documentHelper.owner.editor.contentControlDropDownChange.bind(this));
+                                }
+                                else {
+                                    let contentMark = document.createElement('div');
+                                    contentMark.id = "contenticon"
+                                    contentMark.style.display = 'block';
+                                    contentMark.style.position = 'sticky';
+                                    startX = this.getScaledValue(endX, 1);
+                                    startY = this.getScaledValue(startY, 2);
+                                    contentMark.style.left = `${startX}px`; // Position to the right of the right border
+                                    contentMark.style.top = `${startY}px`; // Align with the top of the border
+                                    contentMark.style.border = '0.5px solid #7F7F7F';
+                                    contentMark.style.backgroundColor = '#D3D3D3'
+                                    contentMark.style.height = lineWidget.height + 'px';
+                                    contentMark.classList.add('e-de-cmt-mark');
+                                    let span: HTMLElement = document.createElement('span');
+                                    span.classList.add('e-icons');
+                                    span.classList.add('e-chevron-down-fill');
+                                    contentMark.appendChild(span);
+                                    this.documentHelper.pageContainer.appendChild(contentMark);
+                                    contentMark.addEventListener('click', this.documentHelper.owner.editor.contentControlDropDownChange.bind(this));
+                                }
+                            }
+
 
                         }
                     }

@@ -1331,6 +1331,7 @@ export class Edit {
                     true
                 );
             }
+            this.parent.chartRowsModule.updateSegment(eventArg.data['ganttProperties'].segments, eventArg.data['ganttProperties'].taskId)
             if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
                 this.parent.showMaskRow();
             } else {
@@ -2505,12 +2506,12 @@ export class Edit {
             this.parent.staticSelectedRowIndex = this.parent.selectedRowIndex = recordIndex;
             const record : IGanttData = this.parent.flatData[this.parent.selectedRowIndex + 1];
             if (!isNullOrUndefined(record)) {
-                this.parent.currentSelection = record.ganttProperties;
+                this.parent.currentSelection = record;
             }
             else {
                 const prevRecordIndex: number = this.parent.selectedRowIndex - 1;
                 if (prevRecordIndex >= 0) {
-                    this.parent.currentSelection = this.parent.flatData[prevRecordIndex as number].ganttProperties;
+                    this.parent.currentSelection = this.parent.flatData[prevRecordIndex as number];
                 }
             }
         }
@@ -2719,8 +2720,10 @@ export class Edit {
         if (!this.parent.allowUnscheduledTasks && !obj[taskModel.endDate] && taskModel.endDate) {
             if (!obj[taskModel.duration]) {
                 const startDate: Date = this.parent.dataOperation.getDateFromFormat(this.parent.projectStartDate);
-                startDate.setDate(startDate.getDate() + 4);
-                obj[taskModel.endDate] = this.parent.getFormatedDate(startDate, this.parent.getDateFormat());
+                if (!isNullOrUndefined(startDate)) {
+                    startDate.setDate(startDate.getDate() + 4);
+                    obj[taskModel.endDate] = this.parent.getFormatedDate(startDate, this.parent.getDateFormat());
+                }
             }
         }
     }
@@ -3557,7 +3560,7 @@ export class Edit {
                                     const data: Object[] = [];
                                     data.push(args.data);
                                     this.updateRealDataSource(data as IGanttData, rowPosition);
-                                    this.parent.currentSelection = cAddedRecord[0].ganttProperties;
+                                    this.parent.currentSelection = cAddedRecord[0];
                                 }
                             }
                         } else {

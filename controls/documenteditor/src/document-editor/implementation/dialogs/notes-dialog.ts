@@ -64,9 +64,9 @@ export class NotesDialog {
         }) as HTMLSelectElement;
         numberFormatDiv.appendChild(formatType);
         this.notesList = new DropDownList({
-            enableRtl: isRtl, placeholder: localValue.getConstant('Start at'),
+            enableRtl: isRtl, placeholder: localValue.getConstant('Number format'),
             floatLabelType: 'Always',
-            htmlAttributes: { 'aria-labelledby': localValue.getConstant('Start at') }
+            htmlAttributes: { 'aria-labelledby': localValue.getConstant('Number format') }
         });
         this.notesList.appendTo(formatType);
         firstDiv.appendChild(numberFormatDiv);
@@ -79,11 +79,11 @@ export class NotesDialog {
             min: 1,
             max: 99999,
             enablePersistence: false,
-            placeholder: localValue.getConstant('Number format'),
+            placeholder: localValue.getConstant('Start at'),
             floatLabelType: 'Always'
         });
         this.startValueTextBox.appendTo(this.footCount);
-        this.footCount.setAttribute('aria-labelledby', localValue.getConstant('Number format'));
+        this.footCount.setAttribute('aria-labelledby', localValue.getConstant('Start at'));
     }
 
     /**

@@ -1691,6 +1691,10 @@ export class TaskbarEdit extends DateProcessor {
             }
             break;
         }
+        if(!isNullOrUndefined(this.taskBarEditRecord.ganttProperties.segments)){
+            this.parent.chartRowsModule.updateSegment(this.taskBarEditRecord.ganttProperties.segments,this.taskBarEditRecord.ganttProperties.taskId);
+
+        }
     }
     private updateChildDrag(item: ITaskData): void {
         const left: number = this.getRoundOffStartLeft(item, this.roundOffDuration);
@@ -2138,6 +2142,9 @@ export class TaskbarEdit extends DateProcessor {
             if (childProgressResizer && traceChildProgressBar && (this.taskBarEditAction === 'LeftResizing' || this.taskBarEditAction === 'RightResizing' || this.taskBarEditAction === 'ChildDrag' || this.taskBarEditAction === 'ParentDrag')) {
                 childProgressResizer.style.display = 'none';
                 traceChildProgressBar.style.display = 'none';
+            }
+            if(traceConnectorPointRight && this.taskBarEditAction === 'ProgressResizing'){
+                traceConnectorPointRight.style.display = 'none';
             }
             if (this.taskBarEditAction === 'MilestoneDrag' || item.isMilestone) {
                 taskBarMainContainer.style.setProperty(position, (this.parent.allowTaskbarDragAndDrop ? this.leftValue : (item.left - (width / 2))) + 'px');

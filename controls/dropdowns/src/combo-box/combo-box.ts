@@ -356,10 +356,41 @@ export class ComboBox extends DropDownList {
         value = this.allowObjectBinding && !isNullOrUndefined(value) ? getValue((this.fields.value) ? this.fields.value : '', value) : value;
         const inputValue: string = isNullOrUndefined(value) ? null : value.toString();
         Input.setValue(inputValue, this.inputElement, this.floatLabelType, this.showClearButton);
+        let changeData: { [key: string]: Object } = {};
         if(this.allowObjectBinding){
             value = this.getDataByValue(value as string | number | boolean);
+            if (isNullOrUndefined(value)) {
+                const fields: FieldSettingsModel = this.fields;
+                let isvalidTextField: boolean = false;
+                let isValidValue: boolean = false;
+                if (this.allowObjectBinding) {
+                    let keys: string[] = Object.keys(this.value);
+                    keys.forEach((key: string) => {
+                        if (key === fields.value) {
+                            isValidValue = true;
+                            return;
+                        }
+                    });
+                    keys.forEach((key: string) => {
+                        if (key === fields.text) {
+                            isvalidTextField = true;
+                            return;
+                        }
+                    });
+                }
+                changeData = {
+                    text: isValidValue ?  isvalidTextField ? getValue(fields.text, this.value) : getValue(fields.value, this.value) : null,
+                    value: isValidValue ? this.value : null,
+                    index: null
+                };
+            }
         }
-        this.setProperties({ value: value, text: value, index: null }, true);
+        if (this.allowObjectBinding) {
+            this.setProperties(changeData, true);
+        }
+        else {
+            this.setProperties({ value: value, text: value, index: null }, true);
+        }
         this.activeIndex = this.index;
         const fields: FieldSettingsModel = this.fields;
         const dataItem: { [key: string]: string | Object } = {};
@@ -896,7 +927,7 @@ export class ComboBox extends DropDownList {
                     this.onChangeEvent(e);
                 }
             }
-        } else if (this.allowCustom) {
+        } else if (this.allowCustom && this.isInteracted) {
             this.isSelectCustom = true;
         }
     }

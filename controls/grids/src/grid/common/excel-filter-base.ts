@@ -927,7 +927,8 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             if (isReactCompiler || isReactChild) {
                 (this.options.column as Column).getFilterTemplate()(data, this.parent, 'filterTemplate', tempID, null, null, valueDiv);
             } else {
-                const element: Element[] = (this.options.column as Column).getFilterTemplate()(data, this.parent, 'filterTemplate', tempID);
+                const element: Element[] = (this.options.column as Column).getFilterTemplate()(
+                    data, this.parent, 'filterTemplate', tempID, null, null, null, this.parent.root);
                 appendChildren(valueDiv, element);
             }
             if (isReactCompiler || isReactChild) {

@@ -5,8 +5,8 @@
 
     .e-list-item {
 
-      div.e-icons.e-icon-expandable::before,
-      div.e-icons.e-icon-collapsible::before {
+      div.e-icons:not(.e-icons-spinner).e-icon-expandable::before,
+      div.e-icons:not(.e-icons-spinner).e-icon-collapsible::before {
         content: '\e22f';
       }
     }

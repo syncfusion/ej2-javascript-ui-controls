@@ -282,13 +282,29 @@ export class PdfTreeGridCell {
         }
         else if (typeof this.value === 'string' || typeof this.remainingString === 'string') {
             let temp: string = null;
+            let customisedFont: PdfFont;
+            const newFont: PdfStandardFont = new PdfStandardFont(
+                this.style.fontFamily, this.style.fontSize, this.style.fontStyle);
+            if (this.style.fontSize || this.style.fontFamily) {
+                customisedFont = newFont;
+            }
+            else {
+                customisedFont = font;
+            }
+            let customisedBrush: PdfBrush;
+            if (this.style.fontBrush) {
+                customisedBrush = new PdfSolidBrush(this.style.fontBrush);
+            }
+            else {
+                customisedBrush = textBrush;
+            }
             if (this.finishedDrawingCell) {
                 temp = (this.remainingString === '') ? this.remainingString : this.value as string;
                 /* eslint-disable-next-line */
-                graphics.drawString(temp, font, textPen, textBrush, (innerLayoutArea.x + leftAdjustment), this.isHeaderCell ? innerLayoutArea.y - 16 : innerLayoutArea.y -3 , (innerLayoutArea.width - leftAdjustment - padding), (innerLayoutArea.height - padding), this.style.format);
+                graphics.drawString(temp, customisedFont, textPen, customisedBrush, (innerLayoutArea.x + leftAdjustment), this.isHeaderCell ? innerLayoutArea.y - 16 : innerLayoutArea.y - 3, (innerLayoutArea.width - leftAdjustment - padding), (innerLayoutArea.height - padding), this.style.format);
             } else {
                 /* eslint-disable-next-line */
-                graphics.drawString(this.remainingString, font, textPen, textBrush, (innerLayoutArea.x + leftAdjustment), this.isHeaderCell ? innerLayoutArea.y - 16 : innerLayoutArea.y, this.style.format);
+                graphics.drawString(this.remainingString, customisedFont, textPen, customisedBrush, (innerLayoutArea.x + leftAdjustment), this.isHeaderCell ? innerLayoutArea.y - 16 : innerLayoutArea.y, this.style.format);
             }
             result = graphics.stringLayoutResult;
         }

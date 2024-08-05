@@ -1330,8 +1330,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     protected preRender(): void {
         this.initializeValue();
-        this.onBlurHandler = this.blurHandler.bind(this);
-        this.onFocusHandler = this.focusHandler.bind(this);
         this.clickPoints = { clientX: 0, clientY: 0 };
         this.initialValue = this.value;
         this.serviceLocator = new ServiceLocator;
@@ -1991,7 +1989,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     this.inputElement.innerHTML = this.enterKey !== 'BR' ? '<' + this.enterKey + '><br></' + this.enterKey + '>' : '<br>';
                     this.isSelectAll = false;
                 }
-                if (selection.rangeCount > 0) {
+                if (selection.rangeCount > 0 && this.contentModule.getDocument().activeElement.tagName !== 'INPUT' && this.inputElement.contains(this.contentModule.getDocument().activeElement) ) {
                     selection.removeAllRanges();
                     selection.addRange(currentRange);
                 }
@@ -3600,6 +3598,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
     private wireEvents(): void {
+        this.onResizeHandler = this.resizeHandler.bind(this);
+        this.onBlurHandler = this.blurHandler.bind(this);
+        this.onFocusHandler = this.focusHandler.bind(this);
         this.element.addEventListener('focusin', this.onFocusHandler, true);
         this.element.addEventListener('focusout', this.onBlurHandler, true);
         this.on(events.contentChanged, this.contentChanged, this);
@@ -3654,7 +3655,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         EventHandler.add(this.inputElement, 'input', this.inputHandler, this);
         this.wireContextEvent();
         this.formatter.editorManager.observer.on(CONSTANT.KEY_DOWN_HANDLER, this.editorKeyDown, this);
-        this.onResizeHandler = this.resizeHandler.bind(this);
         this.element.ownerDocument.defaultView.addEventListener('resize', this.onResizeHandler, true);
         if (this.iframeSettings.enable) {
             EventHandler.add(this.inputElement, 'focusin', this.focusHandler, this);

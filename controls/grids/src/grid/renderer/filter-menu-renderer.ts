@@ -266,7 +266,8 @@ export class FilterMenuRenderer {
                 column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID, null, null, valueDiv);
                 this.parent.renderTemplates();
             } else {
-                const compElement: Element[] = column.getFilterTemplate()(fltrData, this.parent, 'filterTemplate', tempID);
+                const compElement: Element[] = column.getFilterTemplate()(
+                    fltrData, this.parent, 'filterTemplate', tempID, null, null, null, this.parent.root);
                 appendChildren(valueDiv, compElement);
             }
             if (this.isMenuCheck) {

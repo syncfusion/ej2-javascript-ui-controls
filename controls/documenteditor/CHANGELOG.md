@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 26.2.8 (2024-08-06)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I616045` - Resolved the endnote format is not applied and label mismatch in note property dialog.
+- `#I595112` - Resolved the copy pasting issue while pasting the content as destination format.
+- `#I597283` - Resolved the issues with bookmarks in Document Editor.
+- `#I610080` - Resolved the revision split issue when inserting comment on deleted content.
+- `#I607949` - Resolved the table row alignment issue when opening a document in editor
+- `#I610857` - Resolved the issue that footnote is inserted but cannot be edited in protection enabled document.
+- `#I613938` - Resolved the Editor formatting getting corrupted issue.
+
 ## 26.2.7 (2024-07-30)
 
 ### DocumentEditor
