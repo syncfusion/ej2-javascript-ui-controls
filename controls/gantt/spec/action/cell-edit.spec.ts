@@ -4,7 +4,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
  * Gantt taskbaredit spec
  */
 import {Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport } from '../../src/index';
-import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData, projectData,resourceData, editingData, customSelfReferenceData, autoDateCalculate, customZoomingdata, parentProgressData, virtualData, virtualData1, resourcesDatas, splitTasksData, coverageData, taskModeData, resourceCollection, cR885322, cellEditData1, dataSource1, splitTasksDataRelease, releaseVirtualData, crValidateIssue,unscheduledData1, Data893564, actionFailureData} from '../base/data-source.spec';
+import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData, projectData,resourceData, editingData, customSelfReferenceData, autoDateCalculate, customZoomingdata, parentProgressData, virtualData, virtualData1, resourcesDatas, splitTasksData, coverageData, taskModeData, resourceCollection, cR885322, cellEditData1, dataSource1, splitTasksDataRelease, releaseVirtualData, crValidateIssue,unscheduledData1, Data893564, actionFailureData, CR898960} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent, getKeyUpObj } from '../base/gantt-util.spec';
 import { DatePickerEditCell } from '@syncfusion/ej2-grids';
 import { Input } from '@syncfusion/ej2-inputs';
@@ -5238,6 +5238,321 @@ describe('Dependency offset value not updating properly with unscheduled tasks S
     });
     it('updating properly with unscheduled tasks offset value SF', () => {
         expect(ganttObj.getFormatedDate(ganttObj.currentViewData[1].ganttProperties.startDate,'MM/dd/yyyy')).toBe('07/10/2024');   
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('Console error occurs when connecting predecessor with decimal task Id', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: [
+                    {
+                        TaskID: '1',
+            
+                        TaskName: 'Project Initiation',
+            
+                        StartDate: new Date('2024-04-01T18:30:00.000Z'),
+            
+                        Description: 'desc',
+            
+                        Duration: 3,
+            
+                        employees: 'John',
+            
+                        contractors: 'John',
+            
+                        BaselineStartDate: new Date('2024-04-01T18:30:00.000Z'),
+            
+                        BaselineEndDate: new Date('2024-04-01T18:30:00.000Z'),
+            
+                        BaselineDuration: 4,
+            
+                        Progress: 10,
+            
+                        Predecessor: '',
+            
+                        subtasks: [
+                            {
+                                TaskID: '1.1',
+            
+                                TaskName: 'Project Design',
+            
+                                StartDate: new Date('2024-04-01T18:30:00.000Z'),
+            
+                                Description: 'desc',
+            
+                                Duration: 3,
+            
+                                BaselineStartDate: new Date('2024-04-01T18:30:00.000Z'),
+            
+                                BaselineEndDate: new Date('2024-04-01T18:30:00.000Z'),
+            
+                                BaselineDuration: 4,
+            
+                                Progress: 10,
+            
+                                Predecessor: '',
+            
+                                subtasks: [],
+                            },
+            
+                            {
+                                TaskID: '1.2',
+            
+                                TaskName: 'Project Design review',
+            
+                                StartDate: new Date('2024-04-01T18:30:00.000Z'),
+            
+                                Description: 'desc review',
+            
+                                Duration: 3,
+            
+                                BaselineStartDate: new Date('2024-04-01T18:30:00.000Z'),
+            
+                                BaselineEndDate: new Date('2024-04-01T18:30:00.000Z'),
+            
+                                BaselineDuration: 4,
+            
+                                Progress: 10,
+            
+                                Predecessor: '',
+            
+                                subtasks: [],
+                            },
+                        ],
+                    },
+            
+                    {
+                        TaskID: '2',
+            
+                        TaskName: 'LLD Initiation',
+            
+                        StartDate: new Date('2024-04-01T18:30:00.000Z'),
+            
+                        Description: 'desc',
+            
+                        Duration: 3,
+            
+                        BaselineStartDate: new Date('2024-04-01T18:30:00.000Z'),
+            
+                        BaselineEndDate: new Date('2024-04-01T18:30:00.000Z'),
+            
+                        BaselineDuration: 4,
+            
+                        Progress: 10,
+            
+                        Predecessor: '',
+            
+                        subtasks: [
+                            {
+                                TaskID: '2.1',
+            
+                                TaskName: 'HoV - New Task 4',
+            
+                                Description: 'HLD',
+            
+                                StartDate: new Date('2024-07-12T00:00:00.000Z'),
+            
+                                Progress: 0,
+            
+                                Duration: 1,
+            
+                                BaselineStartDate: new Date('2024-07-17T02:30:00.000Z'),
+            
+                                BaselineDuration: 2,
+            
+                                BaselineEndDate: new Date('2024-07-19T02:30:00.000Z'),
+            
+                                Predecessor: '',
+                            },
+                        ],
+                    },
+                ],
+                dateFormat: 'MMM dd, y',
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    notes: 'info',
+                    // resourceInfo: 'resources',
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true,
+                },
+                toolbar: [
+                    'Add',
+                    'Edit',
+                    'Update',
+                    'Delete',
+                    'Cancel',
+                    'ExpandAll',
+                    'CollapseAll',
+                    'Indent',
+                    'Outdent',
+                ],
+                allowSelection: true,
+                gridLines: 'Both',
+                height: '450px',
+                treeColumnIndex: 1,
+                //   resourceFields: {
+                //     id: 'resourceId',
+                //     name: 'resourceName',
+                //   },
+                //   resources: editingResources,
+                highlightWeekends: true,
+                timelineSettings: {
+                    topTier: {
+                        unit: 'Week',
+                        format: 'MMM dd, y',
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                    },
+                },
+                columns: [
+                    { field: 'TaskID', width: 80 },
+                    {
+                        field: 'TaskName',
+                        headerText: 'Job Name',
+                        width: '250',
+                        clipMode: 'EllipsisWithTooltip',
+                    },
+                    { field: 'StartDate' },
+                    { field: 'Duration' },
+                    { field: 'Progress' },
+                    { field: 'Predecessor' },
+                ],
+                eventMarkers: [
+                    { day: '4/17/2024', label: 'Project approval and kick-off' },
+                    { day: '5/3/2024', label: 'Foundation inspection' },
+                    { day: '6/7/2024', label: 'Site manager inspection' },
+                    { day: '7/16/2024', label: 'Property handover and sign-off' },
+                ],
+                labelSettings: {
+                    leftLabel: 'TaskName',
+                    rightLabel: 'resources',
+                },
+                editDialogFields: [
+                    { type: 'General', headerText: 'General' },
+                    { type: 'Dependency' },
+                    { type: 'Resources' },
+                    { type: 'Notes' },
+                ],
+                splitterSettings: {
+                    position: '35%',
+                },
+                projectStartDate: new Date('03/25/2024'),
+                projectEndDate: new Date('07/28/2024'),
+            }, done);
+    });
+    it('update  predecessor with decimal task Id', () => {
+        let endDateColumn: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(6)') as HTMLElement;
+        triggerMouseEvent(endDateColumn, 'dblclick');
+        let input: any = (<EJ2Instance>document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor')).ej2_instances[0];
+        input.value = '1.1SS';
+        input.dataBind();
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
+        expect(ganttObj.currentViewData[2].ganttProperties.predecessorsName).toBe('1.1 SS');
+    
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('CR-898960: Milestone endDate not properly validating when convert to task', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: CR898960,
+                taskFields: {
+                    id: 'TaskId',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration'
+                },
+                actionBegin(args) {
+                    if (args.requestType === "beforeSave" && args.data.ActualEndDate) {
+                        args.data.ganttProperties.endDate = args.data.ActualEndDate;
+                        args.data.EndDate = args.data.ActualEndDate;
+                        args.data.taskData.EndDate = args.data.ActualEndDate;
+                    }
+                },
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskId', width: 75 },
+                    { field: 'TaskName', width: 80 },
+                    { field: 'StartDate', width: 120 },
+                    { field: 'EndDate', width: 120 },
+                    { field: 'Duration', width: 90 },
+                    { field: 'ActualStartDate', width: 120, editType:'datepickeredit' },
+                    { field: 'ActualEndDate', width: 120, editType:'datepickeredit' }
+                ],
+                splitterSettings: {
+                    columnIndex: 8
+                },
+                toolbar: [{ text: 'Insert task', tooltipText: 'Insert task at top', id: 'toolbarAdd', prefixIcon: 'e-add-icon tb-icons' }, 'Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',],
+                allowSelection: true,
+                allowFiltering: true,
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                allowResizing: true,
+                readOnly: false,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                allowUnscheduledTasks: true,
+                projectStartDate: new Date('03/25/2019'),
+                projectEndDate: new Date('05/30/2019'),
+            }, done);
+    });
+    it('Updating Gantt Enddate with custom column date', (done: Function) => {
+        ganttObj.actionBegin = (args: any): void => {
+            if (args.requestType === "beforeSave") {
+                args.data.ganttProperties.endDate = args.data.ActualEndDate;
+                args.data.EndDate = args.data.ActualEndDate;
+                args.data.taskData.EndDate = args.data.ActualEndDate;
+            }
+        }
+        ganttObj.actionComplete = (args: any): void => {
+            if (args.type === 'save' && !isNullOrUndefined(ganttObj.currentViewData[0].ganttProperties.endDate)) {
+                expect(ganttObj.getFormatedDate(ganttObj.currentViewData[0].ganttProperties.endDate, 'M/d/yyyy')).toBe('4/5/2019');
+                expect(ganttObj.currentViewData[0].ganttProperties.isMilestone).toBe(false);
+                done();
+            }
+        }
+        let actualEndDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(7)') as HTMLElement;
+        triggerMouseEvent(actualEndDate, 'dblclick');
+        let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolActualEndDate') as any).ej2_instances[0];
+        input.value = new Date('4/5/2019');
+        input.dataBind();
+        let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(2)') as HTMLElement;
+        triggerMouseEvent(element, 'click');
     });
     afterAll(() => {
         if (ganttObj) {

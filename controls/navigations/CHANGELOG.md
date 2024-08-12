@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.2.8 (2024-08-06)
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I897592` - The issue with "Context menu reopens after selecting options quickly" has been resolved.
+
 ## 26.2.7 (2024-07-30)
 
 ### TreeView

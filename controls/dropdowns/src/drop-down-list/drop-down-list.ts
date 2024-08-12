@@ -3689,8 +3689,10 @@ export class DropDownList extends DropDownBase implements IInput {
     protected checkData(newProp?: DropDownListModel): void {
         if (newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource)) && this.itemTemplate && this.allowFiltering &&
             !(this.isListSearched && (newProp.dataSource instanceof DataManager))) {
-            if (this.list) {
+            if (this.list && !((this as any).isReact)) {
                 this.list.innerHTML = '';
+            } else {
+                this.list = null;
             }
             this.actionCompleteData = { ulElement: null, list: null, isUpdated: false };
         }

@@ -106,6 +106,11 @@ export class Selection {
     private htmlContent: string = undefined;
     /**
      * @private
+     * This will holds the selection sfdt content to set data in clipboard. Avoid to use this field for other purpose.
+     */
+    private sfdtContent: string = undefined;
+    /**
+     * @private
      */
     public isEndOffset: boolean = false;
     /**
@@ -9837,6 +9842,7 @@ export class Selection {
      */
     public getHtmlContent(): string {
         let documentContent: any = this.writeSfdt();
+        this.sfdtContent = JSON.stringify(documentContent);
         if (this.owner.editorModule) {
             this.owner.editorModule.copiedData = JSON.stringify(documentContent);
         }
@@ -9845,16 +9851,6 @@ export class Selection {
     }
 
     private copyToClipboard(htmlContent?: string): boolean {
-        let isCopied: boolean = false;
-        if (!isNullOrUndefined(htmlContent)) {
-            isCopied = this.copyExecCommand(htmlContent);
-        } else {
-            isCopied = document.execCommand('copy');
-        }
-        return isCopied;
-    }
-
-    private copyExecCommand(htmlContent: string): boolean {
         window.getSelection().removeAllRanges();
         //Skip the copy operation Using shadow DOM if it is mobile device or IE browser.
         let isSafariOnMac = (navigator.vendor && navigator.vendor.indexOf('Apple') > -1 &&
@@ -9868,7 +9864,11 @@ export class Selection {
         div.style.left = '-10000px';
         div.style.top = '-10000px';
         div.style.position = 'relative';
-        div.innerHTML = htmlContent;
+        if (!isNullOrUndefined(htmlContent)) {
+            div.innerHTML = htmlContent;
+        } else if (isSafariOnMac) {
+            div.innerText = 'copy';
+        }
         if (!isMobileDeviceOrInternetExplorer) {
             shadowRoot = document.createElement('div');
             let shadowDOM = shadowRoot.attachShadow({ mode: 'open' });
@@ -9907,7 +9907,9 @@ export class Selection {
             event.clipboardData.clearData();
             event.clipboardData.setData('text/html', this.htmlContent);
             event.clipboardData.setData('text/plain', this.text);
+            event.clipboardData.setData('application/json', JSON.stringify(this.sfdtContent));
             this.htmlContent = undefined;
+            this.sfdtContent = undefined;
         }
     }
     // Caret implementation starts

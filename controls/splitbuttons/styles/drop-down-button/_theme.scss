@@ -28,6 +28,12 @@
             background: $drop-down-btn-li-bgcolor;
           }
           color: $drop-down-btn-li-selection-font-color;
+          & .e-menu-icon,
+          & .e-menu-url {
+            @if $skin-name == 'fluent2' {
+              color: $drop-down-btn-li-selection-font-color;
+            }
+          }
         }
 
         &:active,

@@ -3279,7 +3279,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
             this.preventDefaultResize(e);
             this.trigger('focus', { event: e, isInteracted: Object.keys(e).length === 0 ? false : true });
-            if (!isNOU(this.saveInterval) && this.saveInterval > 0 && !this.autoSaveOnIdle) {
+            if (!isNOU(this.saveInterval) && this.saveInterval > 0 && !this.autoSaveOnIdle && isNOU(this.timeInterval)) {
                 this.timeInterval = setInterval(this.updateValueOnIdle.bind(this), this.saveInterval);
             }
             EventHandler.add(document, 'mousedown', this.onDocumentClick, this);

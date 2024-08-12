@@ -253,8 +253,23 @@ export class SfdtExport {
                     section = this.document[sectionsProperty[this.keywordIndex]][this.document[sectionsProperty[this.keywordIndex]].length - 1];
                 }
                 while (nextBlock) {
+                    if (nextBlock.containerWidget.index !== lastBlock.containerWidget.index) {
+                        let section: any = this.createSection(nextBlock.containerWidget as BlockContainer);
+                        this.document[sectionsProperty[this.keywordIndex]].push(section);
+                        let paragraph: any = this.createParagraph(nextBlock as ParagraphWidget);
+                        section[blocksProperty[this.keywordIndex]].push(paragraph);
+                        lastBlock = nextBlock;
+                        nextBlock = this.writeParagraph(lastBlock as ParagraphWidget,  paragraph, section[blocksProperty[this.keywordIndex]], line.indexInOwner, startOffset);
+                    }
+                    if (lastBlock.nextSplitWidget && nextBlock.containerWidget.index !== lastBlock.containerWidget.index) {
+                        continue;
+                    }
+                    let blockIndex = isNullOrUndefined(nextBlock) ? 0 : nextBlock.containerWidget.index === lastBlock.containerWidget.index ?lastBlock.containerWidget.index : nextBlock.containerWidget.index;
+                    if(this.owner.editor.isPaste){
+                        blockIndex = 0;
+                    }
                     lastBlock = nextBlock;
-                    nextBlock = this.writeBlock(nextBlock, 0, section[blocksProperty[this.keywordIndex]]);
+                    nextBlock = this.writeBlock(nextBlock, 0,  this.document[sectionsProperty[this.keywordIndex]][blockIndex][blocksProperty[this.keywordIndex]]);
                     if (this.isPartialExport && isNullOrUndefined(nextBlock)) {
                         nextBlock = this.getNextBlock(nextBlock, lastBlock);
                         section = this.document[sectionsProperty[this.keywordIndex]][this.document[sectionsProperty[this.keywordIndex]].length - 1];
@@ -286,8 +301,23 @@ export class SfdtExport {
                     section = this.document[sectionsProperty[this.keywordIndex]][this.document[sectionsProperty[this.keywordIndex]].length - 1];
                 }
                 while (nextBlock) {
+                    if (nextBlock.containerWidget.index !== lastBlock.containerWidget.index) {
+                        let section: any = this.createSection(nextBlock.containerWidget as BlockContainer);
+                        this.document[sectionsProperty[this.keywordIndex]].push(section);
+                        let paragraph: any = this.createParagraph(nextBlock as ParagraphWidget);
+                        section[blocksProperty[this.keywordIndex]].push(paragraph);
+                        lastBlock = nextBlock;
+                        nextBlock = this.writeParagraph(lastBlock as ParagraphWidget,  paragraph, section[blocksProperty[this.keywordIndex]], line.indexInOwner, startOffset);
+                    }
+                    if (lastBlock.nextSplitWidget && nextBlock.containerWidget.index !== lastBlock.containerWidget.index) {
+                        continue;
+                    }
+                    let blockIndex = isNullOrUndefined(nextBlock) ? 0 : nextBlock.containerWidget.index === lastBlock.containerWidget.index ?lastBlock.containerWidget.index : nextBlock.containerWidget.index;
+                    if(this.owner.editor.isPaste){
+                        blockIndex = 0;
+                    }
                     lastBlock = nextBlock;
-                    nextBlock = this.writeBlock(nextBlock, 0, section[blocksProperty[this.keywordIndex]]);
+                    nextBlock = this.writeBlock(nextBlock, 0,  this.document[sectionsProperty[this.keywordIndex]][blockIndex][blocksProperty[this.keywordIndex]]);
                     if (this.isPartialExport) {
                         nextBlock = this.getNextBlock(nextBlock, lastBlock);
                         section = this.document[sectionsProperty[this.keywordIndex]][this.document[sectionsProperty[this.keywordIndex]].length - 1];
@@ -764,8 +794,8 @@ export class SfdtExport {
         let next: BlockWidget = paragraphWidget;
         while (next instanceof ParagraphWidget) {
             if (this.writeLines(next, lineIndex, start, paragraph[inlinesProperty[this.keywordIndex]])) {
-                if (this.endLine === next.lastChild && this.endOffset === this.owner.selection.getLineLength(next.lastChild as LineWidget) + 1) {
-                   blocks.push(this.createParagraph(next));
+                if (this.endLine === next.lastChild && this.endOffset === this.owner.selection.getLineLength(next.lastChild as LineWidget) + 1 && next.paragraphFormat.listFormat.listId === -1) {
+                    blocks.push(this.createParagraph(next));
                 }
                 return undefined;
             }

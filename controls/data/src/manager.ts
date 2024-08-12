@@ -21,6 +21,8 @@ export class DataManager {
     public timeZoneHandling: boolean = true;
     /** @hidden */
     public ready: Promise<Response>;
+    /** @hidden */
+    public get moduleName(): string { return 'datamanager' };
     private isDataAvailable: boolean;
     private persistQuery: object = {};
     private isInitialLoad: boolean = false;

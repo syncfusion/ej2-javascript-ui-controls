@@ -733,7 +733,7 @@ export class RowDD {
             this.canDrop = false;
             this.addErrorElem();
         }
-        if (!tObj.rowDropSettings.targetID && this.canDrop) {
+        if (!tObj.rowDropSettings.targetID && this.canDrop && !isNullOrUndefined(args.rows[0])) {
             tObj.rowDragAndDropModule.updateIcon(args.rows, rowIdx, args);
         }
         if (isNullOrUndefined(tObj.rowDropSettings.targetID) && !this.canDrop) {

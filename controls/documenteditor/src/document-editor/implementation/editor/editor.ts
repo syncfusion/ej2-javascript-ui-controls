@@ -32,7 +32,7 @@ import {
     LineSpacingType, TextAlignment, ListLevelPattern, RowPlacement, ColumnPlacement,
     FollowCharacterType, HeaderFooterType, TrackChangeEventArgs, protectionTypeChangeEvent, imagesProperty, abstractListIdProperty,
     ContentControlInfo,
-    CommentProperties, Comment
+    CommentProperties, Comment, breakCodeProperty
 } from '../../base/index';
 import { SelectionCharacterFormat, SelectionParagraphFormat } from '../index';
 import { Action } from '../../index';
@@ -4494,7 +4494,7 @@ export class Editor {
             this.updateInsertPosition();
             return undefined;
         }
-        if (!isNullOrUndefined(sectionFormat) && sectionFormat.numberOfColumns > 1) {
+        if (!isNullOrUndefined(sectionFormat)) {
             newSectionFormat = sectionFormat;
         } else {
             newSectionFormat = this.selection.start.paragraph.bodyWidget.sectionFormat.cloneFormat();
@@ -4567,6 +4567,7 @@ export class Editor {
      */
     public splitBodyWidget(bodyWidget: BodyWidget, sectionFormat: WSectionFormat, startBlock: BlockWidget, sectionBreakContinuous?: boolean, sectionBreakNewPage?: boolean): BodyWidget {
         //let sectionIndex: number;
+        let isUpdated: boolean = true;
         //Move blocks after the start block to next body widget
         let newBodyWidget: BodyWidget = this.documentHelper.layout.moveBlocksToNextPage(startBlock, true, undefined, sectionBreakContinuous);
         if (this.editorHistory.isUndoing || (this.editorHistory.isRedoing && !isNullOrUndefined(sectionFormat.ownerBase))) {
@@ -4592,26 +4593,33 @@ export class Editor {
 
             newBodyWidget = temp_NewBody;
             newBodyWidget.sectionFormat = new WSectionFormat(newBodyWidget);
-            this.viewer.owner.parser.parseSectionFormat(0, bodyWidget.sectionFormat, newBodyWidget.sectionFormat);
+            if (sectionFormat.numberOfColumns > 1) {
+                this.viewer.owner.parser.parseSectionFormat(0, bodyWidget.sectionFormat, newBodyWidget.sectionFormat);
+                isUpdated = false;
+            }
             newBodyWidget.sectionFormat.breakCode = 'NewPage';
         }
         //Update SectionIndex for splitted body widget
         if (sectionBreakContinuous) {
-            if (sectionFormat.numberOfColumns > 1) {
+            if (sectionFormat.numberOfColumns > 1 && isUpdated) {
                 newBodyWidget.sectionFormat = sectionFormat;
+                this.viewer.owner.parser.parseSectionFormat(0, bodyWidget.sectionFormat, newBodyWidget.sectionFormat);
             } else {
                 newBodyWidget.sectionFormat = new WSectionFormat(newBodyWidget);
+                if (sectionFormat.numberOfColumns > 1 || (!isNullOrUndefined(bodyWidget.page) && !isNullOrUndefined(bodyWidget.page.nextPage) && this.documentHelper.getPageWidth(bodyWidget.page) !== this.documentHelper.getPageWidth(bodyWidget.page.nextPage))) {
+                    this.viewer.owner.parser.parseSectionFormat(0, bodyWidget.sectionFormat, newBodyWidget.sectionFormat);
+                }
             }
-            this.viewer.owner.parser.parseSectionFormat(0, bodyWidget.sectionFormat, newBodyWidget.sectionFormat);
             newBodyWidget.sectionFormat.breakCode = 'NoBreak';
         }
         if (sectionBreakNewPage) {
-            if (sectionFormat.numberOfColumns > 1) {
+            if (sectionFormat.numberOfColumns > 1 && isUpdated) {
                 newBodyWidget.sectionFormat = sectionFormat;
+                this.viewer.owner.parser.parseSectionFormat(0, bodyWidget.sectionFormat, newBodyWidget.sectionFormat);
             } else {
                 newBodyWidget.sectionFormat = new WSectionFormat(newBodyWidget);
+                this.viewer.owner.parser.parseSectionFormat(0, bodyWidget.sectionFormat, newBodyWidget.sectionFormat);
             }
-            this.viewer.owner.parser.parseSectionFormat(0, bodyWidget.sectionFormat, newBodyWidget.sectionFormat);
             newBodyWidget.sectionFormat.breakCode = 'NewPage';
         }
         this.updateSectionIndex(newBodyWidget.sectionFormat, newBodyWidget, true);
@@ -5672,7 +5680,7 @@ export class Editor {
         offset = fieldBegin.fieldEnd.line.getOffset(fieldBegin.fieldEnd, 1);
         selection.end.setPositionParagraph(fieldBegin.fieldEnd.line, offset);
         this.skipFieldDeleteTracking = true;
-        this.deleteSelectedContents(selection, false);
+        this.deleteSelectedContents(selection, true);
         if (!isNestedField && fieldResult !== displayText || isNullOrUndefined(fieldSeparator)) {
             this.insertHyperlinkByFormat(selection, url, displayText, format, isBookmark);
             this.skipFieldDeleteTracking = false;
@@ -5965,10 +5973,12 @@ export class Editor {
             let textContent: string = '';
             let htmlContent: string = '';
             let rtfContent: string = '';
+            let sfdtContent: string = '';
             let clipbordData: DataTransfer = pasteWindow.clipboardData ? pasteWindow.clipboardData : event.clipboardData;
             if (Browser.info.name !== 'msie') {
                 rtfContent = clipbordData.getData('Text/Rtf');
                 htmlContent = clipbordData.getData('Text/Html');
+                sfdtContent = clipbordData.getData('application/json');
             }
             this.copiedTextContent = textContent = HelperMethods.sanitizeString(clipbordData.getData('Text'));
 
@@ -5980,7 +5990,9 @@ export class Editor {
                 htmlContent = '';
                 rtfContent = '';
             }
-            if (rtfContent !== '') {
+            if (sfdtContent !== '') {
+                this.pasteFormattedContent({ data: JSON.parse(sfdtContent) });
+            } else if (rtfContent !== '') {
                 this.pasteAjax(rtfContent, '.rtf');
             } else if (htmlContent !== '') {
                 this.isHtmlPaste = true;
@@ -6471,7 +6483,10 @@ export class Editor {
                     }
                 }
                 parser.parseBody(pasteContent[sectionsProperty[this.keywordIndex]][i][blocksProperty[this.keywordIndex]], bodyWidget.childWidgets as BlockWidget[], undefined, undefined, undefined, pasteContent[stylesProperty[this.keywordIndex]]);
-                if (pasteContent[lastParagraphMarkCopiedProperty[this.keywordIndex]] && this.selection.start.paragraph.isEmpty() && this.documentHelper.pages.length == 1 && this.documentHelper.pages[0].bodyWidgets[0].childWidgets.length == 1 || pasteContent[sectionsProperty[this.keywordIndex]][i][sectionFormatProperty[this.keywordIndex]][numberOfColumnsProperty[this.keywordIndex]] > 1) {
+                if (((pasteContent[lastParagraphMarkCopiedProperty[this.keywordIndex]] || this.owner.enableLocalPaste) && this.selection.start.paragraph.isEmpty() && this.documentHelper.pages.length == 1 && this.documentHelper.pages[0].bodyWidgets[0].childWidgets.length == 1)
+                    || (pasteContent[sectionsProperty[this.keywordIndex]][i][sectionFormatProperty[this.keywordIndex]]
+                        && pasteContent[sectionsProperty[this.keywordIndex]][i][sectionFormatProperty[this.keywordIndex]][numberOfColumnsProperty[this.keywordIndex]] > 1) || (pasteContent[sectionsProperty[this.keywordIndex]][i][sectionFormatProperty[this.keywordIndex]]
+                            && pasteContent[sectionsProperty[this.keywordIndex]][i][sectionFormatProperty[this.keywordIndex]][breakCodeProperty[this.keywordIndex]] === 'NoBreak')) {
                     parser.parseSectionFormat(this.keywordIndex, pasteContent[sectionsProperty[this.keywordIndex]][i][sectionFormatProperty[this.keywordIndex]], bodyWidget.sectionFormat);
                 }
                 parser.isPaste = false;
@@ -9726,6 +9741,7 @@ export class Editor {
         if (isNullOrUndefined(this.documentHelper.blockToShift)) {
             this.documentHelper.removeEmptyPages();
             this.documentHelper.layout.updateFieldElements();
+            this.documentHelper.layout.checkAndShiftEndnote();
             /*  if (!isNullOrUndefined(selection.start.paragraph.bodyWidget.page.footnoteWidget)) {
                   let foot: FootNoteWidget = selection.start.paragraph.bodyWidget.page.footnoteWidget;
                   //this.documentHelper.layout.layoutfootNote(foot);
@@ -14083,13 +14099,19 @@ export class Editor {
         let startPos: TextPosition = this.selection.isForward ? this.selection.start : this.selection.end;
         let endPos: TextPosition = this.selection.isForward ? this.selection.end : this.selection.start;
         if (startPos.paragraph.isInsideTable) {
+            let startPosition: TextPosition = this.selection.start.clone();
+            let endPosition: TextPosition = this.selection.end.clone();
             this.selection.selectColumn();
             let commentStart: CommentCharacterElementBox[] = [];
             this.selection.owner.isShiftingEnabled = true;
             if (this.checkIsNotRedoing()) {
                 commentStart = this.checkAndRemoveComments();
+                this.selection.start.setPositionInternal(startPosition);
+                this.selection.end.setPositionInternal(endPosition);
                 this.initHistory('DeleteColumn');
             }
+            this.selection.start.setPositionInternal(startPosition);
+            this.selection.end.setPositionInternal(endPosition);
             let startCell: TableCellWidget = this.getOwnerCell(this.selection.isForward);
             let endCell: TableCellWidget = this.getOwnerCell(!this.selection.isForward);
             let table: TableWidget = startCell.ownerTable.combineWidget(this.owner.viewer) as TableWidget;
@@ -22896,10 +22918,36 @@ export class Editor {
             }
             this.insertImageAsync(value);
         } else {
-            if (reset) {
-                value = 'Click here or tap to insert text';
+            if (reset || isNullOrUndefined(value) || value === '') {
+                value = contentControl.contentControlProperties.type === 'Date' ? 'Click or tap to enter Date.' : 'Click or tap here to enter text.';
             }
-            this.insertText(value);
+            if (contentControl.contentControlProperties.type === 'RichText') {
+                try {
+                    if (typeof value !== 'object') {
+                        value = JSON.parse(value as string);
+                    }
+                } catch (e) {
+                    let sfdt = {
+                        "sections": [
+                            {
+                                "blocks": [
+                                    {
+                                        "inlines": [
+                                            {
+                                                "text": value as string
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    };
+                    value = JSON.stringify(sfdt);
+                }
+                this.paste(value);
+            } else {
+                this.insertText(value);
+            }
         }
     }
 

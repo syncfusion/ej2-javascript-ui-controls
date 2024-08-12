@@ -1058,7 +1058,7 @@ export class ConnectorLine {
      * @private
      */
     public removeConnectorLineById(id: string): void {
-        const element: Element = this.parent.connectorLineModule.dependencyViewContainer.querySelector('#ConnectorLine' + id);
+        const element: Element = this.parent.connectorLineModule.dependencyViewContainer.querySelector('#ConnectorLine' + id.replace(/([\.])/g, '\\$1'));
         if (!isNullOrUndefined(element)) {
             remove(element);
         }

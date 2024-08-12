@@ -1963,9 +1963,10 @@ export class WordExport {
     //Serialize Revision end
     private serializeRevisionEnd(writer: XmlWriter, item: any, previousNode: any): void {
         if (item.hasOwnProperty(revisionIdsProperty[this.keywordIndex])) {
-            if (!isNullOrUndefined(previousNode) && previousNode.hasOwnProperty(fieldTypeProperty[this.keywordIndex]) && (previousNode[fieldTypeProperty[this.keywordIndex]] === 0 && item[textProperty[this.keywordIndex]].indexOf('TOC') >= 0)) {
-                return;
-            }
+            // Commnt the below code for the issue "Bug 899350: Resolve issues when exporting documents with TOC revisions."
+            // if (!isNullOrUndefined(previousNode) && previousNode.hasOwnProperty(fieldTypeProperty[this.keywordIndex]) && (previousNode[fieldTypeProperty[this.keywordIndex]] === 0 && item[textProperty[this.keywordIndex]].indexOf('TOC') >= 0)) {
+            //     return;
+            // }
             for (let i: number = 0; i < item[revisionIdsProperty[this.keywordIndex]].length; i++) {
                 const revision: Revision = this.retrieveRevision(item[revisionIdsProperty[this.keywordIndex]][i]);
                 if (revision.revisionType === 'Insertion' || revision.revisionType === 'Deletion') {

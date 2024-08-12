@@ -1816,8 +1816,11 @@ export class Group implements IAction {
             for (let k: number = 0; k < row.columns.length; k++) {
                 let aggr: Object = {};
                 const type: string | AggregateType[] = row.columns[parseInt(k.toString(), 10)].type.toString();
-                aggr = { type: type.toLowerCase(), field: row.columns[parseInt(k.toString(), 10)].field };
-                aggregates.push(aggr);
+                const types: string[] = type.split(',').map((t: string) => t.trim());
+                for (const aggregateType of types) {
+                    aggr = { type: aggregateType.toLowerCase(), field: row.columns[parseInt(k.toString(), 10)].field };
+                    aggregates.push(aggr);
+                }
             }
         }
         let result: Object[];

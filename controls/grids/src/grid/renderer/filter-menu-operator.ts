@@ -51,7 +51,6 @@ export class FlMenuOptrUI {
     public renderOperatorUI(dlgConetntEle: Element, target: Element, column: Column, dlgObj: Dialog, operator?: { [key: string]: Object }[]): void {
         this.dialogObj = dlgObj;
         const optr: string = column.type + 'Operator';
-        const isFilterTemplate = column.filterTemplate;
         this.optrData = this.customOptr = !isNullOrUndefined(operator) ? operator :
             (!isNullOrUndefined(this.parent.filterSettings.operators) && !isNullOrUndefined(this.parent.filterSettings.operators[`${optr}`])) ?
                 this.parent.filterSettings.operators[`${optr}`] : this.customFilterOperators[`${optr}`];
@@ -70,19 +69,17 @@ export class FlMenuOptrUI {
             // eslint-disable-next-line @typescript-eslint/tslint/config
             change: function() {
                 const valInput: HTMLInputElement = document.querySelector('.e-flmenu-valuediv').querySelector('input');
-                if (!isFilterTemplate && !isNullOrUndefined(valInput['ej2_instances'])  ) {
-                    if ((this as DropDownList).value === 'isempty' || (this as DropDownList).value === 'isnotempty' ||
-                        (this as DropDownList).value === 'isnotnull' || (this as DropDownList).value === 'isnull') {
-                        valInput['ej2_instances'][0]['enabled'] = false;
-                    } else if (!isNullOrUndefined(valInput.getAttribute('disabled'))) {
-                        valInput['ej2_instances'][0]['enabled'] = true;
-                    }
-                }
-                else {
-                    if ((this as DropDownList).value === 'isempty' || (this as DropDownList).value === 'isnotempty' ||
-                        (this as DropDownList).value === 'isnotnull' || (this as DropDownList).value === 'isnull') {
+                if ((this as DropDownList).value === 'isempty' || (this as DropDownList).value === 'isnotempty' ||
+                    (this as DropDownList).value === 'isnotnull' || (this as DropDownList).value === 'isnull') {
+                    if (!isNullOrUndefined(valInput['ej2_instances'])) {
+                        valInput['ej2_instances'][0]['enabled'] = false ;
+                    } else {
                         valInput.setAttribute('disabled', 'true');
-                    } else if (!isNullOrUndefined(valInput.getAttribute('disabled'))) {
+                    }
+                } else if (!isNullOrUndefined(valInput.getAttribute('disabled'))) {
+                    if (!isNullOrUndefined(valInput['ej2_instances'])) {
+                        valInput['ej2_instances'][0]['enabled'] = true ;
+                    } else {
                         valInput.removeAttribute('disabled');
                     }
                 }

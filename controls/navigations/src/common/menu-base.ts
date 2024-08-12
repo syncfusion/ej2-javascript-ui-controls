@@ -263,6 +263,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     private isClosed: boolean;
     private liTrgt: Element;
     private isMenusClosed: boolean;
+    private isContextMenuClosed: boolean;
     private isCMenu: boolean;
     private pageX: number;
     private pageY: number;
@@ -907,6 +908,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                             popupObj = getInstance(popupEle, Popup) as Popup;
                             popupObj.hide(); popupId = popupEle.id; popupObj.destroy(); detach(popupEle);
                         } else {
+                            this.isContextMenuClosed = false;
                             this.toggleAnimation(ul, false);
                         }
                         closeArgs = { element: ul, parentItem: item, items: items };
@@ -1265,6 +1267,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 break;
             case 'none':
                 this.top = observedOpenArgs.top; this.left = observedOpenArgs.left;
+                this.isContextMenuClosed = true;
                 break;
             case 'hamburger':
                 if (!observedOpenArgs.cancel) {
@@ -2141,7 +2144,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private end(ul: HTMLElement, isMenuOpen: boolean): void {
-        if (isMenuOpen) {
+        if (isMenuOpen && (this.isMenu || (!this.isMenu && this.isContextMenuClosed))) {
             if (this.isMenu || !Browser.isDevice) {
                 ul.style.display = 'block';
             }

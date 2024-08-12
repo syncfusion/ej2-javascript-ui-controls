@@ -103,6 +103,14 @@ export class WParagraphFormat {
                 }
                 baseStyle = baseStyle.basedOn;
             }
+            let tabsCollection : WTabStop[] = [];
+            tabStops.keys.forEach((key: number) => { tabsCollection.push(tabStops.get(key)) });
+            for (let i: number = 0; i < tabsCollection.length; i++) {
+                let tabStop: WTabStop = tabsCollection[i];
+                if (!this.isValidTabStop(tabsCollection, tabStop)) {
+                    tabStops.remove(tabStop.position);
+                }
+            }
             for (const key of tabStops.keys) {
                 if (!this.hasTabStop(parseFloat(key.toFixed(4)))) {
                     inTabs.push(tabStops.get(key));
@@ -121,6 +129,16 @@ export class WParagraphFormat {
             }
         }
         return [];
+    }
+
+    private isValidTabStop(tabs: WTabStop[], tabStop: WTabStop): boolean {
+        for (let i: number = 0; i < tabs.length; i++) {
+            if (tabStop != tabs[i] && (parseFloat(tabs[i].position.toFixed(4)) === parseFloat(tabStop.position.toFixed(4)) ||
+                parseFloat(tabs[i].deletePosition.toFixed(4)) === parseFloat(tabStop.position.toFixed(4)))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private hasTabStop(position: number): boolean {

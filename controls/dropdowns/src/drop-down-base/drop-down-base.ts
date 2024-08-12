@@ -735,7 +735,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                             ele.appendChild(noDataElement[i as number]);
                         }
                     } else {
-                        if(noDataElement[i as number] instanceof HTMLElement || noDataElement[i as number] instanceof Text)
+                        if (noDataElement[i as number] instanceof HTMLElement || ((noDataElement[i as number] instanceof Text) && (noDataElement[i as number]).textContent !== ''))
                         {
                             ele.appendChild(noDataElement[i as number]);
                         }
@@ -1601,10 +1601,14 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     }
 
     protected getPageCount(returnExactCount?: boolean): number {
-        const liHeight: string = this.list.classList.contains(dropDownBaseClasses.noData) ? null :
-            getComputedStyle(this.getItems()[0], null).getPropertyValue('height');
-        let pageCount = Math.round(this.list.getBoundingClientRect().height / parseInt(liHeight, 10));
-        return returnExactCount? pageCount : Math.round(pageCount);
+        if (this.list) {
+            const liHeight: string = this.list.classList.contains(dropDownBaseClasses.noData) ? null :
+                getComputedStyle(this.getItems()[0], null).getPropertyValue('height');
+            let pageCount = Math.round(this.list.getBoundingClientRect().height / parseInt(liHeight, 10));
+            return returnExactCount ? pageCount : Math.round(pageCount);
+        } else {
+            return 0;
+        }
     }
 
     private updateGroupHeader(index: number, liCollections: NodeListOf<Element>, target: Element): boolean {

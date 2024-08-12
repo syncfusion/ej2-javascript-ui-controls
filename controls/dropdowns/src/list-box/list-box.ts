@@ -1535,6 +1535,7 @@ export class ListBox extends DropDownBase {
             }
             this.inputString = this.filterInput.value;
             this.filterWireEvents();
+            this.ulElement.style.setProperty('height', 'calc(100% - ' + (this.filterParent.offsetHeight) + 'px)', 'important');
             return filterInputObj;
         }
     }
@@ -2330,11 +2331,8 @@ export class ListBox extends DropDownBase {
 
     private resizeHandler(): void {
         if (this.list && !(this.cssClass && this.cssClass.indexOf('e-horizontal-listbox') > -1)) {
-            if (this.list.scrollWidth > this.list.offsetWidth) {
-                (this.list.querySelector('.e-list-parent') as HTMLElement).style.display = 'inline-block';
-            }
-            else {
-                (this.list.querySelector('.e-list-parent') as HTMLElement).style.display = 'block';
+            if (this.list.getElementsByClassName('e-filter-parent').length > 0 && this.allowFiltering) {
+                this.ulElement.style.setProperty('height', 'calc(100% - ' + (this.filterParent.offsetHeight) + 'px)', 'important');
             }
         }
     }
@@ -2660,7 +2658,9 @@ export class ListBox extends DropDownBase {
                 if (newProp.allowDragAndDrop) {
                     this.initDraggable();
                 } else {
-                    (getComponent(this.ulElement, 'sortable') as Sortable).destroy();
+                    if (this.ulElement.classList.contains("e-sortable")) {
+                        (getComponent(this.ulElement, 'sortable') as Sortable).destroy();
+                    }
                 }
                 break;
             case 'allowFiltering':

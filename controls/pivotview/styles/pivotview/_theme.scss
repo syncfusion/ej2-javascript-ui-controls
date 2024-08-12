@@ -22,6 +22,16 @@
 }
 
 @include export-module('pivotview-theme') {
+  .e-pivotview.e-pivotview-autofit .e-grid .e-columnsheader .e-headercelldiv {
+    margin-right: 4px;
+
+    @if ($skin-name == 'FluentUI') or ($skin-name =='fluent2') or ($skin-name == 'tailwind') or ($skin-name == 'tailwind-dark') or ($skin-name == 'Material3') {
+      &:has(> .e-pivotcell-container .e-value-sort-icon) {
+        margin-right: $pivotgrid-value-sort-icon-font-size;
+      }
+    }
+  }
+
   .e-pivotview {
     .e-pivotcell-container {
       align-items: center;

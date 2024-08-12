@@ -1452,7 +1452,8 @@
               }
           }
 
-          & .e-toolbar-right {
+          & .e-toolbar-right,
+          & .e-toolbar-left {
             & .e-search-wrapper {
               width: 100%;
               @include grid-padding-left-right($grid-responsive-search-padding-left, $grid-responsive-search-padding-right);
@@ -5054,6 +5055,10 @@
           color: $grid-responsive-toolbar-icon-color;
         }
       }
+    }
+
+    & .e-tbar-btn.e-icon-btn:hover {
+      background-color: $group-header-hover-bg-color;
     }
 
     .e-search-icon {

@@ -223,7 +223,7 @@ export class HtmlEditor {
 
     private onKeyUp(e: NotifyArgs): void {
         const args: KeyboardEvent = e.args as KeyboardEvent;
-        const restrictKeys: number[] = [8, 9, 13, 16, 17, 18, 20, 27, 37, 38, 39, 40, 44, 45, 46, 91,
+        const restrictKeys: number[] = [8, 9, 13, 17, 18, 20, 27, 37, 38, 39, 40, 44, 45, 46, 91,
             112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123];
         const range: Range = this.parent.getRange();
         const regEx: RegExp = new RegExp('\u200B', 'g');
@@ -231,9 +231,18 @@ export class HtmlEditor {
             range.startOffset === 1 && range.startContainer.textContent.length === 1 &&
             range.startContainer.textContent.charCodeAt(0) === 8203 &&
             range.startContainer.textContent.replace(regEx, '').length === 0;
+        let isMention: boolean = false;
+        if (range.startContainer === range.endContainer &&
+            range.startOffset === range.endOffset && (range.startContainer !== this.parent.inputElement && range.startOffset !== 0 )) {
+            const mentionStartNode: Node = range.startContainer.nodeType === 3 ?
+                range.startContainer : range.startContainer.childNodes[range.startOffset - 1];
+            isMention = args.keyCode === 16 &&
+            mentionStartNode.textContent.charCodeAt(0) === 8203 &&
+            !isNOU(mentionStartNode.previousSibling) && (mentionStartNode.previousSibling as HTMLElement).contentEditable === 'false';
+        }
         let pointer: number;
         let isRootParent: boolean = false;
-        if (restrictKeys.indexOf(args.keyCode) < 0 && !args.shiftKey && !args.ctrlKey && !args.altKey && !isEmptyNode) {
+        if (restrictKeys.indexOf(args.keyCode) < 0 && !args.shiftKey && !args.ctrlKey && !args.altKey && !isEmptyNode && !isMention) {
             pointer = range.startOffset;
             const container: Node = range.startContainer;
             // Check if the container is a text node and contains a zero-width space

@@ -1475,8 +1475,8 @@ export function marker(eventArgs: IMarkerRenderingEventArgs, markerSettings: Mar
     };
     removeElement(markerID);
     const ele: Element = drawSymbols(eventArgs.shape, eventArgs.imageUrl, { x: 0, y: 0 }, markerID, shapeCustom, markerCollection, maps);
-    const x: number = (maps.isTileMap ? location.x : (location.x + transPoint.x) * scale) + offset.x;
-    const y: number = (maps.isTileMap ? location.y : (location.y + transPoint.y) * scale) + offset.y;
+    const x: number = (maps.isTileMap ? location.x : (location.x + transPoint.x) * scale) + (!isNullOrUndefined(offset.x) ? offset.x : 0);
+    const y: number = (maps.isTileMap ? location.y : (location.y + transPoint.y) * scale) + (!isNullOrUndefined(offset.y) ? offset.y : 0);
     ele.setAttribute('transform', 'translate( ' + x + ' ' + y + ' )');
     maintainSelection(maps.selectedMarkerElementId, maps.markerSelectionClass, ele, 'MarkerselectionMapStyle');
     if (maps.legendSettings.toggleLegendSettings.enable && maps.legendSettings.type === 'Markers') {

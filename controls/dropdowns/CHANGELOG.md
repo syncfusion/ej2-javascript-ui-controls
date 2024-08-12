@@ -2,13 +2,40 @@
 
 ## [Unreleased]
 
+## 26.2.9 (2024-08-13)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#I898586` - Issue with "Script error thrown in listbox while changing `allowDragAndDrop` and dataSource property" has been resolved.
+- `#I897366` - Issue with "Listbox double scroll appears issue while enabling the filtering option." has been resolved.
+
+### MultiSelect
+
+#### Bug fixes
+
+- `#I615841` - Fixed the issue where preselected values were not bound to the component with RemoteData when enableVirtualization was enabled.
+
 ## 26.2.8 (2024-08-06)
+
+### DropdownList
+
+#### Bug Fixes
+
+- `#I612396` - Fixed an issue where an empty popup appeared when scrolling up and down with enableVirtualization and itemTemplate enabled.
 
 ### MultiSelect
 
 #### Bug Fixes
 
 - `#I606184` - Fixed an issue where placeholder content was incorrectly displayed as an ellipsis in the MultiSelect component when the Chinese language was selected.
+
+### Mention
+
+#### Bug Fixes
+
+- `#I572346` - Now, the mention tags should not be added within the span while pasting in the Rich Text Editor.
 
 ## 26.2.7 (2024-07-30)
 

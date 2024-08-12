@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 26.2.9 (2024-08-13)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I609686` - Fixed an issue where the `Rowdraganddrop` action would drop the previously selected record when virtualization is enabled.
+- `#I609686` - Fixed a console error that occurred when performing row selection followed by the `collapseAll` and `expandAll` actions with virtualization.
+
 ## 26.2.8 (2024-08-06)
 
 ### Tree Grid

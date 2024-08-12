@@ -269,3 +269,39 @@ describe('Toolbar functionalities', () => {
     });
 
 });
+
+describe('EJ2-899326 => Script error occurs on selecting records in Adaptive UI when the toolbar have template elements => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data.slice(0, 24),
+                allowPaging: true,
+                rowRenderingMode: 'Vertical',
+                enableAdaptiveUI: true,
+                height: '100%',
+                width: 600,
+                toolbar: ['Add',{template:'<span>Test</span>'}],
+                pageSettings: { pageSize: 12, pageSizes: true },
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right', validationRules: { required: true, number: true }, width: 120 },
+                    { field: 'CustomerID', headerText: 'Customer ID', validationRules: { required: true }, width: 140 },
+                    { field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit', width: 120, format: 'C2' },
+                ],
+            }, done);
+    });
+
+    it('Selecting records and check the script error', function () {
+        expect(document.querySelector('.e-grid.e-row-responsive')).not.toBeNull();
+        if(document.querySelectorAll('.e-toolbar-item.e-template').length)
+        {
+            gridObj.selectRow(0);
+            expect(document.querySelector('.e-toolbar-item.e-template')).not.toBeNull();
+        }
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

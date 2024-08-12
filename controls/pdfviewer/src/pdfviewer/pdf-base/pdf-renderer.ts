@@ -1,6 +1,6 @@
 import { PageRenderer, FormFieldsBase, AnnotationRenderer, PdfRenderedFields, SignatureBase, BookmarkStyles, BookmarkDestination, BookmarkBase, AnnotBounds } from './index';
 import { Browser, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { DataFormat, PdfAnnotationExportSettings, PdfBookmark, PdfBookmarkBase, PdfDocument, PdfPage, PdfRotationAngle, PdfTextStyle, PdfDocumentLinkAnnotation, PdfTextWebLinkAnnotation, PdfUriAnnotation, PdfDestination, PdfPermissionFlag, PdfFormFieldExportSettings, _bytesToString, _encode, PdfPageSettings, PdfSignatureField, PdfForm, PdfPageImportOptions } from '@syncfusion/ej2-pdf';
+import { DataFormat, PdfAnnotationExportSettings, PdfBookmark, PdfBookmarkBase, PdfDocument, PdfPage, PdfRotationAngle, PdfTextStyle, PdfDocumentLinkAnnotation, PdfTextWebLinkAnnotation, PdfUriAnnotation, PdfDestination, PdfPermissionFlag, PdfFormFieldExportSettings, _bytesToString, _encode, PdfPageSettings, PdfSignatureField, PdfForm, PdfPageImportOptions, _decode } from '@syncfusion/ej2-pdf';
 import { PdfViewer, PdfViewerBase } from '../index';
 import { Rect, Size } from '@syncfusion/ej2-drawings';
 
@@ -108,7 +108,7 @@ export class PdfRenderer {
     private pdfViewer: PdfViewer;
     private pdfViewerBase: PdfViewerBase;
     private digitialByteArray: Uint8Array;
-    private loadedBase64String: string;
+    private loadedByteArray: Uint8Array;
     private password: string;
     private isDummyInserted: boolean = false;
 
@@ -130,11 +130,11 @@ export class PdfRenderer {
      * @private
      * @returns {void}
      */
-    public load(documentData: string, documentId: string, password: string, jsonObject: any): string {
+    public load(documentData: any, documentId: string, password: string, jsonObject: any): string {
         try {
             if (jsonObject.action !== 'VirtualLoad') {
                 this.loadedDocument = new PdfDocument(documentData, password ? password : '');
-                this.loadedBase64String = documentData;
+                this.loadedByteArray = documentData;
                 this.password = password;
                 this.isCompletePageSizeNotReceieved = true;
             }
@@ -211,7 +211,7 @@ export class PdfRenderer {
             this.digitialByteArray = digitalSignatureDoc.save();
             digitalSignatureDoc.destroy();
         }
-        return { pageCount: this.pageCount, pageSizes: this.pageSizes, uniqueId: documentId, PdfRenderedFormFields: pdfRenderedFormFields, RestrictionSummary: this.restrictionList, documentData: documentData, isDigitalSignaturePresent: this.formFieldsBase.mIsDigitalSignaturePresent, digitialSignatureFile: this.digitialByteArray ? _encode(this.digitialByteArray) : '', isTaggedPdf: isTaggedPdf, pageRotation: this.pageRotationCollection };
+        return { pageCount: this.pageCount, pageSizes: this.pageSizes, uniqueId: documentId, PdfRenderedFormFields: pdfRenderedFormFields, RestrictionSummary: this.restrictionList, isDigitalSignaturePresent: this.formFieldsBase.mIsDigitalSignaturePresent, digitialSignatureFile: this.digitialByteArray ? _encode(this.digitialByteArray) : '', isTaggedPdf: isTaggedPdf, pageRotation: this.pageRotationCollection };
     }
 
     private documentSecurity(password: string): void {
@@ -342,11 +342,11 @@ export class PdfRenderer {
      * @private
      * @returns {void}
      */
-    public getDocumentAsBase64(jsonObject: { [key: string]: string }): string {
-        this.loadedDocument = new PdfDocument(this.loadedBase64String, this.password);
+    public getDocumentAsBase64(jsonObject: { [key: string]: string }): Uint8Array {
+        this.loadedDocument = new PdfDocument(this.loadedByteArray, this.password);
         let clonedDocument: PdfDocument = null;
         if (Object.prototype.hasOwnProperty.call(jsonObject, 'digitalSignatureDocumentEdited') && !jsonObject.digitalSignatureDocumentEdited) {
-            return 'data:application/pdf;base64,' + _encode(this.loadedDocument.save());
+            return this.loadedDocument.save();
         }
         else {
             const annotationRenderer: AnnotationRenderer = new AnnotationRenderer(this.pdfViewer, this.pdfViewerBase);
@@ -379,7 +379,7 @@ export class PdfRenderer {
                 }
                 clonedDocument = null;
             }
-            return 'data:application/pdf;base64,' + _encode(this.loadedDocument.save());
+            return this.loadedDocument.save();
         }
     }
 
@@ -599,7 +599,7 @@ export class PdfRenderer {
      * @private
      * @returns {void}
      */
-    public exportAnnotation(jsonObject: { [key: string]: string }, isObject: boolean): string {
+    public exportAnnotation(jsonObject: { [key: string]: string }, isObject: boolean): Uint8Array {
         const annotationRenderer: AnnotationRenderer = new AnnotationRenderer(this.pdfViewer, this.pdfViewerBase);
         annotationRenderer.removeSignatureTypeAnnot(jsonObject, this.loadedDocument);
         this.orderAnnotations(jsonObject);
@@ -614,28 +614,28 @@ export class PdfRenderer {
                     if (isObject) {
                         settings.exportAppearance = isObject;
                         exportObject = this.loadedDocument.exportAnnotations(settings);
-                        return 'data:application/json;base64,' + _encode(exportObject);
+                        return exportObject;
                     } else {
                         fileName = this.changeFileExtension(this.pdfViewer.fileName, 'json');
-                        return 'data:application/json;base64,' + _encode(this.loadedDocument.exportAnnotations(settings));
+                        return this.loadedDocument.exportAnnotations(settings);
                     }
                 case 'xfdf':
                     settings.dataFormat = DataFormat.xfdf;
                     if (isObject) {
                         settings.exportAppearance = isObject;
                         exportObject = this.loadedDocument.exportAnnotations(settings);
-                        return 'data:application/json;base64,' + _encode(exportObject);
+                        return exportObject;
 
                     } else {
                         fileName = this.changeFileExtension(this.pdfViewer.fileName, 'xfdf');
-                        return 'data:application/json;base64,' + _encode(this.loadedDocument.exportAnnotations(settings));
+                        return this.loadedDocument.exportAnnotations(settings);
                     }
                 // Add more cases for other supported formats as needed
                 default:
                     break;
             }
         }
-        return '';
+        return null;
 
     }
 
@@ -1068,7 +1068,7 @@ export class PdfRenderer {
      * @private
      * @returns {void}
      */
-    public exportFormFields(jsonObject: any, isObjects: boolean): string {
+    public exportFormFields(jsonObject: any, isObjects: boolean): Uint8Array {
         const formFields: FormFieldsBase = new FormFieldsBase(this.pdfViewer, this.pdfViewerBase);
         formFields.saveFormFieldsData(jsonObject);
         formFields.saveFormFieldsDesignerData(jsonObject);
@@ -1086,10 +1086,10 @@ export class PdfRenderer {
         settings.dataFormat = dataFormat;
         if (isObjects) {
             exportFormFieldObject = this.loadedDocument.exportFormData(settings);
-            return _bytesToString(exportFormFieldObject, true);
+            return exportFormFieldObject;
         } else {
             fileName = this.changeFileExtension(this.pdfViewer.fileName, this.fileFormat(dataFormat));
-            return 'data:application/json;base64,' + _encode(this.loadedDocument.exportFormData(settings));
+            return this.loadedDocument.exportFormData(settings);
         }
     }
 

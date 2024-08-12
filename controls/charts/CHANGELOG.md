@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+## 26.2.9 (2024-08-13)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I617528` - Now the data labels are visible only for the available range.
+- `#I618989` - Selection zooming and panning now function properly on the date-time category axis.
+  
+### Accumulation Chart
+
+#### Bug Fixes
+
+- `#I618245` - Now resizing works properly in accumulation, even when the tooltip is enabled.
+
+### StockChart
+
+#### Bug Fixes
+
+- `#F191596` - Spline rendering now correctly handles zero data values.
+
 ## 26.2.8 (2024-08-06)
 
 ### Chart

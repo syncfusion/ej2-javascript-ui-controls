@@ -39,7 +39,8 @@ export class Query {
     public dataManager: DataManager;
     /** @hidden */
     public distincts: string[] = [];
-
+    /** @hidden */
+    public get moduleName(): string { return 'query' };
     /**
      * Constructor for Query class.
      *

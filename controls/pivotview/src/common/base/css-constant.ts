@@ -838,3 +838,9 @@ export const COLLAPSIBLE: string = 'e-icon-collapsible';
 export const EXPANDABLE: string = 'e-icon-expandable';
 /** @hidden */
 export const PIVOT_VIEW_AUTOFIT: string = 'e-pivotview-autofit';
+/** @hidden */
+export const RHANDLER: string = 'e-rhandler';
+/** @hidden */
+export const RCURSOR: string = 'e-rcursor';
+/** @hidden */
+export const RESIZED: string = 'e-resized';

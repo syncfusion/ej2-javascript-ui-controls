@@ -259,9 +259,12 @@ export class FooterRenderer extends ContentRender implements IRenderer {
                 const type: string = (aggregateRows[parseInt(i.toString(), 10)] as AggregateRow)
                     .columns[parseInt(j.toString(), 10)].type.toString();
                 data = dataSource;
-                agrVal = calculateAggregate(type, data, (aggregateRows[parseInt(i.toString(), 10)] as AggregateRow)
-                    .columns[parseInt(j.toString(), 10)], this.parent);
-                aggregate[(aggregateRows[parseInt(i.toString(), 10)] as AggregateRow).columns[parseInt(j.toString(), 10)].field + ' - ' + type.toLowerCase()] = agrVal;
+                const types: string[] = type.split(',').map((t: string) => t.trim());
+                for (const aggregateType of types) {
+                    agrVal = calculateAggregate(aggregateType, data, 
+                        (aggregateRows[parseInt(i.toString(), 10)] as AggregateRow).columns[parseInt(j.toString(), 10)], this.parent);
+                    aggregate[(aggregateRows[parseInt(i.toString(), 10)] as AggregateRow).columns[parseInt(j.toString(), 10)].field + ' - ' + aggregateType.toLowerCase()] = agrVal;
+                }
             }
         }
         const result: Object = {

@@ -931,6 +931,7 @@
   display: block;
   line-height: $ddl-select-all-height;
   overflow: hidden;
+  text-overflow: ellipsis;
   padding-right: $ddl-list-padding-right;
   position: relative;
   text-indent: $ddl-check-right;

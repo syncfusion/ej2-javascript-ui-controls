@@ -117,6 +117,8 @@ export class DateTimeCategory extends Category {
                 }
             }
         }
+        axis.startLabel = axis.visibleLabels[0] ? axis.visibleLabels[0].text as string : '';
+        axis.endLabel = axis.visibleLabels[axis.visibleLabels.length - 1] ? axis.visibleLabels[axis.visibleLabels.length - 1].text as string : '';
         if (axis.getMaxLabelWidth) {
             axis.getMaxLabelWidth(this.chart);
         }

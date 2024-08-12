@@ -3701,6 +3701,12 @@ export class DocumentHelper {
                 }
                 left += element.margin.left + element.width + element.padding.left;
             }
+        } else if (!isNullOrUndefined(widget) && widget.children.length === 0) {
+            let left: number = widget.paragraph.x;
+            let top: number = this.selection.getTop(widget);
+            if (cursorPoint.x < left + widget.width && cursorPoint.x > left && cursorPoint.y < top + widget.height && cursorPoint.y > top) {
+                return true;
+            }
         }
         return false;
     }

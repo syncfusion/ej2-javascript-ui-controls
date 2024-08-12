@@ -676,16 +676,15 @@ describe('MultiColumnComboBox control', () => {
                 ],
                 fields: { text: 'text', value: 'id' },
                 columns: [{ field: 'text', header: 'Languages known' }, { field: 'id', header: 'ID' }],
-                allowTextWrap: true,
-                textWrapMode: 'Both'
+                gridSettings: { allowTextWrap: true, textWrapMode: 'Both' }
             });
             multiColObj.appendTo(element);
             expect((multiColObj as any).gridObj.allowTextWrap).toBe(true);
             expect((multiColObj as any).gridObj.textWrapSettings.wrapMode).toBe('Both');
-            (multiColObj as any).textWrapMode = 'Content';
+            (multiColObj as any).gridSettings.textWrapMode = 'Content';
             multiColObj.dataBind();
             expect((multiColObj as any).gridObj.textWrapSettings.wrapMode).toBe('Content');
-            (multiColObj as any).allowTextWrap = false;
+            (multiColObj as any).gridSettings.allowTextWrap = false;
             multiColObj.dataBind();
             expect((multiColObj as any).gridObj.allowTextWrap).toBe(false);
         });

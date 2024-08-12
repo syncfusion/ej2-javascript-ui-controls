@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 26.2.9 (2024-08-13)
+
+### Grid
+
+#### Bug fixes
+
+- `#F191300` - When freeze property is enabled the `minWidth` and `maxWidth` set to a column is not working properly issue has been resolved.
+- `#I615679` - search clear action does not reset the `pageSize` issue has been resolved.
+- `#FB59752` - In `rowDrag` event, the dragged data is not properly returned issue has been resolved.
+- `#I617335` - `ResponsiveBack` element not showing when search is aligned left in Toolbar with `AdaptiveUI` issue has been resolved.
+- `#FB59809` - The issue with editing a record of column that contains multiple aggregates throws a script error has been resolved.
+- `#I899326` - The script error related to `adaptiveUI` when selecting records with a toolbar rendered using a `template` has been resolved.
+
 ## 26.2.8 (2024-08-06)
 
 ### Grid

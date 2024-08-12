@@ -220,7 +220,9 @@ export class PDFExport {
         if (this.exportProperties.columnSize || this.exportProperties.width || this.exportProperties.height) {
             size = this.exportProperties.columnSize > 0 ? this.exportProperties.columnSize : pivotValues[0].length;
         }
-        const allowRepeatHeader: boolean = this.exportProperties.allowRepeatHeader ? this.exportProperties.allowRepeatHeader : true;
+        this.exportProperties.allowRepeatHeader =
+            this.exportProperties.allowRepeatHeader === true || isNullOrUndefined(this.exportProperties.allowRepeatHeader);
+        const allowRepeatHeader: boolean = this.exportProperties.allowRepeatHeader ? this.exportProperties.allowRepeatHeader : false;
         for (let vLen: number = 0; allowRepeatHeader && size > 1 && vLen < pivotValues.length; vLen++) {
             for (let vCnt: number = size; pivotValues[vLen as number] && vCnt < pivotValues[vLen as number].length; vCnt += size) {
                 (pivotValues[vLen as number] as IAxisSet[]).splice(vCnt, 0, pivotValues[vLen as number][0] as IAxisSet);

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.2.9 (2024-08-13)
+
+### DashboardLayout
+
+#### Bug Fixes
+
+- `#I591785` - The issue with the draggableHandle property when dynamically updating panel contents in the Dashboard Layout component has been resolved.
+
 ## 26.1.38 (2024-06-19)
 
 ### DashboardLayout

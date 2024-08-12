@@ -127,6 +127,8 @@
         min-height: $ddl-list-line-height;
         padding-left: $ddl-list-header-padding-left;
         padding-right: $ddl-list-padding-right;
+        overflow: hidden;
+        text-overflow: ellipsis;
         @if $skin-name == 'Material3' {
           background: $ddl-list-bg-color;
         }

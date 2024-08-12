@@ -338,13 +338,17 @@ export class HistoryInfo extends BaseHistoryInfo {
         case 'ReplaceAll':
         case 'Reject All': {
             let isSkip: boolean = false;
-            if (this.editorHistory.isUndoing || this.editorHistory.isRedoing) {
-                const currentHistory: BaseHistoryInfo = this.modifiedActions[this.modifiedActions.length - 1];
-                operations.push(...currentHistory.cellOperation);
-                currentHistory.cellOperation = [];
-                if (currentHistory.isRemovedNodes) {
-                    const operationCollection: Operation[] = currentHistory.getDeleteContent('Insert');
-                    operations = [...operations, ...operationCollection];
+            if (this.editorHistory.isUndoing) {
+                for (let i: number = this.modifiedActions.length - 1; i >= 0; i--) {
+                    const currentHistory: BaseHistoryInfo = this.modifiedActions[parseInt(i.toString(), 10)];
+                    if (!isNullOrUndefined(currentHistory.cellOperation) && currentHistory.cellOperation.length > 0) {
+                        operations.push(currentHistory.cellOperation[0]);
+                        isSkip = true;
+                        currentHistory.cellOperation = [];
+                    } else {
+                        const operationsCollection: Operation[] = currentHistory.getActionInfo();
+                        operations.push(...operationsCollection);
+                    }
                 }
             } else {
                 for (let i: number = 0; i < this.modifiedActions.length; i++) {
@@ -374,15 +378,21 @@ export class HistoryInfo extends BaseHistoryInfo {
             break;
         case 'TOC':
             if (this.modifiedActions) {
-                for (let i: number = 0; i < this.modifiedActions.length; i++) {
-                    const currentHistory: BaseHistoryInfo = this.modifiedActions[parseInt(i.toString(), 10)];
-                    currentHistory.type = currentHistory.action === 'Paste' ? 'PasteToc' : undefined;
-                    const tocOperations: Operation[] = currentHistory.getActionInfo();
-                    operations.push(...tocOperations);
-                }
-                if (this.editorHistory.isUndoing && operations.length > 0) {
-                    const lastelement: Operation = operations.pop();
-                    operations.unshift(lastelement);
+                if (this.editorHistory.isUndoing) {
+                    for (let i: number = this.modifiedActions.length - 1; i >= 0; i--) {
+                        const currentHistory: BaseHistoryInfo = this.modifiedActions[parseInt(i.toString(), 10)];
+                        currentHistory.type = currentHistory.action === 'Paste' ? 'PasteToc' : undefined;
+                        const tocOperations: Operation[] = currentHistory.getActionInfo();
+                        operations.push(...tocOperations);
+                    }
+
+                } else {
+                    for (let i: number = 0; i < this.modifiedActions.length; i++) {
+                        const currentHistory: BaseHistoryInfo = this.modifiedActions[parseInt(i.toString(), 10)];
+                        currentHistory.type = currentHistory.action === 'Paste' ? 'PasteToc' : undefined;
+                        const tocOperations: Operation[] = currentHistory.getActionInfo();
+                        operations.push(...tocOperations);
+                    }
                 }
             }
             break;

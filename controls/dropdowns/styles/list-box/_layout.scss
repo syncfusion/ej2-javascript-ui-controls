@@ -569,3 +569,9 @@
     }
   }
 }
+
+.e-listbox-wrapper:not(.e-list-template) .e-list-parent li {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

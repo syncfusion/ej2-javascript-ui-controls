@@ -183,7 +183,7 @@
               margin: $listview-template-avatar-margin;
             }
             @if $skin-name == 'Material3' {
-              background: $listview-template-avatar-background;
+              background-color: $listview-template-avatar-background;
             }
           }
         }

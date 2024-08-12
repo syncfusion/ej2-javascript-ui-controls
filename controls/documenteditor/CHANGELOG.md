@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 26.2.9 (2024-08-13)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I612018` - Resolved the combined merged cells deleting issue when deleting entire column.
+- `#I614400` - Resolved the document corrupted issue when exporting document with TOC revisions.
+- `#I612515` - Resolved the maximum call stack size exceeded issue after document loaded.
+- `#I612103` - Resolved the text cannot be edited issue when picture is layouted behind the text.
+- `#I606994` - Resolved the list paragraph copy pasting issue.
+
 ## 26.2.8 (2024-08-06)
 
 ### DocumentEditor

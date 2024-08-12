@@ -2048,4 +2048,58 @@ describe('Aggregates Functionality testing', () => {
             grid = rows = null;
         });
     });
+	
+    describe('EJ2-898870: Editing a record of column that contains multiple aggregates throws a script error.', () => {
+        let grid: Grid;
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    dataSource: new DataManager({
+                        json: [{OrderID: 1, Freight: 1}, {OrderID: 2, Freight: 2}],
+                    }),
+                    allowFiltering: true,
+                    toolbar: ["Edit", "Cancel", "Update"],
+                    editSettings: {allowEditing: true},
+                    columns: [
+                      {
+                        field: 'OrderID',
+                        headerText: 'Order ID',
+                        textAlign: 'Right',
+                        width: 100,
+                        isPrimaryKey: true,
+                      },
+                      {
+                        field: 'Freight',
+                        type: 'number',
+                        headerText: 'Freight',
+                        textAlign: 'Right',
+                        width: 120,
+                        format: 'C2',
+                      },
+                    ],
+                    aggregates: [
+                        {
+                            columns: [
+                                {
+                                    type: ['Max', 'Min','Sum'],
+                                    field: 'Freight',
+                                    columnName: 'Freight',
+                                    format: 'C2',
+                                    footerTemplate: 'Sum: ${Sum}, Min:${Min}, Max:${Max}',
+                                },
+                            ],
+                        }
+                    ],
+                },
+                done
+            );
+        });
+        it('Check the aggregate data', () => {
+            expect((grid as any).getFooterContentTable().querySelector('.e-templatecell').innerText).toBe('Sum: $3.00, Min:$1.00, Max:$2.00');
+        });
+        afterAll(() => {
+            destroy(grid);
+            grid = null;
+        });
+    });
 });

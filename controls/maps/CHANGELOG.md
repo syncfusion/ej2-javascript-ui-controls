@@ -8,6 +8,30 @@
 
 ## [Unreleased]
 
+## 26.2.9 (2024-08-13)
+
+### Maps
+
+#### Bug fixes
+
+- `#I613689` - The position of the image markers will now be correctly adjusted when the `offset` property is set.
+
+## 26.2.8 (2024-08-06)
+
+### Maps
+
+#### Bug fixes
+
+- `#I613689` - The position of the image markers will now be correctly adjusted when the `offset` property is set.
+
+## 26.2.4 (2024-07-24)
+
+### Maps
+
+#### Bug fixes
+
+- `#I605665` - The star shapes in the marker will now be rendered correctly.
+
 ## 26.1.41 (2024-07-09)
 
 ### Maps

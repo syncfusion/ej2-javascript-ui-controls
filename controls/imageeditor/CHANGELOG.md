@@ -2,7 +2,24 @@
 
 ## [Unreleased]
 
+## 26.2.9 (2024-08-13)
+
+### Image Editor
+
+#### Bug Fixes
+
+- `#I901333` - The issue with "script error thrown while saving the image" has been resolved.
+
 ## 26.2.8 (2024-08-06)
+
+### Image Editor
+
+#### Bug Fixes
+
+- `#I898988` - The issue with "script error thrown while using the drawText method" has been resolved.
+- `#I612658` - The issue with "Zoom action was not working in ImageEditor after drawing a rectangle and performing the zoom action via touch mode" has been resolved.
+
+## 26.2.5 (2024-07-26)
 
 ### Image Editor
 

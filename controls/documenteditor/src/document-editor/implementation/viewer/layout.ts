@@ -703,7 +703,7 @@ export class Layout {
                 }
                 let firstBody: BodyWidget = this.getBodyWidget(line.paragraph.bodyWidget, true);
                 let lastBody: BodyWidget = this.getBodyWidget(firstBody, false);
-                if (!firstBody.sectionFormat.equalWidth && lastBody.sectionFormat.numberOfColumns - 1 === lastBody.columnIndex) {
+                if (!firstBody.sectionFormat.equalWidth && lastBody.sectionFormat.numberOfColumns - 1 === lastBody.columnIndex && isNullOrUndefined(lastBody.nextSplitWidget)) {
                     let nonEqualBody: BodyWidget = firstBody;
                     let initialCount: number = (this.getCountOrLine(firstBody)).lineCount;
                     this.layoutMultiColumnBody(nonEqualBody, true);
@@ -712,12 +712,14 @@ export class Layout {
                         this.splitBodyWidgetBasedOnColumn(firstBody);
                     }
                 }
-                this.viewer.updateClientArea(firstBody, firstBody.page);
-                let height: number = this.getNextWidgetHeight(firstBody);
-                this.viewer.clientActiveArea.height -= height - this.viewer.clientActiveArea.y;
-                this.viewer.clientActiveArea.y = height;
-                this.viewer.clientArea.y = this.viewer.clientActiveArea.y;
-                this.viewer.clientArea.height = this.viewer.clientActiveArea.height;
+                if (isNullOrUndefined(lastBody.nextSplitWidget)) {
+                    this.viewer.updateClientArea(firstBody, firstBody.page);
+                    let height: number = this.getNextWidgetHeight(firstBody);
+                    this.viewer.clientActiveArea.height -= height - this.viewer.clientActiveArea.y;
+                    this.viewer.clientActiveArea.y = height;
+                    this.viewer.clientArea.y = this.viewer.clientActiveArea.y;
+                    this.viewer.clientArea.height = this.viewer.clientActiveArea.height;
+                }
             }
             section = section.nextRenderedWidget as BodyWidget;
             if (!isNullOrUndefined(section) && section.columnIndex === section.sectionFormat.numberOfColumns - 1) {
@@ -4634,9 +4636,11 @@ export class Layout {
         } else {
             this.moveBlocksToNextPage(line.paragraph.previousRenderedWidget as BlockWidget);
         }
+        let clientHeight: number = this.viewer.clientActiveArea.height;
         this.viewer.updateClientArea(line.paragraph.bodyWidget, line.paragraph.bodyWidget.page);
         this.viewer.clientActiveArea.y = line.paragraph.bodyWidget.y;
-        if (line.paragraph.bodyWidget.sectionFormat.equalWidth) {
+        this.viewer.clientActiveArea.height = clientHeight;
+        if (line.paragraph.bodyWidget.sectionFormat.equalWidth || line.paragraph.bodyWidget.sectionFormat.numberOfColumns - 1 === line.paragraph.bodyWidget.columnIndex) {
             let parawidget: ParagraphWidget = line.paragraph;
             this.documentHelper.blockToShift = parawidget;
             this.shiftLayoutedItems(false, true);
@@ -10034,7 +10038,7 @@ export class Layout {
             // }
         }
         const sectionIndex: number = block.bodyWidget.index;
-        this.reLayoutOrShiftWidgets(block, this.viewer);
+        this.reLayoutOrShiftWidgets(block, this.viewer, isMultiColumnShift);
         let updateNextBlockList: boolean = true;
         // If flow layout, then all sections are in single page. Hence need to update till last block of last section.
         // Todo: For page layout and section break continuous, need to handle the same.
@@ -10084,7 +10088,7 @@ export class Layout {
             updateNextBlockList = true;
             // Here, we have added this condition to skip the non-layouted blocks during relayouting.
             if (!block.isFieldCodeBlock) {
-                this.reLayoutOrShiftWidgets(block, this.viewer);
+                this.reLayoutOrShiftWidgets(block, this.viewer, isMultiColumnShift);
             }
             if (this.keepWithNext) {
                 block = this.documentHelper.blockToShift;
@@ -10221,7 +10225,7 @@ export class Layout {
             }
         }
     }
-    private reLayoutOrShiftWidgets(blockAdv: BlockWidget, viewer: LayoutViewer): void {
+    private reLayoutOrShiftWidgets(blockAdv: BlockWidget, viewer: LayoutViewer, isMultiColumnShift?: boolean): void {
         let block: BlockWidget = blockAdv;
         let isRealyoutList: Boolean = false;
         // if (block instanceof ParagraphWidget) {
@@ -10262,7 +10266,7 @@ export class Layout {
             }
         }
         //Updates the list value of the rendered paragraph.
-        if (this.viewer.owner.editorModule && !isRealyoutList) {
+        if (this.viewer.owner.editorModule && !isRealyoutList && !isMultiColumnShift) {
             this.viewer.owner.editorModule.updateRenderedListItems(block);
         }
         if (!this.isRelayoutFootnote && block.bodyWidget.page.footnoteWidget) {
@@ -10328,7 +10332,7 @@ export class Layout {
             }
             skipFootNoteHeight = false;
             //let isContainsFootnote: boolean = false;
-            if (this.isFitInClientArea(widget, viewer, footWidget) || this.isMultiColumnSplit) {
+            if (this.isFitInClientArea(widget, viewer, footWidget) || (this.isMultiColumnSplit && widget.bodyWidget.sectionFormat.numberOfColumns - 1 !== widget.bodyWidget.columnIndex)) {
                 if (this.keepWithNext) {
                     this.updateClientPositionForBlock(widget.containerWidget.firstChild as BlockWidget, widget);
                     this.keepWithNext = false;

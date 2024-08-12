@@ -3196,7 +3196,14 @@ export class Draw {
                     value: {ctx: this.lowerContext, shape: 'pan', pen: 'pan', x: parent.panPoint.currentPannedPoint.x,
                         y: parent.panPoint.currentPannedPoint.y, panRegion: '' }});
             }
-            this.adjustPanning(activeObj); parent.activeObj = activeObj;
+            this.adjustPanning(activeObj); let isActObj: boolean = false;
+            for (let i: number = 0; i < parent.objColl.length; i++) {
+                if (JSON.stringify(activeObj.activePoint) === JSON.stringify(parent.objColl[i as number].activePoint)) {
+                    isActObj = true;
+                    break;
+                }
+            }
+            if (!isActObj) { parent.activeObj = activeObj; }
             if (parent.activeObj.activePoint.width !== 0 && parent.activeObj.activePoint.height !== 0) {
                 this.drawObject('duplicate', null, null, null, true);
             }

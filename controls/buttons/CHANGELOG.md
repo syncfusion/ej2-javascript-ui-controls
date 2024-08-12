@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.2.9 (2024-08-13)
+
+### Switch
+
+#### Bug Fixes
+
+- `#F190104` - The issue with Script error occurs while `opening dialog` component using switch button has been resolved.
+
 ## 26.2.8 (2024-08-06)
 
 ### Switch

@@ -985,4 +985,41 @@ describe('Adaptive renderer', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-899558-Responsive Back Element not showing when search is aligned left in Toolbar with AdaptiveUI', () => {
+        let gridObj: any;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    rowRenderingMode: 'Vertical',
+                    allowFiltering: true,
+                    allowSorting: true,
+                    allowPaging: true,
+                    enableAdaptiveUI: true,
+                    filterSettings: { type: 'Excel' },
+                    showColumnChooser: true,
+                    editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true, mode: 'Dialog' },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel', {text:'Search', align:'Left'}],
+                    height: 400,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true, width: 120 },
+                        { headerText: 'CustomerID', field: 'CustomerID', width: 120 },
+                        { headerText: 'EmployeeID', field: 'EmployeeID', width: 120 },
+                        { headerText: 'ShipCountry', field: 'ShipCountry', width: 120 },
+                        { headerText: 'ShipCity', field: 'ShipCity', width: 120 },
+                    ],
+                }, done);
+        });
+
+        it('Ensure responsive back icon', (done: Function) => {
+            expect(document.querySelector('.e-gridresponsiveicons .e-resback-icon')).not.toBeNull();
+            done();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

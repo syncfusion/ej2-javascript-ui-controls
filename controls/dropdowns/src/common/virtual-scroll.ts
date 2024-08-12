@@ -412,10 +412,8 @@ export class VirtualScroll {
             else if (this.parent.isScrollActionTriggered) {
                 this.parent.isPreventKeyAction = false;
                 this.parent.isScrollActionTriggered = false;
-                let virtualListCount: number = this.parent.list.querySelectorAll('.e-virtual-list').length;
-                let listElement: HTMLElement = this.parent.list.querySelector('.' + 'e-list-item');
-                let translateY: number = scrollArgs.offset.top - (listElement.offsetHeight * virtualListCount);
-                (this.parent.list.getElementsByClassName('e-virtual-ddl-content') as HTMLCollectionOf<HTMLElement>)[0].style.transform = "translate(0px," + translateY + "px)"
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (this.parent.list.getElementsByClassName('e-virtual-ddl-content')[0] as any).style = this.parent.getTransformValues();
             }
             this.parent.previousInfo = this.parent.viewPortInfo;
         }
@@ -450,13 +448,13 @@ export class VirtualScroll {
                 infoType.currentPageNumber = Math.ceil(infoType.endIndex / this.parent.virtualItemCount);
             }
         } else if (infoType.direction === 'up') {
-            if (infoType.startIndex && infoType.endIndex) {
+            if ((infoType.startIndex && infoType.endIndex) || (Math.ceil(exactTopIndex) > this.parent.previousStartIndex)) {
                 let loadAtIndex: number = Math.round(((infoType.startIndex * rowHeight) + (pageSizeBy4 * rowHeight)) / rowHeight);
-                if (exactTopIndex < loadAtIndex) {
+                if (exactTopIndex < loadAtIndex || (Math.ceil(exactTopIndex) > this.parent.previousStartIndex)) {
                     let idxAddedToExactTop: number = (pageSizeBy4) > infoViewIndices ? pageSizeBy4 :
                         (infoViewIndices + infoViewIndices / 4);
                     let eIndex: number = Math.round(exactTopIndex + idxAddedToExactTop);
-                    infoType.endIndex = (eIndex < totalItemCount || this.component == "multiselect") ? eIndex : totalItemCount;
+                    infoType.endIndex = (eIndex < totalItemCount) ? eIndex : totalItemCount;
                     let sIndex: number = infoType.endIndex - this.parent.virtualItemCount;
                     infoType.startIndex = sIndex > 0 ? sIndex : 0;
                     infoType.endIndex = sIndex < 0 ? this.parent.virtualItemCount : infoType.endIndex;

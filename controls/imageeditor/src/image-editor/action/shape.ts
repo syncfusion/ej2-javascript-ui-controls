@@ -589,7 +589,9 @@ export class Shape {
                     (item: { text: string; }) => item.text === String(parent.activeObj.textSettings.fontSize)) + 1);
                 parent.noPushUndo = true;
                 parent.updateFontSize('5');
-                parent.updateFontSize(fontSizeInd);
+                if (parseInt(fontSizeInd, 10) > 0) {
+                    parent.updateFontSize(fontSizeInd);
+                }
                 parent.noPushUndo = false;
             }
             if (parent.isPublicMethod && !isSelected) {

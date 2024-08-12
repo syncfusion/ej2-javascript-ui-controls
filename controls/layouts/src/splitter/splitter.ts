@@ -518,6 +518,7 @@ export class Splitter extends Component<HTMLElement> {
                         }
                     }
                 } else {
+                    this.clearTemplate();
                     this.destroyPaneSettings();
                     this.allBars = [];
                     this.allPanes = [];

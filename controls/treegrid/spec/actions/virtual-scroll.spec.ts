@@ -3371,12 +3371,15 @@ describe("Row selection is incorrect when enableVirtualization is enabled", () =
       done
     );
   });
-  it('Check row selection with expand/collpae action', () => {
+  it('Check row selection with expand/collpae action', (done: Function) => {
     gridObj.selectRow(1);
+    gridObj.dataBound = (args?: Object): void => {
+      expect(gridObj.getRows()[1].hasAttribute('aria-selected')).toBeTruthy();
+      done();
+    };
     gridObj.collapseAll();
     expect(gridObj.getRows()[1].hasAttribute('aria-selected')).toBeFalsy();
     gridObj.expandAll();
-    expect(gridObj.getRows()[1].hasAttribute('aria-selected')).toBeTruthy();
   });
   afterAll(() => {
     destroy(gridObj);

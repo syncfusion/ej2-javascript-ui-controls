@@ -5520,12 +5520,17 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             let autoCol: number = 0;
             let difference: number = 0;
             let autoWidth: number = 0;
+            const isFrozenAuto: boolean = gcol.some((data: Column) => { return (data.freeze === 'Left' || data.freeze === 'Right'
+                || data.freeze === 'Fixed' || data.isFrozen) && data.width === 'auto'; });
             for (let i: number = 0; i < gcol.length; i++) {
                 const col: Column = gcol[parseInt(i.toString(), 10)];
                 if (isNullOrUndefined(col.width) && (col.freeze === 'Left' || col.freeze === 'Right' || col.freeze === 'Fixed' || col.isFrozen)) {
                     col.width = Math.max(200, col.minWidth ? parseFloat(col.minWidth.toString()) : 0);
+                    if (!isNullOrUndefined(col.maxWidth) &&  parseFloat(col.maxWidth.toString()) < col.width) {
+                        col.width = col.maxWidth;
+                    }
                 }
-                if (col.width === 'auto') {
+                if (col.width === 'auto' && isFrozenAuto) {
                     let tWidth: number = 0;
                     if (isAutoWidth) {
                         gcol.filter((cols: Column) => {

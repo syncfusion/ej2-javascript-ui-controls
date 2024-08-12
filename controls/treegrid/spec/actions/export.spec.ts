@@ -135,172 +135,172 @@ describe('Pdf Exporting custom data', () => {
     });
 });
 
-// describe('Excel Exporting Remote data', () => {
-//     let gridObj: TreeGrid;
-//     let data: Object = new DataManager({
-//         url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
-//         adaptor: new WebApiAdaptor,
-//         crossDomain: true
-//     });
-//     beforeAll((done: Function) => {
-//         gridObj = createGrid(
-//             {
-//                 dataSource: data,
-//                 hasChildMapping: 'isParent',
-//                 idMapping: 'TaskID',
-//                 parentIdMapping: 'ParentItem',
-//                 height: 400,
-//                 treeColumnIndex: 1,
-//                 allowExcelExport: true,
-//                 allowPdfExport: true,
-//                 columns: [
-//                     { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 120 },
-//                     { field: 'TaskName', headerText: 'Task Name', width: 150 },
-//                     { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120 }
-//                 ],
-//                 excelExportComplete: exportComplete
-//             },
-//             done
-//         );
-//     });
-//     it('Checking the excel export', (done: Function) => {
-//         gridObj.excelExport().then((doc: Workbook)=>{
-//             expect(doc).not.toBeUndefined();
-//             done();
-//         });
-//     });
-//     afterAll(() => {
-//         destroy(gridObj);
-//     });
-// });
+describe('Excel Exporting Remote data', () => {
+    let gridObj: TreeGrid;
+    let data: Object = new DataManager({
+        url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
+        adaptor: new WebApiAdaptor,
+        crossDomain: true
+    });
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                hasChildMapping: 'isParent',
+                idMapping: 'TaskID',
+                parentIdMapping: 'ParentItem',
+                height: 400,
+                treeColumnIndex: 1,
+                allowExcelExport: true,
+                allowPdfExport: true,
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 120 },
+                    { field: 'TaskName', headerText: 'Task Name', width: 150 },
+                    { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120 }
+                ],
+                excelExportComplete: exportComplete
+            },
+            done
+        );
+    });
+    it('Checking the excel export', (done: Function) => {
+        gridObj.excelExport().then((doc: Workbook)=>{
+            expect(doc).not.toBeUndefined();
+            done();
+        });
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
 
-// describe('Excel Exporting Remote data with custom data source', () => {
-//     let gridObj: TreeGrid;
-//     let data: Object = new DataManager({
-//         url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
-//         adaptor: new WebApiAdaptor,
-//         crossDomain: true
-//     });
-//     beforeAll((done: Function) => {
-//         gridObj = createGrid(
-//             {
-//                 dataSource: data,
-//                 hasChildMapping: 'isParent',
-//                 idMapping: 'TaskID',
-//                 parentIdMapping: 'ParentItem',
-//                 height: 400,
-//                 treeColumnIndex: 1,
-//                 allowPaging: true,
-//                 allowExcelExport: true,
-//                 allowPdfExport: true,
-//                 columns: [
-//                     { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 120 },
-//                     { field: 'TaskName', headerText: 'Task Name', width: 150 },
-//                     { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120 }
-//                 ],
-//                 excelExportComplete: exportComplete
-//             },
-//             done
-//         );
-//     });
-//     it('Checking the excel export', (done: Function) => {
-//         let excelExportProperties: TreeGridExcelExportProperties = {
-//             dataSource: data,
-//             isCollapsedStatePersist: true,
-//             exportType: 'CurrentPage'
-//         }
-//         gridObj.excelExport(excelExportProperties).then((doc)=>{
-//             expect(doc).not.toBeUndefined();
-//             done();
-//         })
+describe('Excel Exporting Remote data with custom data source', () => {
+    let gridObj: TreeGrid;
+    let data: Object = new DataManager({
+        url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
+        adaptor: new WebApiAdaptor,
+        crossDomain: true
+    });
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                hasChildMapping: 'isParent',
+                idMapping: 'TaskID',
+                parentIdMapping: 'ParentItem',
+                height: 400,
+                treeColumnIndex: 1,
+                allowPaging: true,
+                allowExcelExport: true,
+                allowPdfExport: true,
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 120 },
+                    { field: 'TaskName', headerText: 'Task Name', width: 150 },
+                    { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120 }
+                ],
+                excelExportComplete: exportComplete
+            },
+            done
+        );
+    });
+    it('Checking the excel export', (done: Function) => {
+        let excelExportProperties: TreeGridExcelExportProperties = {
+            dataSource: data,
+            isCollapsedStatePersist: true,
+            exportType: 'CurrentPage'
+        }
+        gridObj.excelExport(excelExportProperties).then((doc)=>{
+            expect(doc).not.toBeUndefined();
+            done();
+        })
         
-//     });
-//     afterAll(() => {
-//         destroy(gridObj);
-//     });
-// });
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
 
-// describe('Pdf Exporting Remote data', () => {
-//     let gridObj: TreeGrid;
-//     let data: Object = new DataManager({
-//         url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
-//         adaptor: new WebApiAdaptor,
-//         crossDomain: true
-//     });
-//     beforeAll((done: Function) => {
-//         gridObj = createGrid(
-//             {
-//                 dataSource: data,
-//                 hasChildMapping: 'isParent',
-//                 idMapping: 'TaskID',
-//                 parentIdMapping: 'ParentItem',
-//                 height: 400,
-//                 treeColumnIndex: 1,
-//                 allowExcelExport: true,
-//                 allowPdfExport: true,
-//                 columns: [
-//                     { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 120 },
-//                     { field: 'TaskName', headerText: 'Task Name', width: 150 },
-//                     { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120 }
-//                 ]
-//             },
-//             done
-//         );
-//     });
-//     it('Checking the excel export', (done: Function) => {
-//         gridObj.pdfExport().then((doc)=>{
-//             expect(doc).not.toBeUndefined();
-//             done();
-//         });
-//     });
-//     afterAll(() => {
-//         destroy(gridObj);
-//     });
-// });
+describe('Pdf Exporting Remote data', () => {
+    let gridObj: TreeGrid;
+    let data: Object = new DataManager({
+        url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
+        adaptor: new WebApiAdaptor,
+        crossDomain: true
+    });
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                hasChildMapping: 'isParent',
+                idMapping: 'TaskID',
+                parentIdMapping: 'ParentItem',
+                height: 400,
+                treeColumnIndex: 1,
+                allowExcelExport: true,
+                allowPdfExport: true,
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 120 },
+                    { field: 'TaskName', headerText: 'Task Name', width: 150 },
+                    { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120 }
+                ]
+            },
+            done
+        );
+    });
+    it('Checking the excel export', (done: Function) => {
+        gridObj.pdfExport().then((doc)=>{
+            expect(doc).not.toBeUndefined();
+            done();
+        });
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
 
-// describe('Pdf Exporting Remote data with custom data source', () => {
-//     let gridObj: TreeGrid;
-//     let data: Object = new DataManager({
-//         url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
-//         adaptor: new WebApiAdaptor,
-//         crossDomain: true
-//     });
-//     beforeAll((done: Function) => {
-//         gridObj = createGrid(
-//             {
-//                 dataSource: data,
-//                 hasChildMapping: 'isParent',
-//                 idMapping: 'TaskID',
-//                 parentIdMapping: 'ParentItem',
-//                 height: 400,
-//                 treeColumnIndex: 1,
-//                 allowPaging: true,
-//                 allowExcelExport: true,
-//                 allowPdfExport: true,
-//                 columns: [
-//                     { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 120 },
-//                     { field: 'TaskName', headerText: 'Task Name', width: 150 },
-//                     { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120 }
-//                 ]
-//             },
-//             done
-//         );
-//     });
-//     it('Checking the excel export', (done: Function) => {
-//         let pdfportProperties: TreeGridPdfExportProperties = {
-//             dataSource: data,
-//             isCollapsedStatePersist: true,
-//             exportType: 'CurrentPage'
-//         }
-//         gridObj.pdfExport(pdfportProperties).then((doc)=>{
-//             expect(doc).not.toBeUndefined();
-//             done();
-//         });
-//     });
-//     afterAll(() => {
-//         destroy(gridObj);
-//     });
-// });
+describe('Pdf Exporting Remote data with custom data source', () => {
+    let gridObj: TreeGrid;
+    let data: Object = new DataManager({
+        url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
+        adaptor: new WebApiAdaptor,
+        crossDomain: true
+    });
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                hasChildMapping: 'isParent',
+                idMapping: 'TaskID',
+                parentIdMapping: 'ParentItem',
+                height: 400,
+                treeColumnIndex: 1,
+                allowPaging: true,
+                allowExcelExport: true,
+                allowPdfExport: true,
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 120 },
+                    { field: 'TaskName', headerText: 'Task Name', width: 150 },
+                    { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120 }
+                ]
+            },
+            done
+        );
+    });
+    it('Checking the excel export', (done: Function) => {
+        let pdfportProperties: TreeGridPdfExportProperties = {
+            dataSource: data,
+            isCollapsedStatePersist: true,
+            exportType: 'CurrentPage'
+        }
+        gridObj.pdfExport(pdfportProperties).then((doc)=>{
+            expect(doc).not.toBeUndefined();
+            done();
+        });
+    });
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
 
 describe('Csv Exporting local data', () => {
     let gridObj: TreeGrid;
@@ -430,48 +430,48 @@ describe('Exporting with aggregates', () => {
     });
 });
 
-// describe('Excel Exporting Remote data without exportType', () => {
-//     let gridObj: TreeGrid;
-//     let data: Object = new DataManager({
-//         url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
-//         adaptor: new WebApiAdaptor,
-//         crossDomain: true
-//     });
-//     beforeAll((done: Function) => {
-//         gridObj = createGrid(
-//             {
-//                 dataSource: data,
-//                 hasChildMapping: 'isParent',
-//                 idMapping: 'TaskID',
-//                 parentIdMapping: 'ParentItem',
-//                 height: 400,
-//                 treeColumnIndex: 1,
-//                 allowPaging: true,
-//                 allowExcelExport: true,
-//                 allowPdfExport: true,
-//                 columns: [
-//                     { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 120 },
-//                     { field: 'TaskName', headerText: 'Task Name', width: 150 },
-//                     { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120 }
-//                 ],
-//                 excelExportComplete: exportComplete
-//             },
-//             done
-//         );
-//     });
-//     it('Checking the excel export', (done: Function) => {
-//         let excelExportProperties: TreeGridExcelExportProperties = {
-//             dataSource: data,
-//             isCollapsedStatePersist: true
-//         }
-//         gridObj.excelExport(excelExportProperties);
-//         done();
-//     });
-//     afterAll(() => {
-//         destroy(gridObj);
-//         gridObj.excelExportModule.destroy();
-//     });
-// });
+describe('Excel Exporting Remote data without exportType', () => {
+    let gridObj: TreeGrid;
+    let data: Object = new DataManager({
+        url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
+        adaptor: new WebApiAdaptor,
+        crossDomain: true
+    });
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                hasChildMapping: 'isParent',
+                idMapping: 'TaskID',
+                parentIdMapping: 'ParentItem',
+                height: 400,
+                treeColumnIndex: 1,
+                allowPaging: true,
+                allowExcelExport: true,
+                allowPdfExport: true,
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 120 },
+                    { field: 'TaskName', headerText: 'Task Name', width: 150 },
+                    { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120 }
+                ],
+                excelExportComplete: exportComplete
+            },
+            done
+        );
+    });
+    it('Checking the excel export', (done: Function) => {
+        let excelExportProperties: TreeGridExcelExportProperties = {
+            dataSource: data,
+            isCollapsedStatePersist: true
+        }
+        gridObj.excelExport(excelExportProperties);
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj.excelExportModule.destroy();
+    });
+});
 
 describe('Pdf Exporting local data without enable the property', () => {
     let gridObj: TreeGrid;
@@ -500,45 +500,45 @@ describe('Pdf Exporting local data without enable the property', () => {
     });
 });
 
-// describe('Excel Exporting Remote data with exportType as AllPage', () => {
-//     let gridObj: TreeGrid;
-//     let data: Object = new DataManager({
-//         url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
-//         adaptor: new WebApiAdaptor,
-//         crossDomain: true
-//     });
-//     beforeAll((done: Function) => {
-//         gridObj = createGrid(
-//             {
-//                 dataSource: data,
-//                 hasChildMapping: 'isParent',
-//                 idMapping: 'TaskID',
-//                 parentIdMapping: 'ParentItem',
-//                 height: 400,
-//                 treeColumnIndex: 1,
-//                 allowPaging: true,
-//                 allowExcelExport: true,
-//                 allowPdfExport: true,
-//                 columns: [
-//                     { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 120 },
-//                     { field: 'TaskName', headerText: 'Task Name', width: 150 },
-//                     { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120 }
-//                 ],
-//                 excelExportComplete: exportComplete
-//             },
-//             done
-//         );
-//     });
-//     it('Checking the excel export', (done: Function) => {
-//         gridObj.filterModule = null;
-//         let excelExportProperties: any = {
-//             exportType:'AllPages'
-//         }
-//         gridObj.excelExport(excelExportProperties);
-//         done();
-//     });
-//     afterAll(() => {
-//         destroy(gridObj);
-//         gridObj.excelExportModule.destroy();
-//     });
-// });
+describe('Excel Exporting Remote data with exportType as AllPage', () => {
+    let gridObj: TreeGrid;
+    let data: Object = new DataManager({
+        url: 'https://services.syncfusion.com/js/production/api/SelfReferenceData',
+        adaptor: new WebApiAdaptor,
+        crossDomain: true
+    });
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                hasChildMapping: 'isParent',
+                idMapping: 'TaskID',
+                parentIdMapping: 'ParentItem',
+                height: 400,
+                treeColumnIndex: 1,
+                allowPaging: true,
+                allowExcelExport: true,
+                allowPdfExport: true,
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID', textAlign: 'Right', width: 120 },
+                    { field: 'TaskName', headerText: 'Task Name', width: 150 },
+                    { field: 'StartDate', headerText: 'Start Date', textAlign: 'Right', width: 120 }
+                ],
+                excelExportComplete: exportComplete
+            },
+            done
+        );
+    });
+    it('Checking the excel export', (done: Function) => {
+        gridObj.filterModule = null;
+        let excelExportProperties: any = {
+            exportType:'AllPages'
+        }
+        gridObj.excelExport(excelExportProperties);
+        done();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj.excelExportModule.destroy();
+    });
+});

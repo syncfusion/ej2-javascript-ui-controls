@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.2.9 (2024-08-13)
+
+### DataManager
+
+#### Bug fixes
+
+- `#I616798` - The issue with "multiple requests arising when using query property and `useEffect` in `DropdownList` component" has been resolved.
+
 ## 26.1.42 (2024-07-16)
 
 ### DataManager

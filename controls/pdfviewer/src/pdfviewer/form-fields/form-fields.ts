@@ -209,7 +209,7 @@ export class FormFields {
                                         count++;
                                     }
                                 }
-                                if (currentData.ActualFieldName == null &&  this.formFieldsData.filter((item: any) => item.FieldName.includes(currentData.FieldName.replace(/_\d$/, ''))).filter((value: any) => value.Name !== 'ink').length === 0){
+                                if (currentData.ActualFieldName == null && !isNullOrUndefined(currentData.FieldName) && this.formFieldsData.filter((item: any) => !isNullOrUndefined(item.FieldName) && item.FieldName.includes(currentData.FieldName.replace(/_\d$/, ''))).filter((value: any) => value.Name !== 'ink').length === 0) {
                                     this.renderExistingAnnnot(currentData, parseFloat(currentData['PageIndex']) + 1, null, isFieldRotated);
                                     this.pdfViewerBase.signatureModule.storeSignatureData( pageIndex, currentData);
                                     this.isSignatureRendered = true;
@@ -223,7 +223,7 @@ export class FormFields {
                                 const inputField : any = field.currentField;
                                 const signCount : number = field.count;
                                 let isFieldRotated : boolean = false;
-                                if (currentData.ActualFieldName === null &&  this.formFieldsData.filter((item: any) => item.FieldName.includes(currentData.FieldName.replace(/_\d$/, ''))).filter((value: any) => value.Name !== 'ink').length === 0){
+                                if (currentData.ActualFieldName === null && !isNullOrUndefined(currentData.FieldName) && this.formFieldsData.filter((item: any) => !isNullOrUndefined(item.FieldName) && item.FieldName.includes(currentData.FieldName.replace(/_\d$/, ''))).filter((value: any) => value.Name !== 'ink').length === 0) {
                                     this.renderExistingAnnnot(currentData, parseFloat(currentData['PageIndex']) + 1, null, isFieldRotated);
                                     this.pdfViewerBase.signatureModule.storeSignatureData( pageIndex, currentData);
                                     this.isSignatureRendered = true;

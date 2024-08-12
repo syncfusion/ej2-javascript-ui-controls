@@ -1649,7 +1649,9 @@ export class BaseHistoryInfo {
             this.owner.editorModule.restartListAtInternal(this.owner.selectionModule, <number>this.modifiedProperties[0]);
             return;
         } else if (this.modifiedProperties[0] instanceof ImageSizeInfo) {
-            this.owner.selectionModule.updateImageSize(this.modifiedProperties[0] as ImageSizeInfo);
+            let imageInfo: ImageSizeInfo = this.modifiedProperties[0]  as ImageSizeInfo;    
+            this.insertedData = { width: HelperMethods.convertPixelToPoint(imageInfo.width), height: HelperMethods.convertPixelToPoint(imageInfo.height), alternativeText: imageInfo.alternatetext};
+            this.owner.selectionModule.updateImageSize(imageInfo);
         } else if (this.modifiedProperties[0] instanceof ModifiedLevel) {
             let modified: Dictionary<number, ModifiedLevel> = new Dictionary<number, ModifiedLevel>();
             for (let i: number = 0; i < this.modifiedProperties.length; i++) {
@@ -3236,13 +3238,17 @@ export class BaseHistoryInfo {
             operation.markerData = this.markerData.pop();
         }
         if (this.insertedElement instanceof FootnoteElementBox) {
-            let lastPara: ParagraphWidget = (this.insertedElement as FootnoteElementBox).bodyWidget.lastChild as ParagraphWidget;
-            let positionInfo: AbsolutePositionInfo = { position: 0, done: false };
-            let paragraphInfo: ParagraphInfo = { paragraph: lastPara, offset: this.owner.selectionModule.getParagraphLength(lastPara) + 1 };
-            this.owner.selectionModule.getPositionInfoForBodyContent(paragraphInfo, positionInfo, (this.insertedElement as FootnoteElementBox).bodyWidget.firstChild as ParagraphWidget);
-            operation.length += positionInfo.position;
+            operation.length += this.getFootNoteLength();
         }
         return operation;
+    }
+
+    private getFootNoteLength(): number {
+        let lastPara: ParagraphWidget = (this.insertedElement as FootnoteElementBox).bodyWidget.lastChild as ParagraphWidget;
+        let positionInfo: AbsolutePositionInfo = { position: 0, done: false };
+        let paragraphInfo: ParagraphInfo = { paragraph: lastPara, offset: this.owner.selectionModule.getParagraphLength(lastPara) + 1 };
+        this.owner.selectionModule.getPositionInfoForBodyContent(paragraphInfo, positionInfo, (this.insertedElement as FootnoteElementBox).bodyWidget.firstChild as ParagraphWidget);
+        return positionInfo.position;
     }
 
     private getUndoRedoOperation(action: Action,isTableInsert?: boolean, issamePosition?: boolean): Operation {
@@ -3300,6 +3306,9 @@ export class BaseHistoryInfo {
         }
         if (this.owner.enableTrackChanges) {
             pasteOperation.markerData = { isSkipTracking: true };
+        }
+        if (!isNullOrUndefined(this.insertedElement) && this.insertedElement instanceof FootnoteElementBox) {
+            pasteOperation.length += this.getFootNoteLength();
         }
         return pasteOperation;
     }

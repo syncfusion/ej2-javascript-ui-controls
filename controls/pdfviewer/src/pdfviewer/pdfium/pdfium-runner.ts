@@ -154,6 +154,7 @@ export function PdfiumRunner(): void {
             FPDF.Init();
             const wasmBuffer: number = PDFiumModule.asm.malloc(fileSize);
             PDFiumModule.HEAPU8.set(pdfiumWindow.fileByteArray, wasmBuffer);
+            pdfiumWindow.fileByteArray = null;
             documentDetails = new DocumentInfo({
                 wasm: FPDF.LoadMemDocument(wasmBuffer, fileSize, event.data.password),
                 wasmBuffer: wasmBuffer

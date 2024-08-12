@@ -13,8 +13,9 @@ import { createGrid, destroy } from '../base/specutil.spec';
 import { profile, inMB, getMemoryProfile } from '../base/common.spec';
 import { getScrollBarWidth } from '../../../src/grid/base/util';
 import { QueryCellInfoEventArgs } from '../../../src/grid/base/interface';
+import { Resize } from '../../../src/grid/actions/resize';
 
-Grid.Inject(Freeze, Aggregate, Edit, VirtualScroll);
+Grid.Inject(Freeze, Aggregate, Edit, VirtualScroll, Resize);
 
 describe('Freeze render module', () => {
     describe('Freeze Row and Column', () => {
@@ -994,6 +995,61 @@ describe('Freeze render module', () => {
             gridObj.frozenColumns = 0;
             gridObj.dataBound = dBound;
             gridObj.dataBind();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('EJ2-900729 - When freeze property is enabled the minWidth and maxWidth set to a column is not working properly', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    height: 400,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', minWidth: 30, maxWidth: 30, textAlign: 'Left', freeze: 'Left' },
+                        { field: 'Freight', headerText: 'Freight', width: 'auto', format: 'C2', textAlign: 'Right' },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 30, minWidth: 30, maxWidth: 30, freeze: 'Right' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 'auto' },
+                    ]
+                }, done);
+        });
+
+        it('check th width', () => {
+            expect(gridObj.getHeaderTable().querySelector('th').getBoundingClientRect().width).toBe(30);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('EJ2-900822 - The Grid is getting autofitted when column chooser is used', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0, 10),
+                    height: 400,
+                    allowResizing: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID' },
+                        { field: 'Freight', headerText: 'Freight', format: 'C2' },
+                        { field: 'CustomerID', headerText: 'Customer ID', freeze: 'Right' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', freeze: 'Right' },
+                    ]
+                }, done);
+        });
+
+        it('Hide Freight column', () => {
+            gridObj.hideColumns(['Freight']);
+        });
+        
+        it('check table style width', () => {
+            expect((gridObj.getHeaderTable() as HTMLElement).style.width).toBe('100%');
         });
 
         afterAll(() => {

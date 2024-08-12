@@ -4911,6 +4911,12 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 if (this.groupingBarModule && this.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
                     this.groupingBarModule.setGridRowWidth();
                 }
+                if (this.actionObj.fieldInfo && this.actionObj.fieldInfo.fieldName) {
+                    const pivotButton: HTMLElement = this.pivotButtonModule.parentElement.querySelector(`[data-uid="${this.actionObj.fieldInfo.fieldName}"]`);
+                    if (!isNullOrUndefined(pivotButton)) {
+                        pivotButton.focus();
+                    }
+                }
                 this.element.style.minWidth = '400px';
                 this.grid.element.style.minWidth = '400px';
             } else {
@@ -5274,7 +5280,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         if (axis === 'column' && !ele && this.gridSettings.selectionSettings.mode !== 'Row') {
             ele = closest(target, 'td');
         }
-        if (!target.classList.contains(cls.COLLAPSE) && !target.classList.contains(cls.EXPAND) && this.enableValueSorting && !(this.dataType === 'olap' && this.enableVirtualization)) {
+        if (!target.classList.contains(cls.COLLAPSE) && !target.classList.contains(cls.EXPAND) && this.enableValueSorting && !target.classList.contains(cls.RESIZED) && !(target.classList.contains(cls.RHANDLER) && target.classList.contains(cls.RCURSOR)) && !(this.dataType === 'olap' && this.enableVirtualization)) {
             const engine: PivotEngine | OlapEngine = this.dataType === 'pivot' ? this.engineModule : this.olapEngineModule;
             this.cellClicked(target, ele, e);
             try {

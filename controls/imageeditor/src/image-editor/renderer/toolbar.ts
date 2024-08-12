@@ -1644,7 +1644,7 @@ export class ToolbarModule {
             /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
             const imgName: any = document.getElementById(id + '_imgNametext');
             imgName.value = this.fileName ? this.fileName : fileObj['fileName'];
-            if (fileObj['fileType'].toUpperCase() !== 'JPEG') {
+            if (fileObj['fileType'] && fileObj['fileType'].toUpperCase() !== 'JPEG') {
                 qualityContainer.style.display = 'none';
                 qualitySliderValue.style.display = 'none';
             }

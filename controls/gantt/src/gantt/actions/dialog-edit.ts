@@ -1028,6 +1028,20 @@ export class DialogEdit {
     private tabSelectedEvent(args: SelectEventArgs): void {
         const ganttObj: Gantt = this.parent;
         const id: string = (args.selectedContent.childNodes[0] as HTMLElement).id;
+        const dialogModule: DialogEdit = this.parent.editModule.dialogModule;
+        const dialog: HTMLElement = dialogModule.dialog;
+        const hasEditedBatchCell: boolean = dialog.getElementsByClassName('e-editedbatchcell').length > 0;
+        const hasEditedOrAddedRow: boolean = dialog.getElementsByClassName('e-editedrow').length > 0 ||
+            dialog.getElementsByClassName('e-addedrow').length > 0;
+
+        if (dialogModule.storeResourceTab && hasEditedBatchCell) {
+            (document.querySelector('#'+ ganttObj.element.id + '' + 'Resources' +
+                'TabContainer_gridcontrol') as any).ej2_instances[0].saveCell();
+        }
+        else if(dialogModule.storeDependencyTab && hasEditedOrAddedRow) {
+            (document.querySelector('#'+ ganttObj.element.id + '' + 'Dependency' +
+                'TabContainer') as any).ej2_instances[0].editModule.batchSave();
+        }
         if (id === ganttObj.element.id + 'DependencyTabContainer') {
             this.storeDependencyTab = args.selectedContent;
         }

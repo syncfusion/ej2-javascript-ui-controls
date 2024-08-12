@@ -4,6 +4,7 @@ import { createElement, Browser, isBlazor, initializeCSPTemplate, isNullOrUndefi
 import { Toolbar as Tool, ItemModel, ClickEventArgs, MenuItemModel, ContextMenu as Context } from '@syncfusion/ej2-navigations';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { Toast, ToastCloseArgs } from '@syncfusion/ej2-notifications';
+import { _decode } from '@syncfusion/ej2-pdf';
 
 /**
  * The `NavigationPane` module is used to handle navigation pane for thumbnail and bookmark navigation of PDF viewer.
@@ -469,20 +470,35 @@ export class NavigationPane {
                                     this.pdfViewerBase.importAnnotations(jsonData, AnnotationDataFormat.Json);
                                 } else {
                                     this.pdfViewerBase.isPDFViewerJson = false;
-                                    this.pdfViewerBase.importAnnotations(importFile, AnnotationDataFormat.Json);
+                                    if (!this.pdfViewerBase.clientSideRendering) {
+                                        this.pdfViewerBase.importAnnotations(importFile, AnnotationDataFormat.Json);
+                                    } else {
+                                        this.pdfViewerBase.importAnnotations(_decode(importFile), AnnotationDataFormat.Json);
+                                    }
                                 }
                             }
                         }
                     };
                 } else if (uploadedFile.name.split('.xfdf').length > 1 && (uploadedFileType.includes('xfdf') || args.target.accept.includes('xfdf'))) {
                     const reader: FileReader = new FileReader();
-                    reader.readAsDataURL(uploadedFile);
+                    if (!this.pdfViewerBase.clientSideRendering) {
+                        reader.readAsDataURL(uploadedFile);
+                    } else {
+                        reader.readAsArrayBuffer(uploadedFile);
+                    }
                     reader.onload = (e: any): void => {
                         if (e.currentTarget.result) {
-                            const importFile: string =  e.currentTarget.result.split(',')[1];
-                            const annotationData: string =  atob(importFile);
-                            if (annotationData) {
-                                this.pdfViewerBase.importAnnotations(importFile, AnnotationDataFormat.Xfdf, true);
+                            if (!this.pdfViewerBase.clientSideRendering) {
+                                const importFile: string = e.currentTarget.result.split(',')[1];
+                                const annotationData: string = atob(importFile);
+                                if (annotationData) {
+                                    this.pdfViewerBase.importAnnotations(importFile, AnnotationDataFormat.Xfdf, true);
+                                }
+                            } else {
+                                const importFileByteArray: Uint8Array = new Uint8Array(e.currentTarget.result);
+                                if (importFileByteArray) {
+                                    this.pdfViewerBase.importAnnotations(importFileByteArray, AnnotationDataFormat.Xfdf, true);
+                                }
                             }
                         }
                     };

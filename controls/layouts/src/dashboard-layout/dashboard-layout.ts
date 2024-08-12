@@ -2467,6 +2467,23 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         });
     }
 
+    /**
+     * Method to update the draggable handle when draggable panel elements are bound dynamically.
+     *
+     * @returns void
+     *
+     */
+
+    public refreshDraggableHandle(): void {
+        if (this.dragCollection && this.dragCollection.length > 0) {
+            for (let i: number = 0; i < this.dragCollection.length; i++) {
+                this.dragCollection[i as number].destroy();
+                EventHandler.clearEvents(this.dragCollection[i as number].element);
+            }
+            this.ensureDrag();
+        }
+    }
+
     protected updateRowsHeight(row: number, sizeY: number, addRows: number): void {
         if (row + sizeY >= this.rows) {
             this.rows = this.rows + addRows;

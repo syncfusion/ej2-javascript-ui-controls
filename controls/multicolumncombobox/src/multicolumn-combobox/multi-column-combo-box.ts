@@ -279,6 +279,25 @@ export class GridSettings extends ChildProperty<GridSettings> {
      */
     @Property('Default')
     public gridLines: GridLine;
+
+    /**
+     * Specifies whether to allow text wrapping of the popup grid content.
+     *
+     * @default false
+     */
+    @Property(false)
+    public allowTextWrap: boolean;
+
+    /**
+     * Specifies the mode for text wrapping in the popup grid content. Options include 'Both', 'Content', and 'Header'.
+     * 
+     * @isenumeration true
+     *
+     * @default WrapMode.Both
+     * @asptype WrapMode
+     */
+    @Property(WrapMode.Both)
+    public textWrapMode: WrapMode | string;
 }
 
 export interface PopupEventArgs {
@@ -689,25 +708,6 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
     public query: Query;
 
     /**
-     * Specifies whether to allow text wrapping of the popup grid content.
-     *
-     * @default false
-     */
-    @Property(false)
-    public allowTextWrap: boolean;
-
-    /**
-     * Specifies the mode for text wrapping in the popup grid content. Options include 'Both', 'Content', and 'Header'.
-     * 
-     * @isenumeration true
-     *
-     * @default WrapMode.Both
-     * @asptype WrapMode
-     */
-    @Property(WrapMode.Both)
-    public textWrapMode: WrapMode | string;
-
-    /**
      * Accepts the template design and assigns it to each items present in the popup.
      *
      * {% codeBlock src='multicolumn-combobox/itemTemplate/index.md' %}{% endcodeBlock %}
@@ -967,7 +967,8 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
             enableRtl: this.enableRtl,
             editSettings: { allowAdding: false },
             query: this.query,
-            allowTextWrap: this.allowTextWrap,
+            allowTextWrap: this.gridSettings.allowTextWrap,
+            textWrapSettings: { wrapMode: this.gridSettings.textWrapMode as WrapMode },
             height: this.popupHeight,
             allowMultiSorting: this.sortType.toString().toLowerCase() === 'multiplecolumns' && this.allowSorting,
             rowTemplate: this.itemTemplate,
@@ -1012,7 +1013,6 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
             this.gridObj.sortSettings = { columns: [{ field: this.fields.text, direction: sortOrder === 'ascending' ?
             SortOrder.Ascending : SortOrder.Descending }] };
         }
-        this.gridObj.textWrapSettings.wrapMode = this.textWrapMode as WrapMode;
         this.gridObj.appendTo(this.gridEle);
     }
 
@@ -2176,6 +2176,12 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                     this.gridObj.gridLines = newProp.gridSettings.gridLines;
                     this.gridObj.rowHeight = newProp.gridSettings.rowHeight;
                     this.gridObj.enableAltRow = newProp.gridSettings.enableAltRow;
+                    if (!(isNOU(newProp.gridSettings.allowTextWrap))) {
+                        this.gridObj.allowTextWrap = newProp.gridSettings.allowTextWrap;
+                    }
+                    if (!(isNOU(newProp.gridSettings.textWrapMode))) {
+                        this.gridObj.textWrapSettings.wrapMode = newProp.gridSettings.textWrapMode as WrapMode;
+                    }
                 }
                 break;
             case 'fields':
@@ -2196,20 +2202,6 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                 break;
             case 'allowSorting':
                 if (this.gridObj) { this.allowSorting = this.gridObj.allowSorting = newProp.allowSorting; }
-                break;
-            case 'allowTextWrap':
-                if (this.gridObj) {
-                    if (!(isNOU(newProp.allowTextWrap))) {
-                        this.gridObj.allowTextWrap = newProp.allowTextWrap;
-                    }
-                }
-                break;
-            case 'textWrapMode':
-                if (this.gridObj) {
-                    if (!(isNOU(newProp.textWrapMode))) {
-                        this.gridObj.textWrapSettings.wrapMode = newProp.textWrapMode as WrapMode;
-                    }
-                }
                 break;
             case 'columns':
                 if (this.gridObj) {

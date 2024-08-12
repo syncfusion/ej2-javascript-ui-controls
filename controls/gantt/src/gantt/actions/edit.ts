@@ -1319,6 +1319,22 @@ export class Edit {
                 this.updateParentItemOnEditing()
                 this.parent.dataOperation.updateParentItems(eventArg.data as IGanttData, true);
             }
+            const ganttProps: ITaskData = eventArg.data['ganttProperties'];
+            const { startDate, endDate, segments, durationUnit, isAutoSchedule, isMilestone } = ganttProps;
+            if (startDate && endDate && !segments) {
+                const duration: number = this.parent.dateValidationModule.getDuration(
+                    startDate,
+                    endDate,
+                    durationUnit,
+                    isAutoSchedule,
+                    isMilestone,
+                    true
+                );
+                if (duration !== 0) {
+                    ganttProps.isMilestone = false;
+                    this.parent.dateValidationModule.calculateDuration(eventArg.data as IGanttData);
+                }
+            }
             this.parent.dataOperation.updateWidthLeft(eventArg.data as IGanttData);
 
             if (!isNullOrUndefined(this.parent.taskFields.progress) && currentProgress !== eventArg.data['ganttProperties'].progress) {

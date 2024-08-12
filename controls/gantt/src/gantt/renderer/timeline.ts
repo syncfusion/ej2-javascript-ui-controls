@@ -1795,7 +1795,7 @@ export class Timeline {
                     minStartDate = this.timelineStartDate;
                 }
                 if (!isNullOrUndefined(maxEndLeft) && (maxEndLeft >= ((this.parent.enableTimelineVirtualization ?
-                    this.wholeTimelineWidth : this.totalTimelineWidth) - this.bottomTierCellWidth) ||
+                    this.wholeTimelineWidth : this.totalTimelineWidth) - this.bottomTierCellWidth) &&
                     maxEndLeft > validEndLeft)) {
                     isChanged = isChanged === 'prevTimeSpan' ? 'both' : 'nextTimeSpan';
                     maxEndDate = maxEndDate < this.timelineEndDate ? this.timelineEndDate : maxEndDate;

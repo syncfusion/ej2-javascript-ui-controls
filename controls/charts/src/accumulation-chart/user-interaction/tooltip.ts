@@ -53,7 +53,6 @@ export class AccumulationTooltip extends BaseTooltip {
 
     private mouseMoveHandler(e: PointerEvent | TouchEvent): void {
         const control: AccumulationChart = this.accumulation;
-        e.stopPropagation(); //Prevent event trigger to parent in nested rendering case.
         // Tooltip for chart series.
         if (control.tooltip.enable && withInBounds(control.mouseX, control.mouseY, control.initialClipRect)) {
             this.tooltip(e);

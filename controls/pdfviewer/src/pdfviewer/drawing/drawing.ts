@@ -3403,6 +3403,12 @@ export class Drawing {
         return newobjs as PdfAnnotationBaseModel[];
     }
 
+    private isWithinBounds(pageCurrentRect: ClientRect, events: any): boolean {
+        const { clientX, clientY } = events;
+        const { left, right, top, bottom } = pageCurrentRect;
+        return left < clientX && clientX < right && top < clientY && clientY < bottom;
+    }
+
     /**
      * @private
      * @param {PdfAnnotationBaseModel[]} obj - Specified the annotation object.
@@ -3440,6 +3446,7 @@ export class Drawing {
                             const copy: PdfAnnotationBaseModel = copiedItems[parseInt(j.toString(), 10)];
                             const pageDiv: HTMLElement = this.pdfViewer.viewerBase.getElement('_pageDiv_' + copy.pageIndex);
                             let events: any = event as MouseEvent;
+                            const pageCurrentRect: ClientRect = pageDiv.getBoundingClientRect();
                             if (events && !events.clientX && !events.clientY) {
                                 events = { clientX: this.pdfViewer.viewerBase.mouseLeft, clientY: this.pdfViewer.viewerBase.mouseTop };
                             }
@@ -3450,81 +3457,96 @@ export class Drawing {
                                 this.calculateCopyPosition(copy, pageDiv, events);
                             } else {
                                 if (pageDiv) {
-                                    const pageCurrentRect: ClientRect = pageDiv.getBoundingClientRect();
-                                    copy.bounds.x = (events.clientX - pageCurrentRect.left) / zoomfactor;
-                                    copy.bounds.y = (events.clientY - pageCurrentRect.top) / zoomfactor;
+                                    if ((pageCurrentRect.right - events.clientX) < copy.bounds.width * zoomfactor) {
+                                        copy.bounds.x = (pageDiv.clientWidth - copy.bounds.width * zoomfactor) / zoomfactor;
+                                    }
+                                    else {
+                                        copy.bounds.x = (events.clientX - pageCurrentRect.left) / zoomfactor;
+                                    }
+                                    if ((pageCurrentRect.bottom - events.clientY) > copy.bounds.height * zoomfactor) {
+                                        copy.bounds.y = (events.clientY - pageCurrentRect.top) / zoomfactor;
+                                    }
+                                    else {
+                                        copy.bounds.y = (pageDiv.clientHeight - copy.bounds.height * zoomfactor) / zoomfactor;
+                                    }
                                 }
                             }
-                            const newNode: PdfAnnotationBaseModel = cloneObject(copy);
-                            if (this.pdfViewer.viewerBase.contextMenuModule.previousAction !== 'Cut') {
-                                newNode.id += randomId();
-                                if (this.pdfViewer.annotationModule && newNode.shapeAnnotationType !== 'HandWrittenSignature') {
-                                    newNode.annotName = newNode.id;
-                                    this.pdfViewer.annotationModule.stickyNotesAnnotationModule.
-                                        updateAnnotationCollection(newNode, copiedItems[0], false);
+                            if (this.isWithinBounds(pageCurrentRect, events)) {
+                                const newNode: PdfAnnotationBaseModel = cloneObject(copy);
+                                if (this.pdfViewer.viewerBase.contextMenuModule.previousAction !== 'Cut') {
+                                    newNode.id += randomId();
+                                    if (this.pdfViewer.annotationModule && newNode.shapeAnnotationType !== 'HandWrittenSignature') {
+                                        newNode.annotName = newNode.id;
+                                        this.pdfViewer.annotationModule.stickyNotesAnnotationModule.
+                                            updateAnnotationCollection(newNode, copiedItems[0], false);
+                                    }
+                                    if (newNode.shapeAnnotationType === 'SignatureText' || newNode.shapeAnnotationType === 'HandWrittenSignature' || newNode.shapeAnnotationType === 'SignatureImage') {
+                                        this.pdfViewer.viewerBase.signatureModule.storeSignatureData(newNode.pageIndex, newNode);
+                                    }
+                                    if (!newNode.formFieldAnnotationType) {
+                                        this.pdfViewer.annotation.addAction(this.pdfViewer.viewerBase.getActivePage(false), null, newNode as PdfAnnotationBase, 'Addition', '', newNode as PdfAnnotationBase, newNode);
+                                    }
+                                } else {
+                                    if (this.pdfViewer.annotationModule) {
+                                        this.pdfViewer.annotationModule.stickyNotesAnnotationModule.
+                                            updateAnnotationCollection(newNode, copiedItems[0], true);
+                                    }
+                                    if (newNode.shapeAnnotationType === 'SignatureText' || newNode.shapeAnnotationType === 'HandWrittenSignature' || newNode.shapeAnnotationType === 'SignatureImage') {
+                                        this.pdfViewer.viewerBase.signatureModule.storeSignatureData(newNode.pageIndex, newNode);
+                                    }
                                 }
-                                if (newNode.shapeAnnotationType === 'SignatureText' || newNode.shapeAnnotationType === 'HandWrittenSignature' || newNode.shapeAnnotationType === 'SignatureImage') {
-                                    this.pdfViewer.viewerBase.signatureModule.storeSignatureData(newNode.pageIndex, newNode);
+                                const addedAnnot: PdfAnnotationBaseModel | PdfFormFieldBaseModel = this.add(newNode);
+                                if (this.pdfViewer.formDesigner && addedAnnot.formFieldAnnotationType && this.pdfViewer.annotation) {
+                                    this.pdfViewer.annotation.addAction(this.pdfViewer.viewerBase.getActivePage(true), null, addedAnnot as PdfFormFieldBase, 'Addition', '', addedAnnot as PdfFormFieldBase, addedAnnot as PdfFormFieldBase);
                                 }
-                                if (!newNode.formFieldAnnotationType) {
-                                    this.pdfViewer.annotation.addAction(this.pdfViewer.viewerBase.getActivePage(false), null, newNode as PdfAnnotationBase, 'Addition', '', newNode as PdfAnnotationBase, newNode);
+                                if ((newNode.shapeAnnotationType === 'FreeText' || newNode.enableShapeLabel) && addedAnnot) {
+                                    this.nodePropertyChange(addedAnnot, {});
                                 }
-                            } else {
-                                if (this.pdfViewer.annotationModule) {
-                                    this.pdfViewer.annotationModule.stickyNotesAnnotationModule.
-                                        updateAnnotationCollection(newNode, copiedItems[0], true);
+                                if (addedAnnot.formFieldAnnotationType && addedAnnot.pageIndex === index) {
+                                    this.pdfViewer.formFieldCollection.push(addedAnnot);
+                                    const formField: FormFieldModel = {
+                                        id: addedAnnot.id, name: (addedAnnot as PdfFormFieldBaseModel).name,
+                                        value: (addedAnnot as PdfFormFieldBaseModel).value,
+                                        type: addedAnnot.formFieldAnnotationType as FormFieldType,
+                                        isReadOnly: addedAnnot.isReadonly, fontFamily: addedAnnot.fontFamily,
+                                        fontSize: addedAnnot.fontSize, fontStyle: addedAnnot.fontStyle as unknown as FontStyle,
+                                        color: (addedAnnot as PdfFormFieldBaseModel).color,
+                                        backgroundColor: (addedAnnot as PdfFormFieldBaseModel).backgroundColor,
+                                        alignment: (addedAnnot as PdfFormFieldBaseModel).alignment as TextAlign,
+                                        visibility: (addedAnnot as PdfFormFieldBaseModel).visibility,
+                                        maxLength: (addedAnnot as PdfFormFieldBaseModel).maxLength,
+                                        isRequired: (addedAnnot as PdfFormFieldBaseModel).isRequired,
+                                        isPrint: addedAnnot.isPrint, isSelected: (addedAnnot as PdfFormFieldBaseModel).isSelected,
+                                        isChecked: (addedAnnot as PdfFormFieldBaseModel).isChecked,
+                                        tooltip: (addedAnnot as PdfFormFieldBaseModel).tooltip,
+                                        bounds: addedAnnot.bounds as IFormFieldBound,
+                                        thickness: addedAnnot.thickness, borderColor: (addedAnnot as PdfFormFieldBaseModel).borderColor,
+                                        signatureIndicatorSettings: (addedAnnot as PdfFormFieldBaseModel).signatureIndicatorSettings,
+                                        insertSpaces: (addedAnnot as PdfFormFieldBaseModel).insertSpaces,
+                                        isMultiline: (addedAnnot as PdfFormFieldBaseModel).isMultiline,
+                                        isTransparent: (addedAnnot as PdfFormFieldBaseModel).isTransparent,
+                                        options: (addedAnnot as PdfFormFieldBaseModel).options, pageIndex: addedAnnot.pageIndex,
+                                        pageNumber: (addedAnnot as PdfFormFieldBaseModel).pageNumber,
+                                        rotateAngle: (addedAnnot as PdfFormFieldBaseModel).rotateAngle,
+                                        signatureType: (addedAnnot as any).signatureType,
+                                        zIndex: (addedAnnot as PdfFormFieldBaseModel).zIndex,
+                                        selectedIndex: (addedAnnot as PdfFormFieldBaseModel).selectedIndex
+                                    };
+                                    if ((addedAnnot as PdfFormFieldBaseModel).options &&
+                                        (addedAnnot as PdfFormFieldBaseModel).options.length > 0) {
+                                        formField.options = (addedAnnot as PdfFormFieldBaseModel).options;
+                                    }
+                                    this.pdfViewer.formFieldCollections.push(formField);
+                                    this.pdfViewer.formDesigner.drawHTMLContent(addedAnnot.formFieldAnnotationType,
+                                                                                addedAnnot.wrapper.children[0] as DiagramHtmlElement,
+                                                                                addedAnnot,
+                                                                                (addedAnnot as PdfFormFieldBaseModel).pageIndex,
+                                                                                this.pdfViewer, fieldId);
                                 }
-                                if (newNode.shapeAnnotationType === 'SignatureText' || newNode.shapeAnnotationType === 'HandWrittenSignature' || newNode.shapeAnnotationType === 'SignatureImage') {
-                                    this.pdfViewer.viewerBase.signatureModule.storeSignatureData(newNode.pageIndex, newNode);
+                                this.pdfViewer.select([newNode.id], this.pdfViewer.annotationSelectorSettings);
+                                if (!addedAnnot.formFieldAnnotationType) {
+                                    this.pdfViewer.annotationModule.triggerAnnotationAddEvent(newNode);
                                 }
-                            }
-                            const addedAnnot: PdfAnnotationBaseModel | PdfFormFieldBaseModel = this.add(newNode);
-                            if (this.pdfViewer.formDesigner && addedAnnot.formFieldAnnotationType && this.pdfViewer.annotation) {
-                                this.pdfViewer.annotation.addAction(this.pdfViewer.viewerBase.getActivePage(true), null, addedAnnot as PdfFormFieldBase, 'Addition', '', addedAnnot as PdfFormFieldBase, addedAnnot as PdfFormFieldBase);
-                            }
-                            if ((newNode.shapeAnnotationType === 'FreeText' || newNode.enableShapeLabel) && addedAnnot) {
-                                this.nodePropertyChange(addedAnnot, {});
-                            }
-                            if (addedAnnot.formFieldAnnotationType && addedAnnot.pageIndex === index) {
-                                this.pdfViewer.formFieldCollection.push(addedAnnot);
-                                const formField: FormFieldModel = {
-                                    id: addedAnnot.id, name: (addedAnnot as PdfFormFieldBaseModel).name,
-                                    value: (addedAnnot as PdfFormFieldBaseModel).value, type: addedAnnot.formFieldAnnotationType as FormFieldType,
-                                    isReadOnly: addedAnnot.isReadonly, fontFamily: addedAnnot.fontFamily,
-                                    fontSize: addedAnnot.fontSize, fontStyle: addedAnnot.fontStyle as unknown as FontStyle,
-                                    color: (addedAnnot as PdfFormFieldBaseModel).color,
-                                    backgroundColor: (addedAnnot as PdfFormFieldBaseModel).backgroundColor,
-                                    alignment: (addedAnnot as PdfFormFieldBaseModel).alignment as TextAlign,
-                                    visibility: (addedAnnot as PdfFormFieldBaseModel).visibility,
-                                    maxLength: (addedAnnot as PdfFormFieldBaseModel).maxLength,
-                                    isRequired: (addedAnnot as PdfFormFieldBaseModel).isRequired,
-                                    isPrint: addedAnnot.isPrint, isSelected: (addedAnnot as PdfFormFieldBaseModel).isSelected,
-                                    isChecked: (addedAnnot as PdfFormFieldBaseModel).isChecked,
-                                    tooltip: (addedAnnot as PdfFormFieldBaseModel).tooltip, bounds: addedAnnot.bounds as IFormFieldBound,
-                                    thickness: addedAnnot.thickness, borderColor: (addedAnnot as PdfFormFieldBaseModel).borderColor,
-                                    signatureIndicatorSettings: (addedAnnot as PdfFormFieldBaseModel).signatureIndicatorSettings,
-                                    insertSpaces: (addedAnnot as PdfFormFieldBaseModel).insertSpaces,
-                                    isMultiline: (addedAnnot as PdfFormFieldBaseModel).isMultiline,
-                                    isTransparent: (addedAnnot as PdfFormFieldBaseModel).isTransparent,
-                                    options: (addedAnnot as PdfFormFieldBaseModel).options, pageIndex: addedAnnot.pageIndex,
-                                    pageNumber: (addedAnnot as PdfFormFieldBaseModel).pageNumber,
-                                    rotateAngle: (addedAnnot as PdfFormFieldBaseModel).rotateAngle,
-                                    signatureType: (addedAnnot as any).signatureType,
-                                    zIndex: (addedAnnot as PdfFormFieldBaseModel).zIndex,
-                                    selectedIndex: (addedAnnot as PdfFormFieldBaseModel).selectedIndex
-                                };
-                                if ((addedAnnot as PdfFormFieldBaseModel).options && (addedAnnot as PdfFormFieldBaseModel).options.length > 0) {
-                                    formField.options = (addedAnnot as PdfFormFieldBaseModel).options;
-                                }
-                                this.pdfViewer.formFieldCollections.push(formField);
-                                this.pdfViewer.formDesigner.drawHTMLContent(addedAnnot.formFieldAnnotationType,
-                                    addedAnnot.wrapper.children[0] as DiagramHtmlElement, addedAnnot,
-                                    (addedAnnot as PdfFormFieldBaseModel).pageIndex,
-                                    this.pdfViewer, fieldId);
-                            }
-                            this.pdfViewer.select([newNode.id], this.pdfViewer.annotationSelectorSettings);
-                            if (!addedAnnot.formFieldAnnotationType) {
-                                this.pdfViewer.annotationModule.triggerAnnotationAddEvent(newNode);
                             }
                         }
                     }

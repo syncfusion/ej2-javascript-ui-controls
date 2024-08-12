@@ -21,7 +21,7 @@ export class VirtualScroll {
     private prevendIndex: number = -1;
     private visualData: ITreeData[];
     private prevrequestType: string;
-    public prevSelectedRecord: object;
+    public prevSelectedRecord: object = [];
 
     /**
      * Constructor for VirtualScroll module
@@ -155,7 +155,8 @@ export class VirtualScroll {
                 }
             }
             //}
-            if (this.prevrequestType === 'collapseAll' && pageingDetails.actionArgs.requestType === 'virtualscroll' && !isNullOrUndefined(this.parent.idMapping)) {
+            if (this.prevrequestType === 'collapseAll' && pageingDetails.actionArgs.requestType === 'virtualscroll'
+                && !isNullOrUndefined(this.parent.idMapping) && startIndex === 0) {
                 startIndex = 0;
                 endIndex = this.parent.grid.pageSettings.pageSize - 1;
                 this.parent.grid.notify(events.virtualActionArgs, { setTop: true });

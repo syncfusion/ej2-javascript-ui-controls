@@ -2461,6 +2461,16 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                     this.grid.selectionModule[`${updateRowSelection}`](this.getRows()[parseInt(index.toString(), 10)], index);
                 }
             }
+            if (this.enableVirtualization && this.selectionSettings.persistSelection
+                && !isNullOrUndefined((this as any).virtualScrollModule.prevSelectedRecord)) {
+                for (let i: number = 0; i < (this as any).virtualScrollModule.prevSelectedRecord.length; i++) {
+                    const updateRowSelection: string = 'updateRowSelection';
+                    const index: number =
+                        // eslint-disable-next-line max-len
+                        this.getCurrentViewRecords().indexOf((this as any).virtualScrollModule.prevSelectedRecord[parseInt(i.toString(), 10)]);
+                    this.grid.selectionModule[`${updateRowSelection}`](this.getRows()[parseInt(index.toString(), 10)], index);
+                }
+            }
             this.trigger(events.dataBound, args);
             this.initialRender = false;
         };
@@ -4269,21 +4279,12 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 expandArgs = { data: parentRec, row: row };
                 this.trigger(events.expanded, expandArgs);
             }
+            else if (!this.isExpandAll && this.enableVirtualization && this.selectionSettings.persistSelection
+                && !isNullOrUndefined((this as any).virtualScrollModule.prevSelectedRecord)) {
+                (this as any).virtualScrollModule.prevSelectedRecord = [];
+            }
             else if (!this.isExpandAll) {
                 this.trigger(events.expanded, expandArgs);
-            }
-            if ((record as ITreeData).expanded && this.enableVirtualization && this.selectionSettings.persistSelection
-                && !isNullOrUndefined((this as any).virtualScrollModule.prevSelectedRecord)) {
-                for (let i: number = 0; i < (this as any).virtualScrollModule.prevSelectedRecord.length; i++) {
-                    if ((record as ITreeData).uniqueID ===
-                        (this as any).virtualScrollModule.prevSelectedRecord[parseInt(i.toString(), 10)].parentItem.uniqueID) {
-                        const updateRowSelection: string = 'updateRowSelection';
-                        const index: number =
-                        // eslint-disable-next-line max-len
-                            this.getCurrentViewRecords().indexOf((this as any).virtualScrollModule.prevSelectedRecord[parseInt(i.toString(), 10)]);
-                        this.grid.selectionModule[`${updateRowSelection}`](this.getRows()[parseInt(index.toString(), 10)], index);
-                    }
-                }
             }
         }
     }

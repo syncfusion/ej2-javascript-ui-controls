@@ -768,4 +768,56 @@ describe('filter menu module =>', () => {
             destroy(gridObj);
         });
     });
+
+    describe('Filter Menu Operator Code Coverage => ', () => {
+        let gridObj: Grid;
+        let template: string = '<input type="text" id="CustomerID" name="CustomerID" />';
+        let actionComplete: (args: any) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    allowPaging: true,
+                    filterSettings: { type: 'Menu' },
+                    columns: [
+                        { field: 'CustomerID' ,width:120, headerText:"Customer ID", filterTemplate: template },
+                        { field: 'Freight',width:110 ,format:'C2',headerText:"Freight"},
+                    ],
+                    actionComplete: actionComplete,
+                }, done);
+        });
+    
+        it('open filter menu filtering', (done: Function) => {
+            actionComplete = (e: any) => {
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.element.querySelectorAll(".e-filtermenudiv")[0] as HTMLElement).click();
+        });
+    
+        it('Open Dropdown list', () => {
+            let dropDownList: DropDownList = document.querySelector('.e-filter-popup').querySelectorAll('.e-dropdownlist')[0]['ej2_instances'][0];
+            dropDownList.showPopup();
+        });
+
+        it('Filter template isempty testing', () => {
+            (<HTMLInputElement>document.querySelector(".e-dropdownbase").querySelector('[data-value="isempty"]')).click();
+        });
+
+        it('Open Dropdown list', () => {
+            (gridObj.element.querySelectorAll(".e-filtermenudiv")[0] as HTMLElement).click();
+            let dropDownList: DropDownList = document.querySelector('.e-filter-popup').querySelectorAll('.e-dropdownlist')[0]['ej2_instances'][0];
+            dropDownList.showPopup();
+        });
+
+        it('Filter template null testing', () => {
+            (<HTMLInputElement>document.querySelector(".e-dropdownbase").querySelector('[data-value="equal"]')).click();
+        });
+    
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+    });
 });

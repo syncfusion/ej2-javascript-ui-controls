@@ -8542,7 +8542,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @param  {string} password - Specifies the Given document password
      * @returns {void}
      */
-    public load(document: string, password: string): void {
+    public load(document: string | Uint8Array, password: string): void {
         if (this.pageCount !== 0) {
             this.viewerBase.clear(true);
         } else {
@@ -9108,8 +9108,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                         if (importData.includes('pdfAnnotation')) {
                             this.importAnnotationsAsJson(importData);
                         } else {
-                            const newImportData: any = importData.split(',')[1] ? importData.split(',')[1] : importData.split(',')[0];
-                            importData = decodeURIComponent(escape(atob(newImportData)));
                             this.importAnnotationsAsJson(importData);
                         }
                     } else {

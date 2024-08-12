@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 26.2.9 (2024-08-13)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I612252` - Now, the `ArgumentOutOfRangeException` does not occurs while attempting to download the provided document.
+- Now, the script error does not occurs when searching the non-matched word in the document without magnification module.
+- `#F189402` - Now, the PDF viewer can load the PDF document as a blob URL.
+- `#F190306` - Now, the script error does not occur when loading the provided document.
+
 ## 26.2.8 (2024-08-06)
 
 ### PDF Viewer
@@ -11,7 +22,8 @@
 - `#I612530` - Now, able to copy text from form field text boxes using Ctrl+C.
 - `#I608686` - Now, the script error no longer occurs when deleting the added annotations using the `deleteAnnotations` API.
 - `#I607610` - Now, we are able to click the checkbox field in the customer-provided document on mobile devices.
-- `#609340`- Now, the invalid error message is not displayed when loading an incorrect file path in stand-alone mode.
+- `#I612848` - Now, The form fields can no longer be pasted outside the page container
+- `#I609340` - Now, the invalid error message is not displayed when loading an incorrect file path in stand-alone mode.
 
 ## 26.2.7 (2024-07-30)
 

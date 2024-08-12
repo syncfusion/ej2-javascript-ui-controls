@@ -18,9 +18,4 @@ $progress-btn-flat-info-progress-color: rgba($info-text, 1) !default;
 $progress-btn-flat-warning-progress-color: rgba($warning-text, 1) !default;
 $progress-btn-flat-danger-progress-color: rgba($danger-text, 1) !default;
 $btn-flat-primary-path-arc: $white;
-
 $fade-out: none !default;
-
-.e-path-circle {
-  stroke: $fade-out;
-}

@@ -399,13 +399,16 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         const info: SentinelType = scrollArgs.sentinel;
         const rowHeight: number = this.parent.getRowHeight();
         const outBuffer: number = this.parent.pageSettings.pageSize - Math.ceil(this.parent.pageSettings.pageSize / 2);
-        const content: HTMLElement = this.parent.getContent().querySelector('.e-content');
+        let content: HTMLElement;
+        if (!isNullOrUndefined(this.parent.contentModule)) {
+            content = this.parent.getContent().querySelector('.e-content');
+        }
         const scrollHeight: number = outBuffer * rowHeight;
         const upScroll: boolean = (scrollArgs.offset.top - this.translateY) <= 0;
         const downScroll: boolean = Math.ceil(scrollArgs.offset.top - this.translateY) + rowHeight >= scrollHeight;
         const selectedRowIndex: string = 'selectedRowIndex';
         const currentViewData: Object[] = this.parent.currentViewData; const indexValue: string = 'index';
-        if (upScroll && (scrollArgs.direction !== 'right' && scrollArgs.direction !== 'left')) {
+        if (upScroll && (scrollArgs.direction !== 'right' && scrollArgs.direction !== 'left') && !isNullOrUndefined(content)) {
             const vHeight: number = +(this.parent.height.toString().indexOf('%') < 0 ? parseInt(this.parent.height.toString(), 10) :
                 this.parent.element.getBoundingClientRect().height);
             let index: number = (~~(content.scrollTop / rowHeight)
@@ -452,7 +455,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
                 this.translateY = (scrollArgs.offset.top - (outBuffer * rowHeight) > 0) ?
                     scrollArgs.offset.top - (outBuffer * rowHeight) + 10 : 0;
             }
-        } else if (downScroll && (scrollArgs.direction !== 'right' && scrollArgs.direction !== 'left')) {
+        } else if (downScroll && (scrollArgs.direction !== 'right' && scrollArgs.direction !== 'left') && !isNullOrUndefined(content)) {
             let nextSetResIndex: number = ~~(content.scrollTop / rowHeight);
             const isLastBlock: boolean = (this[`${selectedRowIndex}`] + this.parent.pageSettings.pageSize) < this.totalRecords ? false : true;
             if (!isNullOrUndefined(this[`${selectedRowIndex}`]) && this[`${selectedRowIndex}`] !== -1 &&

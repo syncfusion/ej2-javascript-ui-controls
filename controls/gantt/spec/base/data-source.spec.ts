@@ -14029,4 +14029,18 @@ export let cr898103: Object[] = [
         ]
     }
 ];
-
+export let CR898960: Object[] = [
+    {
+        TaskId: 1, TaskName: 'Task 1', StartDate: new Date('04/02/2019'),
+        EndDate: new Date('04/21/2019'), Duration: '0', TaskType: ''
+    },
+    {
+        TaskId: 2, TaskName: 'Task 2', Duration: '5', TaskType: 'Task with duration only'
+    },
+    {
+        TaskId: 3, TaskName: 'Task 3', StartDate: new Date('04/03/2019'), TaskType: 'Task with start date only'
+    },
+    {
+        TaskId: 4, TaskName: 'Task 4', EndDate: new Date('04/08/2019'), TaskType: 'Task with end date only'
+    }
+]

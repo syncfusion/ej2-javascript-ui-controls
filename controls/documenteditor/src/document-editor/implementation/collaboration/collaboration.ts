@@ -609,7 +609,7 @@ export class CollaborativeEditingHandler {
                         this.documentEditor.documentHelper.owner.parser.parseCellFormat(cell, cellData.cellWidget.cellFormat, 0);
                     }
                 } else if (op2.text === CONTROL_CHARACTERS.Image) {
-                    let inlineObj: ElementInfo = this.documentEditor.selectionModule.start.currentWidget.getInline(this.documentEditor.selectionModule.start.offset, 0);
+                    let inlineObj: ElementInfo = this.documentEditor.selectionModule.end.currentWidget.getInline(this.documentEditor.selectionModule.end.offset, 0);
                     let inline: ElementBox = inlineObj.element;
                     if (inline instanceof ImageElementBox) {
                         this.documentEditor.editorModule.onImageFormat(inline, HelperMethods.convertPointToPixel(op2.imageData.width), HelperMethods.convertPointToPixel(op2.imageData.height), op2.imageData.alternativeText);

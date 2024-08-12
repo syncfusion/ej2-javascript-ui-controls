@@ -1282,7 +1282,7 @@ export class TextSearch {
                         this.pdfViewerBase.pdfViewerRunner.postMessage({
                             pageIndex: pageIndex,
                             message: 'renderPageSearch',
-                            zoomFactor: proxy.pdfViewer.magnificationModule.zoomFactor,
+                            zoomFactor: proxy.pdfViewerBase.getZoomFactor(),
                             isTextNeed: isTextNeed,
                             textDetailsId: textDetailsId,
                             cropBoxRect: cropBoxRect,

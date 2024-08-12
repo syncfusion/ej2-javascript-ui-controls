@@ -226,7 +226,7 @@ export class PdfViewerBase {
      * @private
      */
     public isBounds: boolean = false;
-    private document: string;
+    private document: string | Uint8Array;
     /**
      * @private
      */
@@ -905,7 +905,7 @@ export class PdfViewerBase {
      * @param {string} password - password of the PDF document.
      * @returns {void}
      */
-    public initiatePageRender(documentData: string, password: string): void {
+    public initiatePageRender(documentData: any, password: string): void {
         this.isPasswordProtected = (password || isNullOrUndefined(password)) ? true : false;
         if (this.clientSideRendering) {
             this.pdfViewer.unload();
@@ -922,19 +922,50 @@ export class PdfViewerBase {
         if (this.pdfViewer.interactionMode === 'Pan') {
             this.initiatePanning();
         }
-        documentData = this.checkDocumentData(documentData);
-        const isbase64: boolean = this.loadedData.includes('pdf;base64,');
-        if (isbase64 && this.clientSideRendering) {
-            this.pdfViewer.fileByteArray = this.convertBase64(documentData);
-        }
-        this.setFileName();
-        if (this.pdfViewer.downloadFileName) {
-            this.downloadFileName = this.pdfViewer.downloadFileName;
-        } else {
-            this.downloadFileName = this.pdfViewer.fileName;
-        }
-        const jsonObject: object = this.constructJsonObject(documentData, password, isbase64);
-        this.createAjaxRequest(jsonObject, documentData, password);
+        this.getPdfByteArray(documentData).then((pdfbytearray: any) => {
+            let isUrlLoaded: boolean = false;
+            let isValidData: boolean = true;
+            if (typeof documentData == 'string' && (documentData.startsWith('http://') || documentData.startsWith('https://') || documentData.includes('pdf;base64,'))) {
+                isUrlLoaded = true;
+            }
+            const isbase64: boolean = this.loadedData.includes('pdf;base64,');
+            if (isUrlLoaded && this.clientSideRendering) {
+                this.pdfViewer.fileByteArray = pdfbytearray;
+                documentData = pdfbytearray;
+            }
+            else if (!isUrlLoaded && !documentData.includes('pdf;base64,') && this.clientSideRendering) {
+                const dataType: string = this.identifyDataType(documentData);
+                const isDataType: boolean = dataType === 'URL';
+                isValidData = isDataType || this.isValidBase64(documentData);
+                if (isValidData) {
+                    documentData = this.convertBase64(pdfbytearray);
+                    this.pdfViewer.fileByteArray = documentData;
+                }
+                else {
+                    this.invalidFilePopup();
+                }
+            }
+            else {
+                documentData = this.checkDocumentData(this.loadedData);
+            }
+            if (isValidData) {
+                if (this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.uploadedDocumentName) {
+                    this.setFileName();
+                }
+                if (isUrlLoaded && this.clientSideRendering) {
+                    if (this.pdfViewer.fileName === null) {
+                        this.setDocumentName(this.loadedData);
+                    }
+                }
+                if (this.pdfViewer.downloadFileName) {
+                    this.downloadFileName = this.pdfViewer.downloadFileName;
+                } else {
+                    this.downloadFileName = this.pdfViewer.fileName;
+                }
+                const jsonObject: object = this.constructJsonObject(documentData, password, isbase64);
+                this.createAjaxRequest(jsonObject, documentData, password);
+            }
+        });
     }
 
     /**
@@ -1179,8 +1210,42 @@ export class PdfViewerBase {
         return redirect;
     }
 
-    private getPdfBase64(input: string): Promise<string | null> {
-        if (input.startsWith('http://') || input.startsWith('https://')) {
+    /**
+     * @param {string} input - Gets the input
+     * @private
+     * @returns {Promise<string | null>} - promise
+     */
+    public getPdfByteArray(input: string): Promise<any | null> {
+        if (typeof input == 'string' && (input.startsWith('http://') || input.startsWith('https://') || input.includes('pdf;base64,'))) {
+            return fetch(input)
+                .then((response: any) => {
+                    if (response.ok) {
+                        return response.arrayBuffer();
+                    } else {
+                        console.error('Error fetching PDF:', response.statusText);
+                        throw new Error(response.statusText);
+                    }
+                })
+                .then((pdfData: any) => {
+                    return new Uint8Array(pdfData);
+                })
+                .catch((error: any) => {
+                    console.error('Error fetching PDF:', error.message);
+                    throw error;
+                });
+        } else {
+            // eslint-disable-next-line
+            return Promise.resolve(input);
+        }
+    }
+
+    /**
+     * @param {string} input - Gets the input
+     * @private
+     * @returns {Promise<string | null>} - promise
+     */
+    public getPdfBase64(input: string): Promise<string | null> {
+        if (input.startsWith('http://') || input.startsWith('https://') || input.startsWith('blob:')) {
             return fetch(input)
                 .then((response: any) => {
                     if (response.ok) {
@@ -1240,7 +1305,7 @@ export class PdfViewerBase {
         }
     }
 
-    private createAjaxRequest(jsonObject: any, documentData: string, password: string): void {
+    private createAjaxRequest(jsonObject: any, documentData: string | Uint8Array, password: string): void {
         let proxy: PdfViewerBase = null;
         // eslint-disable-next-line
         proxy = this;
@@ -1252,49 +1317,53 @@ export class PdfViewerBase {
             jsonObject['action'] = 'Load';
             jsonObject['elementId'] = this.pdfViewer.element.id;
             if (this.clientSideRendering) {
-                const dataType: string = this.identifyDataType(documentData);
-                const isDataType: boolean = dataType === 'URL';
-                const isValidData: boolean = isDataType || this.isValidBase64(documentData);
-                if (isValidData) {
-                    this.getPdfBase64(documentData).then((pdfBase64: string) => {
-                        let data: any = this.pdfViewer.pdfRendererModule.load(pdfBase64, this.documentId, password, jsonObject);
-                        if (data) {
-                            if (typeof data !== 'object') {
-                                try {
-                                    data = JSON.parse(data);
-                                } catch (error) {
-                                    proxy.onControlError(500, data, this.pdfViewer.serverActionSettings.load);
-                                    data = null;
-                                }
-                            }
-                            if (data) {
-                                while (typeof data !== 'object') {
-                                    data = JSON.parse(data);
-                                    if (typeof parseInt(data, 10) === 'number' && !isNaN(parseInt(data, 10))) {
-                                        data = parseInt(data, 10);
-                                        break;
-                                    }
-                                }
-                                if (data.uniqueId === proxy.documentId || (typeof parseInt(data, 10) === 'number' && !isNaN(parseInt(data, 10)))) {
-                                    proxy.updateFormFieldName(data);
-                                    proxy.pdfViewer.fireAjaxRequestSuccess(this.pdfViewer.serverActionSettings.load, data);
-                                    if (!isNullOrUndefined(data['isTaggedPdf']) && data['isTaggedPdf']) {
-                                        proxy.isTaggedPdf = true;
-                                    }
-                                    proxy.requestSuccess(data, documentData, password);
-                                }
-                            }
-                        } else {
-                            proxy.invalidFilePopup();
+                let data: any = this.pdfViewer.pdfRendererModule.load(documentData, this.documentId, password, jsonObject);
+                if (data) {
+                    if (typeof data !== 'object') {
+                        try {
+                            data = JSON.parse(data);
+                        } catch (error) {
+                            proxy.onControlError(500, data, this.pdfViewer.serverActionSettings.load);
+                            data = null;
                         }
-                    });
-                }
-                else {
+                    }
+                    if (data) {
+                        while (typeof data !== 'object') {
+                            data = JSON.parse(data);
+                            if (typeof parseInt(data, 10) === 'number' && !isNaN(parseInt(data, 10))) {
+                                data = parseInt(data, 10);
+                                break;
+                            }
+                        }
+                        if (data.uniqueId === proxy.documentId || (typeof parseInt(data, 10) === 'number' && !isNaN(parseInt(data, 10)))) {
+                            proxy.updateFormFieldName(data);
+                            proxy.pdfViewer.fireAjaxRequestSuccess(this.pdfViewer.serverActionSettings.load, data);
+                            if (!isNullOrUndefined(data['isTaggedPdf']) && data['isTaggedPdf']) {
+                                proxy.isTaggedPdf = true;
+                            }
+                            proxy.requestSuccess(data, documentData, password);
+                        }
+                    }
+                } else {
                     proxy.invalidFilePopup();
                 }
             }
             else {
-                this.loadRequestHandler.send(jsonObject);
+                if ((documentData as string).startsWith('blob:')) {
+                    proxy.getPdfBase64((documentData as string))
+                        .then((pdfBase64: string) => {
+                            if (pdfBase64) {
+                                jsonObject.document = pdfBase64;
+                                jsonObject.isFileName = false;
+                            }
+                            proxy.loadRequestHandler.send(jsonObject);
+                        })
+                        .catch((error: Error) => {
+                            proxy.invalidFilePopup();
+                        });
+                } else {
+                    proxy.loadRequestHandler.send(jsonObject);
+                }
                 this.loadRequestHandler.onSuccess = function (result: any): void {
                     let data: any = result.data;
                     const redirect: boolean = proxy.checkRedirection(data);
@@ -1423,7 +1492,7 @@ export class PdfViewerBase {
         }
     }
 
-    private requestSuccess(data: any, documentData: string, password: string): void {
+    private requestSuccess(data: any, documentData: string | Uint8Array, password: string): void {
         if (this.clientSideRendering) {
             if (data.isDigitalSignaturePresent && !isNullOrUndefined(data.digitialSignatureFile) && data.digitialSignatureFile !== '') {
                 this.pdfViewer.fileByteArray = this.convertBase64(data.digitialSignatureFile);
@@ -1577,8 +1646,13 @@ export class PdfViewerBase {
         if (this.clientSideRendering) {
             // eslint-disable-next-line
             const proxy: any = this;
-            const fileByteArray: any = this.pdfViewer.fileByteArray;
-            this.pdfViewerRunner.postMessage({ uploadedFile: fileByteArray, message: 'LoadPageCollection', password: this.passwordData, pageIndex: pageIndex, isZoomMode: isZoomMode });
+            let fileByteArray: any = this.pdfViewer.fileByteArray;
+            if (!isNullOrUndefined(fileByteArray) && fileByteArray.length > 0) {
+                this.pdfViewerRunner.postMessage({ uploadedFile: fileByteArray, message: 'LoadPageCollection', password: this.passwordData, pageIndex: pageIndex, isZoomMode: isZoomMode });
+                fileByteArray = null;
+            } else {
+                this.renderCorruptPopup();
+            }
             this.pdfViewerRunner.onmessage = function (event: any): void {
                 if (event.data.message === 'PageLoaded') {
                     proxy.initialPagesRendered(event.data.pageIndex, event.data.isZoomMode);
@@ -1632,7 +1706,7 @@ export class PdfViewerBase {
         }
     }
 
-    private renderPasswordPopup(documentData: string, password: string): void {
+    public renderPasswordPopup(documentData: string | Uint8Array, password: string): void {
         if (!isBlazor()) {
             if (!this.isPasswordAvailable) {
                 if (this.isFileName) {
@@ -1713,7 +1787,7 @@ export class PdfViewerBase {
         }
     }
 
-    private constructJsonObject(documentData: string, password: string, isBase64String?: boolean): object {
+    public constructJsonObject(documentData: string | Uint8Array, password: string, isBase64String?: boolean): object {
         let jsonObject: object;
         if (password) {
             this.isPasswordAvailable = true;
@@ -1738,15 +1812,19 @@ export class PdfViewerBase {
             this.isFileName = true;
             this.jsonDocumentId = documentData;
             if (this.pdfViewer.fileName === null) {
-                const documentStringArray: string[] = (documentData.indexOf('\\') !== -1) ? documentData.split('\\') : documentData.split('/');
-                this.pdfViewer.fileName = documentStringArray[documentStringArray.length - 1];
-                this.jsonDocumentId = this.pdfViewer.fileName;
+                this.setDocumentName(documentData);
                 base64String = documentData;
             }
         } else {
             this.jsonDocumentId = null;
         }
         return base64String;
+    }
+
+    private setDocumentName(documentData: string): void {
+        const documentStringArray: string[] = (documentData.indexOf('\\') !== -1) ? documentData.split('\\') : documentData.split('/');
+        this.pdfViewer.fileName = documentStringArray[documentStringArray.length - 1];
+        this.jsonDocumentId = this.pdfViewer.fileName;
     }
 
     private setFileName(): void {
@@ -2267,7 +2345,7 @@ export class PdfViewerBase {
             this.dowonloadRequestHandler.url = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.download;
             this.dowonloadRequestHandler.responseType = 'text';
             if (this.clientSideRendering) {
-                const data: string = this.pdfViewer.pdfRendererModule.getDocumentAsBase64(jsonObject);
+                const data: Uint8Array = this.pdfViewer.pdfRendererModule.getDocumentAsBase64(jsonObject);
                 const resultdata: any = proxy.saveAsBlobFile(data, proxy);
                 resolve(resultdata);
             } else {
@@ -2289,25 +2367,44 @@ export class PdfViewerBase {
         return promise;
     }
 
-    private saveAsBlobFile(data: string, proxy: PdfViewerBase): Promise<unknown> {
-        return new Promise((resolve: any) => {
-            if (data) {
-                if (typeof data === 'object') {
-                    data = JSON.parse(data);
-                }
-                if (typeof data !== 'object' && data.indexOf('data:application/pdf') === -1) {
-                    proxy.onControlError(500, data, proxy.pdfViewer.serverActionSettings.download);
-                    data = null;
-                }
+    private saveAsBlobFile(data: any, proxy: PdfViewerBase): Promise<unknown> {
+        if (!this.clientSideRendering) {
+            // eslint-disable-next-line
+            return new Promise(function (resolve) {
                 if (data) {
-                    if (!proxy.clientSideRendering) {
-                        proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.download, data);
+                    if (typeof data === 'object') {
+                        data = JSON.parse(data);
                     }
-                    const blobUrl: string = proxy.createBlobUrl(data.split('base64,')[1], 'application/pdf');
-                    resolve(blobUrl);
+                    if (typeof data !== 'object' && data.indexOf('data:application/pdf') === -1) {
+                        proxy.onControlError(500, data, proxy.pdfViewer.serverActionSettings.download);
+                        data = null;
+                    }
+                    if (data) {
+                        if (!proxy.clientSideRendering) {
+                            proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.download, data);
+                        }
+                        const blobUrl: any = proxy.createBlobUrl(data.split('base64,')[1], 'application/pdf');
+                        resolve(blobUrl);
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            return new Promise((resolve: any) => {
+                if (data) {
+                    if (typeof data !== 'object') {
+                        proxy.onControlError(500, data, proxy.pdfViewer.serverActionSettings.download);
+                        data = null;
+                    }
+                    if (data) {
+                        if (!proxy.clientSideRendering) {
+                            proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.download, data);
+                        }
+                        const blobUrl: any = new Blob([data], { type: 'application/pdf' });
+                        resolve(blobUrl);
+                    }
+                }
+            });
+        }
     }
 
     /**
@@ -6959,9 +7056,11 @@ export class PdfViewerBase {
                 if (!proxy.clientSideRendering) {
                     proxy.exportFormFieldsRequestHandler.send(jsonObject);
                 } else {
-                    const resultData: string = proxy.pdfViewer.pdfRendererModule.exportFormFields(jsonObject, isObject);
+                    const resultData: any = proxy.pdfViewer.pdfRendererModule.exportFormFields(jsonObject, isObject);
+                    const decoder: TextDecoder = new TextDecoder('utf-8');
+                    const updatedResultData: string = decoder.decode(resultData);
                     if (isObject) {
-                        const annotData:  Promise<string> = this.getDataOnSuccess(resultData);
+                        const annotData:  Promise<string> = this.getDataOnSuccess(updatedResultData);
                         resolve(annotData);
                     } else {
                         proxy.exportFileDownload(resultData, proxy, formFieldDataFormat, jsonObject, isObject);
@@ -6998,25 +7097,47 @@ export class PdfViewerBase {
 
     private exportFileDownload(data: string, proxy: PdfViewerBase, formFieldDataFormat: FormFieldDataFormat,
                                jsonObject: any, isObject: boolean): Promise<unknown> {
-        return new Promise((resolve: any) => {
-            if (data) {
-                if (!proxy.clientSideRendering) {
-                    proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.exportFormFields, data);
-                }
-                if (isObject) {
-                    const annotationJson: any = decodeURIComponent(escape(atob(data.split(',')[1])));
-                    resolve(annotationJson);
-                    proxy.pdfViewer.fireFormExportSuccess(annotationJson, proxy.pdfViewer.fileName);
-                } else if (data.split('base64,')[1]) {
-                    const blobUrl: string = proxy.createBlobUrl(data.split('base64,')[1], 'application/json');
-                    if (Browser.isIE || Browser.info.name === 'edge') {
-                        window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.fileName.split('.')[0] + '.json');
-                    } else if (jsonObject.formFieldDataFormat === 'Json' || jsonObject.formFieldDataFormat === 'Fdf' || jsonObject.formFieldDataFormat === 'Xfdf' || jsonObject.formFieldDataFormat === 'Xml') {
-                        proxy.downloadExportFormat(blobUrl, null, formFieldDataFormat, true);
+        if (!this.clientSideRendering) {
+            return new Promise((resolve: any) => {
+                if (data) {
+                    if (!proxy.clientSideRendering) {
+                        proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.exportFormFields, data);
+                    }
+                    if (isObject) {
+                        const annotationJson: any = decodeURIComponent(escape(atob(data.split(',')[1])));
+                        resolve(annotationJson);
+                        proxy.pdfViewer.fireFormExportSuccess(annotationJson, proxy.pdfViewer.fileName);
+                    } else if (data.split('base64,')[1]) {
+                        const blobUrl: string = proxy.createBlobUrl(data.split('base64,')[1], 'application/json');
+                        if (Browser.isIE || Browser.info.name === 'edge') {
+                            window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.fileName.split('.')[0] + '.json');
+                        } else if (jsonObject.formFieldDataFormat === 'Json' || jsonObject.formFieldDataFormat === 'Fdf' || jsonObject.formFieldDataFormat === 'Xfdf' || jsonObject.formFieldDataFormat === 'Xml') {
+                            proxy.downloadExportFormat(blobUrl, null, formFieldDataFormat, true);
+                        }
                     }
                 }
-            }
-        });
+            });
+        } else {
+            return new Promise((resolve: any) => {
+                if (data) {
+                    if (!proxy.clientSideRendering) {
+                        proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.exportFormFields, data);
+                    }
+                    if (isObject) {
+                        const annotationJson: any = decodeURIComponent(escape(atob(data.split(',')[1])));
+                        resolve(annotationJson);
+                        proxy.pdfViewer.fireFormExportSuccess(annotationJson, proxy.pdfViewer.fileName);
+                    } else if (data && (typeof data !== 'string')) {
+                        const blobUrl: any = new Blob([data], { type: 'application/json' });
+                        if (Browser.isIE || Browser.info.name === 'edge') {
+                            window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.fileName.split('.')[0] + '.json');
+                        } else if (jsonObject.formFieldDataFormat === 'Json' || jsonObject.formFieldDataFormat === 'Fdf' || jsonObject.formFieldDataFormat === 'Xfdf' || jsonObject.formFieldDataFormat === 'Xml') {
+                            proxy.downloadExportFormat(blobUrl, null, formFieldDataFormat, true);
+                        }
+                    }
+                }
+            });
+        }
     }
 
     /**
@@ -7375,7 +7496,7 @@ export class PdfViewerBase {
                 this.dowonloadRequestHandler.send(jsonObject);
             }
             else {
-                const data: string = this.pdfViewer.pdfRendererModule.getDocumentAsBase64(jsonObject);
+                const data: Uint8Array = this.pdfViewer.pdfRendererModule.getDocumentAsBase64(jsonObject);
                 this.fileDownload(data, this);
             }
             this.dowonloadRequestHandler.onSuccess = function (result: any): void {
@@ -7399,34 +7520,62 @@ export class PdfViewerBase {
         }
     }
 
-    private fileDownload(data: string, proxy: PdfViewerBase): void {
-        if (data) {
-            if (typeof data !== 'object' && data.indexOf('data:application/pdf') === -1) {
-                proxy.onControlError(500, data, proxy.pdfViewer.serverActionSettings.download);
-                data = null;
-            }
-            if (typeof data === 'object') {
-                data = JSON.parse(data);
-            }
+    public fileDownload(data: any, proxy: PdfViewerBase): void {
+        if (!this.clientSideRendering) {
             if (data) {
-                if (proxy.pdfViewer.downloadFileName && (proxy.pdfViewer.downloadFileName !== proxy.downloadFileName)) {
-                    proxy.downloadFileName = proxy.pdfViewer.downloadFileName;
+                if (typeof data !== 'object' && data.indexOf('data:application/pdf') === -1) {
+                    proxy.onControlError(500, data, proxy.pdfViewer.serverActionSettings.download);
+                    data = null;
                 }
-                if (this.pdfViewer.enableHtmlSanitizer && proxy.pdfViewer.downloadFileName) {
-                    proxy.pdfViewer.downloadFileName = SanitizeHtmlHelper.sanitize(proxy.pdfViewer.downloadFileName);
+                if (typeof data === 'object') {
+                    data = JSON.parse(data);
                 }
-                if (proxy.clientSideRendering) {
-                    proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.download, data);
+                if (data) {
+                    if (proxy.pdfViewer.downloadFileName && (proxy.pdfViewer.downloadFileName !== proxy.downloadFileName)) {
+                        proxy.downloadFileName = proxy.pdfViewer.downloadFileName;
+                    }
+                    if (this.pdfViewer.enableHtmlSanitizer && proxy.pdfViewer.downloadFileName) {
+                        proxy.pdfViewer.downloadFileName = SanitizeHtmlHelper.sanitize(proxy.pdfViewer.downloadFileName);
+                    }
+                    if (proxy.clientSideRendering) {
+                        proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.download, data);
+                    }
+                    const blobUrl: string = proxy.createBlobUrl(data.split('base64,')[1], 'application/pdf');
+                    if (Browser.isIE || Browser.info.name === 'edge') {
+                        window.navigator.msSaveOrOpenBlob(blobUrl, proxy.downloadFileName);
+                    } else {
+                        proxy.downloadDocument(blobUrl);
+                    }
+                        proxy.pdfViewer.fireDownloadEnd(proxy.downloadFileName, data);
                 }
-                const blobUrl: string = proxy.createBlobUrl(data.split('base64,')[1], 'application/pdf');
-                if (Browser.isIE || Browser.info.name === 'edge') {
-                    window.navigator.msSaveOrOpenBlob(blobUrl, proxy.downloadFileName);
-                } else {
-                    proxy.downloadDocument(blobUrl);
-                }
-                proxy.pdfViewer.fireDownloadEnd(proxy.downloadFileName, data);
+                    proxy.updateDocumentAnnotationCollections();
             }
-            proxy.updateDocumentAnnotationCollections();
+        } else {
+            if (data) {
+                if (typeof data !== 'object') {
+                    proxy.onControlError(500, data, proxy.pdfViewer.serverActionSettings.download);
+                    data = null;
+                }
+                if (data) {
+                    if (proxy.pdfViewer.downloadFileName && (proxy.pdfViewer.downloadFileName !== proxy.downloadFileName)) {
+                        proxy.downloadFileName = proxy.pdfViewer.downloadFileName;
+                    }
+                    if (this.pdfViewer.enableHtmlSanitizer && proxy.pdfViewer.downloadFileName) {
+                        proxy.pdfViewer.downloadFileName = SanitizeHtmlHelper.sanitize(proxy.pdfViewer.downloadFileName);
+                    }
+                    if (proxy.clientSideRendering) {
+                        proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.download, data);
+                    }
+                    const blobUrl: any = new Blob([data], { type: 'application/pdf' });
+                    if (Browser.isIE || Browser.info.name === 'edge') {
+                        window.navigator.msSaveOrOpenBlob(blobUrl, proxy.downloadFileName);
+                    } else {
+                        proxy.downloadDocument(blobUrl);
+                    }
+                        proxy.pdfViewer.fireDownloadEnd(proxy.downloadFileName, data);
+                }
+                    proxy.updateDocumentAnnotationCollections();
+            }
         }
     }
 
@@ -10206,7 +10355,7 @@ export class PdfViewerBase {
                     proxy.exportAnnotationRequestHandler.send(jsonObject);
                 }
                 else {
-                    const resultData: string = this.pdfViewer.pdfRendererModule.exportAnnotation(jsonObject, isObject);
+                    const resultData: Uint8Array = this.pdfViewer.pdfRendererModule.exportAnnotation(jsonObject, isObject);
                     if (isObject) {
                         proxy.exportAnnotationFileDownload(resultData, proxy, annotationDataFormat, jsonObject, isObject,
                                                            isBase64String).then(function (annotData: any): void {
@@ -10262,8 +10411,8 @@ export class PdfViewerBase {
         }
     }
 
-    private exportAnnotationFileDownload(data: string, proxy: PdfViewerBase, annotationDataFormat: AnnotationDataFormat,
-                                         jsonObject: any, isObject: boolean, isBase64String: boolean): Promise<string> {
+    private handleServerSideExport(data: any, proxy: PdfViewerBase, annotationDataFormat: AnnotationDataFormat,
+                                   jsonObject: any, isObject: boolean, isBase64String: boolean): Promise<string> {
         return new Promise((resolve: any) => {
             if (data) {
                 if (typeof data === 'object') {
@@ -10372,7 +10521,124 @@ export class PdfViewerBase {
         });
     }
 
-    private getDataOnSuccess(resultData: string): Promise<string> {
+    private handleClientSideExport(data: any, proxy: PdfViewerBase, annotationDataFormat: AnnotationDataFormat,
+                                   jsonObject: any, isObject: boolean, isBase64String: boolean): Promise<string> {
+        return new Promise((resolve: any) => {
+            if (data) {
+                if (data) {
+                    const isCancel: boolean = proxy.pdfViewer.fireAjaxRequestSuccess(proxy.pdfViewer.serverActionSettings.
+                        exportAnnotations, data);
+                    if (isObject || (isBase64String && !isBlazor())) {
+                        if (data && (typeof data !== 'string')) {
+                            let exportObject: any = data;
+                            const decoder: any = new TextDecoder('utf-8');
+                            let annotationJson: any = decoder.decode(data);
+                            if (isObject) {
+                                if (jsonObject.annotationDataFormat === 'Json') {
+                                    annotationJson = proxy.getSanitizedString(annotationJson);
+                                    exportObject = JSON.parse(annotationJson);
+                                } else {
+                                    exportObject = annotationJson;
+                                }
+                            }
+                            if (proxy.pdfViewer.exportAnnotationFileName !== null) {
+                                proxy.pdfViewer.fireExportSuccess(exportObject, proxy.pdfViewer.exportAnnotationFileName);
+                            } else {
+                                proxy.pdfViewer.fireExportSuccess(exportObject, proxy.pdfViewer.fileName);
+                            }
+                            proxy.updateDocumentAnnotationCollections();
+                            if (isBase64String) {
+                                resolve(data);
+                            } else {
+                                resolve(annotationJson);
+                            }
+                        } else {
+                            proxy.pdfViewer.fireExportFailed(jsonObject.pdfAnnotation, proxy.pdfViewer.localeObj.getConstant('Export Failed'));
+                        }
+                    } else {
+                        if (annotationDataFormat === 'Json') {
+                            if (data && (typeof data !== 'string')) {
+                                if (!isCancel) {
+                                    const blobUrl: any = new Blob([data], { type: 'application/json' });
+                                    if (Browser.isIE || Browser.info.name === 'edge') {
+                                        if (proxy.pdfViewer.exportAnnotationFileName !== null) {
+
+                                            window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.exportAnnotationFileName.split('.')[0] + '.json');
+                                        } else {
+                                            window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.fileName.split('.')[0] + '.json');
+                                        }
+                                    } else {
+                                        proxy.downloadExportFormat(blobUrl, annotationDataFormat);
+                                    }
+                                    proxy.updateDocumentAnnotationCollections();
+                                } else {
+                                    return data;
+                                }
+                            } else {
+                                if (isBlazor()) {
+                                    const promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_ExportFailed');
+                                    promise.then((value: string) => {
+                                        proxy.openImportExportNotificationPopup(value);
+                                    });
+                                } else {
+                                    proxy.openImportExportNotificationPopup(proxy.pdfViewer.localeObj.getConstant('Export Failed'));
+                                }
+                                proxy.pdfViewer.fireExportFailed(jsonObject.pdfAnnotation, proxy.pdfViewer.localeObj.getConstant('Export Failed'));
+                            }
+                        } else {
+                            if (data && (typeof data !== 'string')) {
+                                if (!isCancel) {
+                                    const blobUrl: any = new Blob([data], { type: 'application/vnd.adobe.xfdf' });
+                                    if (Browser.isIE || Browser.info.name === 'edge') {
+                                        window.navigator.msSaveOrOpenBlob(blobUrl, proxy.pdfViewer.fileName.split('.')[0] + '.xfdf');
+                                    } else {
+                                        proxy.downloadExportFormat(blobUrl, annotationDataFormat);
+                                    }
+                                    proxy.updateDocumentAnnotationCollections();
+                                } else {
+                                    return data;
+                                }
+                            } else {
+                                if (isBlazor()) {
+                                    const promise: Promise<string> = this.pdfViewer._dotnetInstance.invokeMethodAsync('GetLocaleText', 'PdfViewer_ExportFailed');
+                                    promise.then((value: string) => {
+                                        proxy.openImportExportNotificationPopup(value);
+                                    });
+                                } else {
+                                    proxy.openImportExportNotificationPopup(proxy.pdfViewer.localeObj.getConstant('Export Failed'));
+                                }
+                                proxy.pdfViewer.fireExportFailed(jsonObject, proxy.pdfViewer.localeObj.getConstant('Export Failed'));
+                            }
+                        }
+                    }
+                }
+            } else {
+                try {
+                    if (typeof data === 'string') {
+                        proxy.onControlError(500, data, proxy.pdfViewer.serverActionSettings.exportAnnotations);
+                        data = null;
+                    }
+                } catch (error) {
+                    proxy.pdfViewer.fireExportFailed(jsonObject.pdfAnnotation, proxy.pdfViewer.localeObj.getConstant('Export Failed'));
+                    proxy.onControlError(500, data, proxy.pdfViewer.serverActionSettings.exportAnnotations);
+                    data = null;
+                }
+            }
+            return '';
+        });
+    }
+
+    private exportAnnotationFileDownload(data: any, proxy: PdfViewerBase, annotationDataFormat: AnnotationDataFormat,
+                                         jsonObject: any, isObject: boolean, isBase64String: boolean): Promise<string> {
+        if (!this.clientSideRendering) {
+            return this.handleServerSideExport(data, proxy, annotationDataFormat, jsonObject, isObject, isBase64String);
+        }
+        else {
+            return this.handleClientSideExport(data, proxy, annotationDataFormat, jsonObject, isObject, isBase64String);
+        }
+    }
+
+    private getDataOnSuccess(resultData: any): Promise<any> {
         // eslint-disable-next-line
         return new Promise((resolve) => {
             let proxy: PdfViewerBase = null;
@@ -10447,7 +10713,7 @@ export class PdfViewerBase {
         } else {
             this.isJsonImported = false;
         }
-        if (typeof importData === 'object') {
+        if (typeof importData === 'object' && !(importData instanceof Uint8Array)) {
             if (importData && importData.pdfAnnotation) {
                 const newArray: string[] = Object.keys(importData.pdfAnnotation);
                 for (let i: number = 0; i < newArray.length; i++) {
@@ -10479,11 +10745,6 @@ export class PdfViewerBase {
                     jsonObject = { importedData: importData, action: 'ImportAnnotations', elementId: proxy.pdfViewer.element.id, hashId: proxy.hashId, uniqueId: proxy.documentId, annotationDataFormat: annotationDataFormat };
                 }
             } else {
-                if (!isXfdf) {
-                    importData = btoa(importData);
-                }
-                importData = importData.split(',')[1] ? importData.split(',')[1] : importData.split(',')[0];
-
                 jsonObject = { importedData: importData, action: 'ImportAnnotations', elementId: proxy.pdfViewer.element.id, hashId: proxy.hashId, uniqueId: proxy.documentId, annotationDataFormat: annotationDataFormat };
             }
             jsonObject = Object.assign(jsonObject, this.constructJsonDownload());

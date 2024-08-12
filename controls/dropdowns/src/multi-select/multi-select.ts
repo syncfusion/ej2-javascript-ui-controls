@@ -6066,8 +6066,10 @@ export class MultiSelect extends DropDownBase implements IInput {
                             if (((e as ResultData).result as any).length > 0) {
                                 listItems= ((e as ResultData).result as any);
                                 this.initStatus = false;
-                                this.initialValueUpdate(listItems, true);
-                                this.initialUpdate();
+                                setTimeout(() => {
+                                    this.initialValueUpdate(listItems, true);
+                                    this.initialUpdate(); 
+                                }, 100);
                                 this.initStatus = true;
                             }
                         });

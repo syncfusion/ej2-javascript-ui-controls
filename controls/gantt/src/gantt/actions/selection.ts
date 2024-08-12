@@ -94,6 +94,9 @@ export class Selection {
         if (!isNullOrUndefined(args.foreignKeyData) && Object.keys(args.foreignKeyData).length === 0) {
             delete args.foreignKeyData;
         }
+        if (this.parent.selectionSettings && this.parent.selectionSettings.persistSelection) {
+            this.parent.treeGrid.grid.selectionModule['checkSelectAllClicked'] = true;
+        }
         this.parent.trigger('rowSelecting', args);
     }
     private rowSelected(args: RowSelectEventArgs): void {

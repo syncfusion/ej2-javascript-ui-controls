@@ -6,7 +6,7 @@ import { Grid, Resize, ColumnModel, Column, ExcelExport, PdfExport, ContextMenu,
 import { PdfHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelHeaderQueryCellInfoEventArgs, HeaderCellInfoEventArgs, Selection, RowDeselectEventArgs } from '@syncfusion/ej2-grids';
 import { CellDeselectEventArgs, CellSelectingEventArgs, ExcelExportCompleteArgs, ActionEventArgs } from '@syncfusion/ej2-grids';
-import { createElement, setStyleAttribute, remove, isNullOrUndefined, EventHandler, getElement, closest, append, formatUnit } from '@syncfusion/ej2-base';
+import { createElement, setStyleAttribute, remove, isNullOrUndefined, EventHandler, getElement, closest, append } from '@syncfusion/ej2-base';
 import { addClass, removeClass, SanitizeHtmlHelper, select, selectAll } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
@@ -276,11 +276,12 @@ export class Render {
 
     private actionComplete(args: ActionEventArgs): void {
         if (args && args.requestType === 'refresh' && this.isAutoFitEnabled) {
-            this.removePivotAutoFitClass()
+            this.removePivotAutoFitClass();
         }
     }
 
     /** @hidden */
+
     public addPivotAutoFitClass(): void {
         if (!document.body.classList.contains(cls.PIVOT_VIEW_CLASS)) {
             document.body.classList.add(cls.PIVOT_VIEW_CLASS);
@@ -291,6 +292,7 @@ export class Render {
     }
 
     /** @hidden */
+
     public removePivotAutoFitClass(): void {
         if (document.body.classList.contains(cls.PIVOT_VIEW_CLASS)) {
             document.body.classList.remove(cls.PIVOT_VIEW_CLASS);
