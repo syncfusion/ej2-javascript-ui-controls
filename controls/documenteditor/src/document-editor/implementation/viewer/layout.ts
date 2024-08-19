@@ -1410,7 +1410,9 @@ export class Layout {
             });
         }
     }
-    
+    private shiftWrapStyle(element: ShapeBase): boolean {
+        return element.textWrappingStyle === 'InFrontOfText' || element.textWrappingStyle === 'Behind' || element.textWrappingStyle === 'Inline';
+    }
     private checkAndRelayoutPreviousOverlappingBlock(block: BlockWidget): BlockWidget {
         if (!(block.containerWidget instanceof TextFrame) && !this.isRelayoutOverlap) {
             let preivousBlock: BlockWidget = block.previousWidget as BlockWidget;
@@ -1419,7 +1421,7 @@ export class Layout {
                     let height: number = 0;
                     for (let i: number = 0; i < block.floatingElements.length; i++) {
                         let element: ShapeBase = block.floatingElements[i];
-                        if (element.textWrappingStyle === 'InFrontOfText' || element.textWrappingStyle === 'Behind' || element.textWrappingStyle === 'Inline') {
+                        if (this.shiftWrapStyle(element)) {
                             continue;
                         }
                         let shapeRect: Rect = new Rect(element.x, element.y, element.width, element.height);
@@ -1470,6 +1472,14 @@ export class Layout {
                 }
                 preivousBlock = block.previousWidget as BlockWidget;
             }
+            if (block instanceof ParagraphWidget && block.containerWidget instanceof BodyWidget && block.floatingElements.length > 0 && !this.shiftWrapStyle(block.floatingElements[0]) && block.containerWidget.firstChild != block && block.y + block.floatingElements[0].height > this.viewer.clientArea.bottom) {
+                let previousBlock: BlockWidget = block.previousWidget as BlockWidget;
+                if (previousBlock && previousBlock instanceof ParagraphWidget && (previousBlock.y + previousBlock.height + this.getLineHeigth(block, (block.floatingElements[0].line as LineWidget)) + block.floatingElements[0].height) > this.viewer.clientArea.bottom) {
+                    this.moveToNextPage(this.viewer, block.floatingElements[0].line, false, false, true);
+                    this.startOverlapWidget = block;
+                    this.endOverlapWidget = block;
+                }
+            }
             if (this.startOverlapWidget) {
                 this.isRelayoutOverlap = true;
                 this.skipRelayoutOverlap = true;
@@ -1481,6 +1491,16 @@ export class Layout {
             this.endOverlapWidget = undefined;
         }
         return block as BlockWidget;
+    }
+
+    private getLineHeigth(paragraph: ParagraphWidget, line: LineWidget): number {
+        let height: number = 0;
+        for(let i: number = 0; i<paragraph.childWidgets.length; i++) {
+            if(line != paragraph.childWidgets[i]) {
+                height += (paragraph.childWidgets[i] as LineWidget).height;
+            }
+        }
+        return height
     }
 
     private addParagraphWidget(area: Rect, paragraphWidget: ParagraphWidget): ParagraphWidget {
@@ -2092,6 +2112,12 @@ export class Layout {
             }
             this.layoutFieldCharacters(element);
             if (element.line.isLastLine() && isNullOrUndefined(element.nextNode) && !this.isFieldCode) {
+                // If a pargraph has a floating element and the line widget doesn't contain a valid element based on the element's width, then consider it an empty line.
+                // Because the clientActiveArea position will be updated based on adjusted Rect in the adjustPoition method.
+                if (!isNullOrUndefined(paragraph.containerWidget) && paragraph.floatingElements.length > 0 &&
+                    !(paragraph.containerWidget instanceof TextFrame) && this.isConsiderAsEmptyLineWidget(element.line)) {
+                    this.layoutEmptyLineWidget(paragraph, false, element.line);
+                }
                 this.moveToNextLine(line);
             } else if (isNullOrUndefined(element.nextElement) && this.viewer.clientActiveArea.width > 0 && !element.line.isLastLine()) {
                 this.moveElementFromNextLine(line);
@@ -3475,6 +3501,18 @@ export class Layout {
         }
         return false;
     }
+    private isConsiderAsEmptyLineWidget(lineWidget: LineWidget): boolean {
+        for (let i: number = 0; i < lineWidget.children.length; i++) {
+            let element: ElementBox = lineWidget.children[i];
+            if (element instanceof ShapeBase && element.textWrappingStyle !== 'Inline') {
+                continue;
+            }
+            if (element.width > 0) {
+                return false;
+            }
+        }
+        return true;
+    }
     private updateFieldText(element: ElementBox): void {
         let text: string = this.documentHelper.getFieldResult((element as FieldTextElementBox).fieldBegin, element.paragraph.bodyWidget.page);
         if (text !== '') {
@@ -4838,7 +4876,7 @@ export class Layout {
         }
     }
 
-    private moveToNextPage(viewer: LayoutViewer, line: LineWidget, isPageBreak?: boolean, isList?:boolean): void {
+    private moveToNextPage(viewer: LayoutViewer, line: LineWidget, isPageBreak?: boolean, isList?:boolean, skipFloat?: boolean): void {
         if (this.isFootNoteLayoutStart) {
             return;
         }
@@ -4848,6 +4886,7 @@ export class Layout {
         let keepLinesTogether: boolean = false;
         let keepWithNext: boolean = false;
         let isEndnote: boolean = false;
+        let firstLineIndent: number = 0;
         if (paragraphWidget && !(!isNullOrUndefined(paragraphWidget.containerWidget) && !isNullOrUndefined(paragraphWidget.containerWidget.containerWidget) && paragraphWidget.containerWidget.containerWidget instanceof FootNoteWidget && paragraphWidget.containerWidget.containerWidget.footNoteType === 'Footnote')) {
             let index: number = 0;
             if (paragraphWidget instanceof FootNoteWidget) {
@@ -4995,14 +5034,17 @@ export class Layout {
                     }
                     this.updateClientAreaForNextBlock(line, lastBlock);
                 }
-                if (line.isFirstLine() && line.indexInOwner === 0 && !(line.children[0] instanceof ListTextElementBox)) {
-                    let firstLineIndent: number = -HelperMethods.convertPointToPixel(line.paragraph.paragraphFormat.firstLineIndent);
+                if (line.isFirstLine() && line.indexInOwner === 0 && !(line.children[0] instanceof ListTextElementBox) && !skipFloat) {
+                    firstLineIndent = -HelperMethods.convertPointToPixel(line.paragraph.paragraphFormat.firstLineIndent);
                     this.viewer.updateClientWidth(firstLineIndent);
                 }
             }
         }
         if (!isPageBreak) {
             this.updateShapeBaseLocation(paragraphWidget);
+        }
+        if (skipFloat) {
+            this.viewer.updateClientWidth(firstLineIndent);
         }
         if (this.isRelayoutOverlap && this.endOverlapWidget && (!this.skipRelayoutOverlap || (this.endOverlapWidget instanceof TableWidget && this.endOverlapWidget.wrapTextAround))) {
             let block: BlockWidget = this.endOverlapWidget.previousRenderedWidget as BlockWidget;
@@ -8897,7 +8939,7 @@ export class Layout {
                 break;
             }
             updateNextBlockList = true;
-            if ((viewer.owner.isShiftingEnabled && this.documentHelper.fieldStacks.length === 0) || this.isIFfield) {
+            if ((viewer.owner.isShiftingEnabled && (this.documentHelper.fieldStacks.length === 0 || this.viewer.owner.editorModule.isInsertingTOC)) || this.isIFfield) {
                 this.documentHelper.blockToShift = block;
                 break;
             } else if (isNullOrUndefined(this.viewer.owner.editorModule) || !this.viewer.owner.editorModule.isInsertingTOC) {

@@ -1,6 +1,6 @@
 import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent, detach, isNullOrUndefined, removeClass, extend, isUndefined } from '@syncfusion/ej2-base';
 import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions, completeAction } from './index';
-import { HideShowEventArgs, invalidData } from './../common/index';
+import { HideShowEventArgs, invalidData, resizeRowHeight } from './../common/index';
 import { Cell, CellUpdateArgs, ColumnModel, duplicateSheet, getSheetIndex, getSheetIndexFromAddress, getSheetIndexFromId, getSheetNameFromAddress, hideShow, isReadOnly, moveSheet, protectsheetHandler, refreshChartSize, refreshRibbonIcons, replace, replaceAll, setLinkModel, setLockCells, updateSheetFromDataSource } from '../../workbook/index';
 import { IOffset, clearViewer, deleteImage, createImageElement, refreshImgCellObj, removeDataValidation } from './index';
 import { Spreadsheet, removeSheetTab, rowHeightChanged, initiateFilterUI, deleteChart, IRenderer } from '../index';
@@ -1296,6 +1296,8 @@ export function updateAction(
         }
         break;
     case 'addNote':
+    case 'editNote':
+    case 'deleteNote':
         cellIndexes = getIndexesFromAddress(options.eventArgs.address);
         if (isRedo) {
             updateCell(
@@ -1375,6 +1377,7 @@ export function updateAction(
             } else {
                 spreadsheet.hideRow(eventArgs.index, eventArgs.index, eventArgs.hide);
             }
+            spreadsheet.notify(resizeRowHeight, { rowIndex: eventArgs.index });
         }
         break;
     case 'renameSheet':
@@ -2102,7 +2105,7 @@ export function clearRange(context: Spreadsheet, range: number[], sheetIdx: numb
     let skip: boolean; let cell: CellModel; let newCell: CellModel; let td: HTMLElement; let prop: CellUpdateArgs;
     const uiRefresh: boolean = sheetIdx === context.activeSheetIndex; let cfRefreshAll: boolean;
     const cf: ConditionalFormat[] = sheet.conditionalFormats && sheet.conditionalFormats.length && [].slice.call(sheet.conditionalFormats);
-    const cfRule: ConditionalFormatModel[] = [];
+    const cfRule: ConditionalFormatModel[] = []; let isCellUpdated: boolean = false;
     for (let sRIdx: number = range[0], eRIdx: number = range[2]; sRIdx <= eRIdx; sRIdx++) {
         if (isFilterHidden(sheet, sRIdx)) { continue; }
         for (let sCIdx: number = range[1], eCIdx: number = range[3]; sCIdx <= eCIdx; sCIdx++) {
@@ -2113,9 +2116,12 @@ export function clearRange(context: Spreadsheet, range: number[], sheetIdx: numb
                 const rangeIndex: number[] = getIndexesFromAddress(args.uniqueRange);
                 skip = getCell(rangeIndex[0], rangeIndex[1], sheet).value === '#SPILL!';
             }
+            // Determine if it's the last iteration of the given range.
+            const isLastIteration: boolean = (sRIdx === eRIdx) && (sCIdx === eCIdx);
             if (!args.isUnique || skip) {
                 cell = getCell(sRIdx, sCIdx, sheet);
-                if (cell) {
+                if ((cell && <unknown>cell.value === 0) || cell && cell.value && (isNullOrUndefined(cell.value) || cell.value !== '')) {
+                    isCellUpdated = false;
                     newCell = {};
                     if (cell.formula) {
                         newCell.formula = '';
@@ -2132,7 +2138,7 @@ export function clearRange(context: Spreadsheet, range: number[], sheetIdx: numb
                     }
                     td = context.getCell(mergeArgs.rowIdx, mergeArgs.colIdx);
                     prop = { cell: newCell, rowIdx: sRIdx, colIdx: sCIdx, valChange: true, uiRefresh: uiRefresh, td: td,
-                        cellDelete: true };
+                        cellDelete: true, isDelete: !isLastIteration, deletedRange: range };
                     if (!Object.keys(newCell).length || updateCell(context, sheet, prop)) {
                         continue;
                     }
@@ -2148,6 +2154,14 @@ export function clearRange(context: Spreadsheet, range: number[], sheetIdx: numb
                         }
                         if (td.querySelector('.e-iconsetspan')) {
                             td.removeChild(td.querySelector('.e-iconsetspan'));
+                        }
+                    }
+                } else {
+                    if (!isCellUpdated && prop) {
+                        isCellUpdated = isLastIteration;
+                        prop.isDelete = !isLastIteration;
+                        if (!Object.keys(newCell).length || updateCell(context, sheet, prop)) {
+                            continue;
                         }
                     }
                 }

@@ -1139,7 +1139,45 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             input: this.filterChangeHandler.bind(this)
         });
         this.filterObj.appendTo('#' + this.element.id + '_filter');
+        this.keyboardModule = new KeyboardEvents(
+            this.filterObj.element,
+            {
+                keyAction: this.filterKeyAction.bind(this),
+                keyConfigs: this.keyConfigs,
+                eventName: 'keydown'
+            }
+        );
     }
+
+    private filterKeyAction(e: KeyboardEventArgs): void {
+        const eventArgs: DdtKeyPressEventArgs = {
+            cancel: false,
+            event: e
+        };
+        this.trigger('keyPress', eventArgs, (observedArgs: DdtKeyPressEventArgs) => {
+            if (!observedArgs.cancel) {
+                switch (e.action) {
+                case 'altUp':
+                    if (this.isPopupOpen) {
+                        this.hidePopup();
+                    }
+                    break;
+                case 'shiftTab':
+                    addClass([this.inputWrapper], [INPUTFOCUS]);
+                    break;
+                case 'moveDown':
+                    e.preventDefault();
+                    this.filterObj.element.blur();
+                    let focusedElement: HTMLElement = this.treeObj.element.querySelector('li');
+                    if (focusedElement) {
+                        focusedElement.focus();
+                    }
+                    break;
+                }
+            }
+        });
+    }
+    
     private filterChangeHandler(args?: InputEventArgs): void {
         if (!isNOU(args.value)) {
             window.clearTimeout(this.filterTimer);
@@ -1663,7 +1701,6 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                     }
                     break;
                 case 'shiftTab':
-                case 'tab':
                     if (this.isPopupOpen) {
                         this.hidePopup();
                     }
@@ -2358,13 +2395,16 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                     }
                     else {
                         const oldFocussedNode: HTMLElement = this.treeObj.element.querySelector('.e-node-focus');
-                        focusedElement = this.treeObj.element.querySelector('li:not(.e-disable):not(.e-prevent)');
+                        focusedElement = this.treeObj.element.querySelector('li[tabindex="0"]:not(.e-disable):not(.e-prevent)') ||
+                                         this.treeObj.element.querySelector('li:not(.e-disable):not(.e-prevent)');
                         if (oldFocussedNode && oldFocussedNode !== focusedElement) {
                             oldFocussedNode.setAttribute('tabindex', '-1');
                             removeClass([oldFocussedNode], 'e-node-focus');
                         }
                     }
-                    focusedElement.focus();
+                    if (!this.allowFiltering) {
+                        focusedElement.focus();
+                    }
                     addClass([focusedElement], ['e-node-focus']);
                 }
                 if (this.treeObj.checkedNodes.length > 0) {

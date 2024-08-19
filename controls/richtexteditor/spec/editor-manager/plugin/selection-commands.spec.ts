@@ -472,8 +472,8 @@ describe('Selection commands', () => {
         SelectionCommands.applyFormat(document, 'underline', parentDiv, 'P');
         expect((node1 as HTMLElement).children[0].children[0].textContent.match(regEx)).not.toBe(null);
         SelectionCommands.applyFormat(document, 'bold', parentDiv, 'P');
-        expect(node1.childNodes[2].nodeName.toLowerCase()).toEqual('em');
-        expect(node1.childNodes[2].childNodes[1].nodeName.toLowerCase()).toEqual('span');
+        expect(node1.childNodes[2].nodeName.toLowerCase()).toEqual('#text');
+        expect(node1.childNodes[1].nodeName.toLowerCase()).toEqual('em');
     });
     it('Cursor pointer multiple style with textnode applied issue', () => {
         let node1: Node = document.getElementById('format5').querySelector('u');
@@ -781,7 +781,7 @@ describe('EJ2-58803 - Styles format not maintain properly when applied different
         SelectionCommands.applyFormat(document, 'italic', rteObj.inputElement, 'P');
         SelectionCommands.applyFormat(document, 'bold', rteObj.inputElement, 'P');
         SelectionCommands.applyFormat(document, 'backgroundcolor', rteObj.inputElement, 'P', null, 'rgb(246, 198, 206)');
-        expect((rteObj as any).inputElement.innerHTML).toBe(`<p><strong>​<em>​<span style="text-decoration: underline;">​<span class="focusNode" style="color: rgb(255, 0, 0); text-decoration: inherit;">RTE Content</span></span></em></strong><span class="focusNode" style="color: rgb(255, 0, 0); text-decoration: inherit;">​<span style="background-color: rgb(246, 198, 206);">​</span></span></p>`);
+        expect((rteObj as any).inputElement.innerHTML).toBe(`<p><strong>​<em>​<span style="text-decoration: underline;">​<span class="focusNode" style="color: rgb(255, 0, 0); text-decoration: inherit;">RTE Content</span></span></em></strong><span class="focusNode" style="color: rgb(255, 0, 0); text-decoration: inherit;"><span style="background-color: rgb(246, 198, 206);">​</span></span></p>`);
         done();
     });
 });

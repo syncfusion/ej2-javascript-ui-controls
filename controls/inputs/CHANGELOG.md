@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.2.10 (2024-08-20)
+
+### MaskedTextBox
+
+#### Bug Fixes
+
+- `#I617472` - Fixed an issue where dynamic masking led to incorrect value updates in the MaskedTextBox.
+
 ## 26.2.4 (2024-07-24)
 
 ### TextBox

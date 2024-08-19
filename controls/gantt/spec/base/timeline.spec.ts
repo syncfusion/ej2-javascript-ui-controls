@@ -3,7 +3,7 @@
  */
 import { createElement, remove, extend } from '@syncfusion/ej2-base';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, IQueryTaskbarInfoEventArgs } from '../../src/index';
-import { customZoomingLevels, customZoomingLevels1, defaultGanttData, editingData18, editingResources, editingResources1, manualData, projectNewData23, tempData1, tempData2, tempData3, tempData4, tempData5, tempData6, zoomData, zoomData1, zoomInData, zoomingData1 } from './data-source.spec';
+import { customZoomingLevels, customZoomingLevels1, defaultGanttData, editingData18, editingResources, editingResources1, manualData, projectNewData23, tempData1, tempData2, tempData3, tempData4, tempData5, tempData6, zoomData, zoomData1, zoomInData, zoomingData1, timelineData } from './data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 import * as cls from '../../src/gantt/base/css-constants';
 Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport);
@@ -1892,6 +1892,75 @@ describe('Gantt-Timeline', () => {
             if (ganttObj) {
                 destroyGantt(ganttObj);
             }
+        });
+    });
+    describe('dependency rendering in RTL', () => {
+        Gantt.Inject(Selection,Sort,Filter, Edit, Toolbar, RowDD);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: timelineData,
+                    enableTimelineVirtualization: true,
+                    taskFields: {
+                        id: 'id',
+                        name: 'title',
+                        startDate: 'startDate',
+                        endDate: 'finishDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'predecessor',
+                        child: 'subtasks',
+                        resourceInfo: 'resources',
+                    },
+                    taskType: 'FixedWork',
+                    allowSorting: true,
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                        'PrevTimeSpan', 'NextTimeSpan', 'Undo', 'Redo'],
+                    allowSelection: true,
+                    selectedRowIndex: 1,
+                    splitterSettings: {
+                        position: "50%",
+                    },
+                    selectionSettings: {
+                        mode: 'Row',
+                        type: 'Single',
+                        enableToggle: false
+                    },
+                    tooltipSettings: {
+                        showTooltip: true
+                    },
+                    filterSettings: {
+                        type: 'Menu'
+                    },
+                    allowFiltering: true,
+                    gridLines: "Both",
+                    showColumnMenu: true,
+                    highlightWeekends: true,
+                   enableRtl: true,
+                    readOnly: false,
+                    taskbarHeight: 20,
+                    rowHeight: 40,
+                    allowUnscheduledTasks: true,
+                }, done);
+        });
+        beforeEach((done) => {
+            setTimeout(done, 500);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('dependency object', () => {
+            expect(ganttObj.timelineModule.wholeTimelineWidth).toBe(1155);
         });
     });
 });

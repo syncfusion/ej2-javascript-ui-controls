@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 26.2.10 (2024-08-20)
+
+### Grid
+
+#### Bug fixes
+
+- `#I616688` - The issue with Programmatic open column chooser dialog not opening with `OK` and `Cancel` buttons on adaptive vertical view has been resolved.
+- `#I615860` - The issue where invoking the `getPersistData` method in the `dataBound` event of the Grid removed the `groupCaptionTemplate` has been resolved.
+- `#I614425` - Resolved the issue with the inconsistent `isCountRequired` query in the Excel-like filter when using the `ODataV4Adaptor`.
+- `#I614381` - Resolved the issue where the column's `editTemplate` was not working in `ASP.NET Core`.
+- `#I617205` - The issue with column chooser checkbox is unselected once uncheck the selected all option and press `Esc` keyboard action has been resolved.
+- `#I616244` - The issue where the column resize was not resetting the frozen indicator, causing a non-frozen column to render behind a frozen column has been resolved.
+- `#I616244` - The problem with the frozen shadow effect during column resizing has been resolved.
+- `#I622755` - Filtering a column in Grid throws script error after `autoFitColumns` is invoked issue has been resolved.
+
 ## 26.2.9 (2024-08-13)
 
 ### Grid
@@ -14,6 +29,7 @@
 - `#I617335` - `ResponsiveBack` element not showing when search is aligned left in Toolbar with `AdaptiveUI` issue has been resolved.
 - `#FB59809` - The issue with editing a record of column that contains multiple aggregates throws a script error has been resolved.
 - `#I899326` - The script error related to `adaptiveUI` when selecting records with a toolbar rendered using a `template` has been resolved.
+- `#I600715` - The issue where the column width set to "auto", would revert to its minimum width when resized has been resolved.
 
 ## 26.2.8 (2024-08-06)
 

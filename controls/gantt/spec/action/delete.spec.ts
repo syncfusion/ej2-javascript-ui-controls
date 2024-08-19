@@ -2,7 +2,7 @@
  * Gantt delete spec
  */
 import { Gantt, IActionBeginEventArgs, IGanttData, Edit, Toolbar, Selection } from '../../src/index';
-import { projectData1 } from '../base/data-source.spec';
+import { projectData1, CR900218} from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { getValue } from '@syncfusion/ej2-base';
 import { doesImplementInterface } from '@syncfusion/ej2-grids';
@@ -157,6 +157,120 @@ describe('Gantt delete support', () => {
             ganttObj.editModule.deleteRecord(6);
             expect(getValue('TaskID', ganttObj.flatData[5])).toBe(51);
             expect(ganttObj.selectedRowIndex).toBe(5);
+        });
+    });
+    describe('CR900218-Updating datasource and selected row index', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: [],
+                    allowSorting: true,
+                    taskFields: {
+                        id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'subtasks',
+                    },
+                    selectionSettings: {
+                        mode: 'Row',
+                        type: 'Multiple',
+                        enableToggle: true,
+                    },
+                    selectedRowIndex: 1, 
+                    editSettings: {
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true,
+                        showDeleteConfirmDialog: true
+                    },
+                    toolbar:['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
+                    'PrevTimeSpan', 'NextTimeSpan'],
+                    allowSelection: true,
+                    gridLines: "Both",
+                    showColumnMenu: false,
+                    highlightWeekends: true,
+                    timelineSettings: {
+                        topTier: {
+                            unit: 'Week',
+                            format: 'dd/MM/yyyy'
+                        },
+                        bottomTier: {
+                            unit: 'Day',
+                            count: 1
+                        }
+                    },
+                    labelSettings: {
+                        leftLabel: 'TaskName',
+                        taskLabel: 'Progress'
+                    },
+                    height: '550px',
+                    allowUnscheduledTasks: true,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019'),
+                }, done);
+        });
+        it('Changing DataSource', (done: Function) => {
+            ganttObj.actionComplete = function (args: any): void {
+                expect(ganttObj.selectedRowIndex).toBe(2);
+                done();
+            };
+            ganttObj.dataSource = CR900218;
+            ganttObj.selectedRowIndex = 2;
+        });
+    });
+    describe('CR902450 - getSelectedRecords method doesnt not return selected records', () => {
+        Gantt.Inject(Edit, Toolbar, Selection);
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: projectData1,
+                    allowSelection: true,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        endDate: 'EndDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        child: 'subtasks',
+                        dependency: 'Predecessor'
+                    },
+                    editSettings: {
+                        allowAdding: true,
+                        allowEditing: true,
+                        allowDeleting: true,
+                        allowTaskbarEditing: true
+                    },
+                    selectionSettings: {
+                        mode: 'Row',
+                        type: 'Single',
+                        enableToggle: false,
+                        persistSelection: true
+                    },
+                    toolbar: ['Add', 'Edit', 'Delete'],
+                    projectStartDate: new Date('02/01/2017'),
+                    projectEndDate: new Date('12/30/2017'),
+                    rowHeight: 40,
+                    taskbarHeight: 30,
+                }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Delete a record', (done: Function) => {
+            ganttObj.editModule.deleteRecord(2);
+            ganttObj.actionComplete = (args: any): void => {
+                if (args.requestType === "refresh") {
+                    expect(ganttObj.selectionModule.getSelectedRecords().length).toBe(1);
+                }
+                done();
+            };
         });
     });
 });

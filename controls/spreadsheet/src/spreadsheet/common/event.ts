@@ -124,6 +124,8 @@ export const collaborativeUpdate: string = 'collaborativeUpdate';
 /** @hidden */
 export const autoFit: string = 'autoFitRowsColumns';
 /** @hidden */
+export const resizeRowHeight: string = 'resizeRowHeight';
+/** @hidden */
 export const updateToggleItem: string = 'updateToggleItem';
 /** @hidden */
 export const initiateHyperlink: string = 'initiateHyperlink';

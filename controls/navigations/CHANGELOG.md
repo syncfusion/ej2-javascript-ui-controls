@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 26.2.10 (2024-08-20)
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `#I902438` - The issue with "Facing a flickering issue with the ContextMenu component on a Mac device" has been resolved.
+
+### Breadcrumb
+
+#### Bug Fixes
+
+- `#I898885` - The issue with "we need to prevent the popup from closing until a `multiselect` value is selected in breadcrumb component" has been resolved.
+
 ## 26.2.8 (2024-08-06)
 
 ### ContextMenu

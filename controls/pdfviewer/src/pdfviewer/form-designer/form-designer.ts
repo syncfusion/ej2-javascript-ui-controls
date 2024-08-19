@@ -227,6 +227,10 @@ export class FormDesigner {
      * @private
      */
     public isShapeCopied: boolean = false;
+    /**
+    * @private
+    */
+    public isFormFieldSizeUpdated: boolean = false;
     private isDrawHelper: boolean = false;
     private isFormFieldUpdated: boolean = false;
     /**
@@ -3014,6 +3018,11 @@ export class FormDesigner {
                     'pointer-events:' + ((this.pdfViewer.designerMode) ? 'none' : 'all')
                     + ';visibility:' + ((element.visible) ? 'visible' : 'hidden') + ';opacity:' + element.style.opacity + ';'
                 );
+            }
+            this.isFormFieldSizeUpdated = true;
+            this.pdfViewer.select([formFieldObject.id]);
+            if (formField.formFieldAnnotationType === 'RadioButton' || formField.formFieldAnnotationType === 'Checkbox') {
+                this.updateHTMLElement(formFieldObject);
             }
         }
         if (!isNullOrUndefined(options.isRequired)) {

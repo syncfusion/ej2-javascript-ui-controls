@@ -2357,6 +2357,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 this.virtualScrollModule.isRemoteRefresh = false;
             }
             this.refreshEvents(isRemoteRefresh);
+            if (this.virtualScrollModule && !this.virtualScrollModule.enableTransition) {
+                const resWrap: HTMLElement = this.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS) as HTMLElement;
+                const conWrap: HTMLElement = this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+                this.virtualScrollModule.enableTransition = true;
+                addClass([conWrap, resWrap], 'e-transition');
+            }
         } else {
             this.notify(events.contentReady, {});
         }

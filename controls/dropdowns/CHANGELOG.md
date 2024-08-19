@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.2.10 (2024-08-20)
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I618290` - The issue with keyboard actions and the focus-related issue in the Dropdown Tree component have been resolved.
+
 ## 26.2.9 (2024-08-13)
 
 ### ListBox

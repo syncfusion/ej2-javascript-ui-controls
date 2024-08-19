@@ -1165,6 +1165,70 @@ describe('Editing ->', () => {
                 });
             });
         });
+        describe('EJ2-899811 ', () => {
+            beforeAll((done: Function) => {
+                helper.initializeSpreadsheet({ sheets: [{  ranges: [{ dataSource: defaultData }]}] }, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Values starting with double equals display as empty instead of showing the entered value in text format cells.', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                spreadsheet.numberFormat('@','I1:J10');
+                helper.edit('I1','==');
+                helper.edit('I2','=A1+A2+A3');
+                helper.edit('I3','=SUM(10,10,10)');
+                helper.edit('I4','======');
+                helper.edit('I5','=10*20*30');
+                helper.edit('J1','=AVERAGEIF(A1:A5,"=0")');
+                helper.edit('J2','=COUNT(A1:A5)');
+                helper.edit('J3','=SUM(A1:A5,B1:B5)');
+                helper.edit('J4','=AVERAGE(A1:E1)');
+                helper.edit('J5','=SUM(A1:F1)');
+                expect(helper.invoke('getCell', [0, 8]).textContent).toBe('==');
+                expect(helper.invoke('getCell', [1, 8]).textContent).toBe('=A1+A2+A3');
+                expect(helper.invoke('getCell', [2, 8]).textContent).toBe('=SUM(10,10,10)');
+                expect(helper.invoke('getCell', [3, 8]).textContent).toBe('======');
+                expect(helper.invoke('getCell', [4, 8]).textContent).toBe('=10*20*30');
+                expect(helper.invoke('getCell', [0, 9]).textContent).toBe('=AVERAGEIF(A1:A5,"=0")');
+                expect(helper.invoke('getCell', [1, 9]).textContent).toBe('=COUNT(A1:A5)');
+                expect(helper.invoke('getCell', [2, 9]).textContent).toBe('=SUM(A1:A5,B1:B5)');
+                expect(helper.invoke('getCell', [3, 9]).textContent).toBe('=AVERAGE(A1:E1)');
+                expect(helper.invoke('getCell', [4, 9]).textContent).toBe('=SUM(A1:F1)');
+                helper.edit('K1','==');
+                helper.edit('K2','=10+20');
+                helper.edit('K3','=SUM(D2,D3,D4)');
+                helper.invoke('copy', ['K2:K3']).then(() => {
+                    helper.invoke('paste', ['I6:J9']);
+                    setTimeout(() => {
+                        expect(helper.invoke('getCell', [5, 8]).textContent).toBe('30');
+                        expect(helper.invoke('getCell', [5, 8]).textContent).toBe('30');
+                        expect(helper.invoke('getCell', [7, 9]).textContent).toBe('30');
+                        expect(helper.invoke('getCell', [7, 9]).textContent).toBe('30');
+                        expect(spreadsheet.sheets[0].rows[6].cells[8].formula).toBe('=SUM(B6,B7,B8)');
+                        expect(spreadsheet.sheets[0].rows[6].cells[9].formula).toBe('=SUM(C6,C7,C8)');
+                        expect(spreadsheet.sheets[0].rows[8].cells[8].formula).toBe('=SUM(B8,B9,B10)');
+                        expect(spreadsheet.sheets[0].rows[8].cells[9].formula).toBe('=SUM(C8,C9,C10)');
+                        helper.invoke('copy', ['I1:J5']).then(() => {
+                            helper.invoke('paste', ['K1:L5']);
+                            setTimeout(() => {
+                                expect(helper.invoke('getCell', [0, 10]).textContent).toBe('==');
+                                expect(helper.invoke('getCell', [1, 10]).textContent).toBe('=A1+A2+A3');
+                                expect(helper.invoke('getCell', [2, 10]).textContent).toBe('=SUM(10,10,10)');
+                                expect(helper.invoke('getCell', [3, 10]).textContent).toBe('======');
+                                expect(helper.invoke('getCell', [4, 10]).textContent).toBe('=10*20*30');
+                                expect(helper.invoke('getCell', [0, 11]).textContent).toBe('=AVERAGEIF(A1:A5,"=0")');
+                                expect(helper.invoke('getCell', [1, 11]).textContent).toBe('=COUNT(A1:A5)');
+                                expect(helper.invoke('getCell', [2, 11]).textContent).toBe('=SUM(A1:A5,B1:B5)');
+                                expect(helper.invoke('getCell', [3, 11]).textContent).toBe('=AVERAGE(A1:E1)');
+                                expect(helper.invoke('getCell', [4, 11]).textContent).toBe('=SUM(A1:F1)');
+                                done();
+                            });
+                        });
+                    });
+                });
+            });
+        });
     });
 
     describe('Checking ReadOnly Cells. ->', () => {

@@ -24253,4 +24253,160 @@ describe('Spreadsheet formula module ->', () => {
             done();
         });
     });
+
+    describe('Improve the formula recalculation performance when deleting the values on the formula dependent cells ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{}] }],
+                created: (): void => {
+                    const spreadsheet: Spreadsheet = helper.getInstance();
+                    spreadsheet.updateCell({ value: '6-6-2024' }, 'A1');
+                    spreadsheet.updateCell({ value: '7-7-2024' }, 'A2');
+                    spreadsheet.updateCell({ value: '1000000' }, 'A3');
+                    for (let index: number = 1; index < 42; index++) {
+                        spreadsheet.updateCell({ formula: stringFormat('=62000', index.toString()) }, stringFormat('B{0}', index.toString()));
+                        spreadsheet.updateCell({ formula: stringFormat('=F{0}*(DAYS(A2,A1)/((A3/100)/30))', (index - 1).toString()) }, stringFormat('D{0}', index.toString()));
+                        spreadsheet.updateCell({ formula: stringFormat('=D{0} - B1', index.toString()) }, stringFormat('E{0}', index.toString()));
+                        spreadsheet.updateCell({ formula: stringFormat('=F{1} - E{0}', index.toString(), (index - 1).toString()) }, stringFormat('F{0}', index.toString()));
+                    }
+                    spreadsheet.updateCell({ formula: '=5300000' }, 'F1');
+                    spreadsheet.updateCell({ formula: '=0' }, 'D1');
+                }
+            }, done);
+            function stringFormat(str: string, ...args: string[]): string {
+                return str.replace(/{(\d+)}/g, (match, index) => args[index] || '');
+            }
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Deleting single cell with the formula dependent cells', (done: Function) => {
+            helper.invoke('selectRange', ['D2']);
+            helper.triggerKeyNativeEvent(46);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[1].cells[3].formula).toBeUndefined;
+                expect(helper.getInstance().sheets[0].rows[1].cells[3].value).toBeUndefined;
+                done();
+            });
+        });
+        it('Deleting in between ranges with the formula dependent cells', (done: Function) => {
+            helper.invoke('selectRange', ['E2:F5']);
+            helper.triggerKeyNativeEvent(46);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[1].cells[4].formula).toBeUndefined;
+                expect(helper.getInstance().sheets[0].rows[1].cells[4].value).toBeUndefined;
+                expect(helper.getInstance().sheets[0].rows[4].cells[5].formula).toBeUndefined;
+                expect(helper.getInstance().sheets[0].rows[4].cells[5].value).toBeUndefined;
+                done();
+            });
+        });
+        it('Deleting whole ranges of cells with the formula dependent cells', (done: Function) => {
+            helper.invoke('selectRange', ['D6:F40']);
+            helper.triggerKeyNativeEvent(46);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[5].cells[3].formula).toBeUndefined;
+                expect(helper.getInstance().sheets[0].rows[5].cells[3].value).toBeUndefined;
+                expect(helper.getInstance().sheets[0].rows[14].cells[4].formula).toBeUndefined;
+                expect(helper.getInstance().sheets[0].rows[14].cells[4].value).toBeUndefined;
+                helper.click('#spreadsheet_undo');
+                helper.click('#spreadsheet_undo');
+                helper.click('#spreadsheet_undo');
+                done();
+            });
+        });
+        it('Deleting in between ranges with the formula dependent cells and empty cells', (done: Function) => {
+            helper.invoke('selectRange', ['E2:H2']);
+            helper.triggerKeyNativeEvent(46);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[1].cells[4].formula).toBeUndefined;
+                expect(helper.getInstance().sheets[0].rows[1].cells[4].value).toBeUndefined;
+                expect(helper.getInstance().sheets[0].rows[1].cells[5].formula).toBeUndefined;
+                expect(helper.getInstance().sheets[0].rows[1].cells[5].value).toBeUndefined;
+                done();
+            });
+        });
+        it('Deleting in between ranges with in between empty cells and the formula dependent cells', (done: Function) => {
+            helper.invoke('selectRange', ['E6']);
+            helper.triggerKeyNativeEvent(46);
+            setTimeout(() => {
+                helper.invoke('selectRange', ['D4:F8']);
+                helper.triggerKeyNativeEvent(46);
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[3].cells[3].formula).toBeUndefined;
+                    expect(helper.getInstance().sheets[0].rows[3].cells[3].value).toBeUndefined;
+                    expect(helper.getInstance().sheets[0].rows[6].cells[4].formula).toBeUndefined;
+                    expect(helper.getInstance().sheets[0].rows[6].cells[4].value).toBeUndefined;
+                    done();
+                });
+            });
+        });
+        it('Checking formula recalculation for the formula dependent cells while deleting and undo', (done: Function) => {
+            helper.invoke('selectRange', ['D2:E8']);
+            helper.triggerKeyNativeEvent(46);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[2].cells[5].value).toBe('0');
+                expect(helper.getInstance().sheets[0].rows[2].cells[5].formula).toBe('=F2 - E3');
+                helper.click('#spreadsheet_undo');
+                setTimeout(() => {
+                    expect(helper.getInstance().sheets[0].rows[2].cells[5].value).toBe('62000');
+                    expect(helper.getInstance().sheets[0].rows[2].cells[5].formula).toBe('=F2 - E3');
+                    done();
+                });
+            });
+        });
+        it('Checking formula recalculation for the formula dependent cells while deleting and redo', (done: Function) => {
+            helper.click('#spreadsheet_redo');
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[2].cells[5].value).toBe('0');
+                expect(helper.getInstance().sheets[0].rows[2].cells[5].formula).toBe('=F2 - E3');
+                helper.click('#spreadsheet_undo');
+                helper.click('#spreadsheet_undo');
+                done();
+            });
+        });
+        it('Deleting cells with reverse selection', (done: Function) => {
+            helper.invoke('selectRange', ['H10:D1']);
+            helper.triggerKeyNativeEvent(46);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[9].cells[5].formula).toBeUndefined;
+                expect(helper.getInstance().sheets[0].rows[9].cells[5].value).toBeUndefined;
+                expect(helper.getInstance().sheets[0].rows[0].cells[3].formula).toBeUndefined;
+                expect(helper.getInstance().sheets[0].rows[0].cells[3].value).toBeUndefined;
+                done();
+            });
+        });
+        it('Deleting non formula dependent cells', (done: Function) => {
+            helper.invoke('selectRange', ['B3']);
+            helper.triggerKeyNativeEvent(46);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[2].cells[1].formula).toBeUndefined;
+                expect(helper.getInstance().sheets[0].rows[2].cells[1].value).toBeUndefined;
+                helper.click('#spreadsheet_undo');
+                done();
+            });
+        });
+        it('Deleting cells with cut and paste', (done: Function) => {
+            helper.invoke('cut', ['E13:F13']).then(() => { helper.invoke('paste', ['H2:I2']); });
+            helper.invoke('selectRange', ['H2:I2']);
+            helper.triggerKeyNativeEvent(46);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[1].cells[7].formula).toBeUndefined;
+                expect(helper.getInstance().sheets[0].rows[1].cells[7].value).toBeUndefined;
+                expect(helper.getInstance().sheets[0].rows[1].cells[8].formula).toBeUndefined;
+                expect(helper.getInstance().sheets[0].rows[1].cells[8].value).toBeUndefined;
+                done();
+            });
+        });
+        it('Deleting non formula dependent cells with 0 as cell value', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            spreadsheet.updateCell({ value: '0' }, 'B3');
+            helper.invoke('selectRange', ['B3']);
+            helper.triggerKeyNativeEvent(46);
+            setTimeout(() => {
+                expect(helper.getInstance().sheets[0].rows[2].cells[1].formula).toBeUndefined;
+                expect(helper.getInstance().sheets[0].rows[2].cells[1].value).toBeUndefined;
+                done();
+            });
+        });
+    });
 });

@@ -821,18 +821,32 @@ function triggerAjaxFailure(
  * @private
  */
 function readSuccess(parent: IFileManager, result: ReadArgs, event: string): void {
-    if (!isNOU(result.files)) {
-        parent.notify(event, result);
-        parent.notify(events.selectionChanged, {});
-        const args: SuccessEventArgs = { action: 'read', result: result };
-        parent.trigger('success', args);
-    } else {
-        if (result.error.code === '401') {
-            result.files = [];
+    try {
+        if (!isNOU(result.files)) {
             parent.notify(event, result);
             parent.notify(events.selectionChanged, {});
+            const args: SuccessEventArgs = { action: 'read', result: result };
+            parent.trigger('success', args);
+        } else {
+            if (!isNOU(result.error) && result.error.code === '401') {
+                result.files = [];
+                parent.notify(event, result);
+                parent.notify(events.selectionChanged, {});
+            }
+            onFailure(parent, result, 'read');
+            parent.setProperties({ path: parent.oldPath }, true);
+            parent.pathNames.pop();
         }
-        onFailure(parent, result, 'read');
+    }
+    catch (error) {
+        const errorResult: ReadArgs = {
+            files: null,
+            error: {
+                message: error.message,
+                fileExists: null
+            }
+        };
+        onFailure(parent, errorResult, 'read');
         parent.setProperties({ path: parent.oldPath }, true);
         parent.pathNames.pop();
     }

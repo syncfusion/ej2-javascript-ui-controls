@@ -2,7 +2,7 @@
  * Gantt toolbar spec
  */
 import { Gantt, Edit, Toolbar, Selection, ZoomTimelineSettings, Filter, PdfQueryCellInfoEventArgs, PdfExport, CriticalPath, DayMarkers, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, ContextMenu, ExcelExport, PdfQueryTimelineCellInfoEventArgs } from '../../src/index';
-import { exportData, image, adventProFont, GanttData1, pdfData1, customZoomingdata, templateData, projectResourcestemplate, virtual1, criticalData1, resourcesData1, resourceCollection1, coulmntemplate, resourceCollectiontemplate1, splitTasks, headerFooter, weekEndData,pdfData, images, milestoneTemplate,datapdf, pdfquerycelldata } from '../base/data-source.spec';
+import { exportData, image, adventProFont, GanttData1, pdfData1, customZoomingdata, templateData, projectResourcestemplate, virtual1, criticalData1, resourcesData1, resourceCollection1, coulmntemplate, resourceCollectiontemplate1, splitTasks, headerFooter, weekEndData,pdfData, images, milestoneTemplate,datapdf, pdfquerycelldata, editingResourcess, editingDatas, adventProFont1 } from '../base/data-source.spec';
 import { PdfExportProperties } from '../../src/gantt/base/interface';
 import { createGantt, destroyGantt } from '../base/gantt-util.spec';
 import { PdfDocument, PdfColor, PdfStandardFont, PdfFontFamily, PdfFontStyle } from '@syncfusion/ej2-pdf-export';
@@ -6167,5 +6167,167 @@ describe('Gantt pdf export with pdfQueryCellInfo', () => {
     });
     it("Export cancel Check", () => {
         ganttObj.pdfExport();
+    });
+});
+describe('Gantt PDF Export  getting console error', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt(
+            {
+                dataSource: editingDatas,
+                resources: editingResourcess,
+                allowSorting: true,
+                allowReordering: true,
+                enableContextMenu: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    dependency: 'Predecessor',
+                    child: 'subtasks',
+                    resourceInfo: 'resources'
+                },
+                renderBaseline: true,
+                baselineColor: 'red',
+                editSettings: {
+                    allowAdding: true,
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                columns: [
+                    { field: 'TaskID', headerText: 'Task ID' },
+                    { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+                    { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+                    { field: 'Duration', headerText: 'Duration', allowEditing: false },
+                    { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+                    { field: 'CustomColumn', headerText: 'CustomColumn' }
+                ],
+                sortSettings: {
+                    columns: [{ field: 'TaskID', direction: 'Ascending' },
+                    { field: 'TaskName', direction: 'Ascending' }]
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search', 'ZoomIn', 'ZoomOut', 'ZoomToFit',
+                    'PrevTimeSpan', 'NextTimeSpan', 'ExcelExport', 'CsvExport', 'PdfExport'],
+
+                toolbarClick: (args?: ClickEventArgs) => {
+                    if (args.item.id === 'ganttContainer_excelexport') {
+                        ganttObj.excelExport();
+                    } else if (args.item.id === 'ganttContainer_csvexport') {
+                        ganttObj.csvExport();
+                    } else if (args.item.id === 'ganttContainer_pdfexport') {
+                        let pdfExportProperties = {
+                            ganttStyle: {
+                                font: new PdfTrueTypeFont(adventProFont1, 12)
+                            },
+                            fileName: `newFile.pdf`,
+                        }
+                        ganttObj.pdfExport(pdfExportProperties);
+                    }
+                },
+                allowExcelExport: true,
+                allowPdfExport: true,
+                allowSelection: true,
+                allowRowDragAndDrop: true,
+                selectedRowIndex: 1,
+                splitterSettings: {
+                    position: "50%",
+                    // columnIndex: 4
+                },
+                selectionSettings: {
+                    mode: 'Row',
+                    type: 'Single',
+                    enableToggle: false
+                },
+                tooltipSettings: {
+                    showTooltip: true
+                },
+                filterSettings: {
+                    type: 'Menu'
+                },
+                allowFiltering: true,
+                gridLines: "Both",
+                showColumnMenu: true,
+                highlightWeekends: true,
+                timelineSettings: {
+                    showTooltip: true,
+                    topTier: {
+                        unit: 'Week',
+                        format: 'dd/MM/yyyy'
+                    },
+                    bottomTier: {
+                        unit: 'Day',
+                        count: 1
+                    }
+                },
+                eventMarkers: [
+                    {
+                        day: new Date('04/02/2024'),
+                    }, {
+                        day: new Date("04/09/2024"),
+                        label: 'Research phase'
+                    }, {
+                        day: new Date("04/30/2024"),
+                        label: 'Design phase'
+                    }, {
+                        day: new Date("05/23/2024"),
+                        label: 'Production phase'
+                    }, {
+                        day: new Date("06/20/2024"),
+                        label: 'Sales and marketing phase'
+                    }
+                ],
+                holidays: [{
+                    from: new Date('04/04/2024'),
+                    to: new Date('04/04/2024'),
+                    label: 'Local Holiday'
+                }, {
+                    from: new Date('04/19/2024'),
+                    to: new Date('04/19/2024'),
+                    label: 'Good Friday'
+                }, {
+                    from: new Date('04/30/2024'),
+                    to: new Date('04/30/2024'),
+                    label: 'Release Holiday'
+                },],
+                resourceFields: {
+                    id: 'resourceId',
+                    name: 'resourceName'
+                },
+                searchSettings:
+                {
+                    fields: ['TaskName', 'Duration']
+                },
+                labelSettings: {
+                    leftLabel: 'TaskID',
+                    rightLabel: 'Task Name: ${taskData.TaskName}',
+                    taskLabel: '${Progress}%'
+                },
+                allowResizing: true,
+                readOnly: false,
+                taskbarHeight: 20,
+                rowHeight: 40,
+                height: '550px',
+                allowUnscheduledTasks: true,
+                //  connectorLineBackground: "red",
+                //  connectorLineWidth: 3,
+                projectStartDate: new Date('03/25/2024'),
+                projectEndDate: new Date('07/28/2024'),
+                pdfExportComplete: (args: any) => {
+                    expect(args.name).toBe("pdfExportComplete");
+                },
+
+            }, done);
+    });
+    it('Export data with custom font', () => {
+        ganttObj.pdfExport();
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
     });
 });

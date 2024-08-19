@@ -13,7 +13,7 @@ import { Page } from '../../../src/grid/actions/page';
 import { Selection } from '../../../src/grid/actions/selection';
 import { Reorder } from '../../../src/grid/actions/reorder';
 import { Resize, resizeClassList } from '../../../src/grid/actions/resize';
-import { data, employeeData } from '../base/datasource.spec';
+import { data, employeeData, filterData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { GridModel } from '../../../src/grid/base/grid-model';
 import { extend } from '@syncfusion/ej2-base';
@@ -1430,6 +1430,48 @@ describe('Resize module', () => {
     
         it('content table 100% width test', () => {
             expect((gridObj.getContentTable() as HTMLElement).style.width).toBe('100%');
+        });
+    
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+    describe('EJ2-900716 - Column resize not resetting frozen indicator to indicate non-frozen column rendered behind frozen column', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    pageSettings: { pageSizes: true, pageSize: 5 },
+                    allowResizing: true,
+                    allowPaging: true,
+                    width:700,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                        { field: 'CustomerName', headerText: 'Customer Name', width: 150 },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                        { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                        { field: 'ShippedDate', headerText: 'Shipped Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 150, freeze: 'Right' },
+                    ],
+                }, done);
+        });
+    
+        it('resizing frozen grid- mousemove - 1', () => {
+            let handler: Element = gridObj.getHeaderTable().querySelectorAll('.' + resizeClassList.root)[1];
+            (gridObj.resizeModule as any).resizeStart({ target: handler, pageX: 0 });
+            (gridObj.resizeModule as any).resizing({ target: handler, pageX: -120 });
+            (gridObj.resizeModule as any).resizeEnd({ target: handler });
+            expect((gridObj.element.classList.contains('e-right-shadow'))).toBeFalsy();
+        });
+
+        it('resizing frozen grid- mousemove - 2', () => {
+            let handler: Element = gridObj.getHeaderTable().querySelectorAll('.' + resizeClassList.root)[1];
+            (gridObj.resizeModule as any).resizeStart({ target: handler, pageX: 0 });
+            (gridObj.resizeModule as any).resizing({ target: handler, pageX: 250 });
+            (gridObj.resizeModule as any).resizeEnd({ target: handler });
+            expect((gridObj.element.classList.contains('e-right-shadow'))).toBeTruthy();
         });
     
         afterAll(() => {

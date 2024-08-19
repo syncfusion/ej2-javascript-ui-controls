@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 26.2.9 (2024-08-13)
+## 26.2.10 (2024-08-20)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I620476` - Improved error handling and null value management in File Manager component file operations.
+
+## 26.2.7 (2024-07-30)
 
 ### FileManager
 

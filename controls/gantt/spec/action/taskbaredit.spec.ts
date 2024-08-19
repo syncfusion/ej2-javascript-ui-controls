@@ -3,7 +3,7 @@
  */
 import { Gantt, ITaskbarEditedEventArgs, Edit, RowDD, ContextMenu } from '../../src/index';
 import { DataManager } from '@syncfusion/ej2-data';
-import { baselineData, scheduleModeData, splitTasksData, editingData, scheduleModeData1, dragSelfReferenceData, multiTaskbarData, resources, projectData, resourcesData, resourceCollection, multiResources, predecessorOffSetValidation, customCRData, customCrIssue,crDialogEditData, projectSplitTask, cR893051,sengmentData,sengmentCollection } from '../base/data-source.spec';
+import { baselineData, scheduleModeData, splitTasksData, editingData, scheduleModeData1, dragSelfReferenceData, multiTaskbarData, resources, projectData, resourcesData, resourceCollection, multiResources, predecessorOffSetValidation, customCRData, customCrIssue,crDialogEditData, projectSplitTask, cR893051, sengmentData, sengmentCollection } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { falseLine } from '../../src/gantt/base/css-constants';

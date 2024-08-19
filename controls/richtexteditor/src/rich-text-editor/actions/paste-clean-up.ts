@@ -346,9 +346,7 @@ export class PasteCleanup {
             dropArea: this.parent.inputElement,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             success: (e: ImageSuccessEventArgs) => {
-                this.popupCloseTime = setTimeout(() => {
-                    this.popupClose(this.popupObj, this.uploadObj, imgElem, e);
-                }, 900);
+                this.popupClose(this.popupObj, this.uploadObj, imgElem, e);
             },
             uploading: (e: UploadingEventArgs) => {
                 if (!this.parent.isServerRendered) {
@@ -428,30 +426,31 @@ export class PasteCleanup {
         this.parent.inputElement.contentEditable = 'true';
         e.element = imgElem as HTMLElement;
         e.detectImageSource = ImageInputSource.Pasted;
-        uploadObj.filesData.forEach((element: FileInfo) => {
-            if (element.statusCode === '2') {
-                this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {
-                    if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
-                        const url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
-                        (imgElem as HTMLImageElement).src = url;
-                        imgElem.setAttribute('alt', (e as MetaData).file.name);
-                    }
-                });
-            }
-            else if (element.statusCode === '5') {
-                this.parent.trigger(events.imageRemoving, e, (e: object) => {
-                    if (!isNullOrUndefined((e as { element: HTMLImageElement }).element.src)) {
-                        (e as { element: HTMLImageElement }).element.src = '';
-                    }
-                });
-            }
-        });
-        popupObj.close();
-        (imgElem as HTMLElement).style.opacity = '1';
-        if (uploadObj && document.body.contains(uploadObj.element)) {
-            uploadObj.destroy();
+        const element: FileInfo = e.file;
+        if (element.statusCode === '2') {
+            this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {
+                if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
+                    const url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
+                    (imgElem as HTMLImageElement).src = url;
+                    imgElem.setAttribute('alt', (e as MetaData).file.name);
+                }
+            });
         }
-        this.toolbarEnableDisable(false);
+        else if (element.statusCode === '5') {
+            this.parent.trigger(events.imageRemoving, e, (e: object) => {
+                if (!isNullOrUndefined((e as { element: HTMLImageElement }).element.src)) {
+                    (e as { element: HTMLImageElement }).element.src = '';
+                }
+            });
+        }
+        this.popupCloseTime = setTimeout(function() : void {
+            popupObj.close();
+            (imgElem as HTMLElement).style.opacity = '1';
+            this.toolbarEnableDisable(false);
+            if (uploadObj && document.body.contains(uploadObj.element)) {
+                uploadObj.destroy();
+            }
+        }.bind(this), 1500);
     }
     private refreshPopup(imageElement: HTMLElement, popupObj: Popup): void {
         const imgPosition: number = this.parent.iframeSettings.enable ? this.parent.element.offsetTop +

@@ -35,6 +35,7 @@ export class ColumnChooser implements IAction {
     private innerDiv: HTMLElement;
     private ulElement: HTMLElement;
     private isDlgOpen: boolean = false;
+    private isColumnChooserOpen: boolean = false;
     private initialOpenDlg: boolean = true;
     private stateChangeColumns: Column[] = [];
     private changedStateColumns: Column[] = [];
@@ -297,6 +298,10 @@ export class ColumnChooser implements IAction {
     public openColumnChooser(X?: number, Y?: number): void {
         this.isCustomizeOpenCC = true;
         if (this.parent.enableAdaptiveUI) {
+            if (!this.isColumnChooserOpen) {
+                this.parent.showResponsiveCustomColumnChooser();
+            }
+            this.isColumnChooserOpen = false;
             this.renderDlgContent();
         }
         if (this.dlgObj.visible) {
@@ -341,7 +346,7 @@ export class ColumnChooser implements IAction {
 
     private keyUpHandler(e: KeyboardEventArgs): void {
         if (e.key === 'Escape') {
-            this.hideDialog();
+            this.resetColumnState();
         }
         this.setFocus(parentsUntil(e.target as Element, 'e-cclist'));
     }
@@ -494,6 +499,7 @@ export class ColumnChooser implements IAction {
 
     private renderResponsiveColumnChooserDiv(args: { action?: string }): void {
         if (args.action === 'open') {
+            this.isColumnChooserOpen = true;
             this.openColumnChooser();
         } else if (args.action === 'clear') {
             this.clearBtnClick();

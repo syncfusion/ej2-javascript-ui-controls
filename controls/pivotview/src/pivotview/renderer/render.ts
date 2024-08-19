@@ -49,7 +49,7 @@ export class Render {
     /** @hidden */
     public pivotColumns: ColumnModel[] = [];
     /** @hidden */
-    public lastColumnName: string;
+    public lastColumn: ColumnModel;
     /** @hidden */
     public indentCollection: { [key: number]: number } = {};
     private formatList: { [key: string]: string };
@@ -988,9 +988,13 @@ export class Render {
     }
 
     private onResizeStop(args: ResizeArgs): void {
-        const column: string = args.column.field === '0.formattedText' ? '0.formattedText' :
-            (args.column.customAttributes.cell as IAxisSet).valueSort.levelName as string;
-        this.parent.resizeInfo[column as string] = Number(args.column.width.toString().split('px')[0]);
+        if (args.column.columns && args.column.columns.length > 0) {
+            this.getChildColumnWidth(args.column.columns as ColumnModel[]);
+        } else {
+            const column: string = args.column.field === '0.formattedText' ? '0.formattedText' :
+                (args.column.customAttributes.cell as IAxisSet).valueSort.levelName as string;
+            this.parent.resizeInfo[column as string] = Number(args.column.width.toString().split('px')[0]);
+        }
         if (this.parent.enableVirtualization && args.column.field === '0.formattedText') {
             if (this.parent.dataSourceSettings.values.length > 1
                 && !isNullOrUndefined((this.parent.grid.columns[this.parent.grid.columns.length - 1] as ColumnModel).columns)) {
@@ -1006,6 +1010,17 @@ export class Render {
         this.setGroupWidth(args);
         this.calculateGridHeight(true);
         this.parent.grid.hideScroll();
+    }
+
+    private getChildColumnWidth(parentColumn: ColumnModel[]): void {
+        for (const column of parentColumn) {
+            if (column.columns && column.columns.length > 0) {
+                this.getChildColumnWidth(column.columns as ColumnModel[]);
+            }  else {
+                const colName: string = (column.customAttributes.cell as IAxisSet).valueSort.levelName as string;
+                this.parent.resizeInfo[colName as string] = Number(column.width.toString().split('px')[0]);
+            }
+        }
     }
 
     private setGroupWidth(args: ResizeArgs): void {
@@ -1857,7 +1872,7 @@ export class Render {
                                 headerTextAlign: this.parent.enableRtl ? 'Right' : 'Left'
                             };
                             if (cCnt === colCount) {
-                                this.lastColumnName = columnModel[actualCnt as number].field;
+                                this.lastColumn = columnModel[actualCnt as number];
                             }
                         } else if (headerSplit[cCnt as number]) {
                             // colSpan = (colField[cCnt as number] && colField[cCnt as number].type === 'grand sum' &&
@@ -1923,12 +1938,11 @@ export class Render {
         if (this.parent.toolbarModule && this.parent.showToolbar) {
             this.parent.toolbarModule.isReportChange = false;
         }
-        this.parent.triggerColumnRenderEvent(this.pivotColumns);
         autoFitApplied = this.parent.pivotColumns.length > 0 && this.parent.pivotColumns[this.parent.pivotColumns.length - 1].autoFit;
-        if (this.pivotColumns.length > 1 && !autoFitApplied) {
-            const lastColumn: ColumnModel = this.pivotColumns[this.pivotColumns.length - 1];
-            lastColumn.width = Number(lastColumn.width) - 2;
+        if (this.lastColumn && !autoFitApplied) {
+            this.lastColumn.width = Number(this.lastColumn.width) - 3;
         }
+        this.parent.triggerColumnRenderEvent(this.pivotColumns);
         return this.pivotColumns;
     }
 
@@ -1949,7 +1963,7 @@ export class Render {
         const columns: ColumnModel[] = [];
         const colWidth: number = this.calculateColWidth(2);
         columns.push({ field: '0.formattedText', headerText: '', minWidth: 30, width: this.resColWidth });
-        columns.push({ field: '1.formattedText', headerText: this.parent.localeObj.getConstant('grandTotal'), minWidth: 30, width: colWidth - 2 });
+        columns.push({ field: '1.formattedText', headerText: this.parent.localeObj.getConstant('grandTotal'), minWidth: 30, width: colWidth - 3 });
         return columns;
     }
 

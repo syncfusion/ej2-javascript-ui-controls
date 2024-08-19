@@ -216,14 +216,14 @@ export class ColumnWidthService {
             if (isNullOrUndefined(column.minWidth) && isNullOrUndefined(column.maxWidth)
                 && !this.isWidthUndefined()) {
                 column.width = 200;
-            }
-            else if (column.maxWidth) {
+            } else if (column.maxWidth) {
                 column.width = column.maxWidth;
             }
         }
         if (!column.width) { return null; }
         const width: number = parseInt(column.width.toString(), 10);
-        if (column.minWidth && width < parseInt(column.minWidth.toString(), 10)) {
+        if (column.minWidth && (width < parseInt(column.minWidth.toString(), 10)
+            || (column.width === 'auto' && isNullOrUndefined(column.maxWidth)))) {
             return column.minWidth;
         } else if (column.maxWidth && (column.width === 'auto' || width > parseInt(column.maxWidth.toString(), 10))) {
             return column.maxWidth;

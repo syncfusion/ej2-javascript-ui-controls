@@ -1,9 +1,9 @@
 import { Spreadsheet } from '../index';
 import { addNote, editNote, deleteNote, showNote, removeNoteContainer, createNoteIndicator, NoteSaveEventArgs, updateNoteContainer, completeAction, setActionData } from '../common/index';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, EventHandler } from '@syncfusion/ej2-base';
 import { SheetModel } from '../../workbook/base/sheet-model';
-import { getCellIndexes } from '../../workbook/common/address';
-import { CellModel, getCell, updateCell, getSheetName, Workbook} from '../../workbook/index';
+import { getCellIndexes, getRangeAddress } from '../../workbook/common/address';
+import { CellModel, getCell, updateCell, getSheetName, Workbook, getRowHeight} from '../../workbook/index';
 /**
  * `Note` module
  */
@@ -15,6 +15,8 @@ export class SpreadsheetNote {
     public isShowNote: boolean;
     /** @hidden */
     public isNoteVisibleOnTouch: boolean = false;
+    /** @hidden */
+    public noteCellIndexes: number[];
     /**
      * Constructor for Note module.
      *
@@ -68,7 +70,8 @@ export class SpreadsheetNote {
     }
 
     private addNote(): void {
-        const cellIndexes: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
+        const cellIndexes: number[] = !isNullOrUndefined(this.noteCellIndexes) ?
+            this.noteCellIndexes : getCellIndexes(this.parent.getActiveSheet().activeCell);
         const targetElement: HTMLElement = this.parent.getCell(cellIndexes[0], cellIndexes[1]);
         if (!isNullOrUndefined(targetElement) && ((targetElement.children.length === 0) || (targetElement.children.length > 0 && targetElement.children[targetElement.childElementCount - 1].className.indexOf('e-addNoteIndicator') === -1) )) {
             this.createNoteIndicator({targetElement: targetElement, rowIndex: cellIndexes[0], columnIndex: cellIndexes[1] });
@@ -83,8 +86,8 @@ export class SpreadsheetNote {
         const targetElement: HTMLElement = this.parent.getCell(rowIndex, columnIndex);
         if (targetElement.children.length > 0 && targetElement.children[targetElement.children.length - 1].className.indexOf('e-addNoteIndicator') > -1){
             targetElement.removeChild(targetElement.children[targetElement.children.length - 1]);
-            targetElement.removeEventListener('mouseover', () => this.mouseOver(cellIndexes[0], cellIndexes[1]));
-            targetElement.removeEventListener('mouseout', () => this.mouseOut());
+            EventHandler.remove(targetElement, 'mouseover', this.mouseOver);
+            EventHandler.remove(targetElement, 'mouseout', this.mouseOut);
             const address: string = getSheetName(this.parent as Workbook, this.parent.activeSheetIndex) + '!' + this.parent.getActiveSheet().activeCell;
             const cell: CellModel = getCell(rowIndex, columnIndex, this.parent.getActiveSheet());
             if (!isNullOrUndefined(args) && args.isDeleteFromMenu) {
@@ -95,14 +98,15 @@ export class SpreadsheetNote {
             }
             if (!isNullOrUndefined(args) && args.isDeleteFromMenu) {
                 const eventArgs : NoteSaveEventArgs =  { notes: cell.notes, address: address};
-                this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'addNote' });
+                this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'deleteNote' });
                 this.isShowNote = null;
             }
         }
     }
 
     private editNote(): void {
-        const cellIndexes: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
+        const cellIndexes: number[] = !isNullOrUndefined(this.noteCellIndexes) ?
+            this.noteCellIndexes : getCellIndexes(this.parent.getActiveSheet().activeCell);
         this.showNote({rowIndex: cellIndexes[0], columnIndex: cellIndexes[1], isNoteEditable: true});
         const noteContainerElement: HTMLTextAreaElement = document.getElementsByClassName('e-addNoteContainer')[0] as HTMLTextAreaElement;
         updateCell(
@@ -115,17 +119,23 @@ export class SpreadsheetNote {
 
     private createNoteIndicator(args : { targetElement: HTMLElement, rowIndex: number, columnIndex: number}): void {
         const noteIndicator: HTMLElement = this.parent.createElement('div', { className: 'e-addNoteIndicator', styles: 'position: absolute;top: 0;right: 0;width: 0;height: 0;border-left: 8px solid transparent;border-top: 8px solid red;cursor: pointer;' });
-        if (args.targetElement.children.length > 0 && (args.targetElement.children[args.targetElement.childElementCount - 1].className.indexOf('e-filter-btn') > -1 ||
-            args.targetElement.children[args.targetElement.childElementCount - 1].className.indexOf('e-validation-list') > -1)) {
-            if (args.targetElement.children[args.targetElement.childElementCount - 1].className.indexOf('e-filter-btn') > -1) {
-                noteIndicator.style.right = ((document.getElementsByClassName('e-filter-btn')[0] as HTMLElement).getBoundingClientRect().width + 2) + 'px';
-            } else {
-                noteIndicator.style.right = ((document.getElementsByClassName('e-validation-list')[0] as HTMLElement).getBoundingClientRect().width + 2) + 'px';
+        if (args.targetElement.children.length > 0) {
+            const rowHeight: number = getRowHeight(this.parent.getActiveSheet(), args.rowIndex);
+            const defaultFilterButtonHeight: number = 20;
+            for (let i: number = 0; i < args.targetElement.childElementCount; i++) {
+                if (args.targetElement.children[i as number].className.indexOf('e-filter-btn') > -1) {
+                    noteIndicator.style.right = (rowHeight < (defaultFilterButtonHeight + 10) ?
+                        (args.targetElement.children[i as number].getBoundingClientRect().width <= 0 ? defaultFilterButtonHeight :
+                            args.targetElement.children[i as number].getBoundingClientRect().width) : 0 + 2) + 'px';
+                }
+                if (args.targetElement.children[i as number].className.indexOf('e-validation-list') > -1) {
+                    noteIndicator.style.right = (args.targetElement.children[i as number].getBoundingClientRect().width + 2) + 'px';
+                }
             }
         }
         if (!isNullOrUndefined(args.targetElement) && (args.targetElement.children.length === 0) || (args.targetElement.children.length > 0 && args.targetElement.children[args.targetElement.childElementCount - 1].className.indexOf('e-addNoteIndicator') === -1)) {
-            args.targetElement.addEventListener('mouseover', () => this.mouseOver(args.rowIndex, args.columnIndex));
-            args.targetElement.addEventListener('mouseout', () => this.mouseOut());
+            EventHandler.add(args.targetElement, 'mouseover', this.mouseOver.bind(this, args.rowIndex, args.columnIndex));
+            EventHandler.add(args.targetElement, 'mouseout', this.mouseOut, this);
             args.targetElement.appendChild(noteIndicator);
         }
     }
@@ -140,9 +150,9 @@ export class SpreadsheetNote {
         }
     }
 
-    private mouseOut(): void {
+    private mouseOut(e: MouseEvent): void {
         if (this.isNoteVisible && (!this.isNoteVisibleOnTouch && !isNullOrUndefined(document.getElementsByClassName('e-addNoteContainer')[0] as HTMLTextAreaElement))) {
-            if (document.activeElement.className.indexOf('e-addNoteContainer') === -1) {
+            if (document.activeElement.className.indexOf('e-addNoteContainer') === -1 && !isNullOrUndefined(e.relatedTarget as HTMLElement) && (e.relatedTarget as HTMLElement).className.indexOf('e-connectorLine') === -1 && (e.relatedTarget as HTMLElement).className.indexOf('e-addNoteContainer') === -1) {
                 this.removeNoteContainer();
                 this.isNoteVisible = false;
             }
@@ -160,6 +170,8 @@ export class SpreadsheetNote {
         if (isNoteEditable) {
             this.getNoteFocus(noteContainer);
         }
+        EventHandler.add(noteContainer, 'mouseout', this.mouseOut, this);
+        EventHandler.add((document.getElementsByClassName('e-connectorLine')[0] as HTMLElement), 'mouseout', this.mouseOut, this);
     }
 
     private getNoteFocus(noteContainerElement: HTMLTextAreaElement): void {
@@ -237,30 +249,36 @@ export class SpreadsheetNote {
         if (!isNullOrUndefined(targetElement) && isNullOrUndefined(document.getElementsByClassName('e-addNoteContainer')[0] as HTMLTextAreaElement) && showNoteOverContextMenu
             && (args.isScrollWithNote || (targetElement.children !== null && targetElement.children.length > 0 && targetElement.children[targetElement.children.length - 1].classList.contains('e-addNoteIndicator')))) {
             this.createNoteContainer(targetElement, args.rowIndex, args.columnIndex, true, args.isNoteEditable);
+            this.noteCellIndexes = [args.rowIndex, args.columnIndex];
         }
     }
 
     private removeNoteContainer(): void {
+        EventHandler.remove(document.getElementsByClassName('e-addNoteContainer')[0] as HTMLTextAreaElement, 'mouseout', this.mouseOut);
+        EventHandler.remove((document.getElementsByClassName('e-connectorLine')[0] as HTMLElement), 'mouseout', this.mouseOut);
         this.parent.element.removeChild(document.getElementsByClassName('e-addNoteContainer')[0] as HTMLTextAreaElement);
         this.parent.element.removeChild(document.getElementsByClassName('e-connectorLine')[0] as HTMLElement);
+        this.noteCellIndexes = null;
         this.isNoteVisible = false;
         this.isNoteVisibleOnTouch = false;
     }
 
     private updateNoteContainer(): void {
         this.parent.selectionModule.isNoteContainerIsActiveElement = document.activeElement.className.indexOf('e-addNoteContainer') > -1 ? true : this.parent.selectionModule.isNoteContainerIsActiveElement;
-        const cellIdxs: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
+        const cellIdxs: number[] = !isNullOrUndefined(this.noteCellIndexes) ?
+            this.noteCellIndexes : getCellIndexes(this.parent.getActiveSheet().activeCell);
         const cell: CellModel = getCell(cellIdxs[0], cellIdxs[1], this.parent.getActiveSheet());
         const noteContainer: HTMLTextAreaElement  = document.getElementsByClassName('e-addNoteContainer')[0] as HTMLTextAreaElement;
         if (((isNullOrUndefined(cell) || isNullOrUndefined(cell.notes)) || (cell.notes !== noteContainer.value))
         && this.parent.selectionModule.isNoteContainerIsActiveElement) {
-            const address: string = getSheetName(this.parent as Workbook, this.parent.activeSheetIndex) + '!' + this.parent.getActiveSheet().activeCell;
+            const address: string = getSheetName(this.parent as Workbook, this.parent.activeSheetIndex) + '!' + getRangeAddress(cellIdxs);
             this.parent.notify(setActionData, { args: { action: 'beforeCellSave', eventArgs: { address: address } } });
+            const eventAction: string = !isNullOrUndefined(cell) && cell.notes ? 'editNote' : 'addNote';
             updateCell(
                 this.parent, this.parent.getActiveSheet(), { rowIdx: cellIdxs[0], colIdx: cellIdxs[1], preventEvt: true,
                     cell: { notes: noteContainer.value, isNoteEditable: true }});
             const eventArgs : NoteSaveEventArgs =  { notes: noteContainer.value, address: address};
-            this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'addNote' });
+            this.parent.notify(completeAction, { eventArgs: eventArgs, action: eventAction });
             this.isShowNote = null;
         }
         this.isShowNote = isNullOrUndefined(this.isShowNote) ? this.parent.selectionModule.isNoteContainerIsActiveElement : this.isShowNote;

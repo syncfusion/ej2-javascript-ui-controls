@@ -265,7 +265,7 @@ export class SfdtExport {
                         continue;
                     }
                     let blockIndex = isNullOrUndefined(nextBlock) ? 0 : nextBlock.containerWidget.index === lastBlock.containerWidget.index ?lastBlock.containerWidget.index : nextBlock.containerWidget.index;
-                    if(this.owner.editor.isPaste){
+                    if (this.owner.editor.isPaste || this.owner.editor.isInsertingTOC) {
                         blockIndex = 0;
                     }
                     lastBlock = nextBlock;
@@ -313,7 +313,7 @@ export class SfdtExport {
                         continue;
                     }
                     let blockIndex = isNullOrUndefined(nextBlock) ? 0 : nextBlock.containerWidget.index === lastBlock.containerWidget.index ?lastBlock.containerWidget.index : nextBlock.containerWidget.index;
-                    if(this.owner.editor.isPaste){
+                    if (this.owner.editor.isPaste || this.owner.editor.isInsertingTOC) {
                         blockIndex = 0;
                     }
                     lastBlock = nextBlock;

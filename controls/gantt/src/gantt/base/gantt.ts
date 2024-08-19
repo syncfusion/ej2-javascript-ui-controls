@@ -2717,6 +2717,9 @@ export class Gantt extends Component<HTMLElement>
             } else {
                 this.treeGrid.setProperties({ dataSource: this.flatData }, false);
             }
+            if (!isNullOrUndefined(this.selectionModule)) {
+                this.treeGrid.setProperties({ selectedRowIndex: this.selectedRowIndex }, false);
+            }
         } else {
             this.treeGridPane.classList.remove('e-temp-content');
             remove(this.treeGridPane.querySelector('.e-gantt-temp-header'));

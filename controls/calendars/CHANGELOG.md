@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 26.2.10 (2024-08-20)
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- `#I189705` - Resolved an issue that caused a console error on mobile devices when utilizing the `maxDays` property in the `DateRangePicker`.
+
+- `#I607606` - Fixed the issue where the TimePicker popup was not opening at the center on mobile devices.
+
+- `#I613304` - Resolved an issue where toggling the visibility of the date range picker caused a memory leak.
+
 ## 26.2.8 (2024-08-06)
 
 ### DatePicker

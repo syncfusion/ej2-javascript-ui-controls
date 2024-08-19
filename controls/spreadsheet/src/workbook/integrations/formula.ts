@@ -545,6 +545,8 @@ export class WorkbookFormula {
      * @param {boolean} args.isRefreshing - A flag indicating whether the calculation is being refreshed.
      * @param {boolean} [args.isDependentRefresh] - An optional flag indicating whether the refresh is dependent.
      * @param {boolean} [args.isRandomFormula] - An optional flag indicating whether the formula is random.
+     * @param {boolean} [args.isDelete] - An optional flag indicating whether is from delete cells.
+     * @param {number[]} [args.deletedRange] - An optional range array indicating the deleted cells.
      * @returns {void}
      * @private
      */
@@ -563,7 +565,7 @@ export class WorkbookFormula {
                 this.calculateInstance.getFormulaInfoTable().delete(cellRef);
                 this.calculateInstance.clearFormulaDependentCells(cellRef);
             }
-            this.calculateInstance.refresh(cellRef);
+            this.calculateInstance.refresh(cellRef, null, null, null, args.isDelete, args.deletedRange);
             this.calculateInstance.refreshRandValues(cellRef);
         }
         this.calculateInstance.cell = '';
@@ -585,7 +587,8 @@ export class WorkbookFormula {
         const cellArgs: ValueChangedArgs = new ValueChangedArgs(args.rowIndex + 1, args.colIndex + 1, value);
         const usedRange: number[] = [sheet.usedRange.rowIndex, sheet.usedRange.colIndex];
         this.calculateInstance.valueChanged(
-            sheet.id.toString(), cellArgs, true, usedRange, args.isRefreshing, sheet.name, args.isRandomFormula);
+            sheet.id.toString(), cellArgs, true, usedRange, args.isRefreshing, sheet.name, args.isRandomFormula,
+            null, args.isDelete, args.deletedRange);
         if (this.calculateInstance.isRandomVal === true && !args.isRandomFormula) {
             this.refreshRandomFormula();
         }

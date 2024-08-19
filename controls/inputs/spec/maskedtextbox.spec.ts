@@ -1611,10 +1611,10 @@ describe('MaskedTextBox Component', () => {
         it('Default text box with Utility mask method', () => {
             let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
             let input2: HTMLInputElement = <HTMLInputElement>document.getElementById('mask2');
-            maskInput({
-                element: input,
+            maskBox = new MaskedTextBox({
                 mask: '(999) 99-999'
             });
+            maskBox.appendTo('#mask1');
             input.selectionStart = input.selectionEnd = 0;
             for (let i: number = 0; i < 8; i++) {
                 let event: any = eventObject('KeyboardEvent', 'keypress');
@@ -1623,55 +1623,49 @@ describe('MaskedTextBox Component', () => {
             }
             expect(input.value.length === 12).toEqual(true);
             expect(input.value === '(555) 55-555').toEqual(true);
-            expect(getVal({
-                element: input,
-                mask: '(999) 99-999',
-            }) === '55555555').toEqual(true);
-            expect(getMaskedVal({
-                element: input,
-                mask: '(999) 99-999'
-            }) === '(555) 55-555').toEqual(true);
+            expect(maskBox.value === '55555555').toEqual(true);
         });
         it('Default text box with Utility mask method -- PromptCharacter', () => {
             let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
-            maskInput({
-                element: input,
+            maskBox = new MaskedTextBox({
                 mask: '(999) 99-999',
                 promptChar: '~'
             });
+            maskBox.appendTo('#mask1');
             expect(input.value.length === 12).toEqual(true);
             expect(input.value === '(~~~) ~~-~~~').toEqual(true);
         });
         it('Default text box with Utility mask method -- PromptCharacter(multiple check)', () => {
             let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
-            maskInput({
-                element: input,
+            maskBox = new MaskedTextBox({
                 mask: '(999) 99-999',
                 promptChar: '#+'
             });
+            maskBox.appendTo('#mask1');
             expect(input.value.length === 12).toEqual(true);
             expect(input.value === '(###) ##-###').toEqual(true);
         });
         it('Default text box with Utility mask method -- Set value', () => {
             let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
-            maskInput({
-                element: input,
+            maskBox = new MaskedTextBox({
                 mask: '(999) 99-999',
                 value: '96789999'
             });
+            maskBox.appendTo('#mask1');
             expect(input.value.length === 12).toEqual(true);
             expect(input.value === '(967) 89-999').toEqual(true);
         });
         it('Default text box with Utility mask method', () => {
             let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
-            maskInput({
-                element: input,
+            maskBox = new MaskedTextBox({
                 mask: '(999) 99-999'
             });
+            maskBox.appendTo('#mask1');
             let event: any = eventObject('KeyboardEvent', 'keypress');
             event.key = "P";
             EventHandler.trigger(input, 'keypress', event);
-            expect(input.classList.contains('e-error')).toEqual(true);
+            let inputParent: HTMLElement = <HTMLElement>input.parentNode;
+            expect(inputParent.classList.contains('e-error')).toEqual(true);
         });
     });
     describe('Floating label MaskedTextBox', () => {

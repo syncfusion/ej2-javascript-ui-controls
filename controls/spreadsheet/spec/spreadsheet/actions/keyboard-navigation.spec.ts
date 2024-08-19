@@ -342,7 +342,7 @@ describe('Spreadsheet cell navigation module ->', () => {
             helper.getElement().focus();
             helper.triggerKeyNativeEvent(34);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('A29:A29');
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('A23:A23');
                 done();
             }, 50);
         });
@@ -367,7 +367,7 @@ describe('Spreadsheet cell navigation module ->', () => {
             helper.getElement().focus();
             helper.triggerKeyNativeEvent(34, false, true);
             setTimeout(() => {
-                expect(helper.getInstance().sheets[0].selectedRange).toBe('A5:A32');
+                expect(helper.getInstance().sheets[0].selectedRange).toBe('A5:A26');
                 done();
             }, 50);
         });

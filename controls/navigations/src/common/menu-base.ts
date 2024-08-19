@@ -1727,7 +1727,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         this.removeLIStateByClass([SELECTED], [wrapper]);
                     }
                     if (!cli || !cli.querySelector('.' + CARET)) {
-                        this.closeMenu(null, e);
+                        if (!Browser.isIos || (Browser.isIos && !e.ctrlKey)) {
+                            this.closeMenu(null, e);
+                        }
                     }
                 }
             }

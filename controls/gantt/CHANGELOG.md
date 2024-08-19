@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 26.2.10 (2024-08-20)
+
+### GanttChart
+
+#### Bug fixes
+
+- `#I621276` - Connector lines rendered in wrong position with `enableTimelineVirtualization` and `enableRtl` issue has been fixed.
+- `#I616825` - Timeline not updated properly while using `setSplitterPosition` issue has been fixed.
+- `#I618909`,`#I607695` - PDF export exception thrown when using different font style  issue has been fixed.
+- `#I618061` - Updating `selectedRowIndex` and `dataSource` dynamically only updates the data, `selectedRowIndex` does not work issue has been fixed.
+- `#I620597` - `getSelectedRecords` method not return selected records when `persistSelection` is set to true issue has been fixed.
+- `#I617142` - Left value miscalculated for taskbar while duration in decimals issue has been fixed.
+
 ## 26.2.9 (2024-08-13)
 
 ### GanttChart

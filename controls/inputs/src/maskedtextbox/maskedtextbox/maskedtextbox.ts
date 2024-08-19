@@ -36,6 +36,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     private escapeMaskValue: string;
     private regExpCollec: { [key: string]: string };
     private customRegExpCollec: string[];
+    private maskedRegExp: string[]
     private inputObj: InputObject;
     private undoCollec: MaskUndo[];
     private redoCollec: MaskUndo[];
@@ -262,6 +263,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
         this.escapeMaskValue = '';
         this.regExpCollec = regularExpressions;
         this.customRegExpCollec = [];
+        this.maskedRegExp = [];
         this.undoCollec = [];
         this.redoCollec = [];
         this.changeEventArgs = {};
@@ -557,6 +559,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
             case 'mask': {
                 const strippedValue: string = this.value;
                 this.mask = newProp.mask;
+                this.maskedRegExp = [];
                 this.updateValue(strippedValue);
             }
                 break;

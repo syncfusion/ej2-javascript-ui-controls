@@ -1698,7 +1698,7 @@ describe('Data validation ->', () => {
                 helper.edit('I7', '$20');
                 helper.edit('I8', '50%');
                 helper.edit('I9', '$100');
-                helper.invoke('addDataValidation', [{ type: 'List', value1: '12%,17%,20%,$45,$50' }, 'I:I']);
+                helper.invoke('addDataValidation', [{ type: 'List', value1: '12%,17%,20%,$45,$50,1,0.5,0.15' }, 'I:I']);
                 helper.edit('I1', '12%');
                 expect(spreadsheet.sheets[0].rows[0].cells[8].value).toBe('0.12');
                 helper.edit('I2', '17%');
@@ -1717,7 +1717,19 @@ describe('Data validation ->', () => {
                 expect(spreadsheet.sheets[0].rows[7].cells[8].value).toBe('$45');
                 helper.edit('I9', '20%');
                 expect(parseFloat(spreadsheet.sheets[0].rows[8].cells[8].value)).toBe(0.2);
-                helper.invoke('addDataValidation', [{ type: 'List', value1: '=I1:I6' }, 'J1:J5']);
+                helper.edit('I10', '0.12');
+                expect(parseFloat(spreadsheet.sheets[0].rows[9].cells[8].value)).toBe(0.12);
+                helper.edit('I11', '0.17');
+                expect(parseFloat(spreadsheet.sheets[0].rows[10].cells[8].value)).toBe(0.17);
+                helper.edit('I12', '0.2');
+                expect(parseFloat(spreadsheet.sheets[0].rows[11].cells[8].value)).toBe(0.2);
+                helper.edit('I13', '100%');
+                expect(spreadsheet.sheets[0].rows[12].cells[8].value).toBe('1');
+                helper.edit('I14', '15%');
+                expect(spreadsheet.sheets[0].rows[13].cells[8].value).toBe('0.15');
+                helper.edit('I15', '50%');
+                expect(spreadsheet.sheets[0].rows[14].cells[8].value).toBe('0.5');
+                helper.invoke('addDataValidation', [{ type: 'List', value1: '=I1:I15' }, 'J:J']);
                 helper.edit('J1', '12%');
                 expect(spreadsheet.sheets[0].rows[0].cells[9].value).toBe('0.12');
                 helper.edit('J2', '17%');
@@ -1728,6 +1740,26 @@ describe('Data validation ->', () => {
                 expect(spreadsheet.sheets[0].rows[3].cells[9].value).toBe('45');
                 helper.edit('J5', '$50');
                 expect(spreadsheet.sheets[0].rows[4].cells[9].value).toBe('50');
+                helper.edit('J6', '$50');
+                expect(spreadsheet.sheets[0].rows[5].cells[8].value).toBe('$50');
+                helper.edit('J7', '12%');
+                expect(parseFloat(spreadsheet.sheets[0].rows[6].cells[9].value)).toBe(0.12);
+                helper.edit('J8', '$45');
+                expect(spreadsheet.sheets[0].rows[7].cells[8].value).toBe('$45');
+                helper.edit('J9', '20%');
+                expect(parseFloat(spreadsheet.sheets[0].rows[8].cells[9].value)).toBe(0.2);
+                helper.edit('J10', '0.12');
+                expect(parseFloat(spreadsheet.sheets[0].rows[9].cells[9].value)).toBe(0.12);
+                helper.edit('J11', '0.17');
+                expect(parseFloat(spreadsheet.sheets[0].rows[10].cells[9].value)).toBe(0.17);
+                helper.edit('J12', '0.2');
+                expect(parseFloat(spreadsheet.sheets[0].rows[11].cells[9].value)).toBe(0.2);
+                helper.edit('J13', '100%');
+                expect(spreadsheet.sheets[0].rows[12].cells[9].value).toBe('1');
+                helper.edit('J14', '15%');
+                expect(spreadsheet.sheets[0].rows[13].cells[9].value).toBe('0.15');
+                helper.edit('J15', '50%');
+                expect(spreadsheet.sheets[0].rows[14].cells[9].value).toBe('0.5');
                 done();
             });
         });
@@ -2207,6 +2239,54 @@ describe('Data validation ->', () => {
                     });
                 });
             });
+        });
+    });
+    describe('EJ-899038 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{
+                    rows: [{ cells: [{ value: '1' }], height: 20 },
+                    { cells: [{ value: '2' }], height: 20 }, { cells: [{ value: '3' }], height: 14 }, { cells: [{ value: '3' }], height: 14 },
+                    { cells: [{ value: '4' }], height: 14 }, { cells: [{ value: '5' }], height: 14 }, { cells: [{ value: '6' }], height: 14 }, { cells: [{ value: '7' }], height: 14 }]
+                }]
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Selection misalignment occurs when selecting a cell with list data validation and a minimum row height', (done: Function) => {
+            helper.getInstance().addDataValidation({ type: 'List', value1: '1,2,3,4,5', ignoreBlank: true }, `A:A`)
+            helper.invoke('selectRange', ['A2:A2']);
+            var td: HTMLElement = helper.invoke('getCell', [1, 0]);
+            expect(td.children[0].classList).toContain('e-validation-list');
+            expect(td.children[0].getAttribute('style')).toBe(null);
+            helper.getInstance().setRowHeight(16, 2);
+            helper.invoke('selectRange', ['A3:A3']);
+            td = helper.invoke('getCell', [2, 0]);
+            expect(td.children[0].classList).toContain('e-validation-list');
+            expect(td.children[0].getAttribute('style')).toBe('height: 15px;');
+            var td: HTMLElement = helper.invoke('getCell', [1, 0]);
+            expect((td.children).length.toString()).toEqual('0');
+            helper.getInstance().setRowHeight(12, 3);
+            helper.invoke('selectRange', ['A4:A4']);
+            td = helper.invoke('getCell', [3, 0]);
+            expect(td.children[0].classList).toContain('e-validation-list');
+            expect(td.children[0].getAttribute('style')).toBe('height: 11px;');
+            helper.getInstance().setRowHeight(32, 3);
+            helper.invoke('selectRange', ['A4:A4']);
+            td = helper.invoke('getCell', [3, 0]);
+            expect(td.children[0].classList).toContain('e-validation-list');
+            expect(td.children[0].getAttribute('style')).toBe("");
+            helper.getInstance().setRowHeight(11, 3);
+            td = helper.invoke('getCell', [3, 0]);
+            expect(td.children[0].classList).toContain('e-validation-list');
+            expect(td.children[0].getAttribute('style')).toBe('height: 10px;');
+            helper.getInstance().setRowHeight(30, 4);
+            helper.invoke('selectRange', ['A5:A5']);
+            td = helper.invoke('getCell', [4, 0]);
+            expect(td.children[0].classList).toContain('e-validation-list');
+            expect(td.children[0].getAttribute('style')).toBe(null);
+            done();
         });
     });
 });

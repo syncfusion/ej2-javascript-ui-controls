@@ -1960,7 +1960,6 @@ export class Editor {
                     if (!this.owner.isReadOnly && this.owner.optionsPaneModule) {
                         this.owner.optionsPaneModule.isReplace = true;
                         this.owner.documentEditorSettings.showNavigationPane = true;
-                        this.owner.optionsPaneModule.showHideOptionsPane(true);
                     }
                     break;
                 case 73:
@@ -2555,8 +2554,8 @@ export class Editor {
         properties.color = "#00000000";
         this.selection.isEmpty ? properties.hasPlaceHolderText = true : properties.hasPlaceHolderText = false;
         properties.isTemporary = false;
-        properties.lockContentControl = !isNullOrUndefined(lock) ? lock : false;
-        properties.lockContents = !isNullOrUndefined(lockContents) ? lock : false;
+        properties.lockContentControl = !isNullOrUndefined(lock) ? !lock : false;
+        properties.lockContents = !isNullOrUndefined(lockContents) ? !lockContents : false;
         properties.tag = !isNullOrUndefined(tag) ? tag : undefined;
         properties.title = !isNullOrUndefined(title) ? title : undefined;
         properties.multiline = false;
@@ -2626,8 +2625,8 @@ export class Editor {
             properties.color = "#00000000";
             this.selection.isEmpty ? properties.hasPlaceHolderText = true : properties.hasPlaceHolderText = false;
             properties.isTemporary = false;
-            properties.lockContentControl = !isNullOrUndefined(lock) ? lock : false;
-            properties.lockContents = !isNullOrUndefined(lockContents) ? lock : false;
+            properties.lockContentControl = !isNullOrUndefined(lock) ? !lock : false;
+            properties.lockContents = !isNullOrUndefined(lockContents) ? !lockContents : false;
             properties.tag = !isNullOrUndefined(tag) ? tag : undefined;
             properties.title = !isNullOrUndefined(title) ? title : undefined;
             properties.multiline = false;
@@ -6152,7 +6151,7 @@ export class Editor {
         return 0;
     }
     private checkSameLevelFormat(lstLevelNo: number, abstractList: any, list: WList): boolean {
-        return abstractList[levelsProperty[this.keywordIndex]][lstLevelNo][listLevelPatternProperty[this.keywordIndex]] === list.abstractList.levels[lstLevelNo].listLevelPattern
+        return this.owner.parser.getListLevelPattern(abstractList[levelsProperty[this.keywordIndex]][lstLevelNo][listLevelPatternProperty[this.keywordIndex]]) === list.abstractList.levels[lstLevelNo].listLevelPattern
             && abstractList[levelsProperty[this.keywordIndex]][lstLevelNo][numberFormatProperty[this.keywordIndex]] === list.abstractList.levels[lstLevelNo].numberFormat
             && (abstractList[levelsProperty[this.keywordIndex]][lstLevelNo][listLevelPatternProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 10 : 'Bullet')
                 || abstractList[levelsProperty[this.keywordIndex]][lstLevelNo][startAtProperty[this.keywordIndex]] === list.abstractList.levels[lstLevelNo].startAt);
@@ -6163,7 +6162,7 @@ export class Editor {
             if (isNullOrUndefined(level)) {
                 return false; // Skip this list if the level does not exist
             }
-            return level.listLevelPattern === listLevel[listLevelPatternProperty[this.keywordIndex]]
+            return level.listLevelPattern === this.owner.parser.getListLevelPattern(listLevel[listLevelPatternProperty[this.keywordIndex]])
                 && level.numberFormat === listLevel[numberFormatProperty[this.keywordIndex]]
                 && (listLevel[listLevelPatternProperty[this.keywordIndex]] === (this.keywordIndex == 1 ? 10 : 'Bullet') || level.startAt === listLevel[startAtProperty[this.keywordIndex]])
                 && this.isEqualParagraphFormat(level.paragraphFormat, listLevel[paragraphFormatProperty[this.keywordIndex]]);
@@ -8300,9 +8299,6 @@ export class Editor {
         let paraStart: boolean = this.selection.start.isAtParagraphStart;
         if (!selection.start.isAtParagraphStart) {
             if (block instanceof ParagraphWidget) {
-                if (!this.isInsertingTOC && this.owner.enableTrackChanges && !this.skipTracking()) {
-                    this.insertRevisionForBlock(block, 'Insertion');
-                }
                 let startPosition: TextPosition = selection.start.clone();
                 //let prevBlock: ParagraphWidget = (block as ParagraphWidget).clone()
                 if (!this.isInsertingTOC && this.owner.enableTrackChanges && !this.skipTracking()) {
@@ -21586,8 +21582,8 @@ export class Editor {
         bodyWidget.sectionFormat = new WSectionFormat(bodyWidget);
         bodyWidget.childWidgets = widgets;
         this.pasteContentsInternal([bodyWidget], false);
-        this.isInsertingTOC = false;
         this.updatePageRef();
+        this.isInsertingTOC = false;
         if (this.editorHistory) {
             this.editorHistory.updateComplexHistory();
             this.updateHistoryForComments(removedCommentStart);
@@ -22909,6 +22905,9 @@ export class Editor {
             contentControl.contentControlProperties.contentControlListItems.push(span);
             this.dropDownChange(contentControl, span.displayText as string);
         }
+        this.selection.contentControleditRegionHighlighters.clear();
+        this.selection.isHighlightContentControlEditRegion = true;
+        this.selection.onHighlightContentControl();
     }
     private updateContentControlResult(contentControl: ContentControl, value: string, reset?: boolean): void {
         this.selection.selectContentControlInternal(contentControl);

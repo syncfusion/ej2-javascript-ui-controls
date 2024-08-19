@@ -33,7 +33,7 @@ describe('Cell Format ->', () => {
         });
     });
 
-    fdescribe('public method ->', () => {
+    describe('public method ->', () => {
         beforeAll((done: Function) => {
             helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
         });

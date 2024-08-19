@@ -172,7 +172,7 @@ export class FormFields {
                                     elementValue = currentData['Text'];
                                 }
                                 const fieldProperties: any = {
-                                    bounds: { X: boundArray.left, Y: boundArray.top, Width: boundArray.width, Height: boundArray.height }, pageNumber: parseFloat(currentData['PageIndex']) + 1, name: currentData['ActualFieldName'], tooltip: currentData['ToolTip'],
+                                    bounds: { X: boundArray.left, Y: boundArray.top, Width: boundArray.width, Height: boundArray.height }, pageNumber: parseFloat(currentData['PageIndex']) + 1, name: currentData['ActualFieldName'] ? currentData['ActualFieldName']  : currentData['FieldName'] , tooltip: currentData['ToolTip'],
                                     value: elementValue, insertSpaces: currentData['InsertSpaces'], isChecked: currentData['Selected'], isSelected: currentData['Selected'], fontFamily: fontFamily, fontStyle: fontStyle, backgroundColor: backColor, color: foreColor, borderColor: borderRGB, thickness: borderWidth, fontSize: fontSize, isMultiline: currentData.Multiline, rotateAngle: rotateFieldAngle,
                                     isReadOnly: currentData['IsReadonly'], isRequired: currentData['IsRequired'], alignment: textAlignment, options: this.getListValues(currentData), selectedIndex: this.selectedIndex, maxLength: currentData.MaxLength, visibility: currentData.Visible  === 1 ? 'hidden' : 'visible', font: { isItalic: !isNullOrUndefined(font) ? font.Italic : false, isBold: !isNullOrUndefined(font) ? font.Bold : false, isStrikeout: !isNullOrUndefined(font) ? font.Strikeout : false, isUnderline: !isNullOrUndefined(font) ? font.Underline : false }, isTransparent: currentData.IsTransparent, customData: !isNullOrUndefined(currentData.CustomData) || !isNullOrUndefined(currentData.customData) ? (this.pdfViewerBase.clientSideRendering ? currentData.CustomData ? currentData.CustomData : currentData.customData : JSON.parse(currentData.CustomData)) : ""
                                 };
@@ -1098,6 +1098,11 @@ export class FormFields {
                     if (this.pdfViewerBase.drawSignatureWithTool && signatureField && signatureType !== 'Image') {
                         annot.id = signatureField.id + '_content';
                         const obj: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
+                        if (signatureField.wrapper.children[1] && obj.wrapper.id === signatureField.wrapper.children[1].id) {
+                            if (!isNullOrUndefined(signatureField.wrapper.children[1]) && signatureField.wrapper.children[1].relativeMode === "Point") {
+                                signatureField.wrapper.children.splice(1, 1);
+                            }
+                        }
                         signatureField.wrapper.children.push(obj.wrapper);
                     } else if (signatureType !== 'Image') {
                         this.pdfViewer.add(annot as PdfAnnotationBase);
@@ -1181,6 +1186,11 @@ export class FormFields {
         if (this.pdfViewerBase.drawSignatureWithTool && signatureField) {
             annot.id = signatureField.id + '_content';
             const obj: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
+            if (signatureField.wrapper.children[1] && obj.wrapper.id === signatureField.wrapper.children[1].id) {
+                if (!isNullOrUndefined(signatureField.wrapper.children[1]) && signatureField.wrapper.children[1].relativeMode === "Point") {
+                    signatureField.wrapper.children.splice(1, 1);
+                }
+            }
             signatureField.wrapper.children.push(obj.wrapper);
         } else {
             this.pdfViewer.add(annot as PdfAnnotationBase);
@@ -1480,7 +1490,7 @@ export class FormFields {
                                     FormFieldsData[parseInt(l.toString(), 10)].Selected = false;
                                 }
                             }
-                            if (target.value === currentData.Value) {
+                            if (target.value === currentData.Value || target.id === currentData.uniqueID) {
                                 currentData.Selected = true;
                                 break;
                             }

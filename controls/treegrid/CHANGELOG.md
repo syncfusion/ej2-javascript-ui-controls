@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 26.2.10 (2024-08-20)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#I609686` - Fixed an issue where the `Rowdraganddrop` action would drop the previously selected record when virtualization is enabled.
+- `#I620787` - Resolved a white space issue that occurred while scrolling with `persistSelection` and virtualization.
+
 ## 26.2.9 (2024-08-13)
 
 ### Tree Grid

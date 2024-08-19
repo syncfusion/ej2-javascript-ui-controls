@@ -5052,7 +5052,7 @@ export class Selection {
                 if (offset <= count + inline.length) {
                     return offset - 1 === count ? validOffset : offset - 1;
                 }
-                if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof BookmarkElementBox
+                if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof CommentCharacterElementBox || inline instanceof BookmarkElementBox
                     || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)))) {
                     validOffset = count + inline.length;
                 }
@@ -6097,7 +6097,11 @@ export class Selection {
         let lineWidget: LineWidget = undefined;
         if (widget.childWidgets.length > 0) {
             lineWidget = widget.childWidgets[widget.childWidgets.length - 1] as LineWidget;
-            left += this.getWidth(lineWidget, false);
+            if (widget.paragraphFormat.bidi) {
+                left = this.getLeft(lineWidget);
+            } else {
+                left += this.getWidth(lineWidget, false);
+            }
         }
         if (!isNullOrUndefined(lineWidget)) {
             top = this.getTop(lineWidget);
@@ -7261,10 +7265,10 @@ export class Selection {
                 if (widget.paragraph.paragraphFormat.bidi) {
                     left += element.margin.left;
                     element = undefined;
-                    break;
+                } else {
+                    left += element.margin.left + element.width;
+                    element = undefined;
                 }
-                left += element.margin.left + element.width;
-                element = undefined;
                 // }
                 //  else if (element instanceof FieldElementBox || element instanceof BookmarkElementBox
                 //     || (element.nextNode instanceof FieldElementBox && ((element.nextNode as FieldElementBox).fieldType === 2))) {

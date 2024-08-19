@@ -58,6 +58,8 @@ export class UndoRedo {
         case 'cellDelete':
         case 'cellSave':
         case 'addNote' :
+        case 'editNote' :
+        case 'deleteNote':
             address = getRangeIndexes(eventArgs.address);
             break;
         case 'beforeWrap':
@@ -161,6 +163,8 @@ export class UndoRedo {
             case 'removeValidation':
             case 'hyperlink':
             case 'addNote' :
+            case 'editNote' :
+            case 'deleteNote':
             case 'removeHyperlink':
                 undoRedoArgs = this.performOperation(undoRedoArgs, args.preventEvt, args.preventReSelect);
                 break;
@@ -335,7 +339,7 @@ export class UndoRedo {
     private updateUndoRedoCollection(options: { args: CollaborativeEditArgs, isPublic?: boolean }): void {
         const actionList: string[] = ['clipboard', 'format', 'sorting', 'cellSave', 'resize', 'resizeToFit', 'wrap', 'hideShow', 'replace',
             'validation', 'merge', 'clear', 'conditionalFormat', 'clearCF', 'insertImage', 'imageRefresh', 'insertChart', 'deleteChart',
-            'chartRefresh', 'filter', 'cellDelete', 'autofill', 'addDefinedName', 'removeValidation', 'removeHighlight', 'addHighlight', 'hyperlink', 'removeHyperlink', 'deleteImage', 'chartDesign', 'replaceAll', 'addNote'];
+            'chartRefresh', 'filter', 'cellDelete', 'autofill', 'addDefinedName', 'removeValidation', 'removeHighlight', 'addHighlight', 'hyperlink', 'removeHyperlink', 'deleteImage', 'chartDesign', 'replaceAll', 'addNote', 'editNote', 'deleteNote'];
         if ((options.args.action === 'insert' || options.args.action === 'delete') && options.args.eventArgs.modelType !== 'Sheet') {
             actionList.push(options.args.action);
         }
@@ -348,7 +352,7 @@ export class UndoRedo {
             action === 'wrap' || action === 'replace' || action === 'validation' || action === 'clear' || action === 'conditionalFormat' ||
             action === 'clearCF' || action === 'insertImage' || action === 'imageRefresh' || action === 'insertChart' ||
             action === 'chartRefresh' || action === 'filter' || action === 'cellDelete' || action === 'autofill' || action === 'removeValidation' ||
-            action === 'addDefinedName' || action === 'hyperlink' || action === 'removeHyperlink' || action === 'deleteImage' || action === 'chartDesign' || action === 'addNote') {
+            action === 'addDefinedName' || action === 'hyperlink' || action === 'removeHyperlink' || action === 'deleteImage' || action === 'chartDesign' || action === 'addNote' || action === 'editNote' || action === 'deleteNote') {
             const beforeActionDetails: { beforeDetails: BeforeActionData } = { beforeDetails: { cellDetails: [] } };
             this.parent.notify(getBeforeActionData, beforeActionDetails);
             eventArgs.beforeActionData = beforeActionDetails.beforeDetails;
@@ -551,7 +555,7 @@ export class UndoRedo {
             address = eventArgs.fillRange.split('!');
         } else {
             address = (args.action === 'cellSave' || args.action === 'wrap' || args.action === 'replace'
-                || args.action === 'cellDelete' || args.action === 'hyperlink' || args.action === 'addNote' || args.action === 'removeHyperlink') ? eventArgs.address.split('!') : eventArgs.range.split('!');
+                || args.action === 'cellDelete' || args.action === 'hyperlink' || args.action === 'addNote' || args.action === 'editNote' || args.action === 'deleteNote' || args.action === 'removeHyperlink') ? eventArgs.address.split('!') : eventArgs.range.split('!');
         }
         const sheetIndex: number = getSheetIndex(this.parent as Workbook, address[0]);
         const sheet: SheetModel = getSheet(this.parent as Workbook, sheetIndex);
@@ -750,6 +754,11 @@ export class UndoRedo {
             sheet.conditionalFormats.length && [].slice.call(sheet.conditionalFormats);
         const cfRule: ConditionalFormatModel[] = []; let cfRefreshAll: boolean;
         let evtArgs: { [key: string]: string | boolean | number[] | number };
+        let isDelete: boolean; let deletedRange: number[];
+        if (args.action === 'cellDelete') {
+            isDelete = false;
+            deletedRange = range;
+        }
         for (let i: number = 0; i < len; i++) {
             if (isColSelected) {
                 setColumn(sheet, cells[i as number].colIndex, { validation: cells[i as number].validation });
@@ -798,10 +807,13 @@ export class UndoRedo {
                 hyperlink: cells[i as number].hyperlink, validation: cells[i as number] && cells[i as number].validation,
                 image: cells[i as number].image, notes: cells[i as number].notes, isReadOnly: cells[i as number].isReadOnly
             });
-            evtArgs = { action: 'updateCellValue', address: [cells[i as number].rowIndex, cells[i as number].colIndex,
-                cells[i as number].rowIndex, cells[i as number].colIndex], notes: cells[i as number].notes,
-            value: cells[i as number].formula ? cells[i as number].formula :
-                cells[i as number].value, sheetIndex: getSheetIndex(this.parent, sheet.name), skipFormatCheck: isImported(this.parent) };
+            evtArgs = {
+                action: 'updateCellValue', address: [cells[i as number].rowIndex, cells[i as number].colIndex,
+                    cells[i as number].rowIndex, cells[i as number].colIndex], notes: cells[i as number].notes,
+                value: cells[i as number].formula ? cells[i as number].formula : cells[i as number].value,
+                sheetIndex: getSheetIndex(this.parent, sheet.name), skipFormatCheck: isImported(this.parent),
+                isDelete: isDelete, deletedRange: deletedRange
+            };
             this.parent.notify(workbookEditOperation, evtArgs);
             if (cf && !cfRefreshAll) {
                 cfRefreshAll = <boolean>evtArgs.isFormulaDependent;

@@ -330,3 +330,110 @@ describe('Splitter position issue after resizing', () => {
         }
     });
 });
+describe('Splitter position issue after changing view', () => {
+    let ganttObj: Gantt;
+    var projectNewData = [
+        {
+          TaskID: 1,
+          TaskName: 'Project Initiation',
+          StartDate: new Date('04/02/2019'),
+          EndDate: new Date('04/21/2019'),
+          subtasks: [
+            {
+              TaskID: 2,
+              TaskName: 'Identify Site location',
+              StartDate: new Date('04/02/2019'),
+              Duration: 4,
+              Progress: 50,
+            },
+            {
+              TaskID: 3,
+              TaskName: 'Perform Soil test',
+              StartDate: new Date('04/02/2019'),
+              Duration: 4,
+              Progress: 50,
+            },
+            {
+              TaskID: 4,
+              TaskName: 'Soil test approval',
+              StartDate: new Date('04/02/2019'),
+              Duration: 4,
+              Progress: 50,
+            },
+          ],
+        },
+      ];
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: projectNewData,
+        allowSorting: true,
+        allowReordering: true,
+        enableContextMenu: true,
+        taskFields: {
+            id: 'TaskID',
+      name: 'TaskName',
+      startDate: 'StartDate',
+      endDate: 'EndDate',
+      duration: 'Duration',
+      progress: 'Progress',
+      dependency: 'Predecessor',
+      child: 'subtasks',
+        },
+        renderBaseline: true,
+        baselineColor: 'red',
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', headerText: 'Task ID' },
+            { field: 'TaskName', headerText: 'Task Name', allowReordering: false },
+            { field: 'StartDate', headerText: 'Start Date', allowSorting: false },
+            { field: 'Duration', headerText: 'Duration', allowEditing: false },
+            { field: 'Progress', headerText: 'Progress', allowFiltering: false },
+            { field: 'CustomColumn', headerText: 'CustomColumn' }
+        ],
+        tooltipSettings: {
+            showTooltip: true
+        },
+        filterSettings: {
+            type: 'Menu'
+        },
+        allowFiltering: true,
+        gridLines: "Both",
+        showColumnMenu: true,
+        highlightWeekends: true,
+        timelineSettings: {
+            showTooltip: true,
+            topTier: {
+                unit: 'Week',
+                format: 'dd/MM/yyyy'
+            },
+            bottomTier: {
+                unit: 'Day',
+                count: 1
+            }
+        },
+        allowResizing: true,
+        readOnly: false,
+        taskbarHeight: 20,
+        rowHeight: 40,
+        height: '550px',
+        allowUnscheduledTasks: true,
+        }, done);
+    });
+    it('checking timeline end date', () => {
+        ganttObj.splitterResized = (args) => {
+            expect(ganttObj.splitterSettings.view).toBe('Chart');
+        };
+        ganttObj.setSplitterPosition('Chart', 'view');        
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});

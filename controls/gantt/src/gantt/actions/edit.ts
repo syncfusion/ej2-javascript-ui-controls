@@ -32,7 +32,8 @@ export class Edit {
     private isValidatedEditedRecord: boolean = false;
     private createArray: boolean = true;
     public isFirstCall: boolean;
-    public isAdded : boolean;
+    public isAdded: boolean;
+    public deletedRecord: IGanttData[] = [];
     /**
      * @private
      */
@@ -2531,6 +2532,7 @@ export class Edit {
                 }
             }
         }
+        this.deletedRecord = deletedRecords;
         for (let i: number = 0; i < deletedRecords.length; i++) {
             const deleteRecord: IGanttData = deletedRecords[i as number];
             let currentIndex: number;

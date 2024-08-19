@@ -4,7 +4,7 @@
 import { createElement } from '@syncfusion/ej2-base';
 import {Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, IQueryTaskbarInfoEventArgs } from '../../src/index';
 import * as cls from '../../src/gantt/base/css-constants';
-import { baselineData, resourceData, projectData, projectNewData18, projectNewData19, projectNewData20, splitData, projectNewData21, taskModeData4, taskModeData5, projectNewData22 } from './data-source.spec';
+import { baselineData, resourceData, projectData, projectNewData18, projectNewData19, projectNewData20, splitData, projectNewData21, taskModeData4, taskModeData5, projectNewData22, CR899690 } from './data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, VirtualScroll, Sort, RowDD, ContextMenu, ExcelExport, PdfExport);
 describe('Gantt taskbar rendering', () => {
@@ -1293,6 +1293,47 @@ describe('Merge segment getting console error', () => {
         triggerMouseEvent(dragElement, 'mouseup');
         console.log(ganttObj.currentViewData[0].ganttProperties.segments)
         expect(ganttObj.currentViewData[0].ganttProperties.segments).toBe(null);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+});
+describe('CR-899690: Left value miscalculated for taskbar while duration in decimals duration', () => {
+    let ganttObj: Gantt;
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: CR899690,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                endDate: 'EndDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks'
+            },
+            dateFormat:'MMM dd, y',
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            allowSelection: true,
+            gridLines: "Both",
+            height: '450px',
+            allowUnscheduledTasks: true,
+            projectStartDate: new Date('04/03/2024'),
+            projectEndDate: new Date('07/28/2024'),
+        }, done);
+    });
+    it('Checking Taskbar left with decimal duration', () => {
+       expect(ganttObj.currentViewData[1].ganttProperties.left).toBe(33);
+       expect(ganttObj.currentViewData[2].ganttProperties.left).toBe(59.4);
     });
     afterAll(() => {
         if (ganttObj) {

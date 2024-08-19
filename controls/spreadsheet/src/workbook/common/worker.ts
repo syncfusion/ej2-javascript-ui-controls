@@ -1,3 +1,5 @@
+import { Workbook } from '../base/workbook';
+
 /**
  * Worker task.
  *
@@ -6,12 +8,13 @@
  * @param {Function} callbackFn - Specify the callbackFn.
  * @param {Object[]} data - Specify the data.
  * @param {boolean} preventCallback - Specify the preventCallback.
+ * @param {Workbook} parent - Specify the Workbook instance.
  * @returns {WorkerHelper} - Worker task.
  */
 export function executeTaskAsync(
     context: Object, taskFn: Function | { [key: string]: Function | string[] }, callbackFn: Function,
-    data?: Object[], preventCallback?: boolean): WorkerHelper {
-    return new WorkerHelper(context, taskFn, callbackFn, data, preventCallback);
+    data?: Object[], preventCallback?: boolean, parent?: Workbook): WorkerHelper {
+    return new WorkerHelper(context, taskFn, callbackFn, data, preventCallback, parent);
 }
 
 /**
@@ -27,6 +30,7 @@ class WorkerHelper {
     private workerData: Object[];
     private preventCallback: boolean = false;
     private workerUrl: string;
+    private parent: Workbook;
 
     /**
      * Constructor for WorkerHelper module in Workbook library.
@@ -37,14 +41,16 @@ class WorkerHelper {
      * @param {Function} defaultListener - Specify the defaultListener.
      * @param {Object[]} taskData - Specify the taskData.
      * @param {boolean} preventCallback - Specify the preventCallback.
+     * @param {Workbook} parent - Specify the Workbook instance.
      */
     constructor(
         context: Object, task: Function | { [key: string]: Function | string[] }, defaultListener: Function,
-        taskData?: Object[], preventCallback?: boolean) {
+        taskData?: Object[], preventCallback?: boolean, parent?: Workbook) {
         this.context = context;
         this.workerTask = task;
         this.defaultListener = defaultListener;
         this.workerData = taskData;
+        this.parent = parent;
         if (preventCallback) { this.preventCallback = true; }
         this.initWorker();
     }
@@ -72,7 +78,12 @@ class WorkerHelper {
         this.worker = new Worker(this.workerUrl);
         this.worker.onmessage = this.messageFromWorker.bind(this);
         this.worker.onerror = this.onError.bind(this);
-        this.worker.postMessage(this.workerData);
+        if (!this.parent.isVue) {
+            this.worker.postMessage(this.workerData);
+        } else {
+            const clonedData: Object[] = JSON.parse(JSON.stringify(this.workerData));
+            this.worker.postMessage(clonedData);
+        }
     }
 
     /**

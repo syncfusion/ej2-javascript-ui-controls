@@ -270,6 +270,12 @@ export class SelectionCommands {
             if (cursorNodes.length === 1 && range.startOffset === 0 && (cursorNodes[0].nodeName === 'BR' || (isNOU(cursorNodes[0].nextSibling) ? false : cursorNodes[0].nextSibling.nodeName === 'BR'))) {
                 detach(cursorNodes[0].nodeName === '#text' ? cursorNodes[0].nextSibling : cursorNodes[0]);
             }
+            if (!isNOU(cursorNodes[0].parentElement) && IsFormatted.inlineTags.
+                indexOf((cursorNodes[0].parentElement).tagName.toLowerCase()) !== -1 && cursorNodes[0].textContent.includes('\u200B')) {
+                const element: HTMLElement = this.GetFormatNode(format, value);
+                this.applyStyles(cursorNodes, 0 , element);
+                return cursorNodes[0];
+            }
             cursorNode = this.getInsertNode(docElement, range, format, value).firstChild;
         }
         return cursorNode;

@@ -1,6 +1,6 @@
 import { Spreadsheet, DialogBeforeOpenEventArgs, editAlert, readonlyAlert, completeAction, createNoteIndicator } from '../index';
 import { isValidation, checkDateFormat, applyCellFormat, activeCellChanged, NumberFormatArgs } from '../../workbook/common/index';
-import { getCell, setCell, getFormattedCellObject, getColorCode, getFormattedBarText, getRow } from '../../workbook/index';
+import { getCell, setCell, getFormattedCellObject, getColorCode, getFormattedBarText, getRow, getRowHeight } from '../../workbook/index';
 import { CellModel } from '../../workbook/base/cell-model';
 import { FormValidatorModel, FormValidator, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { L10n, EventHandler, remove, closest, isNullOrUndefined, select, Browser, Internationalization } from '@syncfusion/ej2-base';
@@ -17,6 +17,7 @@ import { DropDownList, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
 import { DialogModel, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { ValidationModel, ValidationType, CellStyleModel, getSheet, getSheetIndex, Workbook, checkIsFormula } from '../../workbook/index';
 import { getColumn, isLocked, isReadOnly, validationHighlight, ValidationOperator, formulaInValidation, InvalidFormula } from '../../workbook/index';
+import { getBorderHeight, rowHeightChanged } from '../../spreadsheet/index';
 
 /**
  * Represents Data Validation support for Spreadsheet.
@@ -67,6 +68,7 @@ export class DataValidation {
         this.parent.on(keyUp, this.keyUpHandler, this);
         this.parent.on(removeDataValidation, this.removeValidationHandler, this);
         this.parent.on(validationHighlight, this.InvalidElementHandler, this);
+        this.parent.on(rowHeightChanged, this.listValidationHeightHandler, this);
     }
 
     private removeEventListener(): void {
@@ -83,6 +85,7 @@ export class DataValidation {
             this.parent.off(keyUp, this.keyUpHandler);
             this.parent.off(removeDataValidation, this.removeValidationHandler);
             this.parent.off(validationHighlight, this.InvalidElementHandler);
+            this.parent.off(rowHeightChanged, this.listValidationHeightHandler);
         }
     }
 
@@ -240,6 +243,7 @@ export class DataValidation {
                         isNoteAvailable = true;
                     }
                     const parent: Element = tdEle.getElementsByClassName('e-wrap-content')[0] || tdEle;
+                    this.listValidationHeightHandler({ ddlCont: ddlCont });
                     parent.insertBefore(ddlCont, parent.firstChild);
                     const dataSource: { [key: string]: Object }[] = this.updateDataSource(cell, validation);
                     this.listObj = new DropDownList({
@@ -276,6 +280,30 @@ export class DataValidation {
             }
             if (cell && cell.validation) {
                 cell.validation = validation;
+            }
+        }
+    }
+
+    private listValidationHeightHandler(args: { ddlCont?: HTMLElement }): void {
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        const indexes: number[] = getCellIndexes(sheet.activeCell);
+        const cell: CellModel = getCell(indexes[0], indexes[1], sheet);
+        const validation: ValidationModel = (cell && cell.validation) || (sheet.columns && sheet.columns[indexes[1]] &&
+            sheet.columns[indexes[1]].validation);
+        if (validation && validation.type === 'List') {
+            if (validation.inCellDropDown) {
+                const tdRowHeight: number = getRowHeight(sheet, indexes[0], true) - getBorderHeight(indexes[0], indexes[1], sheet);
+                if (tdRowHeight <= 18) {
+                    const ddlCont: HTMLElement = args.ddlCont || this.parent.element.querySelector('.e-validation-list');
+                    if (ddlCont) {
+                        ddlCont.style.height = tdRowHeight + 'px';
+                    }
+                } else if (!args.ddlCont) {
+                    const ddlCont: HTMLElement = this.parent.element.querySelector('.e-validation-list');
+                    if (ddlCont) {
+                        ddlCont.style.removeProperty('height');
+                    }
+                }
             }
         }
     }

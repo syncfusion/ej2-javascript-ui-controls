@@ -539,6 +539,18 @@ export class GanttTreeGrid {
                 }
             }
             else {
+                if (!isNullOrUndefined(this.parent.selectionModule) && this.parent.selectionSettings && this.parent.selectionSettings.persistSelection
+                    && this.parent.editModule && !this.parent.editModule.isAdded) {
+                    const selectedRecords: Object[] = this.parent.selectionModule.getSelectedRecords();
+                    for (let i: number = selectedRecords.length - 1; i >= 0; i--) {
+                        const selectedTaskId: any = selectedRecords[i as number][this.parent.taskFields.id];
+                        const existIndeletedRecords: boolean = this.parent.editModule.deletedRecord.some((item: any) =>
+                            item.ganttProperties.taskId === selectedTaskId);
+                        if (existIndeletedRecords) {
+                            selectedRecords.splice(i, 1);
+                        }
+                    }
+                }
                 let indexvalue: number = 0;
                 this.parent.currentViewData.map((data: Object, index: number) => {
                     if (!isNullOrUndefined(this.parent.currentSelection)

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { append, addClass, remove, isNullOrUndefined, setStyleAttribute, createElement, prepend } from '@syncfusion/ej2-base';
+import { append, addClass, remove, isNullOrUndefined, setStyleAttribute, createElement, prepend, removeClass } from '@syncfusion/ej2-base';
 import { TdData, ScrollEventArgs } from '../base/interface';
 import { Schedule } from '../base/schedule';
 import * as events from '../base/constant';
@@ -23,6 +23,7 @@ export class VirtualScroll {
     public isRemoteRefresh: boolean;
     private startIndex: number = 0;
     public existingDataCollection: TdData[] = [];
+    public enableTransition: boolean = true;
 
     constructor(parent: Schedule) {
         this.parent = parent;
@@ -118,6 +119,10 @@ export class VirtualScroll {
             const resWrap: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS) as HTMLElement;
             const conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
             const eventWrap: HTMLElement = this.parent.element.querySelector('.' + cls.EVENT_TABLE_CLASS) as HTMLElement;
+            if (!this.parent.rowAutoHeight) {
+                this.enableTransition = false;
+                removeClass([conWrap, resWrap], 'e-transition');
+            }
             let firstTDIndex: number = parseInt(resWrap.querySelector('tbody td').getAttribute('data-group-index'), 10);
             const endIndex: number = (firstTDIndex + this.renderedLength);
             firstTDIndex = (endIndex > this.parent.resourceBase.expandedResources.length) ?

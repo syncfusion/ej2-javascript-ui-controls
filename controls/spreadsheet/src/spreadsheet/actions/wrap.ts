@@ -225,7 +225,7 @@ export class WrapText {
             }
             let nodeElement: HTMLElement;
             if (!isNullOrUndefined(ele.firstElementChild) && ele.firstElementChild.className.indexOf('e-addNoteIndicator') > -1) {
-                nodeElement = document.getElementsByClassName('e-addNoteIndicator')[0] as HTMLElement;
+                nodeElement = ele.firstElementChild as HTMLElement;
             }
             if (filterBtn) {
                 if (ele.firstChild) {

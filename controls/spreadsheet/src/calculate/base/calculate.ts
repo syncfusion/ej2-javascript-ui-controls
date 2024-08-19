@@ -3172,11 +3172,14 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
      * @param {string} sheetName - Specifies for sheet name for spreadsheet.
      * @param {boolean} isRandomFormula - Specifies for random formula values.
      * @param {boolean} randomFormulaRefreshing - Specifies for refreshing the random formula.
+     * @param {boolean} isDelete - An optional flag indicating whether is from delete cells.
+     * @param {number[]} deletedRange - An optional range array indicating the deleted cells.
      * @returns {void} - Specifies when changing the value.
      */
     public valueChanged(
         grid: string, changeArgs: ValueChangedArgs, isCalculate?: boolean, usedRangeCol?: number[], refresh?: boolean,
-        sheetName?: string, isRandomFormula?: boolean, randomFormulaRefreshing?: boolean): void {
+        sheetName?: string, isRandomFormula?: boolean, randomFormulaRefreshing?: boolean,
+        isDelete?: boolean, deletedRange?: number[]): void {
         const pgrid: string = grid; this.spreadSheetUsedRange = usedRangeCol;
         this.grid = grid;
         let isComputedValueChanged: boolean = true;
@@ -3278,7 +3281,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         }
         if (isCompute && isComputedValueChanged && this.getDependentCells().has(cellTxt) &&
             this.getDependentCells().get(cellTxt).toString() !== cellTxt) {
-            this.refresh(cellTxt, undefined, undefined, randomFormulaRefreshing);
+            this.refresh(cellTxt, undefined, undefined, randomFormulaRefreshing, isDelete, deletedRange);
         }
     }
 
@@ -3624,16 +3627,17 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         }
     }
 
-    public refresh(cellRef: string, uniqueCell?: string, dependentCell?: string[], isRandomFormula?: boolean): void {
+    public refresh(cellRef: string, uniqueCell?: string, dependentCell?: string[], isRandomFormula?: boolean,
+                   isDelete?: boolean, deletedRange?: number[]): void {
         let refreshCells: boolean;
         if (!dependentCell) {
             refreshCells = true;
             dependentCell = [];
         }
-        if (this.getDependentCells().has(cellRef)) {
-            const family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
-            try {
-                const dependentCells: string[] = this.getDependentCells().get(cellRef);
+        const family: CalcSheetFamilyItem = this.getSheetFamilyItem(this.grid);
+        try {
+            const dependentCells: string[] = this.getDependentCells().get(cellRef);
+            if (dependentCells && dependentCells.length !== 0) {
                 let i: number;
                 for (i = 0; i < dependentCells.length; i++) {
                     const dCell: string = dependentCells[i as number];
@@ -3656,7 +3660,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                                 }
                             }
                         }
-                        this.actCell =  sheetName + '!' + dCell.split(token)[1];
+                        this.actCell = sheetName + '!' + dCell.split(token)[1];
                     } else {
                         this.actCell = dCell.split(token)[1];
                     }
@@ -3703,37 +3707,57 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                             (<{ setValueRowCol: Function }>this.parentObject).setValueRowCol(
                                 this.getSheetId(this.grid), val, rowIdx, colIdx, formulaInfo.getFormulaText());
                         }
-                        this.refresh(dCell, null, dependentCell);
+                        this.refresh(dCell, null, dependentCell, null, isDelete);
                     } catch (ex) {
                         continue;
                     }
                 }
-                if (refreshCells) {
-                    let sheetId: number; let sheetIdx: number; let rowIdx: number; let colIdx: number; let cellObj: { value: string };
-                    const sheets: [{ id: number, rows: [{ cells: [{ value: string }] }] }] =
-                        (<{ sheets: [{ id: number, rows: [{ cells: [{ value: string }] }] }] }>this.parentObject).sheets;
-                    if (!sheets) {
-                        dependentCell = [];
-                    }
-                    dependentCell.forEach((cell: string): void => {
-                        sheetId = this.getSheetId(family.tokenToParentObject.get(this.getSheetToken(cell)));
-                        for (let idx: number = 0; idx < sheets.length; idx++) {
-                            if (sheets[idx as number].id === sheetId) {
-                                sheetIdx = idx;
+            }
+            if (refreshCells) {
+                if (!isDelete && deletedRange && deletedRange.length === 4) {
+                    const token: string = this.getSheetToken(cellRef);
+                    const deletedCell: string[] = [];
+                    for (let sRIdx: number = deletedRange[0], eRIdx: number = deletedRange[2]; sRIdx <= eRIdx; sRIdx++) {
+                        for (let sCIdx: number = deletedRange[1], eCIdx: number = deletedRange[3]; sCIdx <= eCIdx; sCIdx++) {
+                            if (sRIdx === eRIdx && sCIdx === eCIdx) {
                                 break;
                             }
+                            const cell: string = token + getCellAddress(sRIdx, sCIdx);
+                            this.refresh(cell, null, dependentCell, null, isDelete);
+                            deletedCell.push(cell);
                         }
-                        rowIdx = this.rowIndex(cell) - 1;
-                        colIdx = this.colIndex(cell) - 1;
-                        cellObj = sheets[sheetIdx as number].rows[rowIdx as number] &&
-                            sheets[sheetIdx as number].rows[rowIdx as number].cells[colIdx as number];
-                        if (cellObj) {
-                            (<{ notify: Function }>this.parentObject).notify(
-                                'calculateFormula', { cell: cellObj, rowIdx: rowIdx, colIdx: colIdx, sheetIndex: sheetIdx, isDependentRefresh : true, isRandomFormula: isRandomFormula });
-                        }
-                    });
+                    }
+                    const ranges: Set<string> = new Set(deletedCell);
+                    if (dependentCell) {
+                        dependentCell = dependentCell.filter((item: string) => !ranges.has(item));
+                    }
                 }
-            } finally {
+                const sheets: [{ id: number, rows: [{ cells: [{ value: string }] }] }] =
+                    (<{ sheets: [{ id: number, rows: [{ cells: [{ value: string }] }] }] }>this.parentObject).sheets;
+                if (!sheets) {
+                    dependentCell = [];
+                }
+                dependentCell.forEach((cell: string): void => {
+                    let sheetIdx: number;
+                    const sheetId: number = this.getSheetId(family.tokenToParentObject.get(this.getSheetToken(cell)));
+                    for (let idx: number = 0; idx < sheets.length; idx++) {
+                        if (sheets[idx as number].id === sheetId) {
+                            sheetIdx = idx;
+                            break;
+                        }
+                    }
+                    const rowIdx: number = this.rowIndex(cell) - 1;
+                    const colIdx: number = this.colIndex(cell) - 1;
+                    const cellObj: { value: string } = sheets[sheetIdx as number].rows[rowIdx as number] &&
+                        sheets[sheetIdx as number].rows[rowIdx as number].cells[colIdx as number];
+                    if (cellObj) {
+                        (<{ notify: Function }>this.parentObject).notify(
+                            'calculateFormula', { cell: cellObj, rowIdx: rowIdx, colIdx: colIdx, sheetIndex: sheetIdx, isDependentRefresh: true, isRandomFormula: isRandomFormula });
+                    }
+                });
+            }
+        } finally {
+            if (this.getDependentCells().has(cellRef)) {
                 this.grid = family.tokenToParentObject.get(this.getSheetToken(cellRef));
             }
         }

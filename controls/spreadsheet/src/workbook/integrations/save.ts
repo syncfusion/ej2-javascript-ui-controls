@@ -173,7 +173,7 @@ export class WorkbookSave extends SaveWorker {
                 const loadCompleteHandler: Function = (idx: number): void => {
                     executeTaskAsync(
                         this, this.processSheet, this.updateSheet,
-                        [this.getStringifyObject(this.parent.sheets[idx as number], skipProps, idx, false, true), idx]);
+                        [this.getStringifyObject(this.parent.sheets[idx as number], skipProps, idx, false, true), idx], null, this.parent);
                 };
                 const context: { scrollSettings?: { isFinite: boolean } } = <{ scrollSettings?: { isFinite: boolean } }>this.parent;
                 this.parent.notify(
@@ -183,7 +183,8 @@ export class WorkbookSave extends SaveWorker {
             } else {
                 executeTaskAsync(
                     this, this.processSheet, this.updateSheet,
-                    [this.getStringifyObject(sheet, skipProps, sheetIdx, autoDetectFormat && isDataBinding, true), sheetIdx]);
+                    [this.getStringifyObject(sheet, skipProps, sheetIdx, autoDetectFormat && isDataBinding, true), sheetIdx]
+                    , null, this.parent);
             }
         }
     }
@@ -228,7 +229,7 @@ export class WorkbookSave extends SaveWorker {
             } else {
                 executeTaskAsync(
                     this, { 'workerTask': this.processSave },
-                    this.updateSaveResult, [this.saveJSON, saveSettings, this.customParams, this.pdfLayoutSettings], true);
+                    this.updateSaveResult, [this.saveJSON, saveSettings, this.customParams, this.pdfLayoutSettings], true, this.parent);
             }
         }
     }

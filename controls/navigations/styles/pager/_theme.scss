@@ -28,6 +28,12 @@
       color: $pager-icon-color;
     }
 
+    div.e-icons.e-pager-default:not(.e-numericitem):hover {
+      @if $pager-skin == 'fluent2' {
+        color: $pager-hover-color;
+      }
+    }
+    
     div.e-icons.e-disable {
       color: $pager-numeric-txt-bg-color;
     }

@@ -245,13 +245,16 @@ export class Selection {
         const sheet: SheetModel = this.parent.getActiveSheet();
         this.parent.notify(editOperation, eventArgs);
         const isFormulaEdit: boolean =  checkIsFormula(eventArgs.editedValue, true);
-        const cellIndexes: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
+        const isNoteCellIndex: boolean = !isNullOrUndefined(this.parent.spreadsheetNoteModule.noteCellIndexes);
+        const cellIndexes: number[] = isNoteCellIndex ? this.parent.spreadsheetNoteModule.noteCellIndexes :
+            getCellIndexes(this.parent.getActiveSheet().activeCell);
         const targetElement: HTMLElement = this.parent.getCell(cellIndexes[0], cellIndexes[1]);
         if (!isNullOrUndefined(targetElement) && targetElement.children !== null && targetElement.children.length > 0
             && this.isNoteContainerIsActiveElement && targetElement.children[targetElement.children.length - 1].classList.contains('e-addNoteIndicator')) {
             const cell: CellModel = getCell(cellIndexes[0], cellIndexes[1], sheet);
+            const eventAction: string = !isNullOrUndefined(cell) && cell.notes ? 'editNote' : 'addNote';
             const noteContainer: HTMLTextAreaElement  = document.getElementsByClassName('e-addNoteContainer')[0] as HTMLTextAreaElement;
-            const address: string = getSheetName(this.parent as Workbook, this.parent.activeSheetIndex) + '!' + this.parent.getActiveSheet().activeCell;
+            const address: string = getSheetName(this.parent as Workbook, this.parent.activeSheetIndex) + '!' + getRangeAddress(cellIndexes);
             if (!isNullOrUndefined(noteContainer) && !isNullOrUndefined(noteContainer.value) && (e.target as HTMLElement).className !== 'e-addNoteContainer'
                 && ((isNullOrUndefined(cell) || isNullOrUndefined(cell.notes)) || (cell.notes !== noteContainer.value))) {
                 this.parent.notify(setActionData, { args: { action: 'beforeCellSave', eventArgs: { address: address } } });
@@ -259,7 +262,7 @@ export class Selection {
                     this.parent, this.parent.getActiveSheet(), { rowIdx: cellIndexes[0], colIdx: cellIndexes[1], preventEvt: true,
                         cell: { notes: noteContainer.value, isNoteEditable:  false }});
                 const eventArgs : NoteSaveEventArgs =  { notes: noteContainer.value, address: address};
-                this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'addNote' });
+                this.parent.notify(completeAction, { eventArgs: eventArgs, action: eventAction });
             }
             this.parent.spreadsheetNoteModule.isShowNote = null;
         }

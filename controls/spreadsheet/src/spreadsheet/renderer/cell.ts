@@ -310,7 +310,9 @@ export class CellRenderer implements ICellRenderer {
         args.cell.value = getCell(
             args.rowIdx, args.colIdx, isNullOrUndefined(args.sheetIndex) ? this.parent.getActiveSheet() :
                 getSheet(this.parent, args.sheetIndex)).value;
-        args.cell.formula = args.cell.formula.indexOf('^+') > -1 || args.cell.formula.indexOf('&+') > -1 ?  eventArgs.value as string : args.cell.formula; // for correcting the formulas 5^+3=>5^3 and 5&+3=>5&3 while rendering like Excel.
+        if (args.cell.formula) {
+            args.cell.formula = args.cell.formula.indexOf('^+') > -1 || args.cell.formula.indexOf('&+') > -1 ? eventArgs.value as string : args.cell.formula; // for correcting the formulas 5^+3=>5^3 and 5&+3=>5&3 while rendering like Excel.
+        }
     }
     private checkMerged(args: CellRenderArgs): boolean {
         if (args.cell && (args.cell.colSpan < 0 || args.cell.rowSpan < 0)) {
@@ -579,7 +581,7 @@ export class CellRenderer implements ICellRenderer {
         const tBody: HTMLElement = tTable.appendChild(this.parent.createElement('tbody'));
         tBody.appendChild(this.tableRow);
         this.parent.element.appendChild(tTable);
-        const height: number = Math.round(this.tableRow.getBoundingClientRect().height);
+        const height: number = this.tableRow.getBoundingClientRect().height;
         this.parent.element.removeChild(tTable);
         return height < 20 ? 20 : height;
     }

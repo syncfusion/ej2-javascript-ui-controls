@@ -1699,7 +1699,8 @@
 
     & .e-validation-list {
       float: right;
-      height: 18px;
+      height: inherit;
+      max-height: 18px;
       padding: 0;
       position: relative;
       right: 0;
@@ -1710,16 +1711,32 @@
       .e-input-group {
         border: 0;
         box-shadow: none !important; /* stylelint-disable-line declaration-no-important */
+        margin: 0;
         &.e-input-focus .e-input,
         & .e-input {
           @if $skin-name == 'fluent2' {
             padding-left: 0;
           }
         }
+        & .e-search-icon {
+          @if $skin-name =='fluent' {
+            height: 100%;
+          }
+          @if $skin-name !='material-dark' and $skin-name !='material' {
+            margin: 0;
+          }
+        }
+        & .e-dropdownlist.e-input {
+          @if $skin-name =='fluent' {
+            height: 100%;
+          }
+        }
       }
 
       & .e-ddl-icon {
-        bottom: $validation-list-icon-bottom;
+        @if $skin-name =='material' or $skin-name =='material-dark' {
+          bottom: $validation-list-icon-bottom;
+        }
         @if $skin-name == 'fluent2' {
           font-size: $validation-dropdown-icon-size;
         }

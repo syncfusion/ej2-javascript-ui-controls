@@ -210,10 +210,18 @@ export class FilterMenuRenderer {
         const valInput: HTMLInputElement = this.dlgObj.element.querySelector('.e-flmenu-valuediv').querySelector('input');
         if (optrInput.value === 'Empty' || optrInput.value === 'Not Empty' ||
             optrInput.value === 'Null' || optrInput.value === 'Not Null') {
-            valInput['ej2_instances'][0]['enabled'] = false;
+            if (!isNullOrUndefined(valInput['ej2_instances'])) {
+                valInput['ej2_instances'][0]['enabled'] = false ;
+            } else {
+                valInput.setAttribute('disabled', 'true');
+            }
         }
         else if (!isNullOrUndefined(valInput && valInput.getAttribute('disabled'))) {
-            valInput['ej2_instances'][0]['enabled'] = true;
+            if (!isNullOrUndefined(valInput['ej2_instances'])) {
+                valInput['ej2_instances'][0]['enabled'] = true ;
+            } else {
+                valInput.removeAttribute('disabled');
+            }
         }
         if (!column.filterTemplate) {
             this.writeMethod(column, this.dlgObj.element.querySelector('#' + column.uid + '-flmenu'));

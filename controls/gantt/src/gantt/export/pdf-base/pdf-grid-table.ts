@@ -257,7 +257,7 @@ export class PdfTreeGridCell {
             let customisedFont: PdfFont;
             const newFont: PdfStandardFont = new PdfStandardFont(
                 this.fontStyle.fontFamily, this.fontStyle.fontSize, this.fontStyle.fontStyle);
-            if (this.fontStyle.fontSize || this.fontStyle.fontFamily) {
+            if (this.fontStyle.fontFamily) {
                 customisedFont = newFont;
             }
             else {
@@ -285,7 +285,7 @@ export class PdfTreeGridCell {
             let customisedFont: PdfFont;
             const newFont: PdfStandardFont = new PdfStandardFont(
                 this.style.fontFamily, this.style.fontSize, this.style.fontStyle);
-            if (this.style.fontSize || this.style.fontFamily) {
+            if (this.style.fontFamily) {
                 customisedFont = newFont;
             }
             else {

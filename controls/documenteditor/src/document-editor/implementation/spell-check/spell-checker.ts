@@ -931,7 +931,7 @@ export class SpellChecker {
             }
             this.addErrorCollection(span.text, span, suggestions);
             const elements: ElementBox[] = this.errorWordCollection.get(span.text);
-            if (elements.indexOf(elementBox) !== -1 && elements.indexOf(elementBox) !== elements.indexOf(span)) {
+            if (!isNullOrUndefined(elements) && elements.indexOf(elementBox) !== -1 && elements.indexOf(elementBox) !== elements.indexOf(span)) {
                 elements.splice(elements.indexOf(elementBox), 1);
             }
             const backgroundColor: string = (elementBox.line.paragraph.containerWidget instanceof TableCellWidget) ? (elementBox.paragraph.containerWidget as TableCellWidget).cellFormat.shading.backgroundColor : this.documentHelper.backgroundColor;

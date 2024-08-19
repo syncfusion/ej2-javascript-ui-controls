@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 26.2.10 (2024-08-20)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I614475` - Now, when deleting a signature field image after zooming in the image is removed and does not remains visually presented on the screen.
+- `#I615933` - Now, the Radio button retains selection when clicked more than once.
+- `#I615285` - Now, form fields are being correctly retrieved from the widget in the provided document.
+- `#I612386` - Now, the checkbox and radio button size is increased properly using `updateFormField` method.
+
 ## 26.2.9 (2024-08-13)
 
 ### PDF Viewer

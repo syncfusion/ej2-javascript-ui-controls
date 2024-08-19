@@ -1220,13 +1220,17 @@ export class TextPosition {
 
     private getPreviousWordOffsetComment(comment: ElementBox, selection: Selection, indexInInline: number, type: number, isInField: boolean, isStarted: boolean, endSelection: boolean, endPosition: TextPosition): void {
         if (comment.previousNode) {
-            const inline: TextElementBox = comment.previousNode as TextElementBox;
-            if (comment.previousNode instanceof TextElementBox
-                && HelperMethods.lastIndexOfAny(inline.text, HelperMethods.wordSplitCharacters) !== inline.text.length - 1) {
-                this.getPreviousWordOffset(inline, selection, indexInInline, type, isInField, isStarted, endSelection, endPosition);
-            } else {
+            if ((comment as CommentCharacterElementBox).commentType === 0) {
+                const inline: TextElementBox = comment.previousNode as TextElementBox;
+                if (comment.previousNode instanceof TextElementBox
+                    && HelperMethods.lastIndexOfAny(inline.text, HelperMethods.wordSplitCharacters) !== inline.text.length - 1) {
+                    this.getPreviousWordOffset(inline, selection, indexInInline, type, isInField, isStarted, endSelection, endPosition);
+                } else {
 
-                this.getPreviousWordOffset(comment.previousNode, selection, comment.previousNode.length, type, isInField, isStarted, endSelection, endPosition);
+                    this.getPreviousWordOffset(comment.previousNode, selection, comment.previousNode.length, type, isInField, isStarted, endSelection, endPosition);
+                }
+            } else {
+                endPosition.setPositionParagraph(comment.line, comment.line.getOffset(comment, 1));
             }
         } else {
             endPosition.setPositionParagraph(comment.line, selection.getStartLineOffset(comment.line));
@@ -1314,9 +1318,6 @@ export class TextPosition {
                 const txt: string = span.text.length > indexInInline ? span.text.slice(0, indexInInline) : span.text;
                 wordStartIndex = HelperMethods.lastIndexOfAny(txt, HelperMethods.wordSplitCharacters);
 
-                if (wordStartIndex === -1 && span.previousElement instanceof CommentCharacterElementBox && isNullOrUndefined(span.previousNode.previousNode)) {
-                    wordStartIndex = span.length;
-                }
                 if (wordStartIndex !== -1) {
                     if (isInField) {
                         endSelection = false;

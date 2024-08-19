@@ -899,7 +899,10 @@ export class CheckBoxFilterBase {
     private getAllData(): void {
         this.customQuery = false;
         const query: Query = this.getQuery();
-        query.requiresCount(); //consider take query
+        const moduleName : Function = (<{ getModuleName?: Function }>this.options.dataManager.adaptor).getModuleName;
+        if (!(!isNullOrUndefined((this.parent as IGrid).getDataModule) && moduleName && moduleName() === 'ODataV4Adaptor')) {
+            query.requiresCount(); //consider take query
+        }
         this.addDistinct(query);
         const args: FilterSearchBeginEventArgs = {
             requestType: events.filterChoiceRequest, query: query, filterChoiceCount: null

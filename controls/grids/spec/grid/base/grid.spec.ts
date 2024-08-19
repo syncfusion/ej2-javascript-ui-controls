@@ -4556,3 +4556,27 @@ describe('EJ2-883850: Custom localization apply on expand/collapse icon =>', () 
 
 });
 
+describe('EJ2-899559 - Column jumping issue on column resizing with minWidth and width', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowResizing: true,
+                columns: [
+                    { field: 'OrderID', minWidth: 50, width: 'auto' },
+                    { field: 'CustomerID', minWidth: 60 },
+                    { field: 'Freight', minWidth: 60 },
+                    { field: 'ShipCountry', minWidth: 60 },
+                ]
+            }, done);
+    });
+    it('Ensure 1st Column Width ', () => {
+        const cols: HTMLCollection = gridObj.getHeaderTable().querySelector('colgroup').children;
+        expect((cols[0] as HTMLElement).style.width).toBe('50px');
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

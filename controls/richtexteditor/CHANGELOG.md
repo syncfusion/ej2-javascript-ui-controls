@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 26.2.9 (2024-08-13)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I612704` - Now, the continuous console error that was being thrown when the editor is destroyed is fixed.
+
+- `#I615533` - Now, The mention popup renders correctly when bold text is inserted in the Rich Text Editor.
+
+- `#I617144` - Now, Pressing the backspace or delete key functions correctly in the Chinese language Rich Text Editor.
+
 ## 26.2.8 (2024-08-06)
 
 ### RichTextEditor

@@ -2950,7 +2950,10 @@ export class SfdtReader {
                 return cellVerticalAlignment as CellVerticalAlignment;
         }
     }
-    private getListLevelPattern(listLevelPattern: number | ListLevelPattern): ListLevelPattern {
+    /**
+     * @private
+     */
+    public getListLevelPattern(listLevelPattern: number | ListLevelPattern): ListLevelPattern {
         switch (listLevelPattern) {
             case 0:
                 return 'None';

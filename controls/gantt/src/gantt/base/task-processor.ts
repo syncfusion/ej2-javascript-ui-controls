@@ -1325,7 +1325,11 @@ export class TaskProcessor extends DateProcessor {
             sDate = this.getValidStartDate(ganttProp);
         }
         if (!isNullOrUndefined(sDate)) {
-            left = this.getTaskLeft(sDate, milestone);
+            let isDecimalDuration: boolean;
+            if (ganttProp.duration < 1 && ganttProp.durationUnit === 'day') {
+                isDecimalDuration = ganttProp.duration < 1 ? true : false;
+            }
+            left = this.getTaskLeft(sDate, milestone, false, isDecimalDuration, ganttProp);
         }
         return left;
     }
@@ -1609,7 +1613,7 @@ export class TaskProcessor extends DateProcessor {
      * @returns {number} .
      * @private
      */
-    public getTaskLeft(startDate: Date, isMilestone: boolean, isFromTimelineVirtulization?: boolean): number {
+    public getTaskLeft(startDate: Date, isMilestone: boolean, isFromTimelineVirtulization?: boolean, isDurationDecimal?: boolean, ganttProp?: ITaskData): number {
         const date: Date = new Date(startDate.getTime());
         let tierMode: string = this.parent.timelineModule.bottomTier !== 'None' ? this.parent.timelineModule.bottomTier :
             this.parent.timelineModule.topTier;
@@ -1662,7 +1666,16 @@ export class TaskProcessor extends DateProcessor {
                 leftValue = (date.getTime() - newTimelineStartDate.getTime()) / (1000 * 60 * 60 * 24) * this.parent.perDayWidth;
             }
             else {
-                leftValue = (date.getTime() - timelineStartDate.getTime()) / (1000 * 60 * 60 * 24) * this.parent.perDayWidth;
+                if (this.getSecondsInDecimal(date) !== this.parent.defaultStartTime && this.getSecondsInDecimal(date) !== 0 && isDurationDecimal && ganttProp && ganttProp.durationUnit === 'day' && !this.parent.timelineModule.isZoomToFit && this.parent.timelineModule.bottomTier === 'Day') {
+                    var newDate = new Date(startDate.getTime());
+                    var setStartDate = new Date(newDate.setHours(24, 0, 0, 0));
+                    var taskOverallWidth = ((this.getTimeDifference(timelineStartDate, setStartDate) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
+                    var taskDateWidth = ganttProp.duration * this.parent.perDayWidth;
+                    leftValue = taskOverallWidth - taskDateWidth;
+                }
+                else {
+                    leftValue = ((date.getTime() - timelineStartDate.getTime()) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
+                }
             }
             if (this.parent.dayWorkingTime[0]['properties'].from > transitions['dstStart'].getHours() && tierMode === 'Day' && hasDST) {
                 if ((leftValue % this.parent.perDayWidth) != 0) {

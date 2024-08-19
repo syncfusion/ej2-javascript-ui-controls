@@ -2436,7 +2436,7 @@ export class DateRangePicker extends CalendarBase {
     }
     private updateMinMaxDays(calendar: HTMLElement): void {
         if ((!isNullOrUndefined(this.startValue) && isNullOrUndefined(this.endValue)) ||
-            (this.isMobile && this.endButton.element.classList.contains(ACTIVE))) {
+            (this.isMobile && this.endButton && this.endButton.element.classList.contains(ACTIVE))) {
             if ((!isNullOrUndefined(this.minDays) && this.minDays > 0) || (!isNullOrUndefined(this.maxDays) && this.maxDays > 0)) {
                 const startValueSelected : Date = this.removeTimeValueFromDate(this.startValue);
                 let minDate: Date = new Date(new Date(+startValueSelected).setDate(startValueSelected.getDate() + (this.minDays - 1)));
@@ -3583,6 +3583,18 @@ export class DateRangePicker extends CalendarBase {
                 }
                 if (!isUndefined(this.presets[0].start && this.presets[0].end && this.presets[0].label)) {
                     this.unWireListEvents();
+                }
+                if (this.applyButton) {
+                    this.applyButton.destroy();
+                }
+                if (this.cancelButton) {
+                    this.cancelButton.destroy();
+                }
+                if (this.isMobile && this.endButton) {
+                    this.endButton.destroy();
+                }
+                if (this.isMobile && this.startButton) {
+                    this.startButton.destroy();
                 }
                 if (!isNullOrUndefined(this.popupObj)) {
                     if (!isNullOrUndefined(this.popupObj.element.parentElement)) {

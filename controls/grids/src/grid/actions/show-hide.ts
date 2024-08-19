@@ -227,9 +227,8 @@ export class ShowHide {
             if (this.parent.autoFit) {
                 this.parent.preventAdjustColumns();
             } else if (this.parent.allowResizing && this.parent.resizeSettings.mode === 'Normal') {
-                const isFrozenAuto: boolean = this.parent.isFrozenGrid()
-                    && (this.parent.getHeaderTable() as HTMLElement).style.width.indexOf('px') === -1;
-                this.widthService.setWidthToTable(isFrozenAuto);
+                const isMaxWidth: boolean = (this.parent.getHeaderTable() as HTMLElement).style.width.indexOf('px') === -1;
+                this.widthService.setWidthToTable(isMaxWidth);
             }
         }
     }

@@ -414,7 +414,7 @@ export class Column {
      * It accepts either template string or HTML element ID.
      *
      * @default null
-     * @aspIgnore
+     * @aspType string
      */
     public editTemplate: string | Function;
 
@@ -423,7 +423,7 @@ export class Column {
      * It accepts either template string or HTML element ID.
      *
      * @default null
-     * @aspIgnore
+     * @aspType string
      */
     public filterTemplate: string | Function;
     /** @hidden */
@@ -1242,7 +1242,8 @@ export interface ColumnModel {
      * Defines the cell edit template that used as editor for a particular column.
      * It accepts either template string or HTML element ID.
      *
-     * @aspIgnore
+     * @default null
+     * @aspType string
      */
     editTemplate?: string | Function;
 
@@ -1250,7 +1251,8 @@ export interface ColumnModel {
      * Defines the filter template/UI that used as filter for a particular column.
      * It accepts either template string or HTML element ID.
      *
-     * @aspIgnore
+     * @default null
+     * @aspType string
      */
     filterTemplate?: string | Function;
 

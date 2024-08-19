@@ -5427,7 +5427,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     column.allowResizing = this.pivotColumns[this.posCount].allowResizing;
                     column.autoFit = this.pivotColumns[this.posCount].autoFit;
                     const calcWidth: number = this.renderModule.setSavedWidth(column.field === '0.formattedText' ? column.field :
-                        levelName, column.width as number);
+                        levelName, Number(this.pivotColumns[this.posCount].width));
                     if (!column.autoFit) {
                         if (column.width !== 'auto') {
                             column.width = calcWidth;
@@ -5501,7 +5501,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 } else {
                     if (!column.autoFit) {
                         if (column.width !== 'auto') {
-                            column.width = column.field !== this.renderModule.lastColumnName ? width : (width - 2);
+                            column.width = (this.renderModule.lastColumn && column.field === this.renderModule.lastColumn.field) ?
+                                (width - 3) : width;
                         } else {
                             column.minWidth = width;
                         }
@@ -5623,12 +5624,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 if (this.gridSettings.allowAutoResizing) {
                     this.setCommonColumnsWidth(this.grid.columns as ColumnModel[], colWidth);
                 }
-                this.pivotColumns = [];
-                this.totColWidth = 0;
-                this.framePivotColumns(this.grid.columns as ColumnModel[]);
-                this.posCount = 0;
-                this.setGridColumns(this.grid.columns as ColumnModel[]);
-                this.grid.refreshColumns();
+                this.triggerColumnRenderEvent(this.grid.columns as ColumnModel[]);
                 if (this.renderModule.isAutoFitEnabled) {
                     this.renderModule.addPivotAutoFitClass();
                 } else {

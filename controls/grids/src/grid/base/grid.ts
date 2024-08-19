@@ -2654,14 +2654,18 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         const temp: string | Function = this.pageSettings.template;
         const settings: PageSettingsModel = Object.assign({template: undefined}, this.pageSettings);
         this.setProperties({pageSettings: settings}, true);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (this.isAngular) {
+        const captionTemplateRef: string | Object | Function = this.groupSettings.captionTemplate;
+        const isAngularCaptionTemplate: boolean = captionTemplateRef && this.isAngular;
+        if (isAngularCaptionTemplate) {
             delete this.groupSettings['properties']['captionTemplate'];
         }
         this.pageTemplateChange = !isNullOrUndefined(this.pagerTemplate);
         const persistData: string = this.addOnPersist(keyEntity);
         settings.template = temp;
         this.setProperties({pageSettings: settings}, true);
+        if (isAngularCaptionTemplate) {
+            this.groupSettings.captionTemplate = captionTemplateRef;
+        }
         return persistData;
     }
 

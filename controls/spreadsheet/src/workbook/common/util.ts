@@ -470,10 +470,14 @@ export function updateCell(context: Workbook, sheet: SheetModel, prop: CellUpdat
                 delete cell.value;
                 delete cell.formula;
             }
-            const evtArgs: { [key: string]: string | boolean | number[] | number } = { action: 'updateCellValue',
+            const evtArgs: { [key: string]: string | boolean | number[] | number } = {
+                action: 'updateCellValue',
                 address: [args.rowIndex, args.colIndex], sheetIndex: getSheetIndex(context, sheet.name), value:
-                isFormulaCell && !cell.formula ? (cell.value || (<unknown>cell.value === 0 ? '0' : '')) : (cell.formula || cell.value ||
-                    (<unknown>cell.value === 0 ? '0' : '')), skipFormatCheck: prop.skipFormatCheck, isRandomFormula: prop.isRandomFormula };
+                    isFormulaCell && !cell.formula ? (cell.value || (<unknown>cell.value === 0 ? '0' : '')) :
+                        (cell.formula || cell.value || (<unknown>cell.value === 0 ? '0' : '')),
+                skipFormatCheck: prop.skipFormatCheck, isRandomFormula: prop.isRandomFormula,
+                isDelete: prop.isDelete, deletedRange: prop.deletedRange
+            };
             context.notify(workbookEditOperation, evtArgs);
             prop.isFormulaDependent = <boolean>evtArgs.isFormulaDependent;
             if (prop.requestType && args.cell === null) {

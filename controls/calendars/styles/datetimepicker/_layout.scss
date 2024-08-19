@@ -57,6 +57,26 @@
     }
   }
 
+  .e-datetime-mob-popup-wrap {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: center;
+    left: 0;
+    max-height: 100%;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1002;
+  
+    .e-datetimepicker.e-popup.e-lib.e-control.e-popup-open {
+      left: 0 !important; /* stylelint-disable-line declaration-no-important */
+      position: relative;
+      top: 0 !important; /* stylelint-disable-line declaration-no-important */
+    }
+  }
+
   #{&}.e-datetimepicker.e-time-modal {
     @if $skin-name != 'Material3' {
       background-color: $datetime-default-overlay;

@@ -73,6 +73,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private onBlurHandler:  () => void;
     private onResizeHandler: () => void;
     private timeInterval: number;
+    private autoSaveTimeOut: number;
     private idleInterval: number;
     private touchModule: EJ2Touch;
     private defaultResetValue: string;
@@ -1989,7 +1990,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     this.inputElement.innerHTML = this.enterKey !== 'BR' ? '<' + this.enterKey + '><br></' + this.enterKey + '>' : '<br>';
                     this.isSelectAll = false;
                 }
-                if (selection.rangeCount > 0 && this.contentModule.getDocument().activeElement.tagName !== 'INPUT' && this.inputElement.contains(this.contentModule.getDocument().activeElement) ) {
+                if (selection.rangeCount > 0 && this.contentModule.getDocument().activeElement.tagName !== 'INPUT' && this.inputElement.contains(this.contentModule.getDocument().activeElement) && (range.startContainer as HTMLElement).innerHTML === '<br>' && (range.startContainer as HTMLElement).textContent === '' ) {
                     selection.removeAllRanges();
                     selection.addRange(currentRange);
                 }
@@ -2256,6 +2257,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (!isNOU(this.timeInterval)) {
             clearInterval(this.timeInterval);
             this.timeInterval = null;
+        }
+        if (!isNOU(this.autoSaveTimeOut)) {
+            clearTimeout(this.autoSaveTimeOut);
+            this.autoSaveTimeOut = null;
         }
         if (!isNOU(this.idleInterval)) {
             clearTimeout(this.idleInterval);
@@ -3452,8 +3457,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private contentChanged(): void {
         if (this.autoSaveOnIdle) {
             if (!isNOU(this.saveInterval)) {
-                clearTimeout(this.timeInterval);
-                this.timeInterval = setTimeout(this.updateIntervalValue.bind(this), this.saveInterval);
+                clearTimeout(this.autoSaveTimeOut);
+                this.autoSaveTimeOut = setTimeout(this.updateIntervalValue.bind(this), this.saveInterval);
             }
         }
     }

@@ -59,14 +59,15 @@ export class WorkbookEdit {
         case 'updateCellValue':
             args.isFormulaDependent = this.updateCellValue(
                 <string>args.address, <string>args.value, <number>args.sheetIndex, <boolean>args.isValueOnly,
-                <boolean>args.skipFormatCheck, <boolean>args.isRandomFormula, <boolean>args.skipCellFormat);
+                <boolean>args.skipFormatCheck, <boolean>args.isRandomFormula, <boolean>args.skipCellFormat,
+                <boolean>args.isDelete, <number[]>args.deletedRange);
             break;
         }
     }
 
     private updateCellValue(
         address: string | number[], value: string, sheetIdx?: number, isValueOnly?: boolean, skipFormatCheck?: boolean,
-        isRandomFormula?: boolean, skipCellFormat?: boolean): boolean {
+        isRandomFormula?: boolean, skipCellFormat?: boolean, isDelete?: boolean, deletedRange?: number[]): boolean {
         if (sheetIdx === undefined) {
             sheetIdx = this.parent.activeSheetIndex;
         }
@@ -90,20 +91,23 @@ export class WorkbookEdit {
             }
             const isNotTextFormat: boolean = getTypeFromFormat(cell.format) !== 'Text' && (!isFormula ||
                 !value.toLowerCase().startsWith('=text('));
+            isFormula = getTypeFromFormat(cell.format) === 'Text' ? false : isFormula;
             if (!isFormula && !skipFormula) {
                 if (cell.formula) {
                     cell.formula = '';
                 }
                 cell.value = isNotTextFormat ? <string>parseIntValue(value) : value;
             }
-            const eventArgs: { [key: string]: string | number | boolean } = {
+            const eventArgs: { [key: string]: string | number | boolean | number[] } = {
                 action: 'refreshCalculate',
                 value: value,
                 rowIndex: range[0],
                 colIndex: range[1],
                 sheetIndex: sheetIdx,
                 isFormula: isFormula,
-                isRandomFormula: isRandomFormula
+                isRandomFormula: isRandomFormula,
+                isDelete: isDelete,
+                deletedRange: deletedRange
             };
             if (isNotTextFormat && !skipFormatCheck) {
                 const dateEventArgs: DateFormatCheckArgs = {
@@ -128,7 +132,7 @@ export class WorkbookEdit {
             } else {
                 const args: { cellIdx: number[], isUnique: boolean } = { cellIdx: range, isUnique: false };
                 this.parent.notify(checkUniqueRange, args);
-                if (!skipFormula) {
+                if (!skipFormula && !isDelete) {
                     this.parent.notify(workbookFormulaOperation, eventArgs);
                     isFormulaDependent = <boolean>eventArgs.isFormulaDependent;
                 } else {

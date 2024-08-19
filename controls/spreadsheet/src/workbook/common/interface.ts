@@ -525,6 +525,8 @@ export interface CellUpdateArgs {
     isFormulaDependent?: boolean;
     skipFormatCheck?: boolean;
     isRandomFormula?: boolean;
+    isDelete?: boolean;
+    deletedRange?: number[];
 }
 /** @hidden */
 export interface NumberFormatArgs {
@@ -693,4 +695,6 @@ export interface FormulaCalculateArgs {
     isClipboard?: boolean
     isFormulaDependent?: boolean;
     sheet?: SheetModel;
+    isDelete?: boolean;
+    deletedRange?: number[];
 }

@@ -256,6 +256,9 @@ export class Timeline {
             && !this.parent.pdfExportModule.isPdfExport)) {
             this.wholeTimelineWidth = this.calculateWidthBetweenTwoDate(tier, this.parent.timelineModule.timelineStartDate,
                                                                         this.parent.timelineModule.timelineEndDate);
+            if (this.wholeTimelineWidth <= this.totalTimelineWidth) {
+                this.wholeTimelineWidth = this.totalTimelineWidth;
+            }
             this.parent.element.querySelectorAll('.e-chart-scroll-container')[0].querySelector('.e-virtualtrack')['style'].width = this.wholeTimelineWidth + 'px';
             this.parent.element.querySelectorAll('.e-timeline-header-container')[0].querySelector('.e-virtualtrack')['style'].width = this.wholeTimelineWidth + 'px';
             this.parent.ganttChartModule.updateWidthAndHeight();
@@ -792,6 +795,7 @@ export class Timeline {
                 tier = 'bottomTier';
                 tr = null;
             }
+            this.wholeTimelineWidth = this.totalTimelineWidth;
             if (this.parent.height === 'Auto' || this.parent.timelineModule.isSingleTier) {
                 const timelineContainer: number = this.parent.element.getElementsByClassName('e-timeline-header-container')[0]['offsetHeight'];
                 this.parent.element.getElementsByClassName('e-chart-scroll-container e-content')[0]['style'].height = 'calc(100% - ' + timelineContainer + 'px)';

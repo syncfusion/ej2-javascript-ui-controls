@@ -735,6 +735,7 @@
     }
 
     .e-dropitemscount {
+      font-size: 14px;
       @if $grid-skin == 'tailwind' {
         margin-left: 1px;
       }
@@ -4006,7 +4007,7 @@
       }
 
       & .e-cloneproperties {
-        border-width: $grid-border-size $grid-border-size 3px;
+        border-width: $grid-border-size $grid-border-size 2px;
       }
 
       & tr {
@@ -4792,6 +4793,9 @@
       }
       @if $grid-skin == 'fluent2' {
         margin-top: -8px;
+      }
+      @if $grid-skin == 'bootstrap5.3' {
+        margin-top: -9px;
       }
     }
 
@@ -5730,7 +5734,9 @@
       }
 
       & .e-menu-item.e-focused {
-        background-color: transparent;
+        @if $grid-skin != 'bootstrap5.3' {
+          background-color: transparent;
+        }
       }
     }
   }

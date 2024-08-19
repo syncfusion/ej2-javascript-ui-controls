@@ -52,19 +52,22 @@ export class KeyboardNavigation {
         const textarea: HTMLTextAreaElement = e.target as HTMLTextAreaElement;
         if (!isNullOrUndefined(textarea) && textarea.classList.contains('e-addNoteContainer')) {
             if (e.key === 'Escape') {
-                const cellIndexes: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
+                const isNoteCellIndex: boolean = !isNullOrUndefined(this.parent.spreadsheetNoteModule.noteCellIndexes);
+                const cellIndexes: number[] = isNoteCellIndex ? this.parent.spreadsheetNoteModule.noteCellIndexes :
+                    getCellIndexes(this.parent.getActiveSheet().activeCell);
                 const cell: CellModel = getCell(cellIndexes[0], cellIndexes[1], this.parent.getActiveSheet());
                 const targetElement: HTMLElement = this.parent.getCell(cellIndexes[0], cellIndexes[1]);
-                const address: string = getSheetName(this.parent as Workbook, this.parent.activeSheetIndex) + '!' + this.parent.getActiveSheet().activeCell;
+                const address: string = getSheetName(this.parent as Workbook, this.parent.activeSheetIndex) + '!' + getRangeAddress(cellIndexes);
                 if (!isNullOrUndefined(textarea) && !isNullOrUndefined(textarea.value)
                     && ((isNullOrUndefined(cell) || isNullOrUndefined(cell.notes)) || (cell.notes !== textarea.value))
                     && document.activeElement.className.indexOf('e-addNoteContainer') > -1) {
+                    const eventAction: string = !isNullOrUndefined(cell) && cell.notes ? 'editNote' : 'addNote';
                     this.parent.notify(setActionData, { args: { action: 'beforeCellSave', eventArgs: { address: address } } });
                     updateCell(
                         this.parent, this.parent.getActiveSheet(), { rowIdx: cellIndexes[0], colIdx: cellIndexes[1], preventEvt: true,
                             cell: { notes: textarea.value, isNoteEditable: false }});
                     const eventArgs : NoteSaveEventArgs =  { notes: textarea.value, address: address};
-                    this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'addNote' });
+                    this.parent.notify(completeAction, { eventArgs: eventArgs, action: eventAction });
                 }
                 this.parent.spreadsheetNoteModule.isShowNote = null;
                 this.parent.notify(removeNoteContainer, '');

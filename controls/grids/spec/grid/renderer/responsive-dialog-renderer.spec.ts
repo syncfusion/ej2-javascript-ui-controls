@@ -1022,4 +1022,47 @@ describe('Adaptive renderer', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-899450-Programmatic open column chooser dialog not opening with OK and Cancel buttons on adaptive vertical view', () => {
+        let gridObj: Grid;
+        let openButton: HTMLElement;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: true,
+                    showColumnChooser: true,
+                    enableAdaptiveUI: true,
+                    toolbar: ['ColumnChooser'],
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 130, textAlign: 'Right' },
+                        { field: 'CustomerName', headerText: 'Customer Name', width: 150, showInColumnChooser: false },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                        { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                        { field: 'ShippedDate', headerText: 'Shipped Date', width: 140, format: 'yMd', textAlign: 'Right' },
+                        { field: 'ShipCountry', visible: false, headerText: 'Ship Country', width: 150 },
+                        { field: 'ShipCity', visible: false, headerText: 'Ship City', width: 150 }
+                    ]
+                }, done );
+            openButton = document.createElement('button');
+            openButton.id = 'openColumnChooserButton';
+            openButton.textContent = 'Open Column Chooser';
+            document.body.appendChild(openButton);
+            openButton.addEventListener('click', () => {
+                gridObj.columnChooserModule.openColumnChooser(100, 50);
+            });
+        });
+    
+        it('should open column chooser on button click', (done: Function) => {
+            openButton.click();
+            expect(document.querySelector('.e-rescolumnchooserdiv')).not.toBeNull();
+            done();
+        });
+    
+        afterAll(() => {
+            document.body.removeChild(openButton);
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

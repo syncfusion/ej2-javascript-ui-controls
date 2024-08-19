@@ -79,7 +79,7 @@ export class ActionEvents {
         actionArgs.args = args;
         this.parent.trigger('actionBegin', actionArgs);
         if (!preventAction && !this.parent.isPrintingProcessing && (args.action === 'clipboard' || args.action === 'format' ||
-            args.action === 'cellSave' || args.action === 'addNote' || args.action === 'beforeWrap' || args.action === 'beforeReplace' || args.action === 'filter'
+            args.action === 'cellSave' || args.action === 'addNote' || args.action === 'editNote' || args.action === 'deleteNote' || args.action === 'beforeWrap' || args.action === 'beforeReplace' || args.action === 'filter'
             || args.action === 'beforeClear' || args.action === 'beforeInsertImage' || args.action === 'beforeInsertChart' || args.action === 'chartDesign'
             || args.action === 'cellDelete' || args.action === 'autofill' || args.action === 'removeValidation' || args.action === 'hyperlink' || args.action === 'removeHyperlink' || args.action === 'deleteImage')) {
             this.parent.notify(setActionData, { args: args });

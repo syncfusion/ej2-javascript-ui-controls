@@ -54,9 +54,7 @@ export class _JsonDocument extends _ExportHelper {
         this._table.forEach((value: string | string[], key: string) => {
             key = this._getValidString(key);
             this._jsonData.push(this._doubleQuotes);
-            for (let i: number = 0; i < key.length; i++) {
-                this._jsonData.push(key.charCodeAt(i));
-            }
+            this._jsonData = _stringToBytes(key, true, false, this._jsonData) as number[];
             if (typeof value === 'string' || (Array.isArray(value) && value.length === 1)) {
                 value = this._getValidString(typeof value === 'string' ? value : value[0]);
                 this._jsonData.push(this._doubleQuotes, this._colon, this._doubleQuotes);

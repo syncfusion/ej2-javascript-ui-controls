@@ -79,7 +79,9 @@ export class Resize implements IAction {
         if(!isNullOrUndefined(fName) && typeof fName=='object' && fName.length !== 0 )
         {
             fName.forEach((field)=>{
-                this.parent.getColumnByField(field).autoFit = true;
+                if (this.parent.getColumnByField(field)) {
+                    this.parent.getColumnByField(field).autoFit = true;
+                }
             })
         }
         else if(typeof fName === 'string' && fName.trim() !== '')
@@ -221,8 +223,12 @@ export class Resize implements IAction {
             else {
                 addClass([headerTable, contentTable], ['e-tableborder']);
             }
+            removeClass([gObj.element], ['e-left-shadow', 'e-right-shadow']);
         } else {
             removeClass([headerTable, contentTable], ['e-tableborder']);
+            if (gObj.getVisibleFrozenRightCount()) {
+                addClass([gObj.element], ['e-right-shadow']);
+            }
         }
         if (!isNullOrUndefined(footerTable)) {
             footerTable.classList.add('e-tableborder');
@@ -968,8 +974,12 @@ export class Resize implements IAction {
             else {
                 addClass([headerTable, contentTable], ['e-tableborder']);
             }
+            removeClass([gObj.element], ['e-left-shadow', 'e-right-shadow']);
         } else {
             removeClass([headerTable, contentTable], ['e-tableborder']);
+            if (gObj.getVisibleFrozenRightCount()) {
+                addClass([gObj.element], ['e-right-shadow']);
+            }
         }
         if (!isNullOrUndefined(footerTable)) {
             footerTable.classList.add('e-tableborder');

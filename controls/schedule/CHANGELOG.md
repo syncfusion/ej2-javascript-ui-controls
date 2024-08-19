@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.2.10 (2024-08-20)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I607401` - An issue where the events are not aligned in correct position when Scheduler height changed dynamically has been fixed.
+
 ## 26.2.4 (2024-07-24)
 
 ### Schedule

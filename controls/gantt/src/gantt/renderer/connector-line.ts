@@ -58,9 +58,7 @@ export class ConnectorLine {
             id: this.parent.element.id + '_svg'
         });
         this.svgObject.setAttribute('height', '100%');
-        if (!this.parent.enableTimelineVirtualization){
-            this.svgObject.setAttribute('width', '100%');
-        }
+        this.svgObject.setAttribute('width', '100%');
     }
 
     /**

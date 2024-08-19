@@ -252,7 +252,8 @@ export function strippedValue(element: HTMLInputElement, maskValues: string): st
             }
             if (!checkMask) {
                 if ((maskValue[i as number] !== this.promptChar) && (!isNullOrUndefined(this.customRegExpCollec[k as number]) &&
-                    ((this._callPasteHandler || !isNullOrUndefined(this.regExpCollec[this.customRegExpCollec[k as number]])) ||
+                    ((this._callPasteHandler || (!isNullOrUndefined(this.regExpCollec[this.customRegExpCollec[k as number]]) &&
+                        !this.maskedRegExp.includes(this.customRegExpCollec[k as number]))) ||
                         (this.customRegExpCollec[k as number].length > 2 && this.customRegExpCollec[k as number][0] === '[' &&
                             this.customRegExpCollec[k as number][this.customRegExpCollec[k as number].length - 1] === ']') ||
                         (!isNullOrUndefined(this.customCharacters) &&
@@ -274,6 +275,9 @@ function pushIntoRegExpCollec(value: string): void {
         this.hiddenMask += value[k as number];
         if (value[k as number] !== '\\') {
             this.customRegExpCollec.push(value[k as number]);
+        }
+        else if (value[k as number] === '\\' && !isNullOrUndefined(this.regExpCollec[value[k as number + 1]])) {
+            this.maskedRegExp.push(value[k as number + 1]);
         }
     }
 }

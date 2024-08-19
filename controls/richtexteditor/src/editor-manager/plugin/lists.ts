@@ -1009,7 +1009,7 @@ export class Lists {
             this.domNode = null;
         }
     }
-    public areAllListItemsSelected(list: HTMLElement, range: Range): boolean {
+    private areAllListItemsSelected(list: HTMLElement, range: Range): boolean {
         const listItems: NodeListOf<HTMLLIElement> = list.querySelectorAll('li');
         for (let i: number = 0; i < listItems.length; i++) {
             const listItem: HTMLLIElement = listItems[i as number];

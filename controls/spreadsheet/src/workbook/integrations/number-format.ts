@@ -1464,7 +1464,11 @@ export class WorkbookNumberFormat {
             }
         } else if (dateArr.length > 2) {
             for (let i: number = 0; i < dateArr.length; i++) {
-                if (!(Number(dateArr[i as number]) > -1)) {
+                if (isNumber(dateArr[i as number])) {
+                    if (dateArr[i as number].length !== 4 && dateArr[i as number].length !== 2 && dateArr[i as number].length !== 1) {
+                        val = 'Invalid';
+                    }
+                } else {
                     dateArr[i as number] = dateArr[i as number].trim();
                     Object.keys(months).find((key: string) =>
                         isMonth(months[`${key}`].toLowerCase(), key, dateArr[i as number].trim().toLowerCase(),

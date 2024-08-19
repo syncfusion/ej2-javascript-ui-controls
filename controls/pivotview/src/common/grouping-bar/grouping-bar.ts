@@ -468,8 +468,9 @@ export class GroupingBar implements IAction {
                                 const columnWidth: number = this.parent.renderModule.setSavedWidth(levelName, valueColWidth);
                                 gridColumn[cCnt as number].width = (gridColumn[cCnt as number].autoFit || (hasPivotColumns
                                     && this.parent.pivotColumns[cCnt as number].autoFit)) ? gridColumn[cCnt as number].width :
-                                    (this.parent.renderModule.lastColumnName === gridColumn[cCnt as number].field ?
-                                        (columnWidth - 2) : columnWidth);
+                                    ((this.parent.renderModule.lastColumn &&
+                                        this.parent.renderModule.lastColumn.field === gridColumn[cCnt as number].field) ?
+                                        (columnWidth - 3) : columnWidth);
                             } else {
                                 (gridColumn[cCnt as number] as Column).minWidth = valueColWidth;
                             }

@@ -691,7 +691,7 @@ export class StyleDialog {
      * @returns {void}
      */
     public onOkButtonClick = (): void => {
-        let styleName: string = SanitizeHtmlHelper.sanitize(this.styleNameElement.value);
+        let styleName: string = this.documentHelper.owner.stylesDialogModule.getStyleName(SanitizeHtmlHelper.sanitize(this.styleNameElement.value));
         if (styleName.length > 0) {
             let style: WStyle = this.documentHelper.styles.findByName(styleName) as WStyle;
             let name: string;

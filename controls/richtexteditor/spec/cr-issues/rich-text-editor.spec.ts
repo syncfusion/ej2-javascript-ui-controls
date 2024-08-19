@@ -3370,7 +3370,7 @@ describe('RTE CR issues ', () => {
             (rteObj.element.querySelectorAll(".e-rte-toolbar .e-toolbar-item button")[0] as any).click();
             (document.querySelector(".e-rte-test-elements div") as any).click();
             (rteObj.element.querySelectorAll(".e-rte-toolbar .e-toolbar-item button")[1] as any).click();
-            expect(rteObj.inputElement.innerHTML == '<p><strong>​<em>​</em></strong>Rich Text Editor</p>').toBe(true);
+            expect(rteObj.inputElement.innerHTML == '<p><strong><em>​</em></strong>Rich Text Editor</p>').toBe(true);
         });
     });
 

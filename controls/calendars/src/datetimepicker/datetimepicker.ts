@@ -1117,6 +1117,14 @@ export class DateTimePicker extends DatePicker {
             this.timeModal.style.display = 'block';
             document.body.appendChild(this.timeModal);
         }
+        if(Browser.isDevice){
+            const modelWrapper: HTMLElement = createElement('div', { className: 'e-datetime-mob-popup-wrap' });
+            modelWrapper.appendChild(this.dateTimeWrapper);
+            const dlgOverlay: HTMLElement = createElement('div', { className: 'e-dlg-overlay'});
+            dlgOverlay.style.zIndex = (this.zIndex - 1).toString();
+            modelWrapper.appendChild(dlgOverlay);
+            document.body.appendChild(modelWrapper);
+        }
         const offset: number = 4;
         this.popupObject = new Popup(this.dateTimeWrapper as HTMLElement, {
             width: this.setPopupWidth(),
@@ -1157,7 +1165,6 @@ export class DateTimePicker extends DatePicker {
             }
         });
         if (Browser.isDevice && this.fullScreenMode){
-            this.popupObject.element.style.display = 'flex';
             this.popupObject.element.style.maxHeight = '100%';
             this.popupObject.element.style.width = '100%';
         } else {
@@ -1165,18 +1172,14 @@ export class DateTimePicker extends DatePicker {
         }
 
         if (Browser.isDevice && this.fullScreenMode) {
-            const modelWrapper: HTMLElement = createElement('div', { className: 'e-datetime-mob-popup-wrap' });
             const modelHeader: HTMLElement = this.createElement('div', { className: 'e-model-header' });
             const modelTitleSpan: HTMLElement = this.createElement('span', { className: 'e-model-title' });
             modelTitleSpan.textContent = 'Select time';
             const modelCloseIcon: HTMLElement = this.createElement('span', { className: 'e-popup-close' });
             EventHandler.add(modelCloseIcon, 'mousedown touchstart', this.dateTimeCloseHandler, this);
-            const timeContent: HTMLElement = this.dateTimeWrapper.querySelector('.e-content');
             modelHeader.appendChild(modelCloseIcon);
             modelHeader.appendChild(modelTitleSpan);
-            modelWrapper.appendChild(modelHeader);
-            modelWrapper.appendChild(timeContent);
-            this.dateTimeWrapper.insertBefore(modelWrapper, this.dateTimeWrapper.firstElementChild);
+            this.dateTimeWrapper.insertBefore(modelHeader, this.dateTimeWrapper.firstElementChild);
         }
     }
 

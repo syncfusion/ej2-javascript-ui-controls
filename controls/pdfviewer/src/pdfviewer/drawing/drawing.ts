@@ -1023,7 +1023,10 @@ export class Drawing {
                                     isPrint: node.isPrint, rotation: (node as any).rotateAngle, tooltip: (node as any).tooltip,
                                     options: (node as any).options, isChecked: (node as any).isChecked, isSelected: (node as any).isSelected
                                 };
-                                this.pdfViewer.fireFormFieldSelectEvent('formFieldSelect', field, node.pageIndex, this.pdfViewer.formDesignerModule.isProgrammaticSelection);
+                                if (!this.pdfViewer.formDesignerModule.isFormFieldSizeUpdated) {
+                                    this.pdfViewer.fireFormFieldSelectEvent('formFieldSelect', field, node.pageIndex, this.pdfViewer.formDesignerModule.isProgrammaticSelection);
+                                }
+                                this.pdfViewer.formDesignerModule.isFormFieldSizeUpdated = false;
                             }
                         }
                     }
@@ -1073,7 +1076,10 @@ export class Drawing {
                                         options: (node as any).options, isChecked: (node as any).isChecked,
                                         isSelected: (node as any).isSelected
                                     };
-                                    this.pdfViewer.fireFormFieldSelectEvent('formFieldSelect', field, node.pageIndex, this.pdfViewer.formDesignerModule.isProgrammaticSelection);
+                                    if (!this.pdfViewer.formDesignerModule.isFormFieldSizeUpdated) {
+                                        this.pdfViewer.fireFormFieldSelectEvent('formFieldSelect', field, node.pageIndex, this.pdfViewer.formDesignerModule.isProgrammaticSelection);
+                                    }
+                                    this.pdfViewer.formDesignerModule.isFormFieldSizeUpdated = false;
                                 }
                             }
                             if (node.annotName !== '' && node.annotName !== 'SignatureText') {

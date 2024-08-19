@@ -1,8 +1,8 @@
 import { getDPRValue, hideAutoFillElement, hideAutoFillOptions, positionAutoFillElement, Spreadsheet } from '../index';
-import { closest, detach, EventHandler } from '@syncfusion/ej2-base';
+import { closest, detach, EventHandler, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Tooltip } from '@syncfusion/ej2-popups';
-import { colWidthChanged, rowHeightChanged, contentLoaded, getFilterRange, getTextWidth, getExcludedColumnWidth } from '../common/index';
-import { setResize, autoFit, HideShowEventArgs, completeAction, setAutoFit } from '../common/index';
+import { colWidthChanged, rowHeightChanged, contentLoaded, getFilterRange, getTextWidth, getExcludedColumnWidth, ICellRenderer } from '../common/index';
+import { setResize, autoFit, HideShowEventArgs, completeAction, setAutoFit, resizeRowHeight } from '../common/index';
 import { setRowHeight, isHiddenRow, SheetModel, getRowHeight, getColumnWidth, setColumn, isHiddenCol } from '../../workbook/base/index';
 import { getColumn, setRow, getCell, CellModel } from '../../workbook/base/index';
 import { getRangeIndexes, getSwapRange, CellStyleModel, getCellIndexes, setMerge, MergeArgs, isRowSelected, beginAction } from '../../workbook/common/index';
@@ -32,6 +32,7 @@ export class Resize {
         this.parent.on(contentLoaded, this.wireEvents, this);
         this.parent.on(autoFit, this.autoFit, this);
         this.parent.on(setAutoFit, this.setAutoFitHandler, this);
+        this.parent.on(resizeRowHeight, this.resizeRowHeight, this);
     }
 
     private autoFit(args: { isRow: boolean, startIndex: number, endIndex: number }): void {
@@ -82,6 +83,7 @@ export class Resize {
             this.parent.off(contentLoaded, this.wireEvents);
             this.parent.off(autoFit, this.autoFit);
             this.parent.off(setAutoFit, this.setAutoFitHandler);
+            this.parent.off(resizeRowHeight, this.resizeRowHeight);
         }
     }
 
@@ -646,6 +648,15 @@ export class Resize {
                 return;
             }
             this.setRowHeight(actualIdx, idx, `${rowHeight}px`, prevData);
+            this.parent.notify(resizeRowHeight, { rowIndex: actualIdx });
+            for (let i: number = 0; i < sheet.columns.length; i++) {
+                const td: HTMLElement = this.parent.getCell(actualIdx, i);
+                if (!isNullOrUndefined(td.children) && td.children.length > 1) {
+                    if (td.children[0].classList.contains('e-filter-btn') && td.children[td.children.length - 1].classList.contains('e-addNoteIndicator')) {
+                        this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange([actualIdx, i, actualIdx, i]);
+                    }
+                }
+            }
             if (this.trgtEle.parentElement.style.display === 'none') {
                 const sheet: SheetModel = this.parent.getActiveSheet();
                 const selectedRange: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
@@ -704,6 +715,18 @@ export class Resize {
         if (cell && cell.format && cell.format.includes('*')) {
             this.parent.notify(getFormattedCellObject, <NumberFormatArgs>{ value: cell.value, format: cell.format, cell: cell,
                 formattedText: cell.value, rowIndex: activeCell[0], colIndex: activeCell[1] });
+        }
+    }
+
+    private resizeRowHeight(args : {rowIndex: number}): void {
+        const sheet: SheetModel = this.parent.getActiveSheet();
+        for (let i: number = 0; i < sheet.columns.length; i++) {
+            const td: HTMLElement = this.parent.getCell(args.rowIndex, i);
+            if (!isNullOrUndefined(td.children) && td.children.length > 1) {
+                if (td.children[0].classList.contains('e-filter-btn') && td.children[td.children.length - 1].classList.contains('e-addNoteIndicator')) {
+                    this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange([args.rowIndex, i, args.rowIndex, i]);
+                }
+            }
         }
     }
 

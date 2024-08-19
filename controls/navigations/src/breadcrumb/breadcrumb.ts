@@ -694,6 +694,12 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
     }
 
     private reRenderItems(): void {
+        if (this.overflowMode === 'Menu' && this.popupObj && this.popupObj.element.classList.contains('e-popup-open') && this.popupObj.element.querySelector('.e-edit-template')) {
+            this.popupObj.hide();
+            this.popupObj.destroy();
+            this.isPopupCreated = false;
+            detach(this.popupObj.element);
+        }
         this.element.innerHTML = '';
         this.renderItems(this.items);
     }
@@ -776,7 +782,7 @@ export class Breadcrumb extends Component<HTMLElement> implements INotifyPropert
     }
 
     private documentClickHandler(e: Event): void {
-        if (this.overflowMode === 'Menu' && this.popupObj && this.popupObj.element.classList.contains('e-popup-open') && !closest(e.target as Element, DOT + MENUCLASS)) {
+        if (this.overflowMode === 'Menu' && this.popupObj && this.popupObj.element.classList.contains('e-popup-open') && !closest(e.target as Element, DOT + MENUCLASS) && !closest(e.target as Element, DOT + 'e-edit-template')) {
             this.popupObj.hide();
             this.popupObj.destroy();
             this.isPopupCreated = false;

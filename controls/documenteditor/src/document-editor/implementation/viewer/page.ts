@@ -3472,11 +3472,11 @@ export class TableCellWidget extends BlockWidget {
      * @private
      */
     get leftMargin(): number {
-        if (this.cellFormat && this.cellFormat.containsMargins()) {
+        if (this.cellFormat && this.cellFormat.hasValue('leftMargin')) {
             return this.cellFormat.leftMargin;
         } else if (!isNullOrUndefined(this.ownerRow) && this.ownerRow.rowFormat.hasValue('leftMargin')) {
             return this.ownerRow.rowFormat.leftMargin;
-        } else if (!isNullOrUndefined(this.ownerTable) && !isNullOrUndefined(this.ownerTable.tableFormat)) {
+        } else if (!isNullOrUndefined(this.ownerTable) && !isNullOrUndefined(this.ownerTable.tableFormat) && this.ownerTable.tableFormat.hasValue('leftMargin')) {
             return this.ownerTable.tableFormat.leftMargin;
         } else {
             return 0;
@@ -3486,11 +3486,11 @@ export class TableCellWidget extends BlockWidget {
      * @private
      */
     get topMargin(): number {
-        if (this.cellFormat && this.cellFormat.containsMargins()) {
+        if (this.cellFormat && this.cellFormat.hasValue('topMargin')) {
             return this.cellFormat.topMargin;
         } else if (!isNullOrUndefined(this.ownerRow) && this.ownerRow.rowFormat.hasValue('topMargin')) {
             return this.ownerRow.rowFormat.topMargin;
-        } else if (!isNullOrUndefined(this.ownerTable) && !isNullOrUndefined(this.ownerTable.tableFormat)) {
+        } else if (!isNullOrUndefined(this.ownerTable) && !isNullOrUndefined(this.ownerTable.tableFormat) && this.ownerTable.tableFormat.hasValue('topMargin')) {
             return this.ownerTable.tableFormat.topMargin;
         } else {
             return 0;
@@ -3500,11 +3500,11 @@ export class TableCellWidget extends BlockWidget {
      * @private
      */
     get rightMargin(): number {
-        if (this.cellFormat && this.cellFormat.containsMargins()) {
+        if (this.cellFormat && this.cellFormat.hasValue('rightMargin')) {
             return this.cellFormat.rightMargin;
         } else if (!isNullOrUndefined(this.ownerRow) && this.ownerRow.rowFormat.hasValue('rightMargin')) {
             return this.ownerRow.rowFormat.rightMargin;
-        } else if (!isNullOrUndefined(this.ownerTable) && !isNullOrUndefined(this.ownerTable.tableFormat)) {
+        } else if (!isNullOrUndefined(this.ownerTable) && !isNullOrUndefined(this.ownerTable.tableFormat) && this.ownerTable.tableFormat.hasValue('rightMargin')) {
             return this.ownerTable.tableFormat.rightMargin;
         } else {
             return 0;
@@ -3514,11 +3514,11 @@ export class TableCellWidget extends BlockWidget {
      * @private
      */
     get bottomMargin(): number {
-        if (this.cellFormat && this.cellFormat.containsMargins()) {
+        if (this.cellFormat && this.cellFormat.hasValue('bottomMargin')) {
             return this.cellFormat.bottomMargin;
         } else if (!isNullOrUndefined(this.ownerRow) && this.ownerRow.rowFormat.hasValue('bottomMargin')) {
             return this.ownerRow.rowFormat.bottomMargin;
-        } else if (!isNullOrUndefined(this.ownerTable) && !isNullOrUndefined(this.ownerTable.tableFormat)) {
+        } else if (!isNullOrUndefined(this.ownerTable) && !isNullOrUndefined(this.ownerTable.tableFormat) && this.ownerTable.tableFormat.hasValue('bottomMargin')) {
             return this.ownerTable.tableFormat.bottomMargin;
         } else {
             return 0;

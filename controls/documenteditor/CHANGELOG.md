@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 26.2.10 (2024-08-20)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I613623` - Resolved the script error occurs while copy pasting the content from Word when enabling spellcheck.
+- `#I616511` - Resolved the problem with selecting and editing text after the comment inserted.
+- `#I616207` - Resolved the table left margin issue when opening attached document.
+- `#I616276` - Resolved the can edit and can delete values in content control are bound inversely.
+- `#I620559` - Resolved the issue that Ctrl + H opens the Find option instead of replace option.
+- `#I613766` - Resolved the single page content expanded into 13 pages issue in Document Editor.
+- `#I616846` - Resolved the overlapping issue when updating table of contents field.
+
 ## 26.2.9 (2024-08-13)
 
 ### DocumentEditor

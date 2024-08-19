@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.2.10 (2024-08-20)
+
+### PivotTable
+
+#### Bug fixes
+
+- `#I612547` - The column width applied using the `columnRender` event will now be properly persisted when resizing the pivot table.
+
 ## 26.2.9 (2024-08-13)
 
 ### PivotTable

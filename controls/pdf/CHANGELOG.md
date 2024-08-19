@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 26.2.9 (2024-08-13)
+## 26.2.10 (2024-08-20)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved an exception encountered while export and import PDF form as JSON data.
+
+## 26.2.8 (2024-08-06)
 
 ### PDF Parser
 

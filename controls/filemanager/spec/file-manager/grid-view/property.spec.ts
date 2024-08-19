@@ -723,7 +723,7 @@ describe('FileManager control Grid view', () => {
             });
             setTimeout(function () {
                 expect(feObj.element.style.width).toEqual('700px');
-                expect((feObj.element.querySelectorAll('th.e-fe-grid-name')[0] as HTMLElement).offsetWidth).toBeGreaterThan(150);
+                expect((feObj.element.querySelectorAll('th.e-fe-grid-name')[0] as HTMLElement).offsetWidth).toEqual(120);
                 feObj.detailsViewSettings={
                     columns: [
                         { field: 'name', headerText: 'File Name', minWidth: 120, width: 150, customAttributes: { class: 'e-fe-grid-name' }, template: '${name}' },
@@ -758,7 +758,7 @@ describe('FileManager control Grid view', () => {
                     };
                     feObj.dataBind();
                     expect(feObj.element.style.width).toEqual('700px');
-                    expect((feObj.element.querySelectorAll('th.e-fe-grid-name')[0] as HTMLElement).offsetWidth).toBeGreaterThan(150);
+                    expect((feObj.element.querySelectorAll('th.e-fe-grid-name')[0] as HTMLElement).offsetWidth).toEqual(120);
                     done();
                 }, 400);
             }, 400);
