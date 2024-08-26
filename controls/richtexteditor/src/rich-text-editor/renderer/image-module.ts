@@ -1837,7 +1837,7 @@ export class Image {
         let altText: string;
         let selectArgs: SelectedEventArgs;
         let filesData: FileInfo[];
-        let previousURL: string | null = null; 
+        let previousFileInfo: FileInfo | null = null;
         this.uploadObj = new Uploader({
             asyncSettings: { saveUrl: this.parent.insertImageSettings.saveUrl, removeUrl: this.parent.insertImageSettings.removeUrl },
             dropArea: span, multiple: false, enableRtl: this.parent.enableRtl, cssClass: this.parent.getCssClass(),
@@ -1890,12 +1890,12 @@ export class Image {
             },
             success: (e: ImageSuccessEventArgs) => {
                 e.detectImageSource = ImageInputSource.Uploaded;
-                this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {
+                this.parent.trigger(events.imageUploadSuccess, e, (e: ImageSuccessEventArgs) => {
                     if (!isNOU(this.parent.insertImageSettings.path)) {
-                        const url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
-                         // Update the URL of the previously uploaded image
-                         if (!isNOU(previousURL) && (e as ProgressEventArgs).operation === 'upload') {
-                            proxy.imageRemovePost(previousURL);
+                        const url: string = this.parent.insertImageSettings.path + (e).file.name;
+                        // Update the URL of the previously uploaded image
+                        if (!isNOU(previousFileInfo) && (e as ProgressEventArgs).operation === 'upload') {
+                            this.uploadObj.remove(previousFileInfo);
                         }
                         // eslint-disable-next-line
                         const value: IImageCommandsArgs = { url: url, selection: save };
@@ -1910,7 +1910,7 @@ export class Image {
                             }
                         };
                         proxy.inputUrl.setAttribute('disabled', 'true');
-                        previousURL = url;
+                        previousFileInfo = e.file;
                     }
                     if ((e as ProgressEventArgs).operation === 'upload' && !isNOU(this.dialogObj)) {
                         (this.dialogObj.getButtons(0) as Button).element.removeAttribute('disabled');

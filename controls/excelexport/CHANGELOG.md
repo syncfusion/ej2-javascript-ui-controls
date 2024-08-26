@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 26.2.10 (2024-08-20)
+## 26.2.11 (2024-08-27)
+
+### Excel Export
+
+#### Bug Fixes
+
+- Fixed the currency format being rendered improperly in CSV export.
+
+## 25.1.35 (2024-03-15)
 
 ### Excel Export
 

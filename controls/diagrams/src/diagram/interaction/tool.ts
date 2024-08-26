@@ -1750,7 +1750,8 @@ export class ConnectorDrawingTool extends ConnectTool {
         }
         if (!this.inAction) {
             this.commandHandler.updateSelector();
-            if (args.source && args.sourceWrapper) {
+            //EJ2-899368 : Highlighters for Connector Element Draw with userhandle updated wrongly
+            if (args.source && !(args.source as SwimLaneModel).isLane && args.sourceWrapper) {
                 this.commandHandler.renderHighlighter(args, true);
             }
         }

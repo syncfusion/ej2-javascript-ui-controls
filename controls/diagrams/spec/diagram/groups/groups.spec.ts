@@ -462,6 +462,15 @@ describe('Group', () => {
             let connector: ConnectorModel = {
                 id: 'connector1', sourceID: 'node1', targetID: 'node2'
             };
+            const style = document.createElement('style');
+                const styles = `
+                .e-diagram-resize-handle {
+                    rx: 7px !important;
+                    ry: 7px !important;
+                }
+                `;
+                style.textContent = styles;
+                document.head.appendChild(style);
             let nodes: NodeModel[] = [
                 {
                     id: 'node1', width: 100, height: 100, offsetX: 100,
@@ -499,12 +508,17 @@ describe('Group', () => {
             mouseEvents.clickEvent(diagramCanvas, offsetX, offsetY);
             diagram.copy();
             diagram.paste();
+            console.log(diagram.nodes.length);
             expect(diagram.nodes.length).toBe(6);
             diagram.undo();
+            console.log(diagram.nodes.length);
             expect(diagram.nodes.length).toBe(3);
             diagram.redo();
+            console.log(diagram.nodes.length);
             expect(diagram.nodes.length).toBe(6);
+            console.log(diagram.nodes[5].offsetX);
             expect(diagram.nodes[5].offsetX).toBe(offsetX + 10);
+            console.log(diagram.nodes[5].offsetY);
             expect(diagram.nodes[5].offsetY).toBe(offsetY + 10);
             done();
         });
@@ -968,8 +982,10 @@ describe('Group', () => {
             (document.getElementById(diagram.element.id + '_editBox') as HTMLTextAreaElement).value = 'editText1';
             mouseEvents.clickEvent(diagramCanvas, 10, 10);
             var temp = document.getElementById(diagram.nodes[3].wrapper.children[1].id + '_groupElement');
+            console.log(temp.children[0].getAttribute('fill'));
             expect(temp.children[0].getAttribute('fill') === 'transparent').toBe(true);
             var shape = document.getElementById(diagram.nodes[3].wrapper.children[0].id + '_groupElement');
+            console.log(shape.children[0].getAttribute('d'))
             expect(shape.children[0].getAttribute('d') === "M50,0 L100,100 L0,100 L50,0 Z ").toBe(true);
             let left: number; let top: number;
             mouseEvents.clickEvent(diagramCanvas, 1, 1);
@@ -1376,6 +1392,15 @@ describe('Group', () => {
             }
             ele = createElement('div', { id: 'diagram_group_AddChildToGroup' });
             document.body.appendChild(ele);
+            const style = document.createElement('style');
+                const styles = `
+                .e-diagram-resize-handle {
+                    rx: 7px !important;
+                    ry: 7px !important;
+                }
+                `;
+                style.textContent = styles;
+                document.head.appendChild(style);
             let nodes: NodeModel[] = [
                 {
                     id: 'node1', width: 100, height: 100, offsetX: 180,
@@ -1403,17 +1428,31 @@ describe('Group', () => {
             let group: Node =  diagram.getObject("group") as Node;
             let oldOffsetX = group.offsetX; let oldOffsetY = group.offsetY;            
             mouseevents.clickEvent(diagramCanvas, group.offsetX + diagram.element.offsetLeft, group.offsetY + diagram.element.offsetTop);
+            console.log(diagram.selectedItems.nodes[0].id);
             expect(diagram.selectedItems.nodes[0].id == 'group').toBe(true);
             mouseevents.mouseDownEvent(diagramCanvas, group.offsetX + diagram.element.offsetLeft, group.offsetY + diagram.element.offsetTop);
             mouseevents.mouseMoveEvent(diagramCanvas, group.offsetX + diagram.element.offsetLeft+500, group.offsetY + diagram.element.offsetTop+100);
             mouseevents.mouseUpEvent(diagramCanvas, group.offsetX + diagram.element.offsetLeft+500+10, group.offsetY + diagram.element.offsetTop+100);
             let newOffsetX = group.offsetX; let newOffsetY = group.offsetY;
+            console.log(newOffsetX);
+            console.log(oldOffsetX);
+            console.log(newOffsetY);
+            console.log(oldOffsetY);
             expect(newOffsetX != oldOffsetX && newOffsetY != oldOffsetY).toBe(false);
             diagram.clearSelection();
+            console.log(diagram.selectedItems.nodes.length == 0);
             expect(diagram.selectedItems.nodes.length == 0).toBe(true);
             diagram.undo();
+            console.log(group.offsetX);
+            console.log(oldOffsetX);
+            console.log(group.offsetY);
+            console.log(oldOffsetY);
             expect(group.offsetX == oldOffsetX && group.offsetY == oldOffsetY).toBe(true);
             diagram.redo();
+            console.log(group.offsetX);
+            console.log(newOffsetX);
+            console.log(group.offsetY);
+            console.log(newOffsetY);
             expect(group.offsetX == newOffsetX && group.offsetY == newOffsetY).toBe(true);
             done();       
         });

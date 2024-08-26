@@ -75,7 +75,6 @@ describe('Freeze pane ->', () => {
 });
 describe('CR-Issues ->', () => {
     let helper: SpreadsheetHelper = new SpreadsheetHelper('spreadsheet');
-    let sheet: SheetModel;
     describe('EJ2-882771 ->', () => {
         beforeEach((done: Function) => {
             helper.initializeSpreadsheet({
@@ -87,7 +86,8 @@ describe('CR-Issues ->', () => {
             helper.invoke('destroy');
         });
         it('Cell selection is misaligned due to UI not properly rendered when deleting a column on the freeze pane and finite mode applied sheet with virtualization is set to false', (done: Function) => {
-            sheet = helper.getInstance().getActiveSheet();
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const sheet: SheetModel = spreadsheet.getActiveSheet();
             expect(sheet.paneTopLeftCell).toBe('D6');
             helper.invoke('delete', [3, 3, 'Column']);
             setTimeout((): void => {
@@ -100,6 +100,55 @@ describe('CR-Issues ->', () => {
                 td = helper.invoke('getCell', [0, 6]);
                 expect(td.textContent).toBe('Profit');
                 done();
+            });
+        });
+    });
+    describe('EJ2-902480 ->', () => {
+        beforeAll((done: Function) => {
+            helper.initializeSpreadsheet({
+                sheets: [{ ranges: [{ dataSource: defaultData }], frozenColumns: 3 }],
+                scrollSettings: { enableVirtualization: false, isFinite: true }
+            }, done);
+        });
+        afterAll(() => {
+            helper.invoke('destroy');
+        });
+        it('Selection is misaligned and row/column headers gets duplicated when adding a row/column in finite mode outside the freeze pane', (done: Function) => {
+            const spreadsheet: Spreadsheet = helper.getInstance();
+            const sheet: SheetModel = spreadsheet.getActiveSheet();
+            expect(sheet.paneTopLeftCell).toBe('D1');
+            spreadsheet.insertColumn(3, 4);
+            setTimeout((): void => {
+                expect(helper.invoke('getCell', [0, 6]).textContent).toBe('Price');
+                expect(helper.invoke('getCell', [0, 7]).textContent).toBe('Amount');
+                expect(helper.invoke('getCell', [0, 8]).textContent).toBe('Discount');
+                expect(helper.invoke('getCell', [0, 9]).textContent).toBe('Profit');
+                spreadsheet.insertRow(6, 8);
+                setTimeout((): void => {
+                    expect(helper.invoke('getCell', [9, 0]).textContent).toBe('Sneakers');
+                    expect(helper.invoke('getCell', [10, 0]).textContent).toBe('Running Shoes');
+                    expect(helper.invoke('getCell', [11, 0]).textContent).toBe('Loafers');
+                    expect(helper.invoke('getCell', [12, 0]).textContent).toBe('Cricket Shoes');
+                    helper.invoke('hideColumn', [6, 8]);
+                    setTimeout(() => {
+                        expect(sheet.columns[6].hidden).toBeTruthy();
+                        expect(sheet.columns[7].hidden).toBeTruthy();
+                        expect(sheet.columns[8].hidden).toBeTruthy();
+                        expect(helper.invoke('getCell', [0, 5]).textContent).toBe('Quantity');
+                        expect(helper.invoke('getCell', [0, 9]).textContent).toBe('Profit');
+                        helper.invoke('hideColumn', [6, 8, false]);
+                        setTimeout(() => {
+                            expect(sheet.columns[6].hidden).toBeFalsy();
+                            expect(sheet.columns[7].hidden).toBeFalsy();
+                            expect(sheet.columns[8].hidden).toBeFalsy();
+                            expect(helper.invoke('getCell', [0, 6]).textContent).toBe('Price');
+                            expect(helper.invoke('getCell', [0, 7]).textContent).toBe('Amount');
+                            expect(helper.invoke('getCell', [0, 8]).textContent).toBe('Discount');
+                            expect(helper.invoke('getCell', [0, 9]).textContent).toBe('Profit');
+                            done();
+                        });
+                    });
+                });
             });
         });
     });

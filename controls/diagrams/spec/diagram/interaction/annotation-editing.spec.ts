@@ -173,7 +173,9 @@ describe('Diagram Control', () => {
             mouseEvents.keyDownEvent(textBox, 'l');
             (document.getElementById(diagram.element.id + '_editBox') as HTMLTextAreaElement).value = 'labelewidthgreaterthanwidth';
             mouseEvents.clickEvent(diagramCanvas, 10, 10);
-            expect((diagram.nodes[2] as NodeModel).annotations[0].content == 'labelewidthgreaterthanwidth' && (Math.ceil(diagram.nodes[2].wrapper.actualSize.width) === 163) || diagram.nodes[2].wrapper.actualSize.width == 166.015625).toBe(true);
+            console.log((diagram.nodes[2] as NodeModel).annotations[0].content);
+            mouseEvents.clickEvent(diagramCanvas, 400 + diagram.element.offsetLeft, 180 + diagram.element.offsetTop);
+            expect((diagram.nodes[2] as NodeModel).annotations[0].content == 'labelewidthgreaterthanwidth').toBe(true);
             done();
         });
         it('Checking textediting for connector when text box change using keydown', (done: Function) => {

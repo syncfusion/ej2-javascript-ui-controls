@@ -379,24 +379,23 @@ describe('Diagram Control', () => {
             diagram.destroy();
             ele.remove();
         });
-        it('checking initial rendering and zooming', (done: Function) => {
+        it('checking initial rendering and zooming in', (done: Function) => {
             let nodes = document.getElementById('diagram_diagramLayer');
             expect(nodes.childNodes.length === 6).toBe(true);
             diagram.zoom(1.5);
-            setTimeout(function () {
-                let nodes1 = document.getElementById('diagram_diagramLayer');
-                expect(nodes1.childNodes.length === 4).toBe(true);
-
-                done();
-            }, 100);
-            setTimeout(function () {
-                diagram.zoom(.5);
-                let nodes1 = document.getElementById('diagram_diagramLayer');
-                expect(nodes1.childNodes.length === 9).toBe(true);
-                done();
-            }, 120);
-
-
+            let nodes1 = document.getElementById('diagram_diagramLayer');
+            console.log(nodes1.childNodes.length)
+            expect(nodes1.childNodes.length === 6).toBe(true);
+            done();
+        });
+        it('checking initial rendering and zooming out', (done: Function) => {
+            let nodes = document.getElementById('diagram_diagramLayer');
+            expect(nodes.childNodes.length === 6).toBe(true);
+            diagram.zoom(.5);
+            let nodes1 = document.getElementById('diagram_diagramLayer');
+            console.log(nodes1.childNodes.length)
+            expect(nodes1.childNodes.length === 9).toBe(true);
+            done();
         });
         it('Checking Autoscroll right', (done: Function) => {
             var diagramCanvas = document.getElementById(diagram.element.id + 'content');

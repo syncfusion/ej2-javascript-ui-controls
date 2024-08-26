@@ -897,7 +897,12 @@ export class PrintAndExport {
             ctx.drawImage(
                 img, 0, 0, bounds.width, bounds.height,
                 margin.left, margin.top, bounds.width, bounds.height);
-            image = canvas.toDataURL();
+            //898304 - exportImage function export images only in "png" format
+            if (image && options.format == 'JPG') {
+                image = canvas.toDataURL('image/jpeg')
+            } else {
+                image = canvas.toDataURL();
+            }
             if (options.printOptions) {
                 context.printImages(image, options);
                 return;
@@ -906,6 +911,10 @@ export class PrintAndExport {
             const fileName: string = options.fileName || 'diagram';
             this.canvasMultiplePage(options, canvas, margin, image, fileName);
         };
+        //898304 - exportImage function export images only in "png" format
+        if (options.format === 'SVG') {
+            this.exportDiagram(options);
+        }
     }
 
     /**

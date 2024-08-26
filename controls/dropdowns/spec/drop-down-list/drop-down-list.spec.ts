@@ -3171,7 +3171,10 @@ describe('DDList', () => {
         let ddlObj: any;
         let element: HTMLInputElement;
         let keyEvent: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down', type: 'keydown' };
+        let originalTimeout: number;
         beforeAll(() => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 3000;
             element = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
             document.body.appendChild(element);
             ddlObj = new DropDownList({
@@ -3189,7 +3192,7 @@ describe('DDList', () => {
             setTimeout(() => {
                 expect(ddlObj.inputElement.value !== '').toBe(true);
                 done()
-            }, 800);
+            }, 1100);
         });
         it('popup show after actionComplete event', (done) => {
             ddlObj.showPopup();
@@ -3200,6 +3203,7 @@ describe('DDList', () => {
             }, 800);
         });
         afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
             if (element) {
                 element.parentElement.remove();
                 document.body.innerHTML = '';

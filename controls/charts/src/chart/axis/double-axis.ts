@@ -200,7 +200,22 @@ export class Double {
                 series.yMin = this.chart.dragY - axis.visibleRange.interval;
             }
         }
-        this.findMinMax(series.yMin, series.yMax);
+        if (series.type === 'Waterfall') {
+            let cumulativeMax: number = 0;
+            let cumulativeValue: number = 0;
+            for (let i: number = 0; i < series.yData.length; i++) {
+                if (!(series.intermediateSumIndexes && series.intermediateSumIndexes.indexOf(i as number) !== -1) &&
+                    !(series.sumIndexes && series.sumIndexes.indexOf(i as number) !== -1)) {
+                    cumulativeValue += series.yData[i as number];
+                }
+                if (cumulativeValue > cumulativeMax) {
+                    cumulativeMax = cumulativeValue;
+                }
+            }
+            this.findMinMax(series.yMin, cumulativeMax);
+        } else {
+            this.findMinMax(series.yMin, series.yMax);
+        }
     }
     private findMinMax(min: Object, max: Object): void {
         if (this.min === null || this.min > min) {

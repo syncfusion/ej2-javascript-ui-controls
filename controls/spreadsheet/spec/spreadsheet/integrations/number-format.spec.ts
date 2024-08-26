@@ -1032,6 +1032,31 @@ describe('Spreadsheet Number Format Module ->', (): void => {
                 done();
             });
         });
+        describe('EJ2-898605 ->', () => {
+            beforeAll((done: Function) => {
+                model = {
+                    sheets: [{
+                        rows: [{ index: 0, cells: [{ value: '001-22-02' }, { value: '001-23-00' }, { value: '001-24-00' }, { value: '002-20-00' }, { value: '01-12-2001' }] }]
+                    }]
+                };
+                helper.initializeSpreadsheet(model, done);
+            });
+            afterAll(() => {
+                helper.invoke('destroy');
+            });
+            it('Text value is convert into date format values when cell text content contain "-" character', (done: Function) => {
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('001-22-02');
+                expect(helper.invoke('getCell', [0, 1]).textContent).toBe('001-23-00');
+                expect(helper.invoke('getCell', [0, 2]).textContent).toBe('001-24-00');
+                expect(helper.invoke('getCell', [0, 3]).textContent).toBe('002-20-00');
+                expect(helper.invoke('getCell', [0, 4]).textContent).toBe('1/12/2001');
+                expect(helper.invoke('getCell', [0, 0]).textContent).not.toBe('1/22/2002');
+                expect(helper.invoke('getCell', [0, 1]).textContent).not.toBe('1/23/2000');
+                expect(helper.invoke('getCell', [0, 2]).textContent).not.toBe('1/24/2000');
+                expect(helper.invoke('getCell', [0, 3]).textContent).not.toBe('2/20/2000');
+                done();
+            });
+        });
     });
 
     describe('Localization is not updated for placeholder and dialog content in the number format ->',(): void =>{

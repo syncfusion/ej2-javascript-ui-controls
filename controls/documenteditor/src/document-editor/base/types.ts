@@ -1329,11 +1329,21 @@ export type PasteOptions =
     'KeepTextOnly';
 
 /**
+ * Represents the available options for pasting content into a table.
+ *
+ * - 'InsertAsRows': Insert the content as new rows.
+ * - 'NestTable': Nest the content as a table within the existing table.
+ * - 'InsertAsColumns': Insert the content as new columns.
+ * - 'OverwriteCells': Overwrite the existing cells with the new content.
+ */
+export type TablePasteOptions = 'InsertAsRows' | 'NestTable' | 'InsertAsColumns' | 'OverwriteCells';
+
+/**
  * Specifies the paste options for table
  *
  * @private
  */
-export type TablePasteOptions = 'InsertAsRows' | 'NestTable' | 'InsertAsColumns' | 'OverwriteCells' | 'DefaultPaste' | 'TextOnly';
+export type PasteOptionSwitch = 'DefaultPaste' | 'TextOnly';
 
 /**
  * Specifies the layout type

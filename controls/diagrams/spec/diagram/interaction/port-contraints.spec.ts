@@ -103,7 +103,10 @@ describe('Diagram Control', () => {
             mouseEvents.mouseMoveEvent(diagramCanvas, 402.5, 230);
             mouseEvents.mouseUpEvent(diagramCanvas, 402.5, 230);
             expect(diagram.connectors.length == 3).toBe(true);
+            console.log("Gowtham - ",diagram.connectors.length, "value = 3 ");
             expect((diagram.tool & DiagramTools.SingleSelect) != 0).toBe(true);
+            console.log("Gowtham - ",diagram.tool & DiagramTools.SingleSelect , "value = != 0");
+            
             done();
         })
         it('CR -issue-fix for removing the connectors in collection change', (done: Function) => {
@@ -130,6 +133,8 @@ describe('Diagram Control', () => {
             mouseEvents.mouseMoveEvent(diagramCanvas, 402.5, 230);
             mouseEvents.mouseUpEvent(diagramCanvas, 402.5, 230);
             expect(diagram.connectors.length == 3).toBe(true);
+            console.log("Gowtham - ",diagram.connectors.length, "value = 3");
+            
             done();
         })
     })
@@ -686,7 +691,7 @@ describe('Diagram Control', () => {
 
         it('EJ2-49436 - The combination of port constraints is not working', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
-            debugger;
+            
             mouseEvents.clickEvent(diagramCanvas, 282, 158);
             mouseEvents.mouseDownEvent(diagramCanvas, 298, 148);
             mouseEvents.mouseMoveEvent(diagramCanvas, 450, 151);

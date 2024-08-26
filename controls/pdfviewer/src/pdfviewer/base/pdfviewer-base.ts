@@ -922,50 +922,69 @@ export class PdfViewerBase {
         if (this.pdfViewer.interactionMode === 'Pan') {
             this.initiatePanning();
         }
-        this.getPdfByteArray(documentData).then((pdfbytearray: any) => {
-            let isUrlLoaded: boolean = false;
-            let isValidData: boolean = true;
-            if (typeof documentData == 'string' && (documentData.startsWith('http://') || documentData.startsWith('https://') || documentData.includes('pdf;base64,'))) {
-                isUrlLoaded = true;
+        if (documentData instanceof Uint8Array) {
+            this.pdfViewer.fileByteArray = documentData;
+            if (this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.uploadedDocumentName) {
+                this.setFileName();
             }
-            const isbase64: boolean = this.loadedData.includes('pdf;base64,');
-            if (isUrlLoaded && this.clientSideRendering) {
-                this.pdfViewer.fileByteArray = pdfbytearray;
-                documentData = pdfbytearray;
-            }
-            else if (!isUrlLoaded && !documentData.includes('pdf;base64,') && this.clientSideRendering) {
-                const dataType: string = this.identifyDataType(documentData);
-                const isDataType: boolean = dataType === 'URL';
-                isValidData = isDataType || this.isValidBase64(documentData);
-                if (isValidData) {
-                    documentData = this.convertBase64(pdfbytearray);
-                    this.pdfViewer.fileByteArray = documentData;
-                }
-                else {
-                    this.invalidFilePopup();
+            if (this.clientSideRendering) {
+                if (this.pdfViewer.fileName === null) {
+                    this.setDocumentName(this.loadedData);
                 }
             }
-            else {
-                documentData = this.checkDocumentData(this.loadedData);
+            if (this.pdfViewer.downloadFileName) {
+                this.downloadFileName = this.pdfViewer.downloadFileName;
+            } else {
+                this.downloadFileName = this.pdfViewer.fileName;
             }
-            if (isValidData) {
-                if (this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.uploadedDocumentName) {
-                    this.setFileName();
+            const jsonObject: object = this.constructJsonObject(documentData, password, false);
+            this.createAjaxRequest(jsonObject, documentData, password);
+        } else {
+            this.getPdfByteArray(documentData).then((pdfbytearray: any) => {
+                let isUrlLoaded: boolean = false;
+                let isValidData: boolean = true;
+                if (typeof documentData == 'string' && (documentData.startsWith('http://') || documentData.startsWith('https://') || documentData.includes('pdf;base64,') || documentData.startsWith('blob:'))) {
+                    isUrlLoaded = true;
                 }
+                const isbase64: boolean = this.loadedData.includes('pdf;base64,');
                 if (isUrlLoaded && this.clientSideRendering) {
-                    if (this.pdfViewer.fileName === null) {
-                        this.setDocumentName(this.loadedData);
+                    this.pdfViewer.fileByteArray = pdfbytearray;
+                    documentData = pdfbytearray;
+                }
+                else if (!isUrlLoaded && !documentData.includes('pdf;base64,') && this.clientSideRendering) {
+                    const dataType: string = this.identifyDataType(documentData);
+                    const isDataType: boolean = dataType === 'URL';
+                    isValidData = isDataType || this.isValidBase64(documentData);
+                    if (isValidData) {
+                        documentData = this.convertBase64(pdfbytearray);
+                        this.pdfViewer.fileByteArray = documentData;
+                    }
+                    else {
+                        this.invalidFilePopup();
                     }
                 }
-                if (this.pdfViewer.downloadFileName) {
-                    this.downloadFileName = this.pdfViewer.downloadFileName;
-                } else {
-                    this.downloadFileName = this.pdfViewer.fileName;
+                else {
+                    documentData = this.checkDocumentData(this.loadedData);
                 }
-                const jsonObject: object = this.constructJsonObject(documentData, password, isbase64);
-                this.createAjaxRequest(jsonObject, documentData, password);
-            }
-        });
+                if (isValidData) {
+                    if (this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.uploadedDocumentName) {
+                        this.setFileName();
+                    }
+                    if (isUrlLoaded && this.clientSideRendering) {
+                        if (this.pdfViewer.fileName === null) {
+                            this.setDocumentName(this.loadedData);
+                        }
+                    }
+                    if (this.pdfViewer.downloadFileName) {
+                        this.downloadFileName = this.pdfViewer.downloadFileName;
+                    } else {
+                        this.downloadFileName = this.pdfViewer.fileName;
+                    }
+                    const jsonObject: object = this.constructJsonObject(documentData, password, isbase64);
+                    this.createAjaxRequest(jsonObject, documentData, password);
+                }
+            });
+        }
     }
 
     /**
@@ -1216,7 +1235,7 @@ export class PdfViewerBase {
      * @returns {Promise<string | null>} - promise
      */
     public getPdfByteArray(input: string): Promise<any | null> {
-        if (typeof input == 'string' && (input.startsWith('http://') || input.startsWith('https://') || input.includes('pdf;base64,'))) {
+        if (typeof input == 'string' && (input.startsWith('http://') || input.startsWith('https://') || input.includes('pdf;base64,') || input.startsWith('blob:'))) {
             return fetch(input)
                 .then((response: any) => {
                     if (response.ok) {
@@ -1497,8 +1516,9 @@ export class PdfViewerBase {
             if (data.isDigitalSignaturePresent && !isNullOrUndefined(data.digitialSignatureFile) && data.digitialSignatureFile !== '') {
                 this.pdfViewer.fileByteArray = this.convertBase64(data.digitialSignatureFile);
             }
-            else if (data.fileByteArray) {
-                this.pdfViewer.fileByteArray = this.convertBase64(data.fileByteArray);
+            else if (isNullOrUndefined(this.pdfViewer.fileByteArray) && this.pdfViewer.uploadedFileByteArray) {
+                this.pdfViewer.fileByteArray = this.pdfViewer.uploadedFileByteArray;
+                this.pdfViewer.uploadedFileByteArray = null;
             }
             else if (!this.pdfViewer.fileByteArray && !isNullOrUndefined(this.pdfViewer.toolbarModule) &&
              this.pdfViewer.toolbarModule.uploadedFile) {
@@ -3033,7 +3053,11 @@ export class PdfViewerBase {
         if (!isBlazor()) {
             const password: string = (this.passwordInput as HTMLInputElement).value;
             if (!isNullOrUndefined(password) && password.length > 0) {
-                this.pdfViewer.load(this.document, password);
+                if (this.clientSideRendering) {
+                    this.pdfViewer.load(this.pdfViewer.uploadedFileByteArray, password);
+                } else {
+                    this.pdfViewer.load(this.document, password);
+                }
             }
         }
         this.focusViewerContainer();
@@ -4188,7 +4212,11 @@ export class PdfViewerBase {
             return;
         }
         if (event.shiftKey) {
-            if (!(event.target as HTMLElement).classList.contains("e-pv-formfield-input") && (!(event.target as HTMLElement).classList.contains("e-textbox")) && (!(event.target as HTMLElement).classList.contains("e-pdfviewer-formFields"))) {
+            if (!(event.target as HTMLElement).classList.contains('e-pv-formfield-input') &&
+                (!(event.target as HTMLElement).classList.contains('e-textbox')) &&
+                (!(event.target as HTMLElement).classList.contains('e-pdfviewer-formFields')) &&
+                (!(event.target as HTMLElement).classList.contains('e-pv-formfield-textarea')) &&
+                (event.target as HTMLElement).id !== this.pdfViewer.element.id + '_search_input') {
                 switch (event.keyCode) {
                     case 72: { //h key
                         event.preventDefault();

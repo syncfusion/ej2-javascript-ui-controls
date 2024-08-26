@@ -880,6 +880,9 @@ export function pasteHandler(parent: IFileManager): void {
     parent.isDragDrop = false;
     if (parent.selectedNodes.length !== 0 && parent.enablePaste) {
         const path: string = (parent.folderPath === '') ? parent.path : parent.folderPath;
+        if (parent.activeModule === 'navigationpane' && !parent.selectedNodes[0].includes('/')) {
+            parent.targetPath = getValue('filterPath', parent.actionRecords[0]).replace(/\\/g, '/');
+        }
         const subFolder: boolean = validateSubFolder(parent, <{ [key: string]: Object; }[]>parent.actionRecords, path, parent.path);
         if (!subFolder) {
             if ((parent.fileAction === 'move' && parent.targetPath !== path) || parent.fileAction === 'copy') {

@@ -14,6 +14,7 @@ import { AutoFilters } from './auto-filters';
 /**
  * Workbook class
  */
+/* eslint-disable */
 export class Workbook {
     private mArchive: ZipArchive;
     private sharedString: string[];

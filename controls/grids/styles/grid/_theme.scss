@@ -516,6 +516,12 @@
       color: $grid-row-selection-color;
     }
 
+    & .e-cloneproperties.e-draganddrop .e-row .e-icon-rowdragicon::before {
+      @if $grid-skin == 'fluent2' {
+        color: $grid-row-selection-color;
+      }
+    }
+
     td.e-active {
       background: $grid-row-selection-bg-color;
     }

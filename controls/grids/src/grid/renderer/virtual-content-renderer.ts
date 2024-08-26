@@ -688,6 +688,19 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             const xAxis: boolean = current.axis === 'X'; const top: number = this.prevInfo.offsets ? this.prevInfo.offsets.top : null;
             const height: number = this.content.getBoundingClientRect().height;
             let x: number = this.getColumnOffset(xAxis ? this.vgenerator.getColumnIndexes()[0] - 1 : this.prevInfo.columnIndexes[0] - 1);
+            if (this.parent.isFrozenGrid() && this.parent.enableColumnVirtualization && this.currentInfo &&
+                this.currentInfo.columnIndexes) {
+                const cBlock: number = this.currentInfo.columnIndexes[0] - 1;
+                let frzLeftWidth: number = 0;
+                this.parent.getColumns().filter((col: Column) => {
+                    if (col.visible && col.freeze === 'Left') {
+                        frzLeftWidth += parseInt(col.width.toString(), 10);
+                    }
+                });
+                if (cBlock > this.parent.getVisibleFrozenLeftCount()) {
+                    x = x - frzLeftWidth;
+                }
+            }
             if (xAxis) {
                 const idx: number = Object.keys(this.vgenerator.cOffsets).length - this.prevInfo.columnIndexes.length;
                 const maxLeft: number = this.vgenerator.cOffsets[idx - 1];

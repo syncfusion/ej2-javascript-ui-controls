@@ -1186,9 +1186,9 @@ describe('SourcePointChange and TargetPointChange Event on node dragging', () =>
             isTargetPointChange = true;
             console.log("targetPointChange");
         };
-        mouseEvents.clickEvent(diagramCanvas, 350, 150);
-
+        mouseEvents.clickEvent(diagramCanvas, 300, 100);
         mouseEvents.dragAndDropEvent(diagramCanvas, 300, 100, 500, 600);
+        console.log(isTargetPointChange);
         expect(isTargetPointChange).toBe(true);
         done();
     }); 

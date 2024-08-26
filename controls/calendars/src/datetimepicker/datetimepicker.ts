@@ -71,6 +71,7 @@ export class DateTimePicker extends DatePicker {
     private containerStyle: ClientRect;
     private popupObject: Popup;
     protected timeModal: HTMLElement;
+    protected modelWrapper: HTMLElement;
     private isNavigate: boolean;
     protected isPreventBlur: boolean;
     private timeValue: string;
@@ -1047,11 +1048,6 @@ export class DateTimePicker extends DatePicker {
                 if (Browser.isDevice && this.fullScreenMode){
                     this.dateTimeWrapper.style.left = '0px';
                 }
-                if (Browser.isDevice) {
-                    const dlgOverlay: HTMLElement = this.createElement('div', { className: 'e-dlg-overlay'});
-                    dlgOverlay.style.zIndex = (this.zIndex - 1).toString();
-                    this.timeModal.appendChild(dlgOverlay);
-                }
 
             }
         }
@@ -1118,12 +1114,12 @@ export class DateTimePicker extends DatePicker {
             document.body.appendChild(this.timeModal);
         }
         if(Browser.isDevice){
-            const modelWrapper: HTMLElement = createElement('div', { className: 'e-datetime-mob-popup-wrap' });
-            modelWrapper.appendChild(this.dateTimeWrapper);
+            this.modelWrapper = createElement('div', { className: 'e-datetime-mob-popup-wrap' });
+            this.modelWrapper.appendChild(this.dateTimeWrapper);
             const dlgOverlay: HTMLElement = createElement('div', { className: 'e-dlg-overlay'});
             dlgOverlay.style.zIndex = (this.zIndex - 1).toString();
-            modelWrapper.appendChild(dlgOverlay);
-            document.body.appendChild(modelWrapper);
+            this.modelWrapper.appendChild(dlgOverlay);
+            document.body.appendChild(this.modelWrapper);
         }
         const offset: number = 4;
         this.popupObject = new Popup(this.dateTimeWrapper as HTMLElement, {
@@ -1154,6 +1150,9 @@ export class DateTimePicker extends DatePicker {
                 remove(this.popupObject.element);
                 this.popupObject.destroy();
                 this.dateTimeWrapper.innerHTML = '';
+                if(this.modelWrapper){
+                    remove(this.modelWrapper); 
+                }
                 this.listWrapper = this.dateTimeWrapper = undefined;
                 if (this.inputEvent) {
                     this.inputEvent.destroy();

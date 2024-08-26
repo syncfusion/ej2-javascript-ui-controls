@@ -15057,6 +15057,30 @@ export let CR899690: object[] = [
                 Predecessor: "2"
             }
         ]
+    },
+    {
+        TaskID: 4,
+        TaskName: 'Final Product1',
+        StartDate: new Date('04/04/2024'),
+        EndDate: new Date('04/05/2024'),
+        Duration: 1,
+        subtasks: [
+            {
+                TaskID: 5,
+                TaskName: 'Final Product2',
+                StartDate: new Date('04/04/2024'),
+                EndDate: new Date('04/05/2024'),
+                Duration: 0.8
+            },
+            {
+                TaskID: 6,
+                TaskName: 'Final Product3',
+                StartDate: new Date('04/04/2024'),
+                EndDate: new Date('04/05/2024'),
+                Duration: 0.5,
+                Predecessor: "5"
+            }
+        ]
     }
 ];
 export const adventProFont1: string =

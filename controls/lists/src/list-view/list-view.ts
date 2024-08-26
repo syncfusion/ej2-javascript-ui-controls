@@ -602,6 +602,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 }
                 break;
             case 'dataSource':
+                this.previousScrollTop = this.element.scrollTop;
                 if (this.enableVirtualization) {
                     this.virtualizationModule.reRenderUiVirtualization();
                 } else {
@@ -1345,7 +1346,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         if (!isNullOrUndefined(this.scroll)) {
             EventHandler.remove(this.element, 'scroll', this.onListScroll);
         }
-        if (this.touchModule) this.touchModule.destroy();
+        if (this.touchModule) { this.touchModule.destroy(); }
         this.touchModule = null;
     }
 
@@ -2509,7 +2510,6 @@ export interface ListSelectedItem {
  * ```props
  * Top:- The scrollbar is moved upwards.
  * Bottom:- The scrollbar is moved downwards.
-
  * ```
  */
 export type direction = 'Top' | 'Bottom';

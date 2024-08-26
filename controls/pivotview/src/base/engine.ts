@@ -2876,7 +2876,8 @@ export class PivotEngine {
                 return field.name === childrens.id as string;
             });
             if (!isNullOrUndefined(groupField) && groupField.length > 0) {
-                isNumberGroupSorting = groupField[0].type === 'Number' && childrens.type === 'string';
+                isNumberGroupSorting = groupField[0].type.toLocaleLowerCase() === 'number' &&
+                    childrens.type.toLocaleLowerCase() === 'string';
             }
         }
         if (membersInfo && membersInfo.length > 0) {

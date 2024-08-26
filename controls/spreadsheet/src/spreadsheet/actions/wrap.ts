@@ -72,7 +72,8 @@ export class WrapText {
                         } else {
                             ele.classList.remove(WRAPTEXT); lineHgt = null;
                         }
-                        if (isCustomHgt || isMerge || row.height < 20) { // Row height less than default row height(20)
+                        if (isCustomHgt || isMerge || row.height < 20 ||
+                            (!isNullOrUndefined(args.sheet.standardHeight) && args.sheet.standardHeight < 20)) { // Row height less than default row height(20)
                             this.updateWrapCell(i, j, args.sheet, ele);
                         }
                         if (Browser.isIE) {

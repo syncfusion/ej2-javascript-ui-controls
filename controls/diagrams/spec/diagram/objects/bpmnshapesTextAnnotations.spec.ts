@@ -97,7 +97,6 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking annotation dragging in the oppsite direction', (done: Function) => {
-
             diagram.clearSelection();
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 270, 140);
@@ -105,6 +104,7 @@ describe('Diagram Control', () => {
             let node2 = diagram.selectedItems.nodes[0];
             console.log('offsetX',Math.round(node2.offsetX));
             console.log('offsetY',Math.round(node2.offsetY));
+
             expect(Math.round(node2.offsetX)=== 250 && Math.round(node2.offsetY) > 250).toBe(true);
             done();
         });
@@ -360,10 +360,13 @@ describe('Diagram Control', () => {
                     events.mouseMoveEvent(diagram.element, 600, 100 - 5 - diagram.element.offsetTop, false, false);
                     events.mouseUpEvent(diagram.element, 600, 100 - 10 - diagram.element.offsetTop, false, false);
                     events.clickEvent(diagram.element, 600, 100 - 10 - diagram.element.offsetTop, false, false);
+                    console.log(diagram.nodes.length);
                     expect(diagram.nodes.length === 1).toBe(true);
                     diagram.undo();
+                    console.log(diagram.nodes.length);
                     expect(diagram.nodes.length === 0).toBe(true);
                     diagram.redo();
+                    console.log(diagram.nodes.length);
                     expect(diagram.nodes.length === 1).toBe(true);
                     done();
                 }, 1000);

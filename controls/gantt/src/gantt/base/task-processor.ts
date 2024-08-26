@@ -1326,10 +1326,10 @@ export class TaskProcessor extends DateProcessor {
         }
         if (!isNullOrUndefined(sDate)) {
             let isDecimalDuration: boolean;
-            if (ganttProp.duration < 1 && ganttProp.durationUnit === 'day') {
-                isDecimalDuration = ganttProp.duration < 1 ? true : false;
+            if (ganttProp.duration && /^\d+\.\d+$/.test(ganttProp.duration.toString()) && ganttProp.durationUnit === 'day') {
+                isDecimalDuration = /^\d+\.\d+$/.test(ganttProp.duration.toString()) ? true : false;
             }
-            left = this.getTaskLeft(sDate, milestone, false, isDecimalDuration, ganttProp);
+            left = this.getTaskLeft(sDate, milestone, false, isDecimalDuration);
         }
         return left;
     }
@@ -1483,7 +1483,7 @@ export class TaskProcessor extends DateProcessor {
         const dateDiff: number = modifiedsDate.getTime() - sDate.getTime();
         let dayStartTime: number;
         let dayEndTime: number;
-        if (!isNullOrUndefined(ganttData) && (ganttData.durationUnit === 'minute' && ganttData.duration < (hour * 60)) || !isNullOrUndefined(ganttData) && ganttData.durationUnit === 'day' && ganttData.duration < 1) {
+        if (!isNullOrUndefined(ganttData) && (ganttData.durationUnit === 'minute' && ganttData.duration < (hour * 60)) || !isNullOrUndefined(ganttData) && ganttData.durationUnit === 'day' && /^\d+\.\d+$/.test(ganttData.duration.toString())) {
             if (tierMode === 'Day') {
                 if (this.parent.weekWorkingTime.length > 0) {
                     dayStartTime = this.parent['getStartTime'](sDate);
@@ -1514,7 +1514,14 @@ export class TaskProcessor extends DateProcessor {
             }
             else {
                 if (isValid) {
-                    return ((this.getTimeDifference(sDate, eDate, true) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
+                    if (ganttData.durationUnit === 'day' && /^\d+\.\d+$/.test(ganttData.duration.toString()) && this.parent.timelineModule.bottomTier === 'Day') {
+                        const holidaysCount: number = this.parent.holidays && this.parent.holidays.length > 0 ? this.getHolidaysCount(sDate, eDate) : 0;
+                        const weekendCount: number = !this.parent.includeWeekend ? this.getWeekendCount(sDate, eDate) : 0;
+                        return ((holidaysCount + weekendCount + ganttData.duration) * this.parent.perDayWidth);
+                    }
+                    else {
+                        return ((this.getTimeDifference(sDate, eDate, true) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
+                    }
                 }
                 else {
                     if (ganttData.durationUnit === 'day' && ganttData.duration < 1) {
@@ -1572,7 +1579,7 @@ export class TaskProcessor extends DateProcessor {
             }
         }
     }
-    private getDSTTransitions(year:number) {
+    public getDSTTransitions(year:number) {
         // Helper function to find the nth weekday of a month
         function findNthWeekday(year: number, month: number, dayOfWeek: number, n: number) {
             const firstDayOfMonth = new Date(year, month, 1);
@@ -1613,7 +1620,7 @@ export class TaskProcessor extends DateProcessor {
      * @returns {number} .
      * @private
      */
-    public getTaskLeft(startDate: Date, isMilestone: boolean, isFromTimelineVirtulization?: boolean, isDurationDecimal?: boolean, ganttProp?: ITaskData): number {
+    public getTaskLeft(startDate: Date, isMilestone: boolean, isFromTimelineVirtulization?: boolean, isDurationDecimal?: boolean): number {
         const date: Date = new Date(startDate.getTime());
         let tierMode: string = this.parent.timelineModule.bottomTier !== 'None' ? this.parent.timelineModule.bottomTier :
             this.parent.timelineModule.topTier;
@@ -1666,18 +1673,29 @@ export class TaskProcessor extends DateProcessor {
                 leftValue = (date.getTime() - newTimelineStartDate.getTime()) / (1000 * 60 * 60 * 24) * this.parent.perDayWidth;
             }
             else {
-                if (this.getSecondsInDecimal(date) !== this.parent.defaultStartTime && this.getSecondsInDecimal(date) !== 0 && isDurationDecimal && ganttProp && ganttProp.durationUnit === 'day' && !this.parent.timelineModule.isZoomToFit && this.parent.timelineModule.bottomTier === 'Day') {
-                    var newDate = new Date(startDate.getTime());
-                    var setStartDate = new Date(newDate.setHours(24, 0, 0, 0));
-                    var taskOverallWidth = ((this.getTimeDifference(timelineStartDate, setStartDate) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
-                    var taskDateWidth = ganttProp.duration * this.parent.perDayWidth;
-                    leftValue = taskOverallWidth - taskDateWidth;
+                let width: number;
+                if (this.parent.timelineModule.bottomTier === 'Day' && isDurationDecimal) {
+                    if (this.getSecondsInDecimal(date) !== this.parent.defaultStartTime) {
+                        let newDate: Date = new Date(startDate.getTime());
+                        let setStartDate = new Date(newDate.setHours(0, 0, 0, 0));
+                        let duration = this.getDuration(setStartDate, startDate, 'day', true, false);
+                        width = duration * this.parent.perDayWidth;
+                        date.setHours(0, 0, 0, 0);
+                    }
+                    leftValue = (date.getTime() - timelineStartDate.getTime()) / (1000 * 60 * 60 * 24) * this.parent.perDayWidth;
+                    if (this.getSecondsInDecimal(date) !== this.parent.defaultStartTime && this.parent.timelineModule.bottomTier === 'Day') {
+                        leftValue += width;
+                    }
                 }
                 else {
-                    leftValue = ((date.getTime() - timelineStartDate.getTime()) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
+                    leftValue = (date.getTime() - timelineStartDate.getTime()) / (1000 * 60 * 60 * 24) * this.parent.perDayWidth;
                 }
+                
             }
-            if (this.parent.dayWorkingTime[0]['properties'].from > transitions['dstStart'].getHours() && tierMode === 'Day' && hasDST) {
+            const timelineStartTime: number = timelineStartDate.getTime();
+            const dstStartTime: number = transitions['dstStart'].getTime();
+            const isBeforeOrAtDSTStart: boolean = timelineStartTime <= dstStartTime;
+            if (this.parent.dayWorkingTime[0]['properties'].from > transitions['dstStart'].getHours() && isBeforeOrAtDSTStart && tierMode === 'Day' && hasDST && this.getSecondsInDecimal(date) === this.parent.defaultStartTime) {
                 if ((leftValue % this.parent.perDayWidth) != 0) {
                     var leftDifference = this.parent.perDayWidth - (leftValue % this.parent.perDayWidth);
                     leftValue = leftValue + leftDifference;
@@ -1691,7 +1709,7 @@ export class TaskProcessor extends DateProcessor {
                 tierMode = topTier['unit'];
                 countValue = topTier['count'];
             }
-            if (countValue === 1 && tierMode === 'Hour' && startDate >= transitions['dstStart'] && hasDST) {
+            if (countValue === 1 && tierMode === 'Hour' && startDate >= transitions['dstStart'] && isBeforeOrAtDSTStart && hasDST) {
                 leftValue = leftValue - (this.parent.perDayWidth / 24);
             }
             return leftValue;

@@ -593,6 +593,8 @@ export interface IGrid extends Component<HTMLElement> {
 
     isPersistSelection?: boolean;
 
+    pageRequireRefresh?: boolean;
+
     localeObj?: L10n;
 
     isManualRefresh?: boolean;

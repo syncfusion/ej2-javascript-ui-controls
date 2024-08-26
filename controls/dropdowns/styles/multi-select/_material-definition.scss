@@ -88,7 +88,7 @@ $ddl-sel-chip-close-mobile-left: 12px !default;
 $ddl-chip-sel-mobile-close-height: 40px !default;
 $ddl-chip-sel-mobile-close-margin: 0 0 0 0 !default;
 $ddl-input-text-indent: 0 !default;
-$ddl-input-placeholder-padding: 0 !default;
+$ddl-input-placeholder-padding: 4px 0 4px 0 !default;
 $ddl-rtl-chip-sel-close-left: -12px !default;
 $ddl-popup-active-focus-bg-color: $grey-300 !default;
 $ddl-popup-active-focus-font-color: $accent !default;
@@ -229,6 +229,11 @@ $filled-multiselect-chip-hover-bg-color: darken($grey-300, 7%) !default;
 
   .e-small .e-multiselect.e-input-group.e-checkbox .e-multi-select-wrapper input[type = 'text'],
   .e-small.e-multiselect.e-input-group.e-checkbox .e-multi-select-wrapper input[type = 'text'] {
+    padding: 0;
+  }
+
+  .e-multiselect.e-input-group .e-multi-select-wrapper .e-multiselect-box input[type = 'text'],
+  .e-multiselect.e-input-group.e-input-focus .e-multi-select-wrapper .e-searcher:not(.e-zero-size) input[type = 'text'] {
     padding: 0;
   }
 }

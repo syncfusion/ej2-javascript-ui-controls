@@ -251,6 +251,34 @@ describe('DropDownTree control', () => {
             expect(ddtreeObj.text).not.toBe('Australia');
             expect(ddtreeObj.text).toBe('India');
         });
+        it('value ES-901525 checkbox', () => {
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild" }, showCheckBox: true }, '#ddtree');
+            ddtreeObj.value = ['7', '8'];
+            ddtreeObj.dataBind();
+            ddtreeObj.showPopup();
+            expect(document.querySelectorAll('.e-check').length).toBe(2);
+            let ele = ddtreeObj.element;
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            ele.dispatchEvent(e);
+            var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            ele.dispatchEvent(e);
+            var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            ele.dispatchEvent(e);
+            let checkEle: Element[] = <Element[] & NodeListOf<Element>>ddtreeObj.treeObj.element.querySelectorAll('li');
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+            var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+            var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+            checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+            expect(checkEle[0].getAttribute('aria-checked')).toBe('true');
+            ddtreeObj.showPopup();
+            expect(document.querySelectorAll('.e-check').length).toBe(3);
+            ddtreeObj.value = ['7', '8'];
+            ddtreeObj.dataBind();
+            ddtreeObj.showPopup();
+            expect(document.querySelectorAll('.e-check').length).toBe(2);
+        });
 
         /**
          * autocheck

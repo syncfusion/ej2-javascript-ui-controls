@@ -534,31 +534,20 @@ export class CheckBoxFilterBase {
             defaults.predicate = this.isMenuNotEqual ? 'or' : 'and';
             defaults.operator = optr;
         }
-        let value: string;
         let val: string;
         let length: number;
-        let fObj: PredicateModel;
         let coll: PredicateModel[] = [];
         if ((checked.length !== this.itemsCnt || (searchInput && searchInput.value && searchInput.value !== ''))
         || this.infiniteRenderMod) {
             if (!this.infiniteRenderMod) {
-                for (let i: number = 0; i < checked.length; i++) {
-                    value = this.values[parentsUntil(checked[parseInt(i.toString(), 10)], 'e-ftrchk').getAttribute('uid')];
-                    fObj = extend({}, { value: value }, defaults) as {
-                        field: string, predicate: string, operator: string, matchCase: boolean, ignoreAccent: boolean, value: string
-                    };
-                    if (value && !value.toString().length) {
-                        fObj.operator = isNotEqual ? 'notequal' : 'equal';
-                    }
-                    if (value === '' || isNullOrUndefined(value)) {
-                        coll = coll.concat(CheckBoxFilterBase.generateNullValuePredicates(defaults));
-                    } else {
-                        coll.push(fObj);
-                    }
-                    this.notifyFilterPrevEvent(fObj);
-                }
-            } else if (this.infiniteRenderMod) {
+                coll = this.predicateIterate(checked, defaults, isNotEqual);
+            } else if (this.infiniteRenderMod &&
+                (!this.infiniteSearchPred || (this.infiniteSearchPred && !this.infiniteSearchPred.isComplex))) {
                 this.infiniteFltrBtnHandler(coll);
+            } else {
+                if (this.infiniteSearchPred.isComplex) {
+                    coll = this.predicateIterate(checked, defaults, isNotEqual);
+                }
             }
             if ((this.options.type === 'date' || this.options.type === 'datetime') && check.length) {
                 length = check.length - 1;
@@ -605,6 +594,28 @@ export class CheckBoxFilterBase {
                 this.clearFilter();
             }
         }
+    }
+
+    private predicateIterate(checkBoxChecked: Element[], defaults: object, isNotEqual: boolean): PredicateModel[] {
+        let value: string;
+        let fObj: PredicateModel;
+        let coll: PredicateModel[] = [];
+        for (let i: number = 0; i < checkBoxChecked.length; i++) {
+            value = this.values[parentsUntil(checkBoxChecked[parseInt(i.toString(), 10)], 'e-ftrchk').getAttribute('uid')];
+            fObj = extend({}, { value: value }, defaults) as {
+                field: string, predicate: string, operator: string, matchCase: boolean, ignoreAccent: boolean, value: string
+            };
+            if (value && !value.toString().length) {
+                fObj.operator = isNotEqual ? 'notequal' : 'equal';
+            }
+            if (value === '' || isNullOrUndefined(value)) {
+                coll = coll.concat(CheckBoxFilterBase.generateNullValuePredicates(defaults));
+            } else {
+                coll.push(fObj);
+            }
+            this.notifyFilterPrevEvent(fObj);
+        }
+        return coll;
     }
 
     private infiniteFltrBtnHandler(coll: PredicateModel[]): PredicateModel[] | void {

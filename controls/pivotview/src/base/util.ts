@@ -1101,17 +1101,15 @@ export class PivotUtil {
         sortMembersOrder: IAxisSet[], sortOrder: string, type: string | boolean, isNumberGroupSorting?: boolean
     ): IAxisSet[] {
         if (isNumberGroupSorting) {
-            sortMembersOrder = sortOrder === 'Ascending' ? (sortMembersOrder.sort(function (a: IAxisSet, b: IAxisSet): number {
-                return (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : (a.actualText === 'Out of Range') ? 1 :
-                    (b.actualText === 'Out of Range') ? -1 : (a.actualText as string).localeCompare(b.actualText as string, undefined, {
-                        numeric: true, sensitivity: 'base'
-                    });
-            })) : sortOrder === 'Descending' ? (sortMembersOrder.sort(function (a: IAxisSet, b: IAxisSet): number {
-                return (a.actualText === 'Grand Total' || b.actualText === 'Grand Total') ? 0 : (a.actualText === 'Out of Range') ? 1 :
-                    (b.actualText === 'Out of Range') ? -1 : (b.actualText as string).localeCompare(a.actualText as string, undefined, {
-                        numeric: true, sensitivity: 'base'
-                    });
-            })) : sortMembersOrder;
+            sortMembersOrder = sortMembersOrder.sort((a: IAxisSet, b: IAxisSet): number => {
+                const aText: string = a.actualText as string;
+                const bText: string = b.actualText as string;
+                return (aText === 'Grand Total' || bText === 'Grand Total') ? 0 : (aText === 'Out of Range') ? 1 :
+                    (bText === 'Out of Range') ? -1 : !isNaN(parseFloat(aText)) && !isNaN(parseFloat(bText)) ?
+                        sortOrder === 'Ascending' ? parseFloat(aText) - parseFloat(bText) : parseFloat(bText) - parseFloat(aText) :
+                        sortOrder === 'Ascending' ? aText.localeCompare(bText, undefined, { numeric: true, sensitivity: 'base' }) :
+                            bText.localeCompare(aText, undefined, { numeric: true, sensitivity: 'base' });
+            });
         } else if (type === 'datetime' || type === 'date' || type === 'time') {
             sortMembersOrder = sortOrder === 'Ascending' ?
                 (sortMembersOrder.sort((a: IAxisSet, b: IAxisSet): number => (a.dateText > b.dateText) ? 1 :

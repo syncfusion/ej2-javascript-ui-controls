@@ -359,13 +359,21 @@ export class CheckBoxSelection {
     private setSearchBoxPosition(): void {
         const searchBoxHeight: number = this.filterInput.parentElement.getBoundingClientRect().height;
         let selectAllHeight: number = 0;
+        let footerHeight: number = 0;
+        let headerHeight: number = 0;
         if (this.checkAllParent) {
             selectAllHeight = this.checkAllParent.getBoundingClientRect().height;
         }
+        if (this.parent.header) {
+            headerHeight = this.parent.header.getBoundingClientRect().height;
+        }
+        if (this.parent.footer) {
+            footerHeight = this.parent.footer.getBoundingClientRect().height;
+        }
         this.parent.popupObj.element.style.maxHeight = '100%';
         this.parent.popupObj.element.style.width = '100%';
-        this.parent.list.style.maxHeight = (window.innerHeight - searchBoxHeight - selectAllHeight) + 'px';
-        this.parent.list.style.height = (window.innerHeight - searchBoxHeight - selectAllHeight) + 'px';
+        this.parent.list.style.maxHeight = (window.innerHeight - searchBoxHeight - selectAllHeight - headerHeight - footerHeight) + 'px';
+        this.parent.list.style.height = (window.innerHeight - searchBoxHeight - selectAllHeight - headerHeight - footerHeight) + 'px';
         const clearElement: Element = this.filterInput.parentElement.querySelector('.' + clearIcon);
         detach(this.filterInput);
         clearElement.parentElement.insertBefore(this.filterInput, clearElement);

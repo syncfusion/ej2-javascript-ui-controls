@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## 26.2.11 (2024-08-27)
+
+### Uploader
+
+- `#FB60158` - Fixed an issue where the ActionComplete event was not triggered after a file upload.
+
 ## 26.2.10 (2024-08-20)
 
 ### MaskedTextBox

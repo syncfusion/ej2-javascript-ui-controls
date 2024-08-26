@@ -9,6 +9,7 @@
 #### Bug fixes
 
 - `#I607401` - An issue where the events are not aligned in correct position when Scheduler height changed dynamically has been fixed.
+- `#I617009` - An issue where the drag clone position not updated based on mouse cursor position in the vertical views has been fixed.
 
 ## 26.2.4 (2024-07-24)
 

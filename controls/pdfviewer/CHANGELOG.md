@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 26.2.11 (2024-08-27)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I614031` - Now, able to insert capital `H` and `V` in multiline textbox fields in PDF Viewer when holding `SHIFT` key.
+- `#I622939` - Now, able to insert capital `H` and `V` in search text in PDF Viewer when holding `SHIFT` key.
+- `#I619818` - Now, the annotation select event is triggered in provided document.
+- `#I624012` - Now, the font size of the type signature is correctly preserved in the downloaded document.
+- `#I618143` - Now, the password-protected PDF document is properly exported to an image using the server library.
+
 ## 26.2.10 (2024-08-20)
 
 ### PDF Viewer

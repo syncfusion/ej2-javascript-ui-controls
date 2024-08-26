@@ -41,6 +41,7 @@ export interface IMulitSelect extends Component<HTMLElement> {
     headerTemplate?: string
     mobFilter?: boolean
     header?: HTMLElement
+    footer?: HTMLElement
     updateDelimView?(): void
     updateValueState?(event?: KeyboardEventArgs | MouseEvent, newVal?: [string | number], oldVal?: [string | number]): void
     tempValues?: [number | string]

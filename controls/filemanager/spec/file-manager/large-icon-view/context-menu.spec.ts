@@ -6,7 +6,7 @@ import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane
 import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement, Browser, EventHandler, isNullOrUndefined, select } from '@syncfusion/ej2-base';
-import { toolbarItems, toolbarItems1, data1, data2, folderRename, dataSortbySize, singleSelectionDetails, rename, data3, data4, data5, dataDelete, data6, data7, data8, data9, data12, data14, UploadData, data15, data11, accessData1, accessDetails1, accessDetails2, accessData2, data18, accessSearchData, data14Rename } from '../data';
+import { toolbarItems, toolbarItems1, data1, data2, folderRename, dataSortbySize, singleSelectionDetails, rename, data3, data4, data5, dataDelete, data6, data7, data8, data9, data12, data14, UploadData, data15, data11, accessData1, accessDetails1, accessDetails2, accessData2, data18, accessSearchData, data14Rename, folderCopySuccess, folderCopyRead } from '../data';
 import { FileOpenEventArgs } from '../../../src/file-manager/base/interface';
 import { MenuOpenEventArgs, MenuClickEventArgs } from '../../../src';
 
@@ -78,7 +78,7 @@ describe('FileManager control LargeIcons view', () => {
                 expect(feObj.path).toBe('/');
                 done();
             }, 500);
-        })
+        });
         it('Navigation pane right clik folder navigation cancel testing', (done: Function) => {
             let restrict: any = true;
             feObj.fileOpen = function(args: FileOpenEventArgs){
@@ -104,7 +104,49 @@ describe('FileManager control LargeIcons view', () => {
                 expect(feObj.path).toBe('/Documents/');
                 done();
             }, 500);
-        })
+        });
+        it('Navigation pane right clik folder copy and paste testing', (done: Function) => {
+            let treeObj = feObj.navigationpaneModule.treeObj;
+            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>treeObj.element.querySelectorAll('li');
+            setTimeout(function () {
+                li = <Element[] & NodeListOf<HTMLLIElement>>treeObj.element.querySelectorAll('li');
+                mouseEventArgs.originalEvent.target = li[1].querySelector('.e-fullrow');
+                mouseEventArgs.originalEvent.which = 3;
+                feObj.navigationpaneModule.treeObj.clickHandler(mouseEventArgs);
+                let evt = document.createEvent('MouseEvents');
+                evt.initEvent('contextmenu', true, true);
+                li[1].dispatchEvent(evt);
+                feObj.contextmenuModule.contextMenu.dataBind();
+                feObj.navigationpaneModule.treeObj.dataBind();
+                let el: any = document.getElementById(feObj.element.id + '_contextmenu');
+                let sourceElement: any = el.ej2_instances[0];
+                expect(feObj.path).toBe('/');
+                sourceElement.element.querySelectorAll('li')[3].click();
+                mouseEventArgs.originalEvent.target = li[3].querySelector('.e-fullrow');
+                mouseEventArgs.originalEvent.which = 3;
+                feObj.navigationpaneModule.treeObj.clickHandler(mouseEventArgs);
+                evt.initEvent('contextmenu', true, true);
+                li[3].dispatchEvent(evt);
+                feObj.contextmenuModule.contextMenu.dataBind();
+                feObj.navigationpaneModule.treeObj.dataBind();
+                expect(feObj.path).toBe('/');
+                sourceElement.element.querySelectorAll('li')[4].click();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(folderCopySuccess)
+                });
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(folderCopyRead)
+                });
+                setTimeout(() => {
+                    expect(feObj.path).toBe('/Food/');
+                    done();
+                }, 500);
+            }, 500);
+        });
     })
     describe('context menu testing', () => {
         let i: number = 0;

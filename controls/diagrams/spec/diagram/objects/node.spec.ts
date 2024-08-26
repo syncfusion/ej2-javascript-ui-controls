@@ -12,7 +12,7 @@ import { DiagramNativeElement } from '../../../src/diagram/core/elements/native-
 import { TextElement } from '../../../src/diagram/core/elements/text-element';
 import { Native, NodeConstraints, accessibilityElement, HtmlModel, Ruler, ComplexHierarchicalTree } from '../../../src/index';
 import { MouseEvents } from '../interaction/mouseevents.spec';
-import { SnapConstraints, PointPort, Annotation, IconShapes, Decorator, PortVisibility, ConnectorModel, PointModel, PortConstraints, AnnotationConstraints, ConnectorConstraints, LayoutModel, randomId, Thickness, DataBinding, DiagramConstraints } from '../../../src/diagram/index';
+import { SnapConstraints, PointPort, Annotation, IconShapes, Decorator, PortVisibility, ConnectorModel, PointModel, PortConstraints, AnnotationConstraints, ConnectorConstraints, LayoutModel, randomId, Thickness, DataBinding, DiagramConstraints, UserHandleModel } from '../../../src/diagram/index';
 import {  IScrollChangeEventArgs, IBlazorScrollChangeEventArgs, DiagramTools, State } from '../../../src/diagram/index';
 
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
@@ -2462,5 +2462,128 @@ describe('Drawing connectors from a source port to target port do not attach to 
         mouseEvents.mouseUpEvent(diagramCanvas, 458, 208);
         expect(diagram.nodes[0].ports[0].outEdges.length === 1).toBe(true);
          done();
+    });
+});
+describe('Restricting wrongly updated highlighter', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagramHigh' });
+        document.body.appendChild(ele);
+
+        let nodes: NodeModel[] = [
+            {
+              id: 'pool',
+              shape: {
+                type: 'SwimLane',
+                orientation: 'Horizontal',
+                isLane: true,
+                lanes: [
+                  {
+                    id: 'lane-1',  
+                height: 200,
+                children: [
+                  
+                    {
+                    id:"ellipse-1",
+                    // Position of the node
+                    offsetX: 150,
+                    offsetY: 250,
+                    // Size of the node
+                    width: 100,
+                    height: 60,
+                    margin: { top: 100, left: 150 },
+                    shape: { type: 'Basic', shape: 'Ellipse' },
+                    annotations: [{
+                        content: 'Node 1'
+                    }],
+                    },
+                    {
+                      id:"ellipse-2",
+                      // Position of the node
+                      offsetX: 350,
+                      offsetY: 250,
+                      // Size of the node
+                      width: 100,
+                      height: 60,
+                      margin: { top: 100, left: 350 },
+                      shape: { type: 'Basic', shape: 'Ellipse' },
+                      annotations: [{
+                          content: 'Node 2'
+                      }],
+                      },
+                ],
+                },
+                  
+                ]
+              },
+              offsetX: 390,
+              offsetY: 320,
+              height: 100,
+              width: 650
+            }
+          ];
+        let handle : UserHandleModel[]  = [
+            {
+              name: 'Clone', pathData: 'M0,2.4879999 L0.986,2.4879999 0.986,9.0139999 6.9950027,9.0139999 6.9950027,10 0.986,10 C0.70400238,10 0.47000122,9.9060001 0.28100207,9.7180004 0.09400177,9.5300007 0,9.2959995 0,9.0139999 z M3.0050011,0 L9.0140038,0 C9.2960014,0 9.5300026,0.093999863 9.7190018,0.28199956 9.906002,0.47000027 10,0.70399952 10,0.986 L10,6.9949989 C10,7.2770004 9.906002,7.5160007 9.7190018,7.7110004 9.5300026,7.9069996 9.2960014,8.0049992 9.0140038,8.0049992 L3.0050011,8.0049992 C2.7070007,8.0049992 2.4650002,7.9069996 2.2770004,7.7110004 2.0890007,7.5160007 1.9950027,7.2770004 1.9950027,6.9949989 L1.9950027,0.986 C1.9950027,0.70399952 2.0890007,0.47000027 2.2770004,0.28199956 2.4650002,0.093999863 2.7070007,0 3.0050011,0 z',tooltip:{content:'Clone'},
+              visible: true, offset: 1, side: 'Bottom', margin: { top: 0, bottom: 0, left: 0, right: 0 }
+          },
+          {
+              name: 'Delete', pathData: 'M0.54700077,2.2130003 L7.2129992,2.2130003 7.2129992,8.8800011 C7.2129992,9.1920013 7.1049975,9.4570007 6.8879985,9.6739998 6.6709994,9.8910007 6.406,10 6.0939997,10 L1.6659999,10 C1.3539997,10 1.0890004,9.8910007 0.87200136,9.6739998 0.65500242,9.4570007 0.54700071,9.1920013 0.54700077,8.8800011 z M2.4999992,0 L5.2600006,0 5.8329986,0.54600048 7.7599996,0.54600048 7.7599996,1.6660004 0,1.6660004 0,0.54600048 1.9270014,0.54600048 z',tooltip:{content:'Delete'},
+              visible: true, offset: 0, side: 'Bottom', margin: { top: 0, bottom: 0, left: 0, right: 0 }
+          },
+          {
+              name: 'Draw', pathData: 'M3.9730001,0 L8.9730001,5.0000007 3.9730001,10.000001 3.9730001,7.0090005 0,7.0090005 0,2.9910006 3.9730001,2.9910006 z',tooltip:{content:'Draw'},
+              visible: true, offset: 0.5, side: 'Right', margin: { top: 0, bottom: 0, left: 0, right: 0 }
+          },
+          ];
+        
+        
+        diagram = new Diagram({
+            width: '100%', height: 1000, nodes: nodes,
+            selectedItems: { userHandles: handle },getCustomTool: getTool,
+        });
+        function getTool(action: string) {
+            if(action == "Delete"){
+                diagram.remove();
+            }
+            else if(action == "Clone") {
+                diagram.paste(diagram.selectedItems.selectedObjects);
+            }
+            else if(action == "Draw") {
+                diagram.tool = DiagramTools.DrawOnce;
+                (diagram.drawingObject as any) = { type: 'Orthogonal'};
+                (diagram.drawingObject as any).sourceID = diagram.selectedItems.nodes[0].id;
+                diagram.dataBind();   
+            }
+        }
+        diagram.appendTo('#diagramHigh');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('For swimlane', (done: Function) =>{
+        debugger;
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        let highlighter: HTMLElement = null;
+        mouseEvents.clickEvent(diagramCanvas, 275, 360);
+        mouseEvents.mouseDownEvent(diagramCanvas, 350, 360);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 400, 360);
+        mouseEvents.mouseUpEvent(diagramCanvas, 400, 360);
+        diagram.undo();
+        mouseEvents.clickEvent(diagramCanvas, 275, 360);
+        mouseEvents.mouseMoveEvent(diagramCanvas, 350, 360);
+        highlighter = document.getElementById(diagram.element.id + '_diagramAdorner_svg_highlighter');
+        expect(highlighter === null).toBe(true);
+        done();
     });
 });

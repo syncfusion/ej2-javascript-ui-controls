@@ -1,5 +1,5 @@
 import { ContextMenu as Menu, BeforeOpenCloseMenuEventArgs, MenuItemModel } from '@syncfusion/ej2-navigations';
-import { IFileManager, MenuClickEventArgs, MenuOpenEventArgs, NotifyArgs } from '../base/interface';
+import { IFileManager, MenuClickEventArgs, MenuCloseEventArgs, MenuOpenEventArgs, NotifyArgs } from '../base/interface';
 import { isNullOrUndefined as isNOU, KeyboardEventArgs, createElement, closest, KeyboardEvents } from '@syncfusion/ej2-base';
 import { getValue, select } from '@syncfusion/ej2-base';
 import { MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
@@ -76,7 +76,23 @@ export class ContextMenu {
         }
     }
 
-    public onBeforeClose(): void {
+    public onBeforeClose(args: BeforeOpenCloseMenuEventArgs): void {
+        const eventArgs: MenuCloseEventArgs = {
+            cancel: false,
+            element: args.element,
+            event: args.event,
+            isFocused: args.isFocused,
+            fileDetails: [this.menuItemData],
+            items: args.items,
+            parentItem: args.parentItem,
+            menuType: this.menuType
+        };
+        this.parent.trigger('menuClose', eventArgs, (menuCloseArgs: MenuCloseEventArgs) => {
+            if (menuCloseArgs.cancel){
+                args.cancel = menuCloseArgs.cancel;
+                return;
+            }
+        });
         this.menuTarget = null;
         if (!this.isMenuItemClicked && this.parent.pathId.length > 1 && this.parent.activeModule === 'navigationpane') {
             this.parent.pathId.pop();
@@ -403,6 +419,9 @@ export class ContextMenu {
                     break;
                 case 'paste':
                     if (this.menuType === 'folder') {
+                        if (this.parent.activeModule === 'navigationpane') {
+                            this.parent.navigationpaneModule.openFileOnContextMenuClick(closest(this.targetNodeElement, 'li') as HTMLLIElement);
+                        }
                         this.parent.folderPath = getFullPath(this.parent, this.menuItemData, this.parent.path);
                     } else {
                         this.parent.folderPath = '';

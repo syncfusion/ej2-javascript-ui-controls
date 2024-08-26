@@ -1082,7 +1082,7 @@ export class Drawing {
                                     this.pdfViewer.formDesignerModule.isFormFieldSizeUpdated = false;
                                 }
                             }
-                            if (node.annotName !== '' && node.annotName !== 'SignatureText') {
+                            if (!isNullOrUndefined(node.annotName) && node.annotName !== 'SignatureText') {
                                 if (helper && (node === helper) && !node.formFieldAnnotationType) {
                                     if (!this.pdfViewer.viewerBase.isAddComment && !this.pdfViewer.viewerBase.isAnnotationSelect &&
                                          !this.pdfViewer.viewerBase.isAnnotationMouseDown &&

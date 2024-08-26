@@ -1,7 +1,7 @@
 import { isNullOrUndefined, removeClass, addClass, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
-import { ISort, IFilter, IAxisSet, IMembers, PivotEngine, IField } from '../../base/engine';
+import { ISort, IFilter, IAxisSet, IMembers, PivotEngine, IField, IGroupSettings } from '../../base/engine';
 import { MaskChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { TreeView } from '@syncfusion/ej2-navigations';
 import { OlapEngine, IOlapField } from '../../base/olap/engine';
@@ -148,7 +148,11 @@ export class EventBase {
                     members = PivotUtil.applyCustomSort(sortDetails, members, sortType);
                 }
                 else {
-                    members = PivotUtil.applyHeadersSort(members, sortDetails.sortOrder, sortType);
+                    const groupField: IGroupSettings[] = this.parent.dataSourceSettings.groupSettings.filter((field: IGroupSettings) => {
+                        return field.name === fieldName && field.type.toLocaleLowerCase() === 'number';
+                    });
+                    const isNumberGroupSorting: boolean = !isNullOrUndefined(groupField) && groupField.length > 0 ? true : false;
+                    members = PivotUtil.applyHeadersSort(members, sortDetails.sortOrder, sortType, isNumberGroupSorting);
                     isHeaderSortByDefault = true;
                 }
                 const filterObj: IFilter = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);

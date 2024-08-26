@@ -2,6 +2,7 @@
  * BlobHelper class
  * @private
  */
+/* eslint-disable */
 export class BlobHelper {
     /* tslint:disable:no-any */
     private parts: any = [];

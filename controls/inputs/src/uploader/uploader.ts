@@ -2257,6 +2257,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             fileDetails.validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : fileDetails.status;
         if (fileDetails.validationMessages.minSize !== '' || fileDetails.validationMessages.maxSize !== '') {
             fileDetails.statusCode = '0';
+            this.checkActionComplete(true);
         }
         fileData.push(fileDetails);
     }
@@ -2302,11 +2303,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                     this.upload(this.filesData, true);
                 }
             }
-            for (let item: number = 0; item < this.filesData.length; item++) {
-                if (this.filesData[item as number].statusCode === '0') {
-                    this.checkActionComplete(true);
-                }
-            }
+            this.raiseActionComplete();
             this.isFirstFileOnSelection = true;
         }
     }

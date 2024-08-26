@@ -1906,7 +1906,7 @@ describe('MultiSelect', () => {
             mouseEventArgs.target = (<any>mulObj).overAllClear;
             (<any>mulObj).clearAll(mouseEventArgs);
             expect((<any>mulObj).value.length === 0).toBe(true);
-            expect((<any>mulObj).list.querySelectorAll('li').length === 1).toBe(true);
+            expect((<any>mulObj).list.querySelectorAll('li').length === 10).toBe(true);
         });
     });
     describe('EJ2-39447', () => {

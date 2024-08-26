@@ -1752,4 +1752,96 @@ describe('Print and export', () => {
             done();
         });
     });
+
+    describe('898304 - exportImage function export images only in "PNG" format', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramExportImage' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: "node1",
+                    height: 100,
+                    width: 100,
+                    offsetX: 100,
+                    offsetY: 100,
+                },
+                {
+                    id: "node2",
+                    height: 100,
+                    width: 100,
+                    offsetX: 300,
+                    offsetY: 100,
+                },
+                {
+                    id: "node3",
+                    height: 100,
+                    width: 100,
+                    offsetX: 500,
+                    offsetY: 100,
+                }
+            ];
+            diagram = new Diagram({
+                width: '100%', height: '700px', nodes: nodes
+            } as DiagramModel);
+            diagram.appendTo('#diagramExportImage');
+
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Exporting node in SVG format', (done: Function) => {
+            let exportOptions: IExportOptions = {};
+            exportOptions.region = 'Content';
+            exportOptions.format = 'SVG';
+            exportOptions.mode = 'Data';
+            let data = diagram.exportDiagram(exportOptions);
+            diagram.exportImage(
+                (data as any), {
+                fileName: 'diagram2',
+                format: "SVG",
+                mode: 'Download',
+                region: 'Content'
+            });
+            expect(data !== null).toBe(true);
+            done();
+        });
+        it('Exporting node in JPG format', (done: Function) => {
+            let exportOptions: IExportOptions = {};
+            exportOptions.region = 'Content';
+            exportOptions.format = 'JPG';
+            exportOptions.mode = 'Data';
+            let data = diagram.exportDiagram(exportOptions);
+            diagram.exportImage(
+                (data as any), {
+                fileName: 'diagram2',
+                format: "JPG",
+                mode: 'Download',
+                region: 'Content'
+            });
+            expect(data !== null).toBe(true);
+            done();
+        });
+        it('Exporting node with PNG format', (done: Function) => {
+            let exportOptions: IExportOptions = {};
+            exportOptions.region = 'Content';
+            exportOptions.format = 'PNG';
+            exportOptions.mode = 'Data';
+            let data = diagram.exportDiagram(exportOptions);
+            diagram.exportImage(
+                (data as any), {
+                fileName: 'diagram2',
+                format: "PNG",
+                mode: 'Download',
+                region: 'Content'
+            });
+            expect(data !== null).toBe(true);
+            done();
+        });
+        
+    });
 });

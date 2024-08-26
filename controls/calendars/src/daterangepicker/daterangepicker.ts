@@ -1617,15 +1617,18 @@ export class DateRangePicker extends CalendarBase {
         this.updateHiddenInput();
     }
 
-    private getStartEndDate(date : Date, isEnd : boolean, range : string[], dateOptions : object): Date {
+    private getStartEndDate(date: Date, isEnd: boolean, range: string[], dateOptions: object): Date {
         if (this.depth === 'Month') {
             return this.globalize.parseDate(range[isEnd ? 1 : 0].trim(), dateOptions);
-        } else if (this.depth === 'Year') {
+        } else if (this.depth === 'Year' && !isNullOrUndefined(date)) {
             return new Date(date.getFullYear(), date.getMonth() + (isEnd ? 1 : 0), isEnd ? 0 : 1);
-        } else {
+        } else if (!isNullOrUndefined(date)) {
             return new Date(date.getFullYear(), isEnd ? 11 : 0, isEnd ? 31 : 1);
+        } else {
+            return null;
         }
     }
+
     private clearRange(): void {
         this.previousStartValue = this.previousEndValue = null;
         this.currentDate = null;

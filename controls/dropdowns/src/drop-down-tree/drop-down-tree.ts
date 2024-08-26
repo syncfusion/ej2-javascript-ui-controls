@@ -2229,10 +2229,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             }
         } else {
             if (this.showCheckBox) {
-                const difference: string[] = this.value.filter((e: string) => {
+                const difference: boolean = this.value.length !== this.treeObj.checkedNodes.length || this.value.filter((e: string) => {
                     return this.treeObj.checkedNodes.indexOf(e) === -1;
-                });
-                if (difference.length > 0 || this.treeSettings.autoCheck) {
+                }).length > 0;
+                if (difference || this.treeSettings.autoCheck) {
                     this.treeObj.checkedNodes = this.value.slice();
                     this.treeObj.dataBind();
                     this.setMultiSelect();

@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 26.2.10 (2024-08-20)
+## 26.2.11 (2024-08-27)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I621966` - Now the step is applied properly from left and right of the points in the range step area.
+- `#I623859` - Now the maximum range for waterfall series is calculated properly.
+
+## 26.2.9 (2024-08-13)
 
 ### Chart
 

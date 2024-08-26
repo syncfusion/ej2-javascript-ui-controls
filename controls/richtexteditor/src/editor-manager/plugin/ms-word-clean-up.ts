@@ -18,6 +18,7 @@ export class MsWordPaste {
 
     private olData: string[] = [
         'decimal',
+        'decimal-leading-zero',
         'lower-alpha',
         'lower-roman',
         'upper-alpha',
@@ -195,7 +196,8 @@ export class MsWordPaste {
                 imgElem[i as number].getAttribute('v:shapes').toLowerCase().indexOf('image') < 0 &&
                 imgElem[i as number].getAttribute('v:shapes').indexOf('Graphic') < 0 &&
                 imgElem[i as number].getAttribute('v:shapes').indexOf('_x0000_s') < 0 &&
-                imgElem[i as number].getAttribute('v:shapes').indexOf('_x0000_i') < 0) {
+                imgElem[i as number].getAttribute('v:shapes').indexOf('_x0000_i') < 0 &&
+                imgElem[i as number].getAttribute('v:shapes').indexOf('img1') < 0) {
                 imgElem[i as number].classList.add('e-rte-image-unsupported');
             }
             imgElem[i as number].removeAttribute('v:shapes');
@@ -708,7 +710,7 @@ export class MsWordPaste {
                 listStyleType = this.getlistStyleType(this.listContents[0], type);
                 if (type === 'ol' && (i === 0 || listNodes[i as number - 1] === null)) {
                     const startString: string = this.listContents[0].split('.')[0];
-                    const listTypes: string[] = ['A', 'a', 'I', 'i', 'α', '1', '1-']; // Add '1-' for rare list type.
+                    const listTypes: string[] = ['A', 'a', 'I', 'i', 'α', '1', '01', '1-']; // Add '1-' for rare list type.
                     if (listTypes.indexOf(startString) === -1) {
                         if (listStyleType === 'decimal') {
                             // Bug in getlistStyleType() list style stype is returned as decimal for nested list with start attribute
@@ -791,6 +793,9 @@ export class MsWordPaste {
                 break;
             case (charCode > 96 && charCode < 123):
                 currentListClass = 'lower-alpha';
+                break;
+            case (listContent.split('.')[0].length > 1 && listContent.split('.')[0][0] === '0' && !isNaN(Number(listContent.split('.')[0]))):
+                currentListClass = 'decimal-leading-zero';
                 break;
             default:
                 currentListClass = 'decimal';

@@ -53,7 +53,7 @@ export class Print {
         if (browserUserAgent.indexOf('Chrome') !== -1) {
             // Chrome
             printWindow.document.write('<!DOCTYPE html>');
-            printWindow.document.write('<html><head><title>' + documentHelper.owner.documentName + '</title><style>img { height: 100%; width: 100%; display: block;}img { box-sizing: border-box; }br, button { display: none; }@page{ margin: 0cm; size:' + pageSize + '; }</style></head> <body><center>');
+            printWindow.document.write('<html><head><title>' + documentHelper.owner.documentName + '</title><style>img { height: 100%; width: 100%; display: block;}img { box-sizing: border-box; }br, button { display: none; }@page{ margin: 0cm; size:' + pageSize + '; }@media print{ body { margin: 0cm; size:' + pageSize + '; }}</style></head> <body><center>');
         }
         else if (browserUserAgent.indexOf('Firefox') !== -1) {
             // Firefox

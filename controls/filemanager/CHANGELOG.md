@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 26.2.11 (2024-08-27)
+
+### FileManager
+
+#### Bug Fixes
+
+- `#I620497` - Provided `menuClose` event support to prevent the context menu close action in File Manager component.
+- `#I615927` - The issue with the drag and drop action in the navigation pane of the File Manager component has been resolved.
+- `#I608803` - The issue with the copy and paste a folder within File Manager component navigation pane has been resolved.
+
 ## 26.2.10 (2024-08-20)
 
 ### FileManager

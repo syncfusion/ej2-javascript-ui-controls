@@ -3556,7 +3556,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     (Object.keys(newProp.dataSourceSettings).length === 1 && Object.keys(newProp.dataSourceSettings)[0] === 'dataSource'
                         && this.dataSourceSettings.groupSettings.length > 0))) {
                     this.clonedDataSet = newProp.dataSourceSettings.dataSource as IDataSet[];
-                    this.updateGroupingReport(this.dataSourceSettings.groupSettings, 'Date');
+                    this.engineModule.groupingFields = {};
                 }
                 if (newProp.dataSourceSettings && Object.keys(newProp.dataSourceSettings).length === 1
                     && newProp.dataSourceSettings.groupSettings && this.dataType === 'pivot') {

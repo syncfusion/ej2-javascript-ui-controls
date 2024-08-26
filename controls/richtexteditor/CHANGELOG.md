@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 26.2.11 (2024-08-27)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I618955` - Now, Pasting images from the OTD word document file functions correctly in the Rich Text Editor.
+
+- `#I623355` - Now, `decimal-leading-zero` list type is preserved correctly when pasting list content from MS Word in the Rich Text Editor
+
+- `#I621080` - Now, space key working properly when space key is pressed in the Rich Text Editor.
+
+- `#I609672` - Now, resolved the issue where pasted images were uploaded twice, currentTarget was null, and the success message popup appeared twice in the Rich Text Editor.
+
+- `#I621556` - Now, the cursor will be visible when pressing the enter key and reaches the bottom of the Rich Text Editor when the container element's height and scroll style are manually set.
+
 ## 26.2.9 (2024-08-13)
 
 ### RichTextEditor

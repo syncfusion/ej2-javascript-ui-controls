@@ -2386,10 +2386,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 const numericTextBoxObj: NumericTextBox = getInstance(elem, NumericTextBox) as NumericTextBox;
                 const decimalSeparator: string = getValue('decimal', getNumericObject(this.locale));
                 if (isNaN(value) && elem.value.indexOf(decimalSeparator) !== -1) {
-                    let numberValue: number = parseFloat((args as any).currentTarget.value);
-                    value = numberValue;
+                    value = this.intl.getNumberParser({ format: 'n' })(elem.value);
                 }
-                numericTextBoxObj.value = value;
+                numericTextBoxObj.value = value as number;
                 this.isNumInput = true;
             }
         }

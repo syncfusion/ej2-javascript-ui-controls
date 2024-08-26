@@ -1237,12 +1237,15 @@ export class FormFields {
                         formFieldsData[parseInt(i.toString(), 10)].FormField.signatureType = 'Text';
                         this.pdfViewerBase.formFieldCollection[parseInt(i.toString(), 10)].FormField.signatureType = 'Text';
                         (this.pdfViewer.nameTable as any)[`${key}`].signatureType = 'Text';
+                        (this.pdfViewer.nameTable as any)[`${key}`.split('_')[0]].signatureType = 'Text';
                         formFieldsData[parseInt(i.toString(), 10)].FormField.fontFamily = annot.fontFamily === 'TimesRoman' ? 'Times New Roman' : annot.fontFamily;
                         this.pdfViewerBase.formFieldCollection[parseInt(i.toString(), 10)].FormField.fontFamily = annot.fontFamily;
                         (this.pdfViewer.nameTable as any)[`${key}`].fontFamily = annot.fontFamily;
+                        (this.pdfViewer.nameTable as any)[`${key}`.split('_')[0]].fontFamily = annot.fontFamily;
                         formFieldsData[parseInt(i.toString(), 10)].FormField.fontSize = annot.fontSize;
                         this.pdfViewerBase.formFieldCollection[parseInt(i.toString(), 10)].FormField.fontSize = annot.fontSize;
                         (this.pdfViewer.nameTable as any)[`${key}`].fontSize = annot.fontSize;
+                        (this.pdfViewer.nameTable as any)[`${key}`.split('_')[0]].fontSize = annot.fontSize;
                         if (formFieldIndex > -1) {
                             this.pdfViewer.formFieldCollection[parseInt(formFieldIndex.toString(), 10)].signatureType = 'Text';
                         }
@@ -1484,25 +1487,29 @@ export class FormFields {
                             currentData.Multiline = target.multiline;
                         }
                     } else if (target.type === 'radio') {
-                        if (target.checked){
-                            for (let l: number = 0; l < FormFieldsData.length; l++) {
-                                if (FormFieldsData[parseInt(l.toString(), 10)].GroupName === target.name) {
-                                    FormFieldsData[parseInt(l.toString(), 10)].Selected = false;
+                        const targetRadioButton : any = target.id;
+                        const filterRadioButtonSameName : any = FormFieldsData.filter((sameNameRadioButtonField: any) => (sameNameRadioButtonField.GroupName === target.name) && sameNameRadioButtonField.Name === 'RadioButton');
+                        for (let l: number = 0; l < filterRadioButtonSameName.length; l++) {
+                            const currentType: any = filterRadioButtonSameName[parseInt(l.toString(), 10)];
+                            if (currentType.uniqueID !== targetRadioButton) {
+                                currentType.Selected = false;
+                            }
+                            const currentTarget: any = document.getElementById(currentType.uniqueID);
+                            if (currentTarget) {
+                                if (targetRadioButton !== currentTarget.id) {
+                                    currentTarget.Selected = false;
                                 }
                             }
-                            if (target.value === currentData.Value || target.id === currentData.uniqueID) {
-                                currentData.Selected = true;
-                                break;
-                            }
-                            else {
-                                currentData.Selected = false;
-                            }
-                        }
-                        if (target.selected) {
-                            currentData.Selected = true;
                         }
                         if (currentData.Value === '' || currentData.Value !== target.value) {
                             currentData.Value = target.value;
+                        }
+                        if (target.value === currentData.Value || target.id === currentData.uniqueID) {
+                            currentData.Selected = true;
+                            break;
+                        }
+                        else {
+                            currentData.Selected = false;
                         }
                     } else if (target.type === 'checkbox') {
                         const targetCheckBox : any = target.id;

@@ -67,7 +67,15 @@ export class Search implements IAction {
         }
         if (searchString !== gObj.searchSettings.key) {
             // Check searchString is number and parseFloat to remove trailing zeros
-            gObj.searchSettings.key = (searchString !== "" && !this.hasNonNumericCharacters(searchString)) ? parseFloat(searchString).toString() : searchString.toString();
+            if (searchString !== '' && !this.hasNonNumericCharacters(searchString)) {
+                if (searchString === '.') {
+                    gObj.searchSettings.key = searchString.toString();
+                } else {
+                    gObj.searchSettings.key = parseFloat(searchString).toString();
+                }
+            } else {
+                gObj.searchSettings.key = searchString.toString();
+            }
             gObj.dataBind();
         } else if (this.refreshSearch) {
             gObj.refresh();

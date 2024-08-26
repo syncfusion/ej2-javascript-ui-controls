@@ -28,7 +28,7 @@ import { TextPositionInfo, PositionInfo, ParagraphInfo } from '../editor/editor-
 import { WCharacterFormat, WParagraphFormat, WStyle, WParagraphStyle, WSectionFormat } from '../index';
 import { HtmlExport } from '../writer/html-export';
 import { Popup } from '@syncfusion/ej2-popups';
-import { ContextType, RequestNavigateEventArgs, TablePasteOptions } from '../../index';
+import { ContextType, RequestNavigateEventArgs, TablePasteOptions ,PasteOptionSwitch } from '../../index';
 import { TextPosition, SelectionWidgetInfo, Hyperlink, ImageSizeInfo } from './selection-helper';
 import { ItemModel, MenuEventArgs, DropDownButton } from '@syncfusion/ej2-splitbuttons';
 import { Revision } from '../track-changes/track-changes';
@@ -120,7 +120,7 @@ export class Selection {
     /**
      * @private
      */
-    public currentPasteAction: TablePasteOptions;
+    public currentPasteAction: TablePasteOptions | PasteOptionSwitch;
     /**
      * @private
      */
@@ -1293,8 +1293,13 @@ export class Selection {
                 width = (left + width) - info.end;
                 left = info.end;
             } else if (left === info.start) {
-                left += info.end;
-                width = width - info.end
+                if (width < info.end) {
+                    width = left + width - info.end;
+                    left = info.end;
+                } else {
+                    left += info.end;
+                    width = width - info.end
+                }
             }
             if (m === clipInfo.length - 1) {
                 selectedWidget.push(new SelectionWidgetInfo(left, width));
@@ -5619,6 +5624,9 @@ export class Selection {
         if (!isNullOrUndefined(row.nextRenderedWidget)) {
             const cell: TableCellWidget = (row.nextRenderedWidget as TableRowWidget).childWidgets[0] as TableCellWidget;
             const block: BlockWidget = cell.childWidgets[0] as BlockWidget;
+            if (isNullOrUndefined(block)) {
+                return this.getNextParagraphCell(cell);
+            }
             return this.documentHelper.getFirstParagraphBlock(block);
         }
         return this.getNextParagraphBlock((row as TableRowWidget).ownerTable) as ParagraphWidget;
@@ -6711,7 +6719,7 @@ export class Selection {
                     }
                     return;
                 } else {
-                    right = this.getLeftInternal(endLine, endElement, endIndex);
+                    right = this.getLeftInternal(endLine, endElement, endIndex, true);
                     width = Math.abs(right - left);
                     this.createHighlightBorder(line, width, isRtlText ? right : left, top, false, contentControl);
                     return;
@@ -7352,7 +7360,7 @@ export class Selection {
      *
      * @private
      */
-    public getLeftInternal(widget: LineWidget, elementBox: ElementBox, index: number): number {
+    public getLeftInternal(widget: LineWidget, elementBox: ElementBox, index: number, skipPadding?: boolean): number {
         let left: number = widget.paragraph.x;
         let paraFormat: WParagraphFormat = widget.paragraph.paragraphFormat;
         if (this.isParagraphFirstLine(widget) && !paraFormat.bidi) {
@@ -7393,7 +7401,7 @@ export class Selection {
         if (!isNullOrUndefined(elementBox)) {
             isRtlText = elementBox.characterRange === CharacterRangeType.RightToLeft;
             isParaBidi = elementBox.line.paragraph.paragraphFormat.bidi;
-            left += (elementBox.margin.left + elementBox.padding.left);
+            left = (index === 0 && skipPadding) ? left + elementBox.margin.left : left + elementBox.margin.left + elementBox.padding.left;
             if (elementBox instanceof ShapeBase && !isNullOrUndefined(elementBox.nextElement)) {
                 left += (elementBox.nextElement.margin.left + elementBox.nextElement.padding.left)
             }
@@ -7862,10 +7870,24 @@ export class Selection {
             start = this.end;
             end = this.start;
         }
-        let elementInfo: ElementInfo = start.currentWidget.getInline(start.offset, 0);
+        let isUpdateSelection: boolean = false;
+        if (this.owner.enableTrackChanges && this.owner.editorHistoryModule && this.owner.editorHistoryModule.currentBaseHistoryInfo && this.owner.editorHistoryModule.currentBaseHistoryInfo.action === 'BackSpace') {
+            isUpdateSelection = true;
+        }
+        let elementInfo: ElementInfo;
+        if (isUpdateSelection && this.getLineLength(start.currentWidget) >= start.offset + 1) {
+            elementInfo = start.currentWidget.getInline(start.offset + 1, 0);
+        } else {
+            elementInfo = start.currentWidget.getInline(start.offset, 0);
+        }
         let currentElement: ElementBox = elementInfo.element;
         let startPara: ParagraphWidget = start.paragraph;
-        let nextOffsetElement: ElementBox = start.currentWidget.getInline(start.offset + 1, 0).element;
+        let nextOffsetElement: ElementBox;
+        if (isUpdateSelection && this.getLineLength(start.currentWidget) >= start.offset + 2) {
+            nextOffsetElement = start.currentWidget.getInline(start.offset + 2, 0).element;
+        } else {
+            nextOffsetElement = start.currentWidget.getInline(start.offset + 1, 0).element;
+        }
         let eleEndPosition: TextPosition;
         if (currentElement && currentElement === nextOffsetElement) {
             let offset: number = currentElement.line.getOffset(currentElement, (currentElement.length));
@@ -9201,6 +9223,51 @@ export class Selection {
             this.owner.editorModule.applyPasteOptions('KeepTextOnly');
         }
     }
+
+    /**
+    * Returns an array of context-based paste options.
+    *
+    * @returns {(PasteOptions | TablePasteOptions)[]} An array containing the available paste options.
+    */
+    public getContextBasedPasteOptions(sfdtContent: string) {
+        // Parse the sfdt content
+        let content: any = HelperMethods.getSfdtDocument(sfdtContent);
+        if (!isNullOrUndefined(content.optimizeSfdt) && content.optimizeSfdt) {
+            this.owner.editorModule.keywordIndex = 1;
+        } else {
+            this.owner.editorModule.keywordIndex = 0;
+        }
+        let widgets = this.owner.editorModule.getBlocks(content, true);
+        let selection: Selection = this.documentHelper.selection;
+        // Check the sfdt has table alone 
+        if (selection.start.paragraph.isInsideTable && selection.end.paragraph.isInsideTable) {
+            let isTablePaste: boolean = false;
+            if (widgets.length === 1) {
+                let childWidgets: IWidget[] = widgets[0].childWidgets;
+                if ((childWidgets.length < 3)) {
+                    if (childWidgets.length === 1 && childWidgets[0] instanceof TableWidget || childWidgets.length === 2 && childWidgets[0] instanceof TableWidget && (childWidgets[1] as ParagraphWidget).isEmpty()) {
+                        isTablePaste = true;
+                    }
+                }
+            }
+            if (isTablePaste) {
+                let startCell: TableCellWidget = selection.start.paragraph.associatedCell;
+                let endCell: TableCellWidget = selection.end.paragraph.associatedCell;
+                let newTable: TableWidget = widgets[0].childWidgets[0] as TableWidget;
+                // tslint:disable-next-line:max-line-length
+                if (startCell.ownerTable.equals(endCell.ownerTable)) {
+                    if (selection.start.paragraph.associatedCell.rowIndex === 0 && selection.end.paragraph.associatedCell.rowIndex === 0
+                        && startCell.equals(endCell) && !this.isCellSelected(startCell, selection.start, selection.end)) {
+                        return ['NewColumn', 'NestTable', 'NewRow'];
+                    } else {
+                        return ['NestTable', 'NewRow', 'OverwriteCells'];
+                    }
+                }
+            }
+        }
+        return ['KeepSourceFormatting', 'MergeWithExistingFormatting', 'KeepTextOnly'];
+    }
+    
     /**
      * Show hyperlink tooltip
      * @private

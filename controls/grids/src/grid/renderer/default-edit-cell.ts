@@ -31,14 +31,18 @@ export class DefaultEditCell extends EditCellBase implements IEditCell {
     public write(args: { rowData: Object, element: Element, column: Column, requestType: string }): void {
         const col: Column = args.column;
         const isInline: boolean = this.parent.editSettings.mode !== 'Dialog';
-        this.obj = new TextBox(extend(
-            {
-                element: args.element as HTMLInputElement, floatLabelType: this.parent.editSettings.mode !== 'Dialog' ? 'Never' : 'Always',
-                enableRtl: this.parent.enableRtl, enabled: isEditable(args.column, args.requestType, args.element),
-                placeholder: isInline ? '' : args.column.headerText,
-                cssClass: this.parent.cssClass ? this.parent.cssClass : ''
-            },
-            col.edit.params));
+        const props: Object = {
+            element: args.element as HTMLInputElement, floatLabelType: this.parent.editSettings.mode !== 'Dialog' ? 'Never' : 'Always',
+            enableRtl: this.parent.enableRtl, enabled: isEditable(args.column, args.requestType, args.element),
+            placeholder: isInline ? '' : args.column.headerText,
+            cssClass: this.parent.cssClass ? this.parent.cssClass : ''
+        };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (!isNullOrUndefined(col.edit) && !isNullOrUndefined(col.edit.params) && (col.edit.params as any).multiline) {
+            const cellValue: string = ((col.valueAccessor as Function)(col.field, args.rowData, col)) as string;
+            props['value'] = cellValue;
+        }
+        this.obj = new TextBox(extend(props, col.edit.params));
         this.obj.appendTo(args.element as HTMLElement);
         if (this.parent.editSettings.mode === 'Batch') {
             this.obj.element.addEventListener('keydown', this.keyEventHandler);

@@ -749,6 +749,12 @@ describe('Diagram Control', () => {
             mouseevents.mouseMoveEvent(diagramCanvas, diagram.nodes[1].offsetX + diagram.element.offsetLeft + 40, diagram.nodes[1].offsetY + diagram.element.offsetTop + 30);
             mouseevents.mouseMoveEvent(diagramCanvas, diagram.nodes[1].offsetX + diagram.element.offsetLeft + 70, diagram.nodes[1].offsetY + diagram.element.offsetTop + 30);
             mouseevents.mouseUpEvent(diagramCanvas, diagram.nodes[1].offsetX, diagram.nodes[1].offsetY);
+            console.log(diagram.nodes[1].offsetX);
+            console.log(diagram.nodes[1].offsetY);
+            console.log(diagram.nodes[2].offsetX);
+            console.log(diagram.nodes[2].offsetY);
+            console.log(diagram.nodes[2].width);
+            console.log(diagram.nodes[2].height);
             expect(diagram.nodes[1].offsetX == 295 && diagram.nodes[1].offsetY == 255 && diagram.nodes[2].offsetX == 200 &&
                 diagram.nodes[2].offsetY == 215 && diagram.nodes[2].width == 300 && diagram.nodes[2].height == 130).toBe(true);
             done();
@@ -838,14 +844,17 @@ describe('Diagram Control', () => {
             mouseevents.mouseMoveEvent(diagramCanvas, 600 + diagram.element.offsetLeft + 20, 300 + diagram.element.offsetTop + 10);
             mouseevents.mouseMoveEvent(diagramCanvas, 600 + diagram.element.offsetLeft + 20, 300 + diagram.element.offsetTop + 20);
             mouseevents.mouseUpEvent(diagramCanvas, 600 + diagram.element.offsetLeft + 20, 300 + diagram.element.offsetTop + 20);
+            console.log(diagram.nodes[1].children.length === 1);
             expect(diagram.nodes[1].children.length === 1).toBe(true);
             done();
         });
 
         it('Undo redo after add child from diagram nodes', (done: Function) => {
             diagram.undo();
+            console.log(diagram.nodes[1].children.length);
             expect(diagram.nodes[1].children.length === 2 || diagram.nodes[1].children.length === 1).toBe(true);
             diagram.redo();
+            console.log(diagram.nodes[1].children.length);
             expect(diagram.nodes[1].children.length === 1).toBe(true);
             done();
         });

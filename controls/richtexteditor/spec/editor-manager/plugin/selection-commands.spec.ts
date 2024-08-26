@@ -1443,6 +1443,36 @@ describe('EJ2-70136 - Font Size value not updating while on selected text', () =
         done();
     });
 });
+describe('Bug 901952: In Rich Text Editor, style is inconsistently maintained', () => {
+    let rteObj: any;
+    let domSelection: NodeSelection = new NodeSelection();
+    let rteID: any;
+    let strikethroughItem: any;
+
+    it(' To validate the strikethrough and fontsize combination', () => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['Strikethrough', 'FontSize']
+            },
+            created: function () {
+                rteID = document.body.querySelector('.e-richtexteditor').id;
+                strikethroughItem = document.body.querySelector('#' + rteID + '_toolbar_StrikeThrough');
+            }
+
+        });
+        rteObj.inputElement.focus();
+        strikethroughItem.click();
+        let rteEle = rteObj.rootContainer;
+        let fontSizePicker: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item .e-dropdown-btn")[0];
+        fontSizePicker.click();
+        var fontSizeChooser: HTMLElement = <HTMLElement>document.querySelectorAll(".e-item")[7];
+        fontSizeChooser.click();
+        expect(rteObj.inputElement.innerHTML).toBe('<p><span style="font-size: 36pt;"><span style="text-decoration: line-through;">​</span></span></p>');
+    });
+    afterEach(() => {
+        destroy(rteObj);
+    });
+});
 describe('EJ2-70405 - Background Color not applied properly when nested styles are applied', () => {
     let rteObj: any;
     let domSelection: NodeSelection = new NodeSelection();

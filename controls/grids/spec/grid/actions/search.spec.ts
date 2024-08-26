@@ -638,3 +638,55 @@ describe('Search module=>', () => {
         });
     });
 });
+
+describe('EJ2-902455 - Searching dot character leads to NaN => ', () => {
+    let gridObj: Grid;
+    let actionComplete: (args?: Object) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data.slice(0, 3),
+                toolbar: ['Search'],
+                columns: [
+                    {
+                        field: 'OrderID',
+                        headerText: 'Order ID',
+                        width: 140,
+                    },
+                    {
+                        field: 'Freight',
+                        headerText: 'Freight',
+                        width: 140,
+                    },
+                    {
+                        field: 'CustomerID',
+                        headerText: 'Customer ID',
+                        width: 140,
+                    },
+                    {
+                        field: 'OrderDate',
+                        headerText: 'OrderDate',
+                        type: 'date',
+                        format: 'yMd',
+                        width: 140,
+                    },
+                ],
+                height: 350,
+                actionComplete: actionComplete,
+            }, done);
+    });
+
+    it('search dot character data', (done: Function) => {
+        actionComplete = (args: any): void => {
+            expect(gridObj.searchSettings.key).toBe('.');
+            done();
+        };
+        gridObj.actionComplete = actionComplete;            
+        gridObj.searchModule.search('.');
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = actionComplete = null;
+    });
+});

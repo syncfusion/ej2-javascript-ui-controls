@@ -1,6 +1,7 @@
 /**
  * index class
  */
+/* eslint-disable */
 export * from './cell-style'
 export * from './cell'
 export * from './column'

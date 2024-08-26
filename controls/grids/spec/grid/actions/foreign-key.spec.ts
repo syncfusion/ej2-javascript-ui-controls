@@ -675,3 +675,49 @@ describe('EJ2-867015 - Coverage for foreign key file =>', () => {
         gridObj = null;
     });
 });
+
+// code coverage
+describe('EJ2-899759 - Foreign column with ExcludeHidden of columnQueryMode =>', () => {
+    let gridObj: Grid;
+    let remoteData: DataManager = new DataManager({
+        url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Orders',
+        adaptor: new ODataV4Adaptor
+    });
+    let empData = new DataManager({
+        url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Employees/',
+        adaptor: new ODataV4Adaptor(),
+    });
+    let orderData = new DataManager({
+        url: 'https://services.odata.org/V4/Northwind/Northwind.svc/Order_Details',
+        adaptor: new ODataV4Adaptor(),
+    });
+    beforeAll((done: Function) => {
+        let options: Object = {
+            dataSource: remoteData,
+            columns: [
+              { field: 'CustomerID',  width: 100 },
+              {
+                field: 'EmployeeID', headerText: 'Employee Name', width: 120, visible: false,
+                foreignKeyField: 'EmployeeID', foreignKeyValue: 'FirstName', dataSource: empData
+              },
+              {
+                field: 'OrderID', headerText: 'Product ID', width: 120,
+                foreignKeyField: 'OrderID', foreignKeyValue: 'ProductID', dataSource: orderData,
+              },
+              { field: 'Freight', headerText: 'Freight', textAlign: 'Right', width: 80 },
+            ],
+            columnQueryMode: 'ExcludeHidden',
+        };
+        gridObj = createGrid(options, done);
+    });
+
+    it('code coverage test', () => {
+        let currentviewData: Object[] = gridObj.currentViewData;
+        currentviewData = null;
+    });
+
+    afterAll((done) => {
+        destroy(gridObj);
+        gridObj = remoteData = empData = orderData = null;
+    });
+});

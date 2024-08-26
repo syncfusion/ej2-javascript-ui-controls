@@ -665,6 +665,43 @@ export interface MenuOpenEventArgs {
     menuType?: string;
 }
 /**
+ * Interface for MenuClose event arguments.
+ */
+export interface MenuCloseEventArgs {
+    /**
+     * If you want to cancel this event then, set cancel to true. Otherwise, false.
+     */
+    cancel?: boolean;
+    /**
+     * Returns the current context menu element.
+     */
+    element?: HTMLElement;
+    /**
+     * Specifies the actual event.
+     */
+    event?: Event;
+    /**
+     * Returns whether the current context menu is focused or not.
+     */
+    isFocused?: boolean;
+    /**
+     * Returns the target folder/file item as an array of JSON object.
+     */
+    fileDetails?: Object[];
+    /**
+     * Returns the current context menu items as JSON object.
+     */
+    items?: MenuItemModel[];
+    /**
+     * Returns the parent context menu item as JSON object.
+     */
+    parentItem?: MenuItemModel;
+    /**
+     * Returns the current context menu type based on current target.
+     */
+    menuType?: string;
+}
+/**
  * Interface for UploadListCreate event arguments.
  */
 export interface UploadListCreateArgs {

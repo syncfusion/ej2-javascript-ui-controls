@@ -5514,6 +5514,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public fileByteArray: Uint8Array;
 
     /**
+     * @private
+     * Uploaded File byte array of the PDF document.
+     */
+    public uploadedFileByteArray: Uint8Array;
+
+    /**
      * Checks whether the PDF document is edited.
      *
      * {% codeBlock src='pdfviewer/isDocumentEdited/index.md' %}{% endcodeBlock %}

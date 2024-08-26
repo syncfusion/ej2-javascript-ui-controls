@@ -4,7 +4,7 @@ import {
 } from '@syncfusion/ej2-base';
 import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
-import { PivotEngine } from '../../base/engine';
+import { IGroupSettings, PivotEngine } from '../../base/engine';
 import {
     TreeView, NodeCheckEventArgs, Tab, TabItemModel, NodeClickEventArgs,
     NodeExpandEventArgs, NodeSelectEventArgs,
@@ -474,7 +474,12 @@ export class FilterDialog {
             members = PivotUtil.applyCustomSort(sortDetails, members, sortType) as { [key: string]: Object; }[];
         }
         else {
-            members = PivotUtil.applyHeadersSort(members, sortDetails.sortOrder, sortType) as { [key: string]: Object; }[];
+            const groupField: IGroupSettings[] = this.parent.dataSourceSettings.groupSettings.filter((field: IGroupSettings) => {
+                return field.name === fieldName && field.type.toLocaleLowerCase() === 'number';
+            });
+            const isNumberGroupSorting: boolean = !isNullOrUndefined(groupField) && groupField.length > 0 ? true : false;
+            members =
+                PivotUtil.applyHeadersSort(members, sortDetails.sortOrder, sortType, isNumberGroupSorting) as { [key: string]: Object; }[];
             isHeaderSortByDefault = true;
         }
         const control: PivotView | PivotFieldList =

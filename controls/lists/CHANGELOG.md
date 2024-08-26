@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.2.11 (2024-08-27)
+
+### ListView
+
+#### Bug Fixes
+
+- `#I616604` -  The issue with the scroll position when dynamically updating the `dataSource` in the ListView component has been fixed.
+
 ## 26.1.35 (2024-06-11)
 
 ### ListBox

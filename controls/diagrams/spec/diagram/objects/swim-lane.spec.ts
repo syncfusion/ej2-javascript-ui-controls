@@ -8042,3 +8042,103 @@ describe('894556-Swimlane wrapper updated wrongly when phase offset set for vert
     });
   
 });
+
+describe('897967 - Exception thrown when adding Phases at runtime and perform undo Action', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let btn: HTMLButtonElement;
+    let mouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramaddPhase' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [{
+            shape: {
+                type: 'SwimLane',
+                orientation: 'Horizontal',
+                //Intialize header to swimlane
+                header: {
+                    annotation: {
+                        content: 'ONLINE PURCHASE STATUS',
+                        style: { fill: '#111111' },
+                    },
+                    height: 50,
+                    style: { fontSize: 11 },
+                },
+                lanes: [
+                    {
+                        id: 'stackCanvas1',
+                        height: 100,
+                        header: {
+                            annotation: { content: 'CUSTOMER' },
+                            width: 50,
+                            style: { fontSize: 11 },
+                        },
+                        children: [
+                            {
+                                id: 'node8',
+                                annotations: [{ content: 'Success helps \n retain consumer \n as a customer' }],
+                                margin: { left: 210, top: 20 },
+                                height: 50, width: 100,
+                            }]
+                    },
+                ],
+                phases: [
+                    {
+                        id: 'phase1',
+                        offset: 120,
+                        header: { annotation: { content: 'Phase' } },
+                    },
+                    {
+                        id: 'phase2',
+                        offset: 200,
+                        header: { annotation: { content: 'Phase' } },
+                    },
+                ],
+                phaseSize: 20,
+            },
+            offsetX: 300,
+            offsetY: 200,
+            height: 200,
+            width: 350,
+        }]
+
+        diagram = new Diagram({
+            width: '80%',
+            height: '600px',
+            nodes: nodes,
+        });
+        diagram.appendTo('#diagramaddPhase');
+    });
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Add phase at runtime and perform undo', (done: Function) => {
+        let phase = [
+            {
+                id: 'phase3',
+                offset: 250,
+                header: { annotation: { content: 'New Phase' } },
+            },
+        ];
+        expect(diagram.nodes.length === 8).toBe(true);
+        diagram.addPhases(diagram.nodes[0], phase);
+        expect(diagram.nodes.length === 10).toBe(true);
+        diagram.undo();
+        expect(diagram.nodes.length === 8).toBe(true);
+        done();
+    });
+    it('Add phase with offset greater than last phase offset', (done: Function) => {
+        let phase = [
+            {
+                id: 'phase4',
+                offset: 450,
+                header: { annotation: { content: 'New Phase' } },
+            },
+        ];
+        diagram.addPhases(diagram.nodes[0], phase);
+        expect((diagram.nodes as any).length === 8).toBe(true);
+        done();
+    });
+
+});

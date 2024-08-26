@@ -252,6 +252,7 @@ export class Page implements IAction {
         if (!this.isCancel) {
             this.pageSettings.currentPage = e.currentPage;
             this.parent.notify(events.modelChanged, args);
+            gObj.pageRequireRefresh = false;
         }
         if ((<{ cancel?: boolean }>args).cancel) {
             e.cancel = true;

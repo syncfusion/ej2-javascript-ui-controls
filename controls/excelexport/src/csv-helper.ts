@@ -4,6 +4,7 @@ import {Encoding} from '@syncfusion/ej2-file-utils';
  * CsvHelper class
  * @private
  */
+/* eslint-disable */
 export class CsvHelper {
     private isMicrosoftBrowser: boolean;
     private buffer: Blob;
@@ -115,10 +116,10 @@ export class CsvHelper {
             } else if (typeof (cell.value) === 'number') {
                 if (cell.style !== undefined && cell.style.numberFormat !== undefined) {
                     /* tslint:disable-next-line:max-line-length */
-                    csv += this.parseCellValue(this.formatter.displayText(cell.value, { format: cell.style.numberFormat }, this.isServerRendered));
+                    csv += this.parseCellValue(this.formatter.displayText(cell.value, { format: cell.style.numberFormat, ignoreCurrency : true }, this.isServerRendered));
                 } else if (cell.style !== undefined && cell.style.name !== undefined && this.globalStyles.has(cell.style.name)) {
                     /* tslint:disable-next-line:max-line-length */
-                    csv += this.parseCellValue(this.formatter.displayText(cell.value, { format: this.globalStyles.get(cell.style.name) }, this.isServerRendered));
+                    csv += this.parseCellValue(this.formatter.displayText(cell.value, { format: this.globalStyles.get(cell.style.name), ignoreCurrency : true }, this.isServerRendered));
                 } else {
                     csv += cell.value;
                 }

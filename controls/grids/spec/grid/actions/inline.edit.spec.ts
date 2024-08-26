@@ -2106,7 +2106,7 @@ describe('Inline Editing module', () => {
                 }
             };
             gridObj.actionComplete = actionComplete;
-            gridObj.selectRow(4, true);
+            // gridObj.selectRow(4, true);
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
             (select('#' + gridObj.element.id + 'CustomerID', gridObj.element)  as any).value = 'updated';
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });

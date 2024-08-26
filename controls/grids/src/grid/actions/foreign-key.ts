@@ -68,7 +68,10 @@ export class ForeignKey extends Data {
         data: Promise<Object>, result: ReturnType, promise: Deferred, isComplex?: boolean,
         column?: Column, action: NotifyArgs
     }): void {
-        const foreignColumns: Column[] = args.column ? [args.column] : this.parent.getForeignKeyColumns();
+        let foreignColumns: Column[] = args.column ? [args.column] : this.parent.getForeignKeyColumns();
+        if (this.parent.columnQueryMode === 'ExcludeHidden') {
+            foreignColumns = foreignColumns.filter((col: Column) => col.visible !== false);
+        }
         const allPromise: Promise<Object>[] = [];
         for (let i: number = 0; i < foreignColumns.length; i++) {
             let promise: Promise<Object>;

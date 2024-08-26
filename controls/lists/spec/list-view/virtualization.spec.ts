@@ -170,9 +170,9 @@ describe('UI virtualization', () => {
                 let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
                     document.documentElement.getBoundingClientRect().top;
                 simulateScrollEvent(document.documentElement, startingHeight + 4500);
-                listObj.selectItem({ text: '999', id: '101' });
-                expect(listObj.element.querySelector('[data-uid="101"]').classList.contains('e-active')).toBe(true);
-                listObj.removeItem({ text: '999', id: '101' });
+                listObj.selectItem({ text: '99', id: '99' });
+                expect(listObj.element.querySelector('[data-uid="99"]').classList.contains('e-active')).toBe(true);
+                listObj.removeItem({ text: '99', id: '99' });
                 expect(ItemCount - 1).toBe(listObj.dataSource.length);
             });
             it('Adding single item data at middle of the list', () => {

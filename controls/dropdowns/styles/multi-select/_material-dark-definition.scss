@@ -238,4 +238,9 @@ $filled-multiselect-chip-hover-bg-color: $grey-700 !default;
   .e-small.e-multiselect.e-input-group.e-checkbox .e-multi-select-wrapper input[type = 'text'] {
     padding: 0;
   }
+
+  .e-multiselect.e-input-group .e-multi-select-wrapper .e-multiselect-box input[type = 'text'],
+  .e-multiselect.e-input-group.e-input-focus .e-multi-select-wrapper .e-searcher:not(.e-zero-size) input[type = 'text'] {
+    padding: 0;
+  }
 }

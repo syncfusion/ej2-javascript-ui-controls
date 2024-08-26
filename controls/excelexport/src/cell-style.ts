@@ -3,6 +3,7 @@ import { HAlignType, VAlignType, LineStyle } from './enum';
  * CellStyle class
  * @private
  */
+/* eslint-disable */
 export class CellStyle {
     public name: string;
     public index: number;

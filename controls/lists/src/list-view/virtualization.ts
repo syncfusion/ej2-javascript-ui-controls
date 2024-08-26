@@ -69,8 +69,10 @@ export class Virtualization {
 
     public uiVirtualization(): void {
         this.wireScrollEvent(false);
+        const isRendered: boolean = this.listViewInstance.isRendered;
+        const firstIndex: number = isRendered && !isNullOrUndefined(this.uiFirstIndex) ? this.uiFirstIndex : 0;
         const curViewDS: { [key: string]: object; }[] = this.listViewInstance.curViewDS as { [key: string]: object; }[];
-        const firstDs: { [key: string]: object }[] = curViewDS.slice(0, 1);
+        const firstDs: { [key: string]: object }[] = curViewDS.slice(firstIndex, firstIndex + 1);
         this.listViewInstance.ulElement = this.listViewInstance.curUL = ListBase.createList(
             this.listViewInstance.createElement, firstDs as { [key: string]: object; }[],
             this.listViewInstance.listBaseOption, null, this.listViewInstance);
@@ -80,9 +82,10 @@ export class Virtualization {
         this.listItemHeight = this.listViewInstance.ulElement.firstElementChild.getBoundingClientRect().height;
         this.expectedDomItemCount = this.ValidateItemCount(10000);
         this.domItemCount = this.ValidateItemCount(Object.keys(this.listViewInstance.curViewDS).length);
-        this.uiFirstIndex = 0;
-        this.uiLastIndex = this.domItemCount - 1;
-        const otherDs: { [key: string]: object; }[] = curViewDS.slice(1, this.domItemCount);
+        const lastIndex: number = isRendered && !isNullOrUndefined(this.uiLastIndex) ? this.uiLastIndex : this.domItemCount - 1;
+        this.uiFirstIndex = firstIndex;
+        this.uiLastIndex = lastIndex;
+        const otherDs: { [key: string]: object; }[] = curViewDS.slice(firstIndex + 1, lastIndex + 1);
         const listItems: HTMLElement[] = ListBase.createListItemFromJson(
             this.listViewInstance.createElement, otherDs as { [key: string]: object; }[],
             this.listViewInstance.listBaseOption, null, null, this.listViewInstance);
@@ -94,11 +97,14 @@ export class Virtualization {
         this.bottomElement = this.listViewInstance.createElement('div');
         this.listViewInstance.ulElement.insertBefore(this.bottomElement, null);
         this.totalHeight = (Object.keys(curViewDS).length * this.listItemHeight) - (this.domItemCount * this.listItemHeight);
-        this.topElement.style.height = 0 + 'px';
-        this.bottomElement.style.height = this.totalHeight + 'px';
-        this.topElementHeight = 0;
-        this.bottomElementHeight = this.totalHeight;
-        this.listDiff = 0;
+        this.topElement.style.height = isRendered ? this.topElementHeight + 'px' : '0px';
+        this.bottomElement.style.height = isRendered ? (this.totalHeight - this.topElementHeight) + 'px' : this.totalHeight + 'px';
+        this.topElementHeight = isRendered ? this.topElementHeight : 0;
+        this.bottomElementHeight = isRendered ? (this.totalHeight - this.topElementHeight) : this.totalHeight;
+        this.listDiff = isRendered ? this.listDiff : 0;
+        if (isRendered) {
+            this.listViewInstance.element.scrollTop = this.listViewInstance.previousScrollTop;
+        }
         this.uiIndicesInitialization();
     }
 

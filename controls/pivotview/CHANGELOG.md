@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 26.2.11 (2024-08-27)
+
+### PivotTable
+
+#### Bug fixes
+
+- `#I622512` - Member sorting will now be performed correctly for negative numbers when using number grouping in the pivot table.
+- `#I620602` - The report settings will now be maintained correctly when switching between reports with grouping applied in the pivot table.
+
 ## 26.2.10 (2024-08-20)
 
 ### PivotTable

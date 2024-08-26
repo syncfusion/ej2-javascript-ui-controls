@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 26.2.11 (2024-08-27)
+
+### MultiSelect
+
+#### Bug fixes
+
+- `#I620910` -  Fixed the misalignment of footer elements in the MultiSelect popup on mobile devices.
+
+- `#I619463` - Fixed an exception that occurred when re-rendering the multiselect component inside the scheduler by clicking the scheduler navigation icon.
+
+- `#I620453` - Fixed the issue where ItemData returned null in the removed event argument when the value was cleared.
+
+- `#I6414793` - Fixed the issue where the Clear Icon fails to create a placeholder in MultiSelect after the selection is reset.
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I619097` - The issue where the value property was not updating dynamically has been resolved.
+
 ## 26.2.10 (2024-08-20)
 
 ### DropDownTree
@@ -9,6 +29,8 @@
 #### Bug Fixes
 
 - `#I618290` - The issue with keyboard actions and the focus-related issue in the Dropdown Tree component have been resolved.
+
+- `#I615533` - The issue with  toolbar action not working after insert the mention item in the Rich Text Editor has been resolved.
 
 ## 26.2.9 (2024-08-13)
 

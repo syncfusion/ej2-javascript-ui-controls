@@ -54,6 +54,7 @@ export class SfdtReader {
     private isPageBreakInsideTable: boolean = false;
     private referedRevisions: any = [];
     private editableRanges: Dictionary<string, EditRangeStartElementBox>;
+    private fontInfoCollection: Dictionary<string, boolean>;
     private isParseHeader: boolean = false;
     public footnotes: Footnote = undefined;
     public endnotes: Footnote = undefined;
@@ -86,6 +87,7 @@ export class SfdtReader {
         this.commentEnds = new Dictionary<string, CommentCharacterElementBox>();
         this.commentsCollection = new Dictionary<string, CommentElementBox>();
         this.revisionCollection = new Dictionary<string, Revision>();
+        this.fontInfoCollection = new Dictionary<string, boolean>();
         this.referedRevisions = [];
         this.keywordIndex = 0;
         this.footnotes = new Footnote();
@@ -2285,12 +2287,17 @@ export class SfdtReader {
     // The below code is implemented by refering the following link. (https://www.samclarke.com/javascript-is-font-available/#:~:text=Then%20to%20check%20a%20font,otherwise%20another%20fallback%20is%20tried.)
     
     private isFontInstalled(fontFamily: string): boolean {
+        if (this.fontInfoCollection.containsKey(fontFamily)) {
+            return this.fontInfoCollection.get(fontFamily);
+        }
         const monoWidth: number = this.getWidth('monospace');
         const sansWidth: number = this.getWidth('sans-serif');
         const serifWidth: number = this.getWidth('serif');
-        return monoWidth !== this.getWidth(fontFamily + ', monospace', monoWidth) ||
+        let isFontInstalled: boolean = monoWidth !== this.getWidth(fontFamily + ', monospace', monoWidth) ||
             sansWidth !== this.getWidth(fontFamily + ', sans-serif', sansWidth) ||
             serifWidth !== this.getWidth(fontFamily + ', serif', serifWidth);
+        this.fontInfoCollection.add(fontFamily, isFontInstalled);
+        return isFontInstalled;
     }
     private getWidth(fontFamily: string, defaultWidth?: number): number {
         let width: number;
@@ -3562,6 +3569,10 @@ export class SfdtReader {
             this.revisionCollection.destroy();
         }
         this.revisionCollection = undefined;
+        if (this.fontInfoCollection) {
+            this.fontInfoCollection.destroy();
+        }
+        this.fontInfoCollection = undefined;
         this.documentHelper = undefined;
         this.keywordIndex = undefined;
     }

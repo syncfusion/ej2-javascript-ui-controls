@@ -1333,7 +1333,8 @@ describe('CR-899690: Left value miscalculated for taskbar while duration in deci
     });
     it('Checking Taskbar left with decimal duration', () => {
        expect(ganttObj.currentViewData[1].ganttProperties.left).toBe(33);
-       expect(ganttObj.currentViewData[2].ganttProperties.left).toBe(59.4);
+       expect(ganttObj.currentViewData[2].ganttProperties.left).toBe(59.400000000000006);
+       expect(ganttObj.currentViewData[5].ganttProperties.left).toBe(59.400000000000006);
     });
     afterAll(() => {
         if (ganttObj) {

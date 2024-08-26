@@ -99,6 +99,10 @@ export class BaseHistoryInfo {
      */
     public lastElementRevision: ElementBox;
     /**
+    * @private
+    */
+    public isRevisionEndInAnotherCell: boolean;
+    /**
      * @private
      */
     public endRevisionLogicalIndex: string;
@@ -696,7 +700,7 @@ export class BaseHistoryInfo {
             }
             if (this.endRevisionLogicalIndex && deletedNodes.length > 0) {
                 let currentPosition: TextPosition = sel.getTextPosBasedOnLogicalIndex(this.endRevisionLogicalIndex);
-                if (this.editorHistory.isUndoing || (this.editorHistory.isRedoing && insertTextPosition.isAtSamePosition(endTextPosition))) {
+                if ((this.editorHistory.isUndoing && !this.editorHistory.currentBaseHistoryInfo.isRevisionEndInAnotherCell) || (this.editorHistory.isRedoing && insertTextPosition.isAtSamePosition(endTextPosition))) {
                     sel.selectPosition(insertTextPosition, currentPosition);
                 }
                 this.collabEnd = this.endRevisionLogicalIndex;

@@ -685,7 +685,8 @@ export class Edit implements IAction {
         const col: Column[] = (<{columnModel?: Column[]}>gObj).columnModel.filter((col: Column) => col.editTemplate);
         for (let j: number = 0; j < col.length; j++) {
             if (form[getComplexFieldID(col[parseInt(j.toString(), 10)].field)]) {
-                let inputElements: HTMLInputElement[] = [].slice.call(form[getComplexFieldID(col[parseInt(j.toString(), 10)].field)]);
+                let inputElements: HTMLInputElement[] = [].slice.call(form[getComplexFieldID(col[parseInt(j.toString(), 10)].field)])
+                    .filter((element: any) => element.tagName.toLowerCase() === 'input');
                 inputElements = inputElements.length ? inputElements : [form[getComplexFieldID(col[parseInt(j.toString(), 10)].field)]];
                 let temp: HTMLInputElement[] = inputElements.filter((e: HTMLInputElement) =>
                     !isNullOrUndefined(((<EJ2Intance>(e as Element)).ej2_instances)));

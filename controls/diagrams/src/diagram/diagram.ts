@@ -5941,7 +5941,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public addPhases(node: NodeModel, phases: PhaseModel[]): void {
         node = this.nameTable[node.id] || node;
         for (let i: number = 0; i < phases.length; i++) {
+            //897967-Exception thrown when adding Phases at runtime and perform undo Action
+            this.protectPropertyChange(true);
             addPhase(this, node, phases[parseInt(i.toString(), 10)]);
+            this.protectPropertyChange(false);
         }
         this.updateDiagramElementQuad();
     }

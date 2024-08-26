@@ -1056,6 +1056,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public isAutoGen: boolean = false;
     /** @hidden */
     public isAutoGenerateColumns: boolean = false;
+    /** @hidden */
+    public pageRequireRefresh: boolean = true;
     private mediaBindInstance: Object = {};
     /** @hidden */
     public commandDelIndex: number = undefined;
@@ -3824,8 +3826,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     && isNullOrUndefined(newProp.pageSettings.totalRecordsCount)
                     || !isNullOrUndefined(oldProp.pageSettings) &&
                     ((newProp.pageSettings.currentPage !== oldProp.pageSettings.currentPage)
-                        && !this.enableColumnVirtualization && !this.enableVirtualization
+                        && !this.enableColumnVirtualization && !this.enableVirtualization && this.pageRequireRefresh
                         && this.pageSettings.totalRecordsCount <= this.pageSettings.pageSize)) { requireRefresh = true; }
+                if (!this.pageRequireRefresh) { this.pageRequireRefresh = true; }
                 if (this.pagerModule && this.pagerModule.isCancel) {
                     this.pagerModule.isCancel = false;
                 }

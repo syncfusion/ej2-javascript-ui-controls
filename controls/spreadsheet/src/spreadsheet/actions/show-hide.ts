@@ -68,11 +68,11 @@ export class ShowHide {
             if (endIndex !== undefined) {
                 const startIndex: number = args.startIndex;
                 args.endIndex = endIndex; args.startIndex = freezePane;
-                performHideShow();
+                performHideShow(!this.parent.scrollSettings.enableVirtualization);
                 args.startIndex = startIndex;
             }
         } else {
-            performHideShow();
+            performHideShow(!this.parent.scrollSettings.enableVirtualization);
         }
         if (args.actionUpdate) {
             this.updateIndexOnlyForHiddenColumnsAndRows(args, sheet);
@@ -610,22 +610,10 @@ export class ShowHide {
                     this.parent.notify(
                         virtualContentLoaded, { refresh: 'Column', prevRowColCnt: { rowCount: sheet.rowCount, colCount: sheet.colCount } });
                 }
+                this.parent.selectRange(sheet.selectedRange);
             } else {
-                const viewportRowIdx: number = this.parent.viewport.topIndex;
-                const rowIdx: number = frozenRow ? topLeftIdx[0] : viewportRowIdx;
-                this.parent.renderModule.refreshUI({
-                    skipUpdateOnFirst: this.parent.viewport.leftIndex + frozenCol === skipHiddenIdx(
-                        sheet, frozenCol, true, 'columns'), rowIndex: rowIdx, colIndex: this.parent.viewport.leftIndex,
-                    refresh: 'Column', frozenIndexes: frozenRow ? [frozenRow + viewportRowIdx, frozenCol] : []
-                });
-                if (frozenRow) {
-                    this.parent.viewport.topIndex = viewportRowIdx;
-                }
-                if (args.autoFit) {
-                    args.autoFit = false;
-                }
+                this.parent.renderModule.refreshSheet(false, false, true);
             }
-            this.parent.selectRange(sheet.selectedRange);
         }
     }
     private removeCell(sheet: SheetModel, indexes: number[], rowIdxs: number[], table: HTMLTableElement, hTable: HTMLTableElement): void {

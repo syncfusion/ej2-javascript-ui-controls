@@ -277,6 +277,13 @@ export function scrollToCursor(
             }
         }
     }
+    const scrollVal: HTMLElement = inputElement.closest('div[style*="overflow-y: scroll"]') as HTMLElement;
+    if (!isNullOrUndefined(scrollVal)) {
+        const parentRect: DOMRect = scrollVal.getBoundingClientRect() as DOMRect;
+        if (cursorBottom > parentRect.bottom) {
+            scrollVal.scrollTop += (cursorBottom - parentRect.bottom);
+        }
+    }
 }
 
 /**

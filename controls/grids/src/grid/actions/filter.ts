@@ -1,4 +1,4 @@
-import { EventHandler, L10n, isNullOrUndefined, extend, closest, getValue, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { EventHandler, L10n, isNullOrUndefined, extend, closest, getValue, KeyboardEventArgs, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { getActualPropFromColl, isActionPrevent, getColumnByForeignKeyValue } from '../base/util';
 import { remove, matches } from '@syncfusion/ej2-base';
 import { DataUtil, Predicate, Query, DataManager } from '@syncfusion/ej2-data';
@@ -516,6 +516,9 @@ export class Filter implements IAction {
         ignoreAccent?: boolean, actualFilterValue?: Object, actualOperator?: Object, isForeignColumn?: boolean): void {
         const gObj: IGrid = this.parent;
         let filterCell: HTMLInputElement;
+        if (typeof filterValue === 'string') {
+            filterValue = SanitizeHtmlHelper.sanitize(filterValue as string);
+        }
         this.column = gObj.grabColumnByFieldFromAllCols(fieldName, isForeignColumn);
         if (this.filterSettings.type === 'FilterBar' && this.filterSettings.showFilterBarOperator
             && isNullOrUndefined(this.column.filterBarTemplate) && isNullOrUndefined(this.column.filterTemplate)) {

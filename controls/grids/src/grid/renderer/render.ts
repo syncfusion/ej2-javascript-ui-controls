@@ -277,7 +277,12 @@ export class Render {
                 return this.data.getData(args as NotifyArgs, query);
             });
         }
-        if (this.parent.getForeignKeyColumns().length && (!isFActon || this.parent.searchSettings.key.length)) {
+        const foreignKeyColumns: Column[] = this.parent.getForeignKeyColumns();
+        let foreignKeyLength: number = foreignKeyColumns.length;
+        if (this.parent.columnQueryMode === 'ExcludeHidden' && foreignKeyLength) {
+            foreignKeyLength = foreignKeyColumns.filter((col: Column) => col.visible !== false).length;
+        }
+        if (foreignKeyLength && (!isFActon || this.parent.searchSettings.key.length)) {
             const deffered: Deferred = new Deferred();
             dataManager = dataManager.then((e: ReturnType) => {
                 this.parent.notify(events.getForeignKeyData, { dataManager: dataManager, result: e, promise: deffered, action: args});

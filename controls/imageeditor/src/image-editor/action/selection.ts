@@ -3484,7 +3484,7 @@ export class Selection {
                 } else {
                     parent.objColl.splice(index, 1);
                 }
-            } else if (!isShape && activeObj.shape && (activeObj.activePoint.width !== 0 || activeObj.activePoint.height != 0)) {
+            } else if (!isShape && activeObj.shape && (activeObj.activePoint.width !== 0 || activeObj.activePoint.height !== 0)) {
                 parent.activeObj = activeObj;
                 const index: number = this.getCurrentIndex();
                 if (!isCropSelection) {

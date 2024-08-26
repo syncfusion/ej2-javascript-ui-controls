@@ -128,13 +128,30 @@ export class TrackChangesPane {
         this.renderedChanges = new Dictionary<Revision, ChangesSingleView>();
         this.trackChangeDiv = createElement('div', { className: 'e-de-tc-pane' });
         this.trackChangeDiv.appendChild(this.initPaneHeader());
-        this.changesInfoDiv = createElement('div', { id: 'e-de-tc-pane-revision', styles: 'overflow:auto' });
+        this.changesInfoDiv = createElement('div', { id: 'e-de-tc-pane-revision', styles: 'overflow:auto', className: !this.owner.documentEditorSettings.showHiddenMarks ? 'e-de-tc-hide-para-mark' : '' });
         this.trackChangeDiv.appendChild(this.changesInfoDiv);
         this.noChangeDivElement = createElement('div', { styles: 'display:none;', className: 'e-de-tc-no-chng' });
         this.noChangeDivElement.textContent = this.locale.getConstant('No changes');
         this.changesInfoDiv.appendChild(this.noChangeDivElement);
         this.updateTrackChanges();
 
+    }
+    
+    /**
+     * @private
+     * @returns {void}
+     */
+    public showHiddenParaMark(): void {
+        if (!this.owner.documentEditorSettings.showHiddenMarks) {
+            if (!this.changesInfoDiv.classList.contains('e-de-tc-hide-para-mark')) {
+                this.changesInfoDiv.classList.add('e-de-tc-hide-para-mark');
+            }
+        }
+        else {
+            if (this.changesInfoDiv.classList.contains('e-de-tc-hide-para-mark')) {
+                this.changesInfoDiv.classList.remove('e-de-tc-hide-para-mark');
+            }
+        }
     }
 
     private initPaneHeader(): HTMLElement {

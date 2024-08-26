@@ -2901,7 +2901,10 @@ export class ImageEditor extends Component<HTMLDivElement> implements INotifyPro
                 shapeSettings.type = ShapeType.FreehandDraw;
             }
             const shapeChangedArgs: ShapeChangeEventArgs = {action: 'apply', currentShapeSettings: extend({}, shapeSettings, {}, true) as ShapeSettings};
-            this.trigger('shapeChange', shapeChangedArgs);
+            if (isFinalApply || this.isShapeDrawing) {
+                if (this.isShapeDrawing) { shapeChangedArgs.action = 'draw-end'; }
+                this.trigger('shapeChange', shapeChangedArgs);
+            }
         }
         if (aspectIcon || nonAspectIcon) {
             const obj: Object = {width: null, height: null };

@@ -2423,7 +2423,7 @@ describe('checking for operator', () => {
 describe('Check for operator symbol in datasource value in filtebar', () => {
     let gridObj: Grid;
     let sampleData: Object[] = [{
-        FirstName: 'VINET', Value: 'ENV<0'
+        FirstName: 'VINET', Value: 'ENV0'
     }, { FirstName: 'TOMSP', Value: 'role' }];
     let actionComplete: (args: any) => void;
     beforeAll((done: Function) => {
@@ -2443,7 +2443,7 @@ describe('Check for operator symbol in datasource value in filtebar', () => {
             expect(gridObj.element.querySelectorAll('.e-row').length).toBe(1);
             done();
         };
-        gridObj.filterModule.filterByColumn('Value', 'equal', 'env<0');
+        gridObj.filterModule.filterByColumn('Value', 'equal', 'env0');
         gridObj.actionComplete = actionComplete;
     });
     afterAll(() => {

@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 26.2.11 (2024-08-27)
+
+### Grid
+
+#### Bug fixes
+
+- `#I620569` - XSS Vulnerability in the `filterByColumn` Method has been resolved.
+- `#I618398` - The issue with the 'Blanks' filter option has been resolved.
+- `#I604038` - The issue with maintaining text formatting in the edit dialog for a multiline TextBox in the Grid UI has been resolved.
+- `#I615271` - The issue with selected dropdown value is not saved in the grid when using `editTemplate` has been resolved.
+- `#I902455` - The issue with Dot character search as `NaN` issue has been resolved.
+- `#I621020` - Frozen grid with `columnVirtualization` not properly rendered issue has been resolved.
+- `#I617987` - Double request issue when `pageSize` higher than `totalRecordCount` is resolved.
+- `#I616111` - The issue with the foreign column using a remote data manager, where values were only retrieved when the column was displayed, has been resolved.
+
 ## 26.2.10 (2024-08-20)
 
 ### Grid

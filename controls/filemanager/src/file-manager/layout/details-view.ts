@@ -1102,7 +1102,7 @@ export class DetailsView {
     private onpasteEnd(args: ReadArgs): void {
         if (this.parent.view === 'Details') {
             this.isPasteOperation = true;
-            if (this.parent.path === this.parent.destinationPath || this.parent.path === getDirectoryPath(this.parent, args)) {
+            if (this.parent.path === this.parent.destinationPath || this.parent.path === getDirectoryPath(this.parent, args) || this.parent.hasId) {
                 this.onPathChanged(args);
             }
         }

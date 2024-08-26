@@ -69,13 +69,7 @@ export class Delete {
                             }
                         }
                     } else {
-                        if (frozenRow || frozenCol) {
-                            this.parent.renderModule.refreshSheet(false, false, true);
-                        } else {
-                            this.parent.renderModule.refreshUI(
-                                { skipUpdateOnFirst: true, refresh: 'Row', rowIndex: this.parent.viewport.topIndex, colIndex: 0 });
-                            this.parent.selectRange(sheet.selectedRange);
-                        }
+                        this.parent.renderModule.refreshSheet(false, false, true);
                     }
                 }
             } else {
@@ -109,14 +103,7 @@ export class Delete {
                             }
                         }
                     } else {
-                        if (frozenRow || frozenCol) {
-                            this.parent.renderModule.refreshSheet(false, false, true);
-                        } else {
-                            this.parent.renderModule.refreshUI(
-                                { skipUpdateOnFirst: true, refresh: 'Column', rowIndex: 0, colIndex: this.parent.viewport.leftIndex,
-                                    insertDelete: true });
-                            this.parent.selectRange(sheet.selectedRange);
-                        }
+                        this.parent.renderModule.refreshSheet(false, false, true);
                     }
                 }
                 delete args.refreshSheet;

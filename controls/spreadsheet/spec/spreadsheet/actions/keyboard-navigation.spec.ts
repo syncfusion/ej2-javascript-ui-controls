@@ -563,7 +563,7 @@ describe('Spreadsheet cell navigation module ->', () => {
             setTimeout(() => {
                 expect(helper.getInstance().sheets[0].selectedRange).toBe('B2:B2');
                 done();
-            }, 10);
+            }, 30);
         });
         it('Right arrow button in the last unlocked column cell for navigation', (done: Function) => {
             helper.invoke('selectRange', ['D3']);

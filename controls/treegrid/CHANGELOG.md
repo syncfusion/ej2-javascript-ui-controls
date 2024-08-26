@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.2.11 (2024-08-27)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#F60202` - Fixed an issue where the filter menu `dialog` would not close after performing a filter or cancel action when utilizing the `filterTemplate` property.
+
 ## 26.2.10 (2024-08-20)
 
 ### Tree Grid

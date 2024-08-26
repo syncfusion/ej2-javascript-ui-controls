@@ -338,7 +338,7 @@ export class Filter {
                 top = Math.abs(liPos.top - gridPos.top);
             }
         }
-        if (!isNullOrUndefined(paddingTop) && !isNullOrUndefined(paddingLeft) && (marginTop !== '' || marginLeft !== '') && isNonBodyTag) {
+        if (!isNullOrUndefined(paddingTop) && !isNullOrUndefined(paddingLeft)) {
             ul.style.top = typeof(parseInt(marginTop as string, 10)) === 'string' ? (top + paddingTop + parseInt(marginTop as string, 10)) + 'px' : (top + paddingTop) + 'px';
             ul.style.left = typeof(parseInt(marginLeft as string, 10)) === 'string' ? (left + paddingLeft + parseInt(marginLeft as string, 10) + 8) + 'px' : (left + paddingLeft) + 'px';
         } else {

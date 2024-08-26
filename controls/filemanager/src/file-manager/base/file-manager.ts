@@ -22,7 +22,7 @@ import { read, filter, createFolder } from '../common/operations';
 import { FileManagerModel } from './file-manager-model';
 import { ITreeView, IContextMenu, ViewType, SortOrder, FileDragEventArgs, RetryArgs, ReadArgs, FileSelectionEventArgs } from './interface';
 import { BeforeSendEventArgs, SuccessEventArgs, FailureEventArgs, FileLoadEventArgs, FolderCreateEventArgs, DeleteEventArgs, RenameEventArgs, MoveEventArgs, SearchEventArgs } from './interface';
-import { FileOpenEventArgs, FileSelectEventArgs, MenuClickEventArgs, MenuOpenEventArgs } from './interface';
+import { FileOpenEventArgs, FileSelectEventArgs, MenuClickEventArgs, MenuOpenEventArgs, MenuCloseEventArgs } from './interface';
 import { ToolbarClickEventArgs, ToolbarCreateEventArgs, UploadListCreateArgs } from './interface';
 import { PopupOpenCloseEventArgs, BeforePopupOpenCloseEventArgs, BeforeDownloadEventArgs, BeforeImageLoadEventArgs } from './interface';
 import { refresh, getPathObject, getLocaleText, setNextPath, createDeniedDialog, getCssClass } from '../common/utility';
@@ -661,6 +661,14 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      */
     @Event()
     public menuOpen: EmitType<MenuOpenEventArgs>;
+
+    /**
+     * Triggers before the context menu is closed.
+     *
+     * @event menuClose
+     */
+    @Event()
+    public menuClose: EmitType<MenuCloseEventArgs>;
 
     /**
      * Triggers when the AJAX request is failed.

@@ -358,7 +358,8 @@ export class HeaderRender implements IRenderer {
                 rows[parseInt(i.toString(), 10)].cells.push(this.generateCell({} as Column, CellType.RowDragHIcon));
             }
         }
-        if ((this.parent.isReact || this.parent.isVue)) {
+        const headerTemplateColumn: Column[] = columns.filter((a: Column) => { return a.headerTemplate; });
+        if (headerTemplateColumn.length && (this.parent.isReact || this.parent.isVue)) {
             clearReactVueTemplates(this.parent, ['headerTemplate']);
         }
         for (let i: number = 0, len: number = this.colDepth; i < len; i++) {

@@ -1465,18 +1465,35 @@ export class DiagramEventHandler {
                     if (evt.deltaX !== 0 || evt.deltaY !== 0) {
                         // Perform macOS detection
                         isMacOS = navigator.userAgent.includes('Macintosh');
-                      }
-
+                    }
+                    //898867: Diagram scrolling is not smooth while scrolling with Track Pad in Mac.
+                    if (isMacOS) {
+                        const isHorizontalScroll = Math.abs(evt.deltaX) > Math.abs(evt.deltaY);
+                        if (isHorizontalScroll) {
+                            if (evt.shiftKey || (evt.deltaX && evt.deltaX !== -0 && (isTrackpadScroll || !isMacOS))) {
+                                this.diagram.scroller.zoom(1, change, 0, mousePosition, canMouseWheel, undefined, isTrackpadScroll);
+                            }
+                        }
+                        else {
+                            if ((evt.deltaY && evt.deltaY !== -0 && (isTrackpadScroll || !isMacOS))) {
+                                this.diagram.scroller.zoom(1, 0, change, mousePosition, canMouseWheel, undefined, isTrackpadScroll);
+                            }
+                        }
+                        evt.preventDefault();
+                    }
                     //Bug 837940: In mac, scrollbar flickers on horizontal and vertical scroll using trackpad.
-                    // 878719: Resolve ESLint errors
-                    // eslint-disable-next-line no-compare-neg-zero
-                    if (evt.shiftKey || (evt.deltaX && evt.deltaX !== -0 && (isTrackpadScroll || !isMacOS))) {
-                        this.diagram.scroller.zoom(1, change, 0, mousePosition, canMouseWheel, undefined, isTrackpadScroll);
+                    else {
+                        // 878719: Resolve ESLint errors
+                        // eslint-disable-next-line no-compare-neg-zero
+                        if (evt.shiftKey || (evt.deltaX && evt.deltaX !== -0 && (isTrackpadScroll || !isMacOS))) {
+                            this.diagram.scroller.zoom(1, change, 0, mousePosition, canMouseWheel, undefined, isTrackpadScroll);
+                        }
+                        // eslint-disable-next-line no-compare-neg-zero
+                        else if ((evt.deltaY && evt.deltaY !== -0 && (isTrackpadScroll || !isMacOS))) {
+                            this.diagram.scroller.zoom(1, 0, change, mousePosition, canMouseWheel, undefined, isTrackpadScroll);
+                        }
                     }
-                    // eslint-disable-next-line no-compare-neg-zero
-                    else if ((evt.deltaY && evt.deltaY !== -0 && (isTrackpadScroll || !isMacOS))) {
-                        this.diagram.scroller.zoom(1, 0, change, mousePosition, canMouseWheel, undefined, isTrackpadScroll);
-                    }
+                    
                 }
                 else {
                     // 878719: Resolve ESLint errors

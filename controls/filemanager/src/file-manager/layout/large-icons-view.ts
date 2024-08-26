@@ -629,7 +629,7 @@ export class LargeIconsView {
     private onpasteEnd(args: ReadArgs): void {
         if (this.parent.view === 'LargeIcons') {
             this.isPasteOperation = true;
-            if (this.parent.path === this.parent.destinationPath || this.parent.path === getDirectoryPath(this.parent, args)) {
+            if (this.parent.path === this.parent.destinationPath || this.parent.path === getDirectoryPath(this.parent, args) || this.parent.hasId) {
                 this.onPathChanged(args);
             }
         }

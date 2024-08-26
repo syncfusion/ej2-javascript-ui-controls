@@ -3398,6 +3398,20 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
                 }
             }
         }
+        if (((target.classList.contains('e-flmenu-cancelbtn') || target.classList.contains('e-flmenu-okbtn')
+            || target.classList.contains('e-content') || target.classList.contains('e-rowcell'))
+            && !isNullOrUndefined(this.filterModule) && this.isReact)) {
+            if (this.grid.filterModule['column'].filterTemplate) {
+                const elem: Element = document.getElementById((this.grid.filterModule as any).filterModule['dlgObj'].element.id);
+                this.grid.filterModule['fltrDlgDetails'].isOpen = false;
+                if ((this.grid.filterModule as any).filterModule['dlgObj'] && !(this.grid.filterModule as any).filterModule['dlgObj'].isDestroyed && elem) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    (this as any).clearTemplate(['filterTemplate'], undefined, () => {
+                        (this.grid.filterModule as any).filterModule['dlgObj'].destroy();
+                    });
+                }
+            }
+        }
     }
 
     /**

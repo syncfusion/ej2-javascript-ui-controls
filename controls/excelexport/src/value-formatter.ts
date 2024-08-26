@@ -5,6 +5,7 @@ import { Internationalization, setCulture, NumberFormatOptions, DateFormatOption
  * ValueFormatter class to globalize the value.
  * @private
  */
+/* eslint-disable */
 export class ValueFormatter {
 
     private intl: Internationalization = new Internationalization();

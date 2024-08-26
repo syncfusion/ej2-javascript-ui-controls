@@ -9516,3 +9516,105 @@ describe('Edit date in RTL mode', () => {
             expect(ganttObj.flatData[0]['Work']).toBe(0);  
         });
     });
+describe('Dialog editing - General Tab', () => {
+    let ganttObj: Gantt;
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: [{
+                TaskID: 2, TaskName: 'Identify site location', StartDate: new Date('04/02/2024'), Duration: 2,
+                Progress: 30, resources: [1], info: 'Measure the total property area alloted for construction'
+            },],
+        dateFormat: 'MMM dd, y',
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            child: 'subtasks',
+            notes: 'info',
+            resourceInfo: 'resources'
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Indent', 'Outdent'],
+        allowSelection: true,
+        gridLines: 'Both',
+        height: '450px',
+        treeColumnIndex: 1,
+        resourceFields: {
+            id: 'resourceId',
+            name: 'resourceName'
+        },
+        highlightWeekends: true,
+        timelineSettings: {
+            topTier: {
+                unit: 'Week',
+                format: 'MMM dd, y',
+            },
+            bottomTier: {
+                unit: 'Day',
+            },
+        },
+        columns: [
+            { field: 'TaskID', width: 80 },
+            { field: 'TaskName', headerText: 'Job Name', width: '250', clipMode: 'EllipsisWithTooltip' },
+            { field: 'StartDate' },
+            { field: 'EndDate' },
+            { field: 'Duration' },
+            { field: 'Progress' },
+            { field: 'Predecessor' }
+        ],
+        eventMarkers: [
+            { day: '4/17/2024', label: 'Project approval and kick-off' },
+            { day: '5/3/2024', label: 'Foundation inspection' },
+            { day: '6/7/2024', label: 'Site manager inspection' },
+            { day: '7/16/2024', label: 'Property handover and sign-off' },
+        ],
+        labelSettings: {
+            leftLabel: 'TaskName',
+            rightLabel: 'resources'
+        },
+        editDialogFields: [
+            { type: 'General', headerText: 'General' },
+            { type: 'Dependency' },
+            { type: 'Resources' },
+            { type: 'Notes' },
+        ],
+        splitterSettings: {
+            position: "35%"
+        },
+        projectStartDate: new Date('03/25/2024'),
+        projectEndDate: new Date('07/28/2024')
+        }, done);
+    });
+    afterAll(() => {
+       if (ganttObj) {
+           destroyGantt(ganttObj);
+       }
+   });
+   beforeEach((done) => {
+       setTimeout(done, 500);
+       ganttObj.openEditDialog(2);
+   });
+  it('Schedule validation- duration', () => {
+       let durationField: any = document.querySelector('#' + ganttObj.element.id + 'EndDate') as HTMLInputElement;
+       if (durationField) {
+           let textObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];
+           textObj.value = new Date('4/2/2024');
+           textObj.dataBind();
+           let duration: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+           expect(duration.value).toBe('1 day');
+           let cancelRecord: HTMLElement = document.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+           triggerMouseEvent(cancelRecord, 'click');
+       }
+   });
+});

@@ -407,6 +407,10 @@ export class CommandHandler {
             if (event === DiagramEvent.drop) {
                 (args as IDropEventArgs).source = cloneBlazorObject(this.diagram);
             }
+            // 899334: connectionChange event not fired while using connector draw function
+            if (this.diagram.currentDrawingObject instanceof Connector && event !== DiagramEvent.positionChange) {
+                return await this.diagram.triggerEvent(event, args);
+            }
             if (this.diagram.currentDrawingObject && event !== DiagramEvent.positionChange) {
                 return;
 

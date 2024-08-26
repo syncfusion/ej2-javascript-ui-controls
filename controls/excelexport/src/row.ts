@@ -4,6 +4,7 @@ import { Grouping } from './worksheet';
  * Row class
  * @private
  */
+/* eslint-disable */
 export class Row {
     public height: number;
     public index: number;

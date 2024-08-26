@@ -285,6 +285,7 @@ export class ContextMenu implements IContextMenu {
     private contextMenuItems(args: BeforeOpenCloseMenuEventArgs): void {
         if (this.pdfViewer.contextMenuSettings.contextMenuItems.length) {
             const hideMenuItems: string[] = [];
+            const contextMenuList: MenuItemModel[] = this.contextMenuCollection();
             const ul: HTMLElement = this.contextMenuObj.getRootElement();
             for (let j: number = 0; j < this.pdfViewer.contextMenuSettings.contextMenuItems.length; j++) {
                 for (let i: number = 0; i < this.contextMenuList.length; i++) {

@@ -2813,6 +2813,9 @@ export class Gantt extends Component<HTMLElement>
         if (this.dayMarkersModule && this.dayMarkersModule["eventMarkerRender"]) {
             this.dayMarkersModule["eventMarkerRender"].updateContainerHeight();
         }
+        if (this.enableTimelineVirtualization) {
+            this.timelineModule.refreshTimeline();
+        }
     }
     public keyActionHandler(e: KeyboardEventArgs): void {
         if (this.enableContextMenu && this.contextMenuModule && (e.action === 'downArrow' || e.action === 'upArrow') && document.getElementById(this.element.id + '_contextmenu') && this['args']) {

@@ -1682,6 +1682,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     }
                     if ((!isNullOrUndefined(model.documentEditorSettings.showHiddenMarks) && (model.documentEditorSettings.showHiddenMarks !== oldProp.documentEditorSettings.showHiddenMarks))
                     || (!isNullOrUndefined(model.documentEditorSettings.showBookmarks) && (model.documentEditorSettings.showBookmarks !== oldProp.documentEditorSettings.showBookmarks))) {
+                        if (this.trackChangesPane) {
+                            this.trackChangesPane.showHiddenParaMark();
+                        }
                         this.viewer.updateScrollBars();
                     }
                     if (!isNullOrUndefined(model.documentEditorSettings.highlightEditableRanges)) {

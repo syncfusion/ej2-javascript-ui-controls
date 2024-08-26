@@ -66,9 +66,7 @@ export class Insert {
                         }
                         this.parent.selectRange(sheet.selectedRange);
                     } else {
-                        this.parent.renderModule.refreshUI(
-                            { skipUpdateOnFirst: true, rowIndex: this.parent.viewport.topIndex, colIndex: 0, refresh: 'Row' });
-                        this.parent.selectRange(sheet.selectedRange);
+                        this.parent.renderModule.refreshSheet(false, false, true);
                     }
                 } else if (this.parent.scrollSettings.isFinite && (this.parent.viewport.topIndex + frozenRow ===
                     skipHiddenIdx(sheet, 0, true) || this.parent.viewport.bottomIndex === skipHiddenIdx(
@@ -107,9 +105,7 @@ export class Insert {
                         }
                         this.parent.selectRange(sheet.selectedRange);
                     } else {
-                        this.parent.renderModule.refreshUI(
-                            { skipUpdateOnFirst: true, rowIndex: 0, colIndex: this.parent.viewport.leftIndex, refresh: 'Column' });
-                        this.parent.selectRange(sheet.selectedRange);
+                        this.parent.renderModule.refreshSheet(false, false, true);
                     }
                 } else if (this.parent.scrollSettings.isFinite && (this.parent.viewport.leftIndex + frozenCol ===
                     skipHiddenIdx(sheet, 0, true, 'columns') || this.parent.viewport.rightIndex === skipHiddenIdx(

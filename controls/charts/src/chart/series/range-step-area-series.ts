@@ -171,12 +171,12 @@ export class RangeStepAreaSeries extends LineBase {
                         : (point.high as number), xAxis, yAxis, isInverted);
                     secondPoint = getPoint(this.prevPoint.xValue, this.prevPoint.low < this.prevPoint.high ? (this.prevPoint.low as number)
                         : (this.prevPoint.high as number), xAxis, yAxis, isInverted);
-                    direction += (this.GetStepLineDirection(currentPoint, secondPoint, series.step));
+                    direction += (this.GetStepLineDirection(currentPoint, secondPoint, series.step === 'Right' ? 'Left' : (series.step === 'Left' ? 'Right' : series.step)));
                     if (j === i) {
-                        this.borderDirection += (this.GetStepLineDirection(currentPoint, secondPoint, series.step, 'M'));
+                        this.borderDirection += (this.GetStepLineDirection(currentPoint, secondPoint, series.step === 'Right' ? 'Left' : (series.step === 'Left' ? 'Right' : series.step), 'M'));
                     }
                     else {
-                        this.borderDirection += (this.GetStepLineDirection(currentPoint, secondPoint, series.step, 'L'));
+                        this.borderDirection += (this.GetStepLineDirection(currentPoint, secondPoint, series.step === 'Right' ? 'Left' : (series.step === 'Left' ? 'Right' : series.step), 'L'));
                     }
                 }
 

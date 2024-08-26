@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## 26.2.11 (2024-08-27)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I617570` - Resolved the time delay issue when opening the provided documents.
+- `#I616985` - Resolved the issue that searching the content present in the document displays as no matches found.
+- `#I622039` - Resolved the track changes pane is not opening while deleting changes.
+- `#I608091` - Resolved the content overlapping issue when using insert text method.
+- `#I618189` - Resolved the paging issue printing documents in landscape mode.
+- `#F191318` - Resolved the double click behaviour changes.
+- `#F193935` - Resolved the control freeze issue when preforming accept all action.
+- `#I605284` - Paragraph marks in the Track Changes pane are now shown or hidden according to the value of the `showHiddenMarks`.
+
+#### Features
+
+- `#I617641` - Added support for context based paste options.
+
 ## 26.2.10 (2024-08-20)
 
 ### DocumentEditor

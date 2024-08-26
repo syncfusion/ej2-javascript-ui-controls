@@ -1411,9 +1411,14 @@ export class Timeline {
         const newDate: Date = new Date(scheduleWeeks.getTime() + incrementValue);
         const dubNewDate: Date = new Date(scheduleWeeks.getTime() + ((60 * 60 * 1000) * count));
         const newDateOffset: number = newDate.getTime();
-        const dubNewDateOffset: number = dubNewDate.getTime()
+        const dubNewDateOffset: number = dubNewDate.getTime();
+        const timelineStartDate: Date = this.parent.timelineModule.timelineStartDate;
+        const timelineStartTime: number = timelineStartDate.getTime();
+        const transitions: Object = this.parent.dataOperation.getDSTTransitions(scheduleWeeks.getFullYear());
+        const dstStartTime: number = transitions['dstStart'].getTime();
         if ((!this.parent.isInDst(newDate) && this.parent.isInDst(scheduleWeeks)) ||
-            (this.parent.isInDst(newDate) && !this.parent.isInDst(scheduleWeeks)) || (newDateOffset != dubNewDateOffset && dubNewDateOffset > newDateOffset)) {
+            (this.parent.isInDst(newDate) && !this.parent.isInDst(scheduleWeeks)) || (newDateOffset != dubNewDateOffset && dubNewDateOffset > newDateOffset &&
+                timelineStartTime <= dstStartTime)) {
             let temp: number;
             let totalHour: number = 0;
             let incrementHour: number = incrementValue / (1000 * 60 * 60)

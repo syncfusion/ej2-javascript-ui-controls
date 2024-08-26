@@ -11,7 +11,30 @@ describe('CellStyle', () => {
     //     while (curDate - date < millSecs);
     // }
     //Methods testcase
-
+    it('BUG_896899', (done) => {
+        let book: Workbook = new Workbook({
+            worksheets: [
+                {
+                    name: 'CellStyle',
+                    rows: [
+                        { index: 1, cells: [{ index: 1, value: 1160099.5, style: { numberFormat: 'R$ #,##0.00' } }] },
+                    ],
+                }]
+        }, 'csv');
+        book.saveAsBlob('text/csv').then((csvBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(csvBlob.blobData, 'BUG_896899.csv');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(csvBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });        
+    });
     it('Font', (done) => {
         let book: Workbook = new Workbook({
             worksheets: [

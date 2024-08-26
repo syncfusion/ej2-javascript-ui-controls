@@ -3,6 +3,7 @@ import { CellStyle } from './cell-style';
  * Worksheet class
  * @private
  */
+/* eslint-disable */
 export class Cell {
     public index: number;
     public rowSpan: number;

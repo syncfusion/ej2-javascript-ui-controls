@@ -776,4 +776,89 @@ describe('Dialog Editing module', () => {
         });
     });
 
+    describe('EJ2-903864 - Maintaining Text Formatting in Edit Dialog for Multiline TextBox in Grid UI => ', () => {
+        let gridObj: Grid;
+        let stringParams: any = {
+            params: {
+                multiline: true,
+                showClearButton: true
+            }
+        };
+        let isEditMode: boolean = false;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: normalData,
+                    editSettings: {
+                        allowEditing: true,
+                        allowAdding: true,
+                        allowDeleting: true,
+                        mode: 'Dialog'
+                    },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    columns: [
+                        {
+                            field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                            validationRules: { required: true, number: true }, width: 140
+                        },
+                        {
+                            field: 'CustomerID', headerText: 'Customer ID',
+                            validationRules: { required: true }, width: 140
+                        },
+                        {
+                            field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit',
+                            width: 140, format: 'C2', validationRules: { required: true }
+                        },
+                        {
+                            field: 'ShipAddress', headerText: 'ShipAddress', width: 170, edit: stringParams, disableHtmlEncode: false, valueAccessor: (field: string, data: Object) => {
+                                if (isEditMode) {
+                                    const value: string = data['ShipAddress'];
+                                    return value !== undefined ? value.split('<br>').join('\n') : '';
+                                } else {
+                                    const value: string = data['ShipAddress'];
+                                    return value !== undefined ? value.split('\n').join('<br>') : '';
+                                }
+                            }
+                        }
+                    ],
+                    actionBegin: (args: any) => {
+                        if (args.requestType === 'beginEdit' || args.requestType === 'add') {
+                            isEditMode = true;
+                        }
+                        if (args.requestType === 'save') {
+                            isEditMode = false;
+                        }
+                    },
+                    actionComplete: actionComplete
+                }, done);
+        });
+
+        it('Editing the row', function (done) {
+            gridObj.actionComplete = function (args: any) {
+                if (args.requestType === 'beginEdit') {
+                    args.form.elements[4].ej2_instances[0].value = 'Updated\n value';
+                    gridObj.endEdit();
+                    done();
+                }
+            };
+            (gridObj as any).dblClickHandler({ target: gridObj.element.querySelectorAll('.e-row')[1].firstElementChild });
+        });
+
+        it('Verify the edited row', function (done) {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'beginEdit') {
+                    expect(args.rowData.ShipAddress).toBe('Updated\n value');
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj as any).dblClickHandler({ target: gridObj.element.querySelectorAll('.e-row')[1].firstElementChild });
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+    });
 });

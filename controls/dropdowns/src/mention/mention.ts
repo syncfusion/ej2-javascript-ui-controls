@@ -1627,7 +1627,13 @@ export class Mention extends DropDownBase {
             range.insertNode(frag);
             if (lastNode) {
                 range = range.cloneRange();
-                range.setStartAfter(lastNode);
+                if (this.isRTE) {
+                    range.setStart(lastNode, 0);
+                    range.setEnd(lastNode, lastNode.textContent.length);
+                }
+                else {
+                    range.setStartAfter(lastNode);
+                }
                 range.collapse(true);
                 selection.removeAllRanges();
                 selection.addRange(range);

@@ -221,6 +221,7 @@ describe('Diagram Control', () => {
 
             ele = createElement('div', { id: 'diagramhittesting' });
             document.body.appendChild(ele);
+            
             let connector2: ConnectorModel = {
                 id: 'connector2',
                 type: 'Straight',
@@ -252,6 +253,8 @@ describe('Diagram Control', () => {
             let conn = diagram.connectors[0];
             var diagramCanvas = document.getElementById(diagram.element.id + 'content');
             mouseEvents.dragAndDropEvent(diagramCanvas, 270, 150, 320, 160);
+            console.log(diagram.connectors[0].sourcePoint.x)
+            console.log(diagram.connectors[0].targetPoint.y)
             expect(diagram.connectors[0].sourcePoint.x == 350 &&
                 diagram.connectors[0].targetPoint.y == 210).toBe(true);
             done();
@@ -278,6 +281,7 @@ describe('Diagram Control', () => {
             diagram.connectors[0].constraints = ConnectorConstraints.Select | ConnectorConstraints.PointerEvents;
             diagram.dataBind();
             let value: HTMLElement = document.getElementById('diagramhittesting_SelectorElement')
+            console.log((value.childNodes[0] as HTMLElement).getAttribute('class'))
             expect((value.childNodes[0] as HTMLElement).getAttribute('class') === 'e-diagram-endpoint-handle e-sourceend e-disabled')
             done();
         });
@@ -2707,5 +2711,187 @@ describe('Diagram Control', () => {
             done();
         }); 
     });
-
+    describe('Connector routing is not proper while setting the segment direction as Left', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let nodes:NodeModel[] = [
+                {
+                    id: "ellipse-3",
+                    // Position of the node
+                    offsetX: 350,
+                    offsetY: 100,
+                    // Size of the node
+                    width: 100,
+                    height: 60,
+                    margin: { top: 100, left: 150 },
+                    shape: { type: 'Basic', shape: 'Ellipse' },
+                    annotations: [{
+                        content: 'Node 1'
+                    }],
+                }    ,{
+                    id: "ellipse-4",
+                    // Position of the node
+                    offsetX: 150,
+                    offsetY: 100,
+                    // Size of the node
+                    width: 100,
+                    height: 60,
+                    margin: { top: 100, left: 350 },
+                    shape: { type: 'Basic', shape: 'Ellipse' },
+                    annotations: [{
+                        content: 'Node 2'
+                    }]
+                }
+            ,{
+                id: "ellipse-6",
+                // Position of the node
+                offsetX: 150,
+                offsetY: 200,
+                // Size of the node
+                width: 100,
+                height: 60,
+                shape: { type: 'Basic', shape: 'Ellipse' },
+                annotations: [{
+                    content: 'Node 1'
+                }],
+            },
+            {
+                id: "ellipse-7",
+                // Position of the node
+                offsetX: 350,
+                offsetY: 200,
+                // Size of the node
+                width: 100,
+                height: 60,
+                shape: { type: 'Basic', shape: 'Ellipse' },
+                annotations: [{
+                    content: 'Node 2'
+                }]
+            }, {
+                id: "ellipse-8",
+                // Position of the node
+                offsetX: 150,
+                offsetY: 300,
+                // Size of the node
+                width: 100,
+                height: 60,
+                shape: { type: 'Basic', shape: 'Ellipse' },
+                annotations: [{
+                    content: 'Node 1'
+                }],
+            },{
+                id: "ellipse-9",
+                // Position of the node
+                offsetX: 150,
+                offsetY: 500,
+                // Size of the node
+                width: 100,
+                height: 60,
+                shape: { type: 'Basic', shape: 'Ellipse' },
+                annotations: [{
+                    content: 'Node 2'
+                }]
+            }
+            ,{id: "ellipse-10",
+            // Position of the node
+            offsetX: 150,
+            offsetY: 600,
+            // Size of the node
+            width: 100,
+            height: 60,
+            shape: { type: 'Basic', shape: 'Ellipse' },
+            annotations: [{
+                content: 'Node 1'
+            }],
+            },{id: "ellipse-11",
+            // Position of the node
+            offsetX: 350,
+            offsetY: 500,
+            // Size of the node
+            width: 100,
+            height: 60,
+            shape: { type: 'Basic', shape: 'Ellipse' },
+            annotations: [{
+                content: 'Node 2'
+            }]
+            },
+            ]
+            let connectors: ConnectorModel[] = [
+                {
+                    id: "connector1",
+                    sourceID: "ellipse-4",
+                    targetID: "ellipse-3",
+                    type: "Orthogonal",
+                    segments: [
+                        {
+                            direction: "Right",
+                            length: 20
+                        }
+                    ], annotations: [{
+                        content: 'Right'
+                    }]
+                },
+                 {
+                    id: "connector2",
+                    sourceID: "ellipse-6",
+                    targetID: "ellipse-7",
+                    type: "Orthogonal",
+                    segments: [
+                        {
+                            direction: "Left",
+                            length: 20
+                        }
+                    ], annotations: [{
+                        content: 'Left'
+                    }]
+                }
+                , {
+                    id: "connector3",
+                    sourceID: "ellipse-8",
+                    targetID: "ellipse-9",
+                    type: "Orthogonal",
+                    segments: [
+                        {
+                            direction: "Top",
+                            length: 20
+                        }
+                    ], annotations: [{
+                        content: 'Top'
+                    }]
+                }
+                , {
+                    id: "connector4",
+                    sourceID: "ellipse-10",
+                    targetID: "ellipse-11",
+                    type: "Orthogonal",
+                    segments: [
+                        {
+                            direction: "Bottom",
+                            length: 20
+                        }
+                    ], annotations: [{
+                        content: 'Bottom'
+                    }]
+                }
+            ];
+            diagram = new Diagram({
+                width: '1000px', height: '900px', nodes:nodes, connectors: connectors,
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking the segment direction as Left', function (done) {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas,228, 158);
+            expect((diagram.selectedItems.connectors[0].segments[0] as any).direction=== 'Left');
+            done();
+        });
+    });
 });

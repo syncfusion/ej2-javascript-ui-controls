@@ -7,6 +7,7 @@ import { AutoFilters } from './auto-filters';
  * Worksheet class
  * @private
  */
+/* eslint-disable */
 export class Worksheet {
     public isSummaryRowBelow: boolean = true;
     public index: number;

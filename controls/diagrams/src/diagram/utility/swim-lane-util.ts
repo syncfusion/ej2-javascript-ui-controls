@@ -200,8 +200,10 @@ export function phaseDefine(
     }
     shape.phases[parseInt(phaseIndex.toString(), 10)].header.id = phaseObject.id;
     //894556-Swimlane wrapper updated wrongly when phase offset set for vertical swimlane
-    const phaseOffset: number = shape.phases[parseInt(phaseIndex.toString(), 10)].offset;
-    object.wrapper.height = object.wrapper.height >= phaseOffset ? object.wrapper.height : phaseOffset + (object.shape as any).header.height;
+    if (!diagram.diagramActions && !orientation && (object.wrapper as any).height) {
+        const phaseOffset: number = shape.phases[parseInt(phaseIndex.toString(), 10)].offset;
+        object.wrapper.height = object.wrapper.height >= phaseOffset ? object.wrapper.height : phaseOffset + (object.shape as any).header.height;
+    }
     const wrapper: Container = addObjectToGrid(
         diagram, grid, object, phaseObject, false, true, false, shape.phases[parseInt(phaseIndex.toString(), 10)].id);
     grid.addObject(wrapper, rowValue, colValue);
@@ -272,6 +274,10 @@ export function laneCollection(
         grid.addObject(parentWrapper, rowValue, colValue);
         if (!orientation) { rowValue++; }
         colValue = orientation ? l : laneIndex + 1;
+        //894556-Swimlane wrapper updated wrongly when phase offset set for vertical swimlane
+        if (!diagram.diagramActions && orientation && (object.wrapper as any).height) {
+            object.wrapper.height += parentWrapper.height;
+        }
     }
 }
 
@@ -1229,58 +1235,61 @@ export function addPhase(diagram: Diagram, parent: NodeModel, newPhase: PhaseMod
                     addLastPhase(phaseIndex, parent, entry, grid, orientation, newPhase);
                 }
             }
-            const phaseObj: PhaseModel = new Phase((parent.shape) as Shape, 'phases', newPhase, true);
-            if (!(diagram.diagramActions & DiagramAction.UndoRedo)) { phaseObj.id += randomId(); }
-            shape.phases.splice(phaseIndex, 0, phaseObj);
-            phaseDefine(grid, diagram, parent, gridRowIndex, orientation, phaseIndex);
-            if (orientation) {
-                phaseNode = diagram.nameTable[grid.rows[parseInt(
-                    gridRowIndex.toString(), 10)].cells[parseInt(phaseIndex.toString(), 10)].children[0].id];
-                if (phaseIndex === 0 && shape.header && (shape as SwimLane).hasHeader) {
-                    grid.rows[0].cells[0].children = grid.rows[0].cells[1].children; grid.rows[0].cells[1].children = [];
-                    const fristRow: GridRow = grid.rows[0];
-                    for (let i: number = 0; i < fristRow.cells.length; i++) {
-                        fristRow.cells[parseInt(i.toString(), 10)].minWidth = undefined;
-                        if (i === 0) {
-                            fristRow.cells[parseInt(i.toString(), 10)].columnSpan = grid.rows[0].cells.length;
-                        } else { fristRow.cells[parseInt(i.toString(), 10)].columnSpan = 1; }
+            // Exception throws while perform addPhase with offset higher than existing phases offset
+            if (phaseIndex >= 0) {
+                const phaseObj: PhaseModel = new Phase((parent.shape) as Shape, 'phases', newPhase, true);
+                if (!(diagram.diagramActions & DiagramAction.UndoRedo)) { phaseObj.id += randomId(); }
+                shape.phases.splice(phaseIndex, 0, phaseObj);
+                phaseDefine(grid, diagram, parent, gridRowIndex, orientation, phaseIndex);
+                if (orientation) {
+                    phaseNode = diagram.nameTable[grid.rows[parseInt(
+                        gridRowIndex.toString(), 10)].cells[parseInt(phaseIndex.toString(), 10)].children[0].id];
+                    if (phaseIndex === 0 && shape.header && (shape as SwimLane).hasHeader) {
+                        grid.rows[0].cells[0].children = grid.rows[0].cells[1].children; grid.rows[0].cells[1].children = [];
+                        const fristRow: GridRow = grid.rows[0];
+                        for (let i: number = 0; i < fristRow.cells.length; i++) {
+                            fristRow.cells[parseInt(i.toString(), 10)].minWidth = undefined;
+                            if (i === 0) {
+                                fristRow.cells[parseInt(i.toString(), 10)].columnSpan = grid.rows[0].cells.length;
+                            } else { fristRow.cells[parseInt(i.toString(), 10)].columnSpan = 1; }
+                        }
                     }
+                    addHorizontalPhase(diagram, parent, grid, phaseIndex, orientation);
+                    const col: ColumnDefinition[] = grid.columnDefinitions();
+                    grid.updateColumnWidth(phaseIndex, col[parseInt(phaseIndex.toString(), 10)].width, true, padding);
+                    phaseNode.maxWidth = phaseNode.wrapper.maxWidth = col[parseInt(phaseIndex.toString(), 10)].width;
+                    if (col.length > phaseIndex + 1) {
+                        const nextPhaseNode: NodeModel
+                            = diagram.nameTable[grid.rows[parseInt(gridRowIndex.toString(), 10)].cells[phaseIndex + 1].children[0].id];
+                        grid.updateColumnWidth(phaseIndex + 1, col[phaseIndex + 1].width, true, padding);
+                        nextPhaseNode.maxWidth = nextPhaseNode.wrapper.maxWidth = col[phaseIndex + 1].width;
+                    }
+                    parent.width = parent.wrapper.width = parent.wrapper.children[0].width = grid.width;
+                } else {
+                    phaseNode = diagram.nameTable[grid.rows[gridRowIndex + phaseIndex].cells[0].children[0].id];
+                    const row: RowDefinition[] = grid.rowDefinitions();
+                    let size: number = row[gridRowIndex + phaseIndex].height;
+                    addVerticalPhase(diagram, parent, grid, gridRowIndex + phaseIndex, orientation);
+                    grid.updateRowHeight(gridRowIndex + phaseIndex, size, true, padding);
+                    if (row.length > gridRowIndex + phaseIndex + 1) {
+                        size = row[gridRowIndex + phaseIndex + 1].height;
+                        grid.updateRowHeight(gridRowIndex + phaseIndex + 1, size, true, padding);
+                    }
+                    parent.height = parent.wrapper.height = parent.wrapper.children[0].height = grid.actualSize.height;
                 }
-                addHorizontalPhase(diagram, parent, grid, phaseIndex, orientation);
-                const col: ColumnDefinition[] = grid.columnDefinitions();
-                grid.updateColumnWidth(phaseIndex, col[parseInt(phaseIndex.toString(), 10)].width, true, padding);
-                phaseNode.maxWidth = phaseNode.wrapper.maxWidth = col[parseInt(phaseIndex.toString(), 10)].width;
-                if (col.length > phaseIndex + 1) {
-                    const nextPhaseNode: NodeModel
-                        = diagram.nameTable[grid.rows[parseInt(gridRowIndex.toString(), 10)].cells[phaseIndex + 1].children[0].id];
-                    grid.updateColumnWidth(phaseIndex + 1, col[phaseIndex + 1].width, true, padding);
-                    nextPhaseNode.maxWidth = nextPhaseNode.wrapper.maxWidth = col[phaseIndex + 1].width;
+                swimLaneMeasureAndArrange(parent); parent.width = parent.wrapper.actualSize.width;
+                updateHeaderMaxWidth(diagram, parent);
+                diagram.drag(parent, x - parent.wrapper.bounds.x, y - parent.wrapper.bounds.y);
+                checkPhaseOffset(parent, diagram);
+                if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
+                    const entry: HistoryEntry = {
+                        type: 'PhaseCollectionChanged', changeType: 'Insert', undoObject: cloneObject(phaseObj),
+                        redoObject: cloneObject(phaseNode), category: 'Internal'
+                    };
+                    diagram.addHistoryEntry(entry);
                 }
-                parent.width = parent.wrapper.width = parent.wrapper.children[0].width = grid.width;
-            } else {
-                phaseNode = diagram.nameTable[grid.rows[gridRowIndex + phaseIndex].cells[0].children[0].id];
-                const row: RowDefinition[] = grid.rowDefinitions();
-                let size: number = row[gridRowIndex + phaseIndex].height;
-                addVerticalPhase(diagram, parent, grid, gridRowIndex + phaseIndex, orientation);
-                grid.updateRowHeight(gridRowIndex + phaseIndex, size, true, padding);
-                if (row.length > gridRowIndex + phaseIndex + 1) {
-                    size = row[gridRowIndex + phaseIndex + 1].height;
-                    grid.updateRowHeight(gridRowIndex + phaseIndex + 1, size, true, padding);
-                }
-                parent.height = parent.wrapper.height = parent.wrapper.children[0].height = grid.actualSize.height;
+                diagram.updateDiagramObject(parent);
             }
-            swimLaneMeasureAndArrange(parent); parent.width = parent.wrapper.actualSize.width;
-            updateHeaderMaxWidth(diagram, parent);
-            diagram.drag(parent, x - parent.wrapper.bounds.x, y - parent.wrapper.bounds.y);
-            checkPhaseOffset(parent, diagram);
-            if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
-                const entry: HistoryEntry = {
-                    type: 'PhaseCollectionChanged', changeType: 'Insert', undoObject: cloneObject(phaseObj),
-                    redoObject: cloneObject(phaseNode), category: 'Internal'
-                };
-                diagram.addHistoryEntry(entry);
-            }
-            diagram.updateDiagramObject(parent);
         }
     }
 }

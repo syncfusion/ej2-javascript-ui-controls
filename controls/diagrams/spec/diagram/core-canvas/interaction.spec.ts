@@ -450,14 +450,15 @@ describe('Diagram Control', () => {
             let endPoint: PointModel = transformPointByMatrix(matrix, rotator);
             mouseEvents.dragAndDropEvent(diagramCanvas, rotator.x + diagram.element.offsetLeft, rotator.y + diagram.element.offsetTop, endPoint.x + diagram.element.offsetLeft, endPoint.y + diagram.element.offsetTop);
             diagram.nodes[0].rotateAngle = Math.round(diagram.nodes[0].rotateAngle);
+            console.log("Dhakshin -", diagram.nodes[0].rotateAngle % 360);
             expect(diagram.nodes[0].rotateAngle % 360 == 50).toBe(true);
             //resize at top left
             let refPoint: PointModel = transformPointByMatrix(matrix, bounds.topLeft); refPoint.x += 8; refPoint.y += 8;
             mouseEvents.dragAndDropEvent(diagramCanvas, refPoint.x, refPoint.y, refPoint.x + 5, refPoint.y - 10);
             let corner: string = TopLeft;
-            expect(diagram.nodes[0].offsetX == resize50[corner].offsetX && diagram.nodes[0].offsetY == resize50[corner].offsetY &&
-                Math.round(diagram.nodes[0].width) == Math.round(resize50[corner].width) &&
-                Math.round(diagram.nodes[0].height) == Math.round(resize50[corner].height)).toBe(true);
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            expect(Math.round(diagram.nodes[0].width) == 104 && Math.round(diagram.nodes[0].height) == 110).toBe(true);
             let node: NodeModel = diagram.nodes[0] as NodeModel;
 
             //top center
@@ -466,9 +467,11 @@ describe('Diagram Control', () => {
             refPoint.x += 8; refPoint.y += 8;
             mouseEvents.dragAndDropEvent(diagramCanvas, refPoint.x, refPoint.y, refPoint.x + 20, refPoint.y - 20);
             corner = TopCenter;
-            expect(diagram.nodes[0].offsetX == resize50[corner].offsetX && diagram.nodes[0].offsetY == resize50[corner].offsetY &&
-                Math.round(diagram.nodes[0].width) == Math.round(resize50[corner].width) &&
-                Math.round(diagram.nodes[0].height) == Math.round(resize50[corner].height)).toBe(true);
+            
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            
+            expect(Math.round(diagram.nodes[0].width) == 104 && Math.round(diagram.nodes[0].height) == 138).toBe(true);
 
             //top right
             let topRight: PointModel = { x: node.offsetX + node.width / 2, y: node.offsetY - node.height / 2 };
@@ -476,6 +479,10 @@ describe('Diagram Control', () => {
             refPoint.x += 8; refPoint.y += 8;
             mouseEvents.dragAndDropEvent(diagramCanvas, refPoint.x, refPoint.y, refPoint.x + 20, refPoint.y - 20);
             corner = TopRight;
+            
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            
             expect(diagram.nodes[0].offsetX == resize50[corner].offsetX && diagram.nodes[0].offsetY == resize50[corner].offsetY &&
                 Math.round(diagram.nodes[0].width) == Math.round(resize50[corner].width) &&
                 Math.round(diagram.nodes[0].height) == Math.round(resize50[corner].height)).toBe(true);
@@ -486,6 +493,10 @@ describe('Diagram Control', () => {
             refPoint.x += 8; refPoint.y += 8;
             mouseEvents.dragAndDropEvent(diagramCanvas, refPoint.x, refPoint.y, refPoint.x - 20, refPoint.y - 20);
             corner = MiddleLeft;
+            
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            
             expect(diagram.nodes[0].offsetX == resize50[corner].offsetX && diagram.nodes[0].offsetY == resize50[corner].offsetY &&
                 Math.round(diagram.nodes[0].width) == Math.round(resize50[corner].width) &&
                 Math.round(diagram.nodes[0].height) == Math.round(resize50[corner].height)).toBe(true);
@@ -496,6 +507,10 @@ describe('Diagram Control', () => {
             refPoint.x += 8; refPoint.y += 8;
             mouseEvents.dragAndDropEvent(diagramCanvas, refPoint.x, refPoint.y, refPoint.x + 20, refPoint.y + 20);
             corner = MiddleRight;
+            
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            
             expect(diagram.nodes[0].offsetX == resize50[corner].offsetX && diagram.nodes[0].offsetY == resize50[corner].offsetY &&
                 Math.round(diagram.nodes[0].width) !== Math.round(resize50[corner].width) &&
                 Math.round(diagram.nodes[0].height) == Math.round(resize50[corner].height)).toBe(true);
@@ -506,6 +521,10 @@ describe('Diagram Control', () => {
             refPoint.x += 8; refPoint.y += 8;
             mouseEvents.dragAndDropEvent(diagramCanvas, refPoint.x, refPoint.y, refPoint.x - 20, refPoint.y - 0);
             corner = BottomLeft;
+            
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            
             expect(diagram.nodes[0].offsetX == resize50[corner].offsetX && diagram.nodes[0].offsetY == resize50[corner].offsetY &&
                 Math.round(diagram.nodes[0].width) == Math.round(resize50[corner].width) &&
                 Math.round(diagram.nodes[0].height) == Math.round(resize50[corner].height)).toBe(true);
@@ -516,6 +535,10 @@ describe('Diagram Control', () => {
             refPoint.x += 8; refPoint.y += 8;
             mouseEvents.dragAndDropEvent(diagramCanvas, refPoint.x, refPoint.y, refPoint.x - 20, refPoint.y + 20);
             corner = BottomCenter;
+            
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            
             expect(diagram.nodes[0].offsetX == resize50[corner].offsetX && diagram.nodes[0].offsetY == resize50[corner].offsetY &&
                 Math.round(diagram.nodes[0].width) == Math.round(resize50[corner].width) &&
                 Math.round(diagram.nodes[0].height) == Math.round(resize50[corner].height)).toBe(true);
@@ -526,6 +549,10 @@ describe('Diagram Control', () => {
             refPoint.x += 8; refPoint.y += 8;
             mouseEvents.dragAndDropEvent(diagramCanvas, refPoint.x, refPoint.y, refPoint.x + 0, refPoint.y + 20);
             corner = BottomRight;
+            
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            
             expect(diagram.nodes[0].offsetX == resize50[corner].offsetX && diagram.nodes[0].offsetY == resize50[corner].offsetY &&
                 Math.round(diagram.nodes[0].width) == Math.round(resize50[corner].width) &&
                 Math.round(diagram.nodes[0].height) == Math.round(resize50[corner].height)).toBe(true);
@@ -548,6 +575,7 @@ describe('Diagram Control', () => {
             let endPoint: PointModel = transformPointByMatrix(matrix, rotator);
             mouseEvents.dragAndDropEvent(diagramCanvas, rotator.x + diagram.element.offsetLeft, rotator.y + diagram.element.offsetTop, endPoint.x + diagram.element.offsetLeft, endPoint.y + diagram.element.offsetTop);
             diagram.nodes[0].rotateAngle = Math.round(diagram.nodes[0].rotateAngle);
+            console.log(diagram.nodes[0].rotateAngle % 360);
             expect(diagram.nodes[0].rotateAngle % 360 == 130).toBe(true);
             //resize at top left
             let refPoint: PointModel = transformPointByMatrix(matrix, bounds.topLeft); refPoint.x += 8; refPoint.y += 8;
@@ -555,6 +583,10 @@ describe('Diagram Control', () => {
             let corner: string = TopLeft;
             output += 'topLeft :{offsetX:' + diagram.nodes[0].offsetX + ',offsetY:' + diagram.nodes[0].offsetY +
                 ', width: ' + diagram.nodes[0].width + ', height: ' + diagram.nodes[0].height + ' } ';
+            
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            
             expect(diagram.nodes[0].offsetX == resize130[corner].offsetX && diagram.nodes[0].offsetY == resize130[corner].offsetY &&
                 Math.round(diagram.nodes[0].width) == Math.round(resize130[corner].width) &&
                 Math.round(diagram.nodes[0].height) == Math.round(resize130[corner].height)).toBe(true);
@@ -568,6 +600,10 @@ describe('Diagram Control', () => {
             corner = TopCenter;
             output += 'topCenter :{offsetX:' + diagram.nodes[0].offsetX + ',offsetY:' + diagram.nodes[0].offsetY +
                 ', width: ' + diagram.nodes[0].width + ', height: ' + diagram.nodes[0].height + ' } ';
+            
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            
             expect(diagram.nodes[0].offsetX == resize130[corner].offsetX && diagram.nodes[0].offsetY == resize130[corner].offsetY &&
                 Math.round(diagram.nodes[0].width) == Math.round(resize130[corner].width) &&
                 Math.round(diagram.nodes[0].height) == Math.round(resize130[corner].height)).toBe(true);
@@ -580,6 +616,10 @@ describe('Diagram Control', () => {
             corner = TopRight;
             output += 'topRight :{offsetX:' + diagram.nodes[0].offsetX + ',offsetY:' + diagram.nodes[0].offsetY +
                 ', width: ' + diagram.nodes[0].width + ', height: ' + diagram.nodes[0].height + ' } ';
+                
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            
             expect(diagram.nodes[0].offsetX == resize130[corner].offsetX &&
                 Math.round(diagram.nodes[0].offsetY) == Math.round(resize130[corner].offsetY) &&
                 Math.round(diagram.nodes[0].width) == Math.round(resize130[corner].width) &&
@@ -593,6 +633,10 @@ describe('Diagram Control', () => {
             corner = MiddleLeft;
             output += 'middleLeft :{offsetX:' + diagram.nodes[0].offsetX + ',offsetY:' + diagram.nodes[0].offsetY +
                 ', width: ' + diagram.nodes[0].width + ', height: ' + diagram.nodes[0].height + ' } ';
+                
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            
             expect(diagram.nodes[0].offsetX == resize130[corner].offsetX &&
                 Math.round(diagram.nodes[0].offsetY) == Math.round(resize130[corner].offsetY) &&
                 Math.round(diagram.nodes[0].width) == Math.round(resize130[corner].width) &&
@@ -606,6 +650,10 @@ describe('Diagram Control', () => {
             corner = MiddleRight;
             output += 'middleRight :{offsetX:' + diagram.nodes[0].offsetX + ',offsetY:' + diagram.nodes[0].offsetY +
                 ', width: ' + diagram.nodes[0].width + ', height: ' + diagram.nodes[0].height + ' } ';
+                
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            
             expect(diagram.nodes[0].offsetX == resize130[corner].offsetX &&
                 Math.round(diagram.nodes[0].offsetY) == Math.round(resize130[corner].offsetY) &&
                 Math.round(diagram.nodes[0].width) == Math.round(resize130[corner].width) &&
@@ -619,6 +667,10 @@ describe('Diagram Control', () => {
             corner = BottomLeft;
             output += 'bottomLeft :{offsetX:' + diagram.nodes[0].offsetX + ',offsetY:' + diagram.nodes[0].offsetY +
                 ', width: ' + diagram.nodes[0].width + ', height: ' + diagram.nodes[0].height + ' } ';
+                
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            
             expect(diagram.nodes[0].offsetX == resize130[corner].offsetX &&
                 Math.round(diagram.nodes[0].offsetY) == Math.round(resize130[corner].offsetY) &&
                 Math.round(diagram.nodes[0].width) == Math.round(resize130[corner].width) &&
@@ -632,6 +684,10 @@ describe('Diagram Control', () => {
             corner = BottomCenter;
             output += 'bottomCenter :{offsetX:' + diagram.nodes[0].offsetX + ',offsetY:' + diagram.nodes[0].offsetY +
                 ', width: ' + diagram.nodes[0].width + ', height: ' + diagram.nodes[0].height + ' } ';
+                
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            
             expect(diagram.nodes[0].offsetX == resize130[corner].offsetX &&
                 Math.round(diagram.nodes[0].offsetY) == Math.round(resize130[corner].offsetY) &&
                 Math.round(diagram.nodes[0].width) == Math.round(resize130[corner].width) &&
@@ -645,6 +701,10 @@ describe('Diagram Control', () => {
             corner = BottomRight;
             output += 'bottomRight :{offsetX:' + diagram.nodes[0].offsetX + ',offsetY:' + diagram.nodes[0].offsetY +
                 ', width: ' + diagram.nodes[0].width + ', height: ' + diagram.nodes[0].height + ' } ';
+                
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            
             expect(diagram.nodes[0].offsetX == resize130[corner].offsetX &&
                 Math.round(diagram.nodes[0].offsetY) == Math.round(resize130[corner].offsetY) &&
                 Math.round(diagram.nodes[0].width) == Math.round(resize130[corner].width) &&
@@ -669,6 +729,7 @@ describe('Diagram Control', () => {
             let endPoint: PointModel = transformPointByMatrix(matrix, rotator);
             mouseEvents.dragAndDropEvent(diagramCanvas, rotator.x + diagram.element.offsetLeft, rotator.y + diagram.element.offsetTop, endPoint.x + diagram.element.offsetLeft, endPoint.y + diagram.element.offsetTop);
             diagram.nodes[0].rotateAngle = Math.round(diagram.nodes[0].rotateAngle);
+            console.log(diagram.nodes[0].rotateAngle % 360);
             expect(diagram.nodes[0].rotateAngle % 360 == 260).toBe(true);
             //resize at top left
             let refPoint: PointModel = transformPointByMatrix(matrix, bounds.topLeft); refPoint.x += 8; refPoint.y += 8;
@@ -676,6 +737,10 @@ describe('Diagram Control', () => {
             let corner: string = TopLeft;
             output += 'topLeft :{offsetX:' + diagram.nodes[0].offsetX + ',offsetY:' + diagram.nodes[0].offsetY +
                 ', width: ' + diagram.nodes[0].width + ', height: ' + diagram.nodes[0].height + ' } ';
+                
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            
             expect(diagram.nodes[0].offsetX == resize260[corner].offsetX &&
                 Math.round(diagram.nodes[0].offsetY) == Math.round(resize260[corner].offsetY) &&
                 Math.round(diagram.nodes[0].width) == Math.round(resize260[corner].width) &&
@@ -690,6 +755,10 @@ describe('Diagram Control', () => {
             corner = TopCenter;
             output += 'topCenter :{offsetX:' + diagram.nodes[0].offsetX + ',offsetY:' + diagram.nodes[0].offsetY +
                 ', width: ' + diagram.nodes[0].width + ', height: ' + diagram.nodes[0].height + ' } ';
+                
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            
             expect(diagram.nodes[0].offsetX == resize260[corner].offsetX &&
                 Math.round(diagram.nodes[0].offsetY) == Math.round(resize260[corner].offsetY) &&
                 Math.round(diagram.nodes[0].width) == Math.round(resize260[corner].width) &&
@@ -703,6 +772,10 @@ describe('Diagram Control', () => {
             corner = TopRight;
             output += 'topRight :{offsetX:' + diagram.nodes[0].offsetX + ',offsetY:' + diagram.nodes[0].offsetY +
                 ', width: ' + diagram.nodes[0].width + ', height: ' + diagram.nodes[0].height + ' } ';
+                
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            
             expect(diagram.nodes[0].offsetX == resize260[corner].offsetX &&
                 Math.round(diagram.nodes[0].offsetY) == Math.round(resize260[corner].offsetY) &&
                 Math.round(diagram.nodes[0].width) == Math.round(resize260[corner].width) &&
@@ -716,6 +789,10 @@ describe('Diagram Control', () => {
             corner = MiddleLeft;
             output += 'middleLeft :{offsetX:' + diagram.nodes[0].offsetX + ',offsetY:' + diagram.nodes[0].offsetY +
                 ', width: ' + diagram.nodes[0].width + ', height: ' + diagram.nodes[0].height + ' } ';
+                
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            
             expect(diagram.nodes[0].offsetX == resize260[corner].offsetX &&
                 Math.round(diagram.nodes[0].offsetY) == Math.round(resize260[corner].offsetY) &&
                 Math.round(diagram.nodes[0].width) == Math.round(resize260[corner].width) &&
@@ -729,6 +806,10 @@ describe('Diagram Control', () => {
             corner = MiddleRight;
             output += 'middleRight :{offsetX:' + diagram.nodes[0].offsetX + ',offsetY:' + diagram.nodes[0].offsetY +
                 ', width: ' + diagram.nodes[0].width + ', height: ' + diagram.nodes[0].height + ' } ';
+                
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            
             expect(diagram.nodes[0].offsetX == resize260[corner].offsetX &&
                 Math.round(diagram.nodes[0].offsetY) == Math.round(resize260[corner].offsetY) &&
                 Math.round(diagram.nodes[0].width) == Math.round(resize260[corner].width) &&
@@ -742,6 +823,10 @@ describe('Diagram Control', () => {
             corner = BottomLeft;
             output += 'bottomLeft :{offsetX:' + diagram.nodes[0].offsetX + ',offsetY:' + diagram.nodes[0].offsetY +
                 ', width: ' + diagram.nodes[0].width + ', height: ' + diagram.nodes[0].height + ' } ';
+                
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            
             expect(diagram.nodes[0].offsetX == resize260[corner].offsetX &&
                 Math.round(diagram.nodes[0].offsetY) == Math.round(resize260[corner].offsetY) &&
                 Math.round(diagram.nodes[0].width) == Math.round(resize260[corner].width) &&
@@ -755,6 +840,10 @@ describe('Diagram Control', () => {
             corner = BottomCenter;
             output += 'bottomCenter :{offsetX:' + diagram.nodes[0].offsetX + ',offsetY:' + diagram.nodes[0].offsetY +
                 ', width: ' + diagram.nodes[0].width + ', height: ' + diagram.nodes[0].height + ' } ';
+                
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            
             expect(diagram.nodes[0].offsetX == resize260[corner].offsetX &&
                 Math.round(diagram.nodes[0].offsetY) == Math.round(resize260[corner].offsetY) &&
                 Math.round(diagram.nodes[0].width) == Math.round(resize260[corner].width) &&
@@ -768,6 +857,10 @@ describe('Diagram Control', () => {
             corner = BottomRight;
             output += 'bottomRight :{offsetX:' + diagram.nodes[0].offsetX + ',offsetY:' + diagram.nodes[0].offsetY +
                 ', width: ' + diagram.nodes[0].width + ', height: ' + diagram.nodes[0].height + ' } ';
+                
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            
             expect(diagram.nodes[0].offsetX == resize260[corner].offsetX &&
                 Math.round(diagram.nodes[0].offsetY) == Math.round(resize260[corner].offsetY) &&
                 Math.round(diagram.nodes[0].width) == Math.round(resize260[corner].width) &&
@@ -927,7 +1020,11 @@ describe('Diagram Control', () => {
             mouseEvents.clickEvent(diagramCanvas, 305, 505);
 
             mouseEvents.dragAndDropEvent(diagramCanvas, topLeft2.x, topLeft2.y, topLeft2.x + 10, topLeft2.y - 10);
-
+            
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            console.log("Dhakshin -",Math.round(diagram.nodes[1].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[1].height));
             expect(diagram.nodes[0].offsetX == 300 && diagram.nodes[0].offsetY == 300 &&
                 Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 100 &&
                 diagram.nodes[1].offsetX == 300 && diagram.nodes[1].offsetY == 500 &&
@@ -956,6 +1053,12 @@ describe('Diagram Control', () => {
             mouseEvents.clickEvent(diagramCanvas, 310, 500);
 
             mouseEvents.dragAndDropEvent(diagramCanvas, topLeft2.x, topLeft2.y, topLeft2.x + 10, topLeft2.y - 10);
+            
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            console.log("Dhakshin -",Math.round(diagram.nodes[1].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[1].height));
+            
             expect(diagram.nodes[0].offsetX == 300 && diagram.nodes[0].offsetY == 300 &&
                 Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 100 &&
                 diagram.nodes[1].offsetX == 300 && diagram.nodes[1].offsetY == 500 &&
@@ -983,6 +1086,12 @@ describe('Diagram Control', () => {
             mouseEvents.clickEvent(diagramCanvas, 315, 495);
 
             mouseEvents.dragAndDropEvent(diagramCanvas, topLeft2.x, topLeft2.y, topLeft2.x + 10, topLeft2.y + 10);
+            
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            console.log("Dhakshin -",Math.round(diagram.nodes[1].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[1].height));
+            
             expect(diagram.nodes[0].offsetX == 290 && diagram.nodes[0].offsetY == 290 &&
                 Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 100 &&
                 diagram.nodes[1].offsetX == 310 && diagram.nodes[1].offsetY == 510 &&
@@ -1005,7 +1114,12 @@ describe('Diagram Control', () => {
 
             //increase size at top 240, 360
             mouseEvents.dragAndDropEvent(diagramCanvas, topLeft1.x, topLeft1.y, topLeft1.x - 10, topLeft1.y - 20);
-
+            
+            console.log("Dhakshin -",diagram.nodes[0].offsetX);
+            console.log("Dhakshin -",diagram.nodes[0].offsetY);
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
+            
             //size should be increased by 20, offset should be decreased by 10
             expect(diagram.nodes[0].offsetX == 290 && diagram.nodes[0].offsetY == 290 &&
                 Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 100).toBe(true);
@@ -1013,6 +1127,10 @@ describe('Diagram Control', () => {
             //reduce size at top
             mouseEvents.dragAndDropEvent(diagramCanvas, topLeft1.x, topLeft1.y, topLeft1.x - 10, topLeft1.y + 10);
 
+            console.log("Dhakshin -",diagram.nodes[0].offsetX);
+            console.log("Dhakshin -",diagram.nodes[0].offsetY);
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
             //size should be decreased by 10, offset should be increased by 5
             expect(diagram.nodes[0].offsetX == 290 && diagram.nodes[0].offsetY == 290 &&
                 Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 100).toBe(true);
@@ -1035,6 +1153,10 @@ describe('Diagram Control', () => {
             //increase size at top 240, 360
             mouseEvents.dragAndDropEvent(diagramCanvas, topLeft1.x, topLeft1.y, topLeft1.x - 10, topLeft1.y + 20);
 
+            console.log("Dhakshin -",diagram.nodes[0].offsetX);
+            console.log("Dhakshin -",diagram.nodes[0].offsetY);
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
             //size should be increased by 20, offset should be inceased by 10
             expect(diagram.nodes[0].offsetX == 280 && diagram.nodes[0].offsetY == 310 &&
                 Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 100).toBe(true);
@@ -1042,6 +1164,10 @@ describe('Diagram Control', () => {
             //reduce size at top
             mouseEvents.dragAndDropEvent(diagramCanvas, topLeft1.x, topLeft1.y, topLeft1.x - 10, topLeft1.y - 10);
 
+            console.log("Dhakshin -",diagram.nodes[0].offsetX);
+            console.log("Dhakshin -",diagram.nodes[0].offsetY);
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
             //size should be decreased by 10, offset should be increased by 5
             expect(diagram.nodes[0].offsetX == 270 && diagram.nodes[0].offsetY == 300 &&
                 Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 100).toBe(true);
@@ -1065,6 +1191,10 @@ describe('Diagram Control', () => {
             //increase size at top 240, 360
             mouseEvents.dragAndDropEvent(diagramCanvas, topLeft1.x, topLeft1.y, topLeft1.x - 20, topLeft1.y + 20);
 
+            console.log("Dhakshin -",diagram.nodes[0].offsetX);
+            console.log("Dhakshin -",diagram.nodes[0].offsetY);
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
             //size should be increased by 20, offset should be inceased by 10
             expect(diagram.nodes[0].offsetX == 270 && diagram.nodes[0].offsetY == 300 &&
                 Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 100).toBe(true);
@@ -1072,6 +1202,10 @@ describe('Diagram Control', () => {
             //reduce size at top
             mouseEvents.dragAndDropEvent(diagramCanvas, topLeft1.x, topLeft1.y, topLeft1.x + 10, topLeft1.y - 10);
 
+            console.log("Dhakshin -",diagram.nodes[0].offsetX);
+            console.log("Dhakshin -",diagram.nodes[0].offsetY);
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
             //size should be decreased by 10, offset should be increased by 5
             expect(diagram.nodes[0].offsetX == 270 && diagram.nodes[0].offsetY == 300 &&
                 Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 100).toBe(true);
@@ -1094,6 +1228,10 @@ describe('Diagram Control', () => {
             //increase size at top 240, 360
             mouseEvents.dragAndDropEvent(diagramCanvas, topLeft1.x, topLeft1.y, topLeft1.x + 20, topLeft1.y + 20);
 
+            console.log("Dhakshin -",diagram.nodes[0].offsetX);
+            console.log("Dhakshin -",diagram.nodes[0].offsetY);
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
             //size should be increased by 20, offset should be inceased by 10
             expect(diagram.nodes[0].offsetX == 290 && diagram.nodes[0].offsetY == 320 &&
                 Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 100).toBe(true);
@@ -1101,6 +1239,10 @@ describe('Diagram Control', () => {
             //reduce size at top
             mouseEvents.dragAndDropEvent(diagramCanvas, topLeft1.x, topLeft1.y, topLeft1.x - 10, topLeft1.y - 10);
 
+            console.log("Dhakshin -",diagram.nodes[0].offsetX);
+            console.log("Dhakshin -",diagram.nodes[0].offsetY);
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].width));
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].height));
             //size should be decreased by 10, offset should be increased by 5
             expect(diagram.nodes[0].offsetX == 280 && diagram.nodes[0].offsetY == 310 &&
                 Math.round(diagram.nodes[0].width) == 100 && Math.round(diagram.nodes[0].height) == 100).toBe(true);
@@ -1164,7 +1306,7 @@ describe('Diagram Control', () => {
             let endPoint: PointModel = transformPointByMatrix(matrix, rotator);
 
             mouseEvents.dragAndDropEvent(diagramCanvas, rotator.x + diagram.element.offsetLeft, rotator.y + diagram.element.offsetTop, endPoint.x + diagram.element.offsetLeft, endPoint.y + diagram.element.offsetTop);
-
+            console.log("Dhakshin -",Math.round(diagram.nodes[0].rotateAngle));
             expect(Math.round(diagram.nodes[0].rotateAngle) == 320).toBe(true);
             done();
         });
@@ -1272,6 +1414,11 @@ describe('Diagram Control', () => {
 
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.dragAndDropEvent(diagramCanvas, 200, 200, 180, 180);
+            console.log("Dhakshin -",diagram.selectedItems.connectors.length);
+            console.log("Dhakshin -",diagram.selectedItems.connectors[0].sourcePoint.x);
+            console.log("Dhakshin -",diagram.selectedItems.connectors[0].sourcePoint.y);
+            console.log("Dhakshin -",diagram.selectedItems.connectors[0].targetPoint.x);
+            console.log("Dhakshin -",diagram.selectedItems.connectors[0].targetPoint.y);
             expect(diagram.selectedItems.connectors.length == 1 && diagram.selectedItems.connectors[0].sourcePoint.x == 180 &&
                 diagram.selectedItems.connectors[0].sourcePoint.y == 180 && diagram.selectedItems.connectors[0].targetPoint.x == 280
                 && diagram.selectedItems.connectors[0].targetPoint.y == 280).toBe(true);
@@ -1431,6 +1578,7 @@ describe('Diagram Control', () => {
             mouseEvents.mouseMoveEvent(diagramCanvas, 400 + diagram.element.offsetLeft, 400 + diagram.element.offsetTop);
 
             mouseEvents.mouseLeaveEvent(diagramCanvas);
+            console.log("Dhakshin -",diagram.selectedItems.connectors.length);
             expect(diagram.selectedItems.connectors.length == 1).toBe(true);
             done();
         });

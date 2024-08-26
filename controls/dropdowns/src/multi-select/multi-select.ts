@@ -3634,6 +3634,12 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.enabled && !this.readonly) {
             let temp: string | number | boolean | object;
             if (this.value && this.value.length > 0) {
+                if (this.allowFiltering) {
+                    this.refreshListItems(null);
+                    if (this.mode === 'CheckBox' && this.targetInputElement as HTMLInputElement) {
+                        (this.targetInputElement as HTMLInputElement).value = '';
+                    }
+                }
                 const liElement: NodeListOf<Element> = this.list && this.list.querySelectorAll('li.e-list-item');
                 if (liElement && liElement.length > 0) {
                     this.selectAllItems(false, e);
@@ -3649,6 +3655,11 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.clearAllCallback(e);
             }
             this.checkAndResetCache();
+            Input.createSpanElement(this.overAllWrapper, this.createElement);
+            this.calculateWidth();
+            if (!isNullOrUndefined(this.overAllWrapper) && !isNullOrUndefined(this.overAllWrapper.getElementsByClassName('e-ddl-icon')[0] && this.overAllWrapper.getElementsByClassName('e-float-text-content')[0] && this.floatLabelType !== 'Never')) {
+                this.overAllWrapper.getElementsByClassName('e-float-text-content')[0].classList.add('e-icon');
+            }
             if (this.enableVirtualization) {
                 this.updateInitialData();
                 if (this.chipCollectionWrapper) {
@@ -3717,11 +3728,13 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
     private resetValueHandler(e: Event): void {
-        const formElement: HTMLFormElement = closest(this.inputElement, 'form') as HTMLFormElement;
-        if (formElement && e.target === formElement) {
-            const textVal: string = (this.element.tagName === this.getNgDirective()) ?
-                null : this.element.getAttribute('data-initial-value');
-            this.text = textVal;
+        if (!isNullOrUndefined(this.inputElement)) {
+            const formElement: HTMLFormElement = closest(this.inputElement, 'form') as HTMLFormElement;
+            if (formElement && e.target === formElement) {
+                const textVal: string = (this.element.tagName === this.getNgDirective()) ?
+                    null : this.element.getAttribute('data-initial-value');
+                this.text = textVal;
+            }
         }
     }
     protected wireEvent(): void {

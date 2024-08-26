@@ -147,7 +147,7 @@ export class DragAndDrop extends ActionBase {
             }
             let top: number = parseInt(<string>e.top, 10);
             top = top < 0 ? 0 : top;
-            topValue = formatUnit(Math.ceil(top / cellHeight) * cellHeight);
+            topValue = formatUnit(Math.floor(top / cellHeight) * cellHeight);
             const scrollHeight: number = this.parent.element.querySelector('.e-content-wrap').scrollHeight;
             const cloneBottom: number = parseInt(topValue, 10) + this.actionObj.clone.offsetHeight;
             if (cloneBottom > scrollHeight) {

@@ -273,8 +273,24 @@ export class SelectionCommands {
             if (!isNOU(cursorNodes[0].parentElement) && IsFormatted.inlineTags.
                 indexOf((cursorNodes[0].parentElement).tagName.toLowerCase()) !== -1 && cursorNodes[0].textContent.includes('\u200B')) {
                 const element: HTMLElement = this.GetFormatNode(format, value);
-                this.applyStyles(cursorNodes, 0 , element);
-                return cursorNodes[0];
+                const tempNode: Node = cursorNodes[0];
+                if (format === 'fontsize') {
+                    let currentFormatNode: Node = cursorNodes[0];
+                    while (currentFormatNode) {
+                        const isSameTextContent: boolean = currentFormatNode.parentElement.textContent.trim()
+                            === cursorNodes[0].textContent.trim();
+                        const previousElement: HTMLElement = currentFormatNode.parentElement;
+                        if (!domNode.isBlockNode(previousElement) && isSameTextContent &&
+                            !(previousElement.nodeName === 'SPAN' && (previousElement as HTMLElement).classList.contains('e-img-inner'))) {
+                            currentFormatNode = previousElement;
+                        } else {
+                            break;
+                        }
+                        cursorNodes[0] = currentFormatNode;
+                    }
+                }
+                this.applyStyles(cursorNodes, 0, element);
+                return tempNode;
             }
             cursorNode = this.getInsertNode(docElement, range, format, value).firstChild;
         }

@@ -2,6 +2,7 @@
  * Image class
  * @private
  */
+/* eslint-disable */
 export class Image {
     public image: string;
     public row: number;

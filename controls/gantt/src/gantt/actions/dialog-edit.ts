@@ -1511,13 +1511,13 @@ export class DialogEdit {
         if (taskSettings.endDate === columnName) {
             if (value !== '') {
                 let endDate: Date = this.parent.dateValidationModule.getDateFromFormat(value);
-                if (!isNullOrUndefined(ganttProp.startDate) && !isNullOrUndefined(ganttProp.endDate) && !isNullOrUndefined(endDate) &&
-                ganttProp.startDate.getTime() > endDate.getTime()) {
-                    endDate = ganttProp.endDate;
-                }
                 const dayEndTime: number = this.parent['getCurrentDayEndTime'](endDate);
                 if (endDate.getHours() === 0 && dayEndTime !== 86400) {
                     this.parent.dateValidationModule.setTime(dayEndTime, endDate);
+                }
+                if (!isNullOrUndefined(ganttProp.startDate) && !isNullOrUndefined(ganttProp.endDate) && !isNullOrUndefined(endDate) &&
+                ganttProp.startDate.getTime() > endDate.getTime()) {
+                    endDate = ganttProp.endDate;
                 }
                 endDate = this.parent.dateValidationModule.checkEndDate(endDate, ganttProp);
                 if (isNullOrUndefined(ganttProp.startDate) || endDate.getTime() > (ganttProp.startDate).getTime()) {
