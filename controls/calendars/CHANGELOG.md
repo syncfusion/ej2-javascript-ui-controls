@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.2.12 (2024-09-03)
+
+### DateTimePicker
+
+#### Bug Fixes
+
+- `#I627006` - Fixed an issue where the DateTimePicker popup was not visible in mobile mode due to a fixed z-index value set in the CSS.
+
 ## 26.2.11 (2024-08-27)
 
 ### DateRangePicker

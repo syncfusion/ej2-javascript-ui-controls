@@ -111,6 +111,10 @@ export class ColumnChooser implements IAction {
         if (this.serviceLocator) {
             this.serviceLocator.registerAdaptiveService(this, this.parent.enableAdaptiveUI, ResponsiveDialogAction.isColumnChooser);
         }
+        if (this.parent.enableAdaptiveUI) {
+            this.parent.on(events.renderResponsiveColumnChooserDiv, this.renderResponsiveColumnChooserDiv, this);
+            this.parent.on(events.renderResponsiveChangeAction, this.renderResponsiveChangeAction, this);
+        }
     }
 
     private rtlUpdate(): void {
@@ -136,8 +140,8 @@ export class ColumnChooser implements IAction {
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.rtlUpdated, this.rtlUpdate, this);
         this.parent.on(events.resetColumns, this.onResetColumns, this);
+        this.parent.on(events.setFullScreenDialog, this.setFullScreenDialog, this);
         if (this.parent.enableAdaptiveUI) {
-            this.parent.on(events.setFullScreenDialog, this.setFullScreenDialog, this);
             this.parent.on(events.renderResponsiveColumnChooserDiv, this.renderResponsiveColumnChooserDiv, this);
             this.parent.on(events.renderResponsiveChangeAction, this.renderResponsiveChangeAction, this);
         }

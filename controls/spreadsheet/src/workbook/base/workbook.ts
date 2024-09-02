@@ -27,7 +27,7 @@ import { deleteChart, formulaBarOperation } from '../../spreadsheet/common/event
 import { beginAction, WorkbookFindAndReplace, getRangeIndexes, workbookEditOperation, clearCFRule, CFArgs, setCFRule } from '../index';
 import { WorkbookConditionalFormat } from '../actions/conditional-formatting';
 import { AutoFillSettingsModel } from '../..';
-import { checkCellValid, VisibleMergeIndexArgs, setVisibleMergeIndex } from '../common/index';
+import { checkCellValid, VisibleMergeIndexArgs, setVisibleMergeIndex, dataSourceChanged } from '../common/index';
 import { IFormulaColl } from '../../calculate/common/interface';
 
 /**
@@ -1526,19 +1526,30 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * This method is used to update the Range property in specified sheetIndex.
+     * This method is used to update the Range property in specified sheet index.
      *
      * @param {RangeModel} range - Specifies the range properties to update.
-     * @param {number} sheetIdx - Specifies the sheetIdx to update.
+     * @param {number} [sheetIndex] - Specifies the sheet index to update the range. By default, it consider the active sheet index.
      * @returns {void} - To update a range properties.
      */
-    public updateRange(range: RangeModel, sheetIdx?: number): void {
-        sheetIdx = sheetIdx ? sheetIdx - 1 : this.activeSheetIndex;
-        const sheet: SheetModel = getSheet(this, sheetIdx);
-        const ranges: RangeModel[] = sheet.ranges;
-        if (!isNullOrUndefined(sheet)) {
-            ranges.push(range);
-            sheet.ranges = ranges;
+    public updateRange(range: RangeModel, sheetIndex: number = this.activeSheetIndex): void {
+        const sheet: SheetModel = getSheet(this, sheetIndex);
+        if (!sheet) {
+            return;
+        }
+        if (!range.startCell) {
+            range.startCell = 'A1';
+        }
+        if (range.showFieldAsHeader === undefined) {
+            range.showFieldAsHeader = true;
+        }
+        if (range.template && !range.address) {
+            range.address = range.startCell;
+        }
+        sheet.ranges.push(range);
+        this.setSheetPropertyOnMute(sheet, 'ranges', sheet.ranges);
+        if (range.dataSource) {
+            this.notify(dataSourceChanged, { sheetIdx: sheetIndex, rangeIdx: sheet.ranges.length - 1, changedData: range.dataSource });
         }
     }
 

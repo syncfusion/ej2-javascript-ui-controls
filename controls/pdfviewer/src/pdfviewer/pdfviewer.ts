@@ -5576,6 +5576,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public formFieldCollection: any[];
 
     /**
+     * Checks if the form fields are loaded for the document in the PdfViewer control.
+     *
+     * @private
+     */
+    public isFormFieldsLoaded: boolean = false;
+
+    /**
      * Get the Loaded document signature Collections in the PdfViewer control.
      *
      * {% codeBlock src='pdfviewer/signatureCollection/index.md' %}{% endcodeBlock %}
@@ -8563,6 +8570,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         } else {
             this.viewerBase.blazorUIAdaptor.resetToolbar();
         }
+        this.isFormFieldsLoaded = true;
         this.viewerBase.initiatePageRender(document, password);
     }
 

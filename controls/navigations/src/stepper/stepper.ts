@@ -476,22 +476,20 @@ export class Stepper extends StepperBase implements INotifyPropertyChanged {
     }
 
     private wireEvents(): void {
-        EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', () => {
-            if (this.stepperItemList && this.progressbar && this.element.classList.contains(HORIZSTEP)) {
-                this.setProgressPosition(this.element, true);
-            }
-            this.navigateToStep(this.activeStep, null, null, false);
-        }, this);
-        EventHandler.add(<HTMLElement & Window><unknown>window, 'click', () => { this.updateStepFocus(); }, this);
+        EventHandler.add(<HTMLElement & Window><unknown>window, 'resize', this.updateResize, this);
+        EventHandler.add(<HTMLElement & Window><unknown>window, 'click', this.updateStepFocus, this);
     }
 
     private unWireEvents(): void {
-        EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', () => {
-            if (this.stepperItemList && this.progressbar && this.element.classList.contains(HORIZSTEP)) {
-                this.setProgressPosition(this.element, true);
-            }
-        });
-        EventHandler.remove(<HTMLElement & Window><unknown>window, 'click', () => { this.updateStepFocus(); });
+        EventHandler.remove(<HTMLElement & Window><unknown>window, 'resize', this.updateResize);
+        EventHandler.remove(<HTMLElement & Window><unknown>window, 'click', this.updateStepFocus);
+    }
+
+    private updateResize(): void {
+        if (this.stepperItemList && this.progressbar && this.element.classList.contains(HORIZSTEP)) {
+            this.setProgressPosition(this.element, true);
+        }
+        this.navigateToStep(this.activeStep, null, null, false);
     }
 
     private updateStepFocus(): void {

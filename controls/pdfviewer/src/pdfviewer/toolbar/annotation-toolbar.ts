@@ -2756,9 +2756,12 @@ export class AnnotationToolbar {
             });
         }
         this.fontSize.value = '16px';
-        this.fontSize.appendTo(fontSelectElement);
-        this.primaryToolbar.createTooltip(fontSelectElement, this.pdfViewer.localeObj.getConstant('Font size'));
-        fontSelectElement.setAttribute('aria-label', this.pdfViewer.localeObj.getConstant('Font size'));
+        if (!isNullOrUndefined(fontSelectElement)) {
+            this.fontSize.appendTo(fontSelectElement);
+            const toolTipElement: HTMLElement = fontSelectElement.parentElement ? fontSelectElement.parentElement : fontSelectElement;
+            this.primaryToolbar.createTooltip(toolTipElement, this.pdfViewer.localeObj.getConstant('Font size'));
+            fontSelectElement.setAttribute('aria-label', this.pdfViewer.localeObj.getConstant('Font size'));
+        }
         this.fontSize.addEventListener('change', function (args: any): void {
             const isUserInteracted: boolean = args.isInteracted;
             proxy.onFontSizeChange(proxy, isUserInteracted);
@@ -2800,9 +2803,12 @@ export class AnnotationToolbar {
         }
         this.fontFamily.isStringTemplate = true;
         this.fontFamily.value = 'Helvetica';
-        this.fontFamily.appendTo(fontSelectElement);
-        this.primaryToolbar.createTooltip(fontSelectElement, this.pdfViewer.localeObj.getConstant('Font family'));
-        fontSelectElement.setAttribute('aria-label', this.pdfViewer.localeObj.getConstant('Font family'));
+        if (!isNullOrUndefined(fontSelectElement)) {
+            this.fontFamily.appendTo(fontSelectElement);
+            const toolTipElement: HTMLElement = fontSelectElement.parentElement ? fontSelectElement.parentElement : fontSelectElement;
+            this.primaryToolbar.createTooltip(toolTipElement, this.pdfViewer.localeObj.getConstant('Font family'));
+            fontSelectElement.setAttribute('aria-label', this.pdfViewer.localeObj.getConstant('Font family'));
+        }
         this.fontFamily.addEventListener('change', (): void => {
             this.onFontFamilyChange(this);
         });
@@ -3847,14 +3853,14 @@ export class AnnotationToolbar {
                 this.showFontStylesAnnotationTool(false, 20, 20);
             }
             if (annotationToolbarItems.indexOf('FontAlignAnnotationTool') !== -1) {
-                this.showFontAlignAnnotationTool(true, 18, 18);
+                this.showFontAlignAnnotationTool(true, 19, 19);
             } else {
-                this.showFontAlignAnnotationTool(false, 18, 18);
+                this.showFontAlignAnnotationTool(false, 19, 19);
             }
             if (annotationToolbarItems.indexOf('FontColorAnnotationTool') !== -1) {
-                this.showFontColorAnnotationTool(true, 19, 19);
+                this.showFontColorAnnotationTool(true, 18, 18);
             } else {
-                this.showFontColorAnnotationTool(false, 19, 19);
+                this.showFontColorAnnotationTool(false, 18, 18);
             }
             if (annotationToolbarItems.indexOf('CommentPanelTool') !== -1) {
                 this.showCommentPanelTool(true, 28, 28);

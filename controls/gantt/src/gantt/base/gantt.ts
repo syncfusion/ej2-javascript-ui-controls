@@ -2208,7 +2208,7 @@ export class Gantt extends Component<HTMLElement>
     }
     private actionFailures(): void {
         const failureCases: string[] = [];
-        const lettersRegex: RegExp = /^[a-zA-Z/]+$/;
+        const lettersRegex: RegExp = /^[a-zA-Z\s/]+$/;
         let allPropertiesNull: boolean = true;
         const fields: TaskFieldsModel = this.taskFields['properties'];
         let shouldBreak = false;

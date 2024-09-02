@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 26.2.12 (2024-09-03)
+
+### GanttChart
+
+#### Bug fixes
+
+-`#I625331` - An unwanted error message is thrown in the `actionFailure` event issues has been fixed.
+-`#I623226` - Negative offset getting removed while using locale has been fixed.
+
 ## 26.2.11 (2024-08-27)
 
 ### GanttChart

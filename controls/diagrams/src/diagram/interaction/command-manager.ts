@@ -527,6 +527,11 @@ export class CommandHandler {
             newValue: { nodeId: newChanges[`${nodeEndId}`], portId: newChanges[`${portEndId}`] }
         };
         this.triggerEvent(DiagramEvent.connectionChange, arg);
+        if (arg.cancel) {
+            connector[`${nodeEndId}`] = oldChanges[`${nodeEndId}`];
+            connector[`${portEndId}`] = oldChanges[`${portEndId}`];
+            newChanges = oldChanges;
+        }
         this.diagram.connectorPropertyChange(connector as Connector, oldChanges, newChanges);
         this.diagram.updateDiagramObject(connector);
         arg = {

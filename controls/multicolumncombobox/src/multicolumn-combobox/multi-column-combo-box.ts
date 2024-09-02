@@ -1,4 +1,4 @@
-import { Component, EventHandler, INotifyPropertyChanged, Property, NotifyPropertyChanges, closest, attributes, append, compile, detach, KeyboardEvents } from '@syncfusion/ej2-base';
+import { Component, EventHandler, INotifyPropertyChanged, Property, NotifyPropertyChanges, closest, attributes, append, compile, detach, KeyboardEvents, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ChildProperty, prepend, Collection, getUniqueID, Complex, isNullOrUndefined as isNOU, select, L10n, Browser } from '@syncfusion/ej2-base';
 import { formatUnit, addClass, removeClass, NumberFormatOptions, DateFormatOptions, Event, EmitType, AnimationModel, Animation, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { Input, InputObject } from '@syncfusion/ej2-inputs';
@@ -1585,23 +1585,36 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private filterAction(dataSource: any, inputValue: string, query?: Query, fields?: FieldSettingsModel): void {
-        const filterType: string = this.filterType.toString().toLowerCase();
-        const isQuery: Query = query || new Query();
-        let filteredData: { [key: string]: Object }[];
-        if (dataSource instanceof DataManager) {
-            // Handle filtering for DataManager
-            (dataSource as DataManager).executeQuery(isQuery).then((e: Object) => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const dataLists: { [key: string]: Object }[] = (e as any).result;
-                const dataLength: number = dataLists.length;
-                filteredData = dataLists.filter((item: { [key: string]: Object }) => this.filterData(item, filterType, inputValue, fields));
-                this.updateGridDataSource(filteredData, dataLength);
+        let dataLists: { [key: string]: Object }[];
+        if (isNullOrUndefined(query) && isNullOrUndefined(fields)) {
+            this.updateGridDataSource(dataSource);
+        }
+        else if (query) {
+            new DataManager(dataSource as DataManager).executeQuery(query).then((e: Object) => {
+                dataLists = (e as any).result;
+                this.updateGridDataSource(dataLists);
             });
-        } else if (Array.isArray(dataSource)) {
-            // Handle filtering for array data source
-            filteredData = (dataSource as { [key: string]: Object }[]).filter((item: { [key: string]: Object }) =>
-                this.filterData(item, filterType, inputValue, fields));
-            this.updateGridDataSource(filteredData);
+        }
+        else {
+            const filterType: string = this.filterType.toString().toLowerCase();
+            const isQuery: Query = query || new Query();
+            let filteredData: { [key: string]: Object }[];
+            if (dataSource instanceof DataManager) {
+                // Handle filtering for DataManager
+                (dataSource as DataManager).executeQuery(isQuery).then((e: Object) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const dataLists: { [key: string]: Object }[] = (e as any).result;
+                    const dataLength: number = dataLists.length;
+                    filteredData = dataLists.filter(
+                        (item: { [key: string]: Object }) => this.filterData(item, filterType, inputValue, fields));
+                    this.updateGridDataSource(filteredData, dataLength);
+                });
+            } else if (Array.isArray(dataSource)) {
+                // Handle filtering for array data source
+                filteredData = (dataSource as { [key: string]: Object }[]).filter((item: { [key: string]: Object }) =>
+                    this.filterData(item, filterType, inputValue, fields));
+                this.updateGridDataSource(filteredData);
+            }
         }
     }
 
@@ -2135,8 +2148,9 @@ export class MultiColumnComboBox extends Component<HTMLElement> implements INoti
                 break;
             case 'sortOrder':
                 if (this.gridObj) {
-                    this.gridObj.sortSettings.columns = [{ field: this.fields.text, direction: newProp.sortOrder === SortOrder.Ascending ?
-                        SortOrder.Ascending : SortOrder.Descending  }];
+                    this.gridObj.sortSettings.columns = [{
+                        field: this.fields.text, direction: newProp.sortOrder === SortOrder.Ascending ?
+                            SortOrder.Ascending : SortOrder.Descending  }];
                 }
                 break;
             case 'htmlAttributes':

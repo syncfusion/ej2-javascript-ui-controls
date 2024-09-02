@@ -47,7 +47,11 @@ export class ColumnWidthService {
             if (this.parent.width !== 'auto' && this.parent.width.toString().indexOf('%') === -1) {
                 this.setMinwidthBycalculation(totalColumnsWidth as number);
             }
-            if (this.parent.allowResizing && this.parent.element.getBoundingClientRect().width > totalColumnsWidth) {
+            const maxWidthColumns: Column[] = columns.filter((a: Column) => {
+                return !isNullOrUndefined(a.maxWidth);
+            });
+            if (this.parent.allowResizing && this.parent.element.getBoundingClientRect().width > totalColumnsWidth &&
+                maxWidthColumns.length === columns.length) {
                 addClass([this.parent.getHeaderTable(), this.parent.getContentTable()], ['e-tableborder']);
             }
         }
@@ -222,10 +226,9 @@ export class ColumnWidthService {
         }
         if (!column.width) { return null; }
         const width: number = parseInt(column.width.toString(), 10);
-        if (column.minWidth && (width < parseInt(column.minWidth.toString(), 10)
-            || (column.width === 'auto' && isNullOrUndefined(column.maxWidth)))) {
+        if (column.minWidth && width < parseInt(column.minWidth.toString(), 10)) {
             return column.minWidth;
-        } else if (column.maxWidth && (column.width === 'auto' || width > parseInt(column.maxWidth.toString(), 10))) {
+        } else if (column.maxWidth && width > parseInt(column.maxWidth.toString(), 10)) {
             return column.maxWidth;
         } else {
             return column.width;

@@ -3485,7 +3485,58 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             }, 400);
         });
     });
-    
+
+    describe("Bug 903450: The table merge cells is not working properly in the Rich Text Editor", () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    table: ['TableCell']
+                },
+                value: `<table cellpadding="0" cellspacing="0" width="192" class="e-rte-paste-table" style="width:144pt;">
+ <tbody><tr height="19" style="height:14.5pt;">
+  <td height="19" width="64" style="height:14.5pt;width:48pt;">r1</td>
+  <td width="64" style="width:48pt;">c2</td>
+  <td width="64" style="width:48pt;">c3</td>
+ </tr>
+ <tr height="19" style="height:14.5pt;">
+  <td height="19" style="height:14.5pt;">r2</td>
+  <td>c2</td>
+  <td>c3</td>
+ </tr>
+ <tr height="19" style="height:14.5pt;">
+  <td height="19" style="height:14.5pt;">r3</td>
+  <td>c2</td>
+  <td>c3</td>
+ </tr>
+</tbody></table><p><br></p>`
+            });
+            rteEle = rteObj.element;
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it(' Merge two rows with content and to verify empty row is removed from the dom', (done: Function) => {
+            let target = rteEle.querySelector('.e-rte-paste-table td');
+            let eventsArg = { pageX: 50, pageY: 300, target: target, which: 1 };
+            (rteObj as any).mouseDownHandler(eventsArg);
+            let ev = new MouseEvent("mousemove", {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
+            rteEle.querySelectorAll("td")[5].dispatchEvent(ev);
+            (rteObj as any).mouseUp(eventsArg);
+            setTimeout(function () {
+                (document.querySelectorAll('.e-rte-quick-popup .e-toolbar-item button')[0] as HTMLElement).click();
+                (document.querySelectorAll('.e-rte-dropdown-items.e-dropdown-popup ul .e-item')[0] as HTMLElement).click();
+                expect((rteObj as any).inputElement.querySelectorAll('table tr').length === 2).toBe(true);
+                done();
+            }, 400);
+        });
+    });
+
     describe("Table remove rows with cell merge", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;

@@ -2094,7 +2094,7 @@ export abstract class PdfAnnotation {
                             fontSize = Number.parseFloat(entry[1].replace('pt', ''));
                         }
                     } else if (collection[Number.parseInt(i.toString(), 10)].indexOf('font-style') !== -1 || collection[Number.parseInt(i.toString(), 10)].indexOf('style') !== -1) {
-                        fontStyle = collection[Number.parseInt(i.toString(), 10)];
+                        fontStyle = entry[1];
                     } else if (collection[Number.parseInt(i.toString(), 10)].indexOf('font') !== -1) {
                         const name: string = entry[1];
                         const split: string[] = name.split(' ');
@@ -2130,7 +2130,7 @@ export abstract class PdfAnnotation {
                 }
             }
             if (fontStyle && fontStyle !== '') {
-                let styleArray: string[];
+                let styleArray: string[] = [fontStyle];
                 if (fontStyle.includes(':')) {
                     styleArray = fontStyle.split(':');
                 } else if (fontStyle.includes(',')) {
@@ -2138,6 +2138,7 @@ export abstract class PdfAnnotation {
                 }
                 if (styleArray) {
                     styleArray.forEach((entry: string) => {
+                        entry = entry.trim();
                         switch (entry.toLowerCase()) {
                         case 'bold':
                             style |= PdfFontStyle.bold;

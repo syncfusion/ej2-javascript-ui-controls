@@ -47,7 +47,7 @@ export class ParetoSeries extends ColumnBase {
             return currentAxis.name === targetSeries.yAxisName;
         });
         if (!isExist) {
-            const secondaryAxis: Axis = <Axis>(paretoSeries.yAxisName ? chart.axes.filter((axis: Axis) => {
+            const secondaryAxis: Axis = <Axis>(paretoSeries.yAxisName && chart.axes.length ? chart.axes.filter((axis: Axis) => {
                 return axis.name === paretoSeries.yAxisName;
             })[0] : chart.primaryYAxis);
             const newAxis: Axis = new Axis(chart, 'axes', {

@@ -19,7 +19,7 @@ import { Data } from '../actions/data';
 import { ReturnType } from '../base/type';
 import { SummaryModelGenerator, GroupSummaryModelGenerator, CaptionSummaryModelGenerator } from '../services/summary-model-generator';
 import { AggregateColumnModel } from '../models/aggregate-model';
-import { compile, getEnumValue, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
+import { compile, getEnumValue, isNullOrUndefined, detach, extend } from '@syncfusion/ej2-base';
 import { CellType, PdfPageSize, PdfDashStyle, PdfPageNumberType, ExportType } from '../base/enum';
 import { DataManager, Query, Group } from '@syncfusion/ej2-data';
 import { getValue } from '@syncfusion/ej2-base';
@@ -1177,11 +1177,16 @@ export class PdfExport {
                     const element: HTMLElement = returnValue.element;
                     (<{ actionFailure?: Function }>childGridObj).actionFailure =
                         helper.failureHandler(this.gridPool, childGridObj, this.globalResolve);
+                    const childExportProperties: PdfExportProperties = extend(pdfExportProperties, {
+                        columns: null,
+                        dataSource: null,
+                        query: null
+                    });
                     const args: ExportDetailDataBoundEventArgs = {
-                        childGrid: childGridObj, row, cell, exportProperties: pdfExportProperties
+                        childGrid: childGridObj, row, cell, exportProperties: childExportProperties
                     };
                     this.parent.trigger(events.exportDetailDataBound, args);
-                    (<Grid>childGridObj).beforeDataBound = this.childGridCell(cell, childGridObj, pdfExportProperties);
+                    (<Grid>childGridObj).beforeDataBound = this.childGridCell(cell, childGridObj, childExportProperties);
                     childGridObj.appendTo(element);
                 } else if (this.parent.detailTemplate) {
                     const args: ExportDetailTemplateEventArgs = { parentRow: row, row: gridRow, value: {}, action: 'pdfexport', gridInstance: gObj };

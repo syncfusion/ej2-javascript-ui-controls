@@ -3,7 +3,7 @@
  */
 import { getValue, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import {  Gantt, Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, Sort, RowDD, ContextMenu, ExcelExport, PdfExport, ContextMenuClickEventArgs  } from '../../src/index';
-import { dialogEditData, resourcesData,resourceData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData, scheduleModeData1, splitTasksData2, dialogData1, splitTasksData3, CR886052, MT887459,resourcesDatas1, resourceCollections1 } from '../base/data-source.spec';
+import { dialogEditData, resourcesData,resourceData, resources, scheduleModeData, projectData1, indentOutdentData, splitTasksData, projectData, crData, scheduleModeData1, splitTasksData2, dialogData1, splitTasksData3, CR886052, MT887459,resourcesDatas1, resourceCollections1, dialogEditDataLocale } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent } from '../base/gantt-util.spec';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { DataManager } from '@syncfusion/ej2-data';
@@ -9617,4 +9617,53 @@ describe('Dialog editing - General Tab', () => {
            triggerMouseEvent(cancelRecord, 'click');
        }
    });
+});
+describe('Localization', function () {
+    let ganttObj: Gantt;
+    beforeAll(function (done) {
+        L10n.load({
+            'es': {
+                'gantt': {
+                    'days': 'dias',
+                },
+                'grid': {}
+            }
+        });
+        ganttObj = createGantt({
+            dataSource: dialogEditDataLocale,
+            height: '450px',
+            locale: 'es',
+            allowSelection: true,
+            highlightWeekends: true,
+            allowUnscheduledTasks: true,
+            enableContextMenu: true,
+            editSettings: {
+                allowAdding: true,
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'ZoomToFit', 'Indent', 'Outdent'],
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency: 'Predecessor',
+                child: 'subtasks',
+            },
+            projectStartDate: new Date('03/28/2019'),
+            projectEndDate: new Date('07/06/2019'),
+            treeColumnIndex: 1,
+        }, done);
+    });
+    it('localization for the word New Task', () => {
+        expect(ganttObj.flatData[3]['Predecessor']).toBe('2FS-3 dias')
+    });
+    afterAll(function () {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
 });

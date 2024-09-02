@@ -864,12 +864,10 @@ export class AnnotationRenderer {
             // Don't need to set bounds explicitly for text markup annotation
             const boundArrayCollection: number[][] = [];
             for (let i: number = 0; i < boundsCollection.length; i++) {
-                const boundArray: number[] = [];
-                boundArray.push(boundsCollection[parseInt(i.toString(), 10)].x);
-                boundArray.push(boundsCollection[parseInt(i.toString(), 10)].y);
-                boundArray.push(boundsCollection[parseInt(i.toString(), 10)].width);
-                boundArray.push(boundsCollection[parseInt(i.toString(), 10)].height);
-                boundArrayCollection.push(boundArray);
+                const { x, y, width, height } = boundsCollection[parseInt(i.toString(), 10)];
+                if (x !== 0 && y !== 0 && width !== 0 && height !== 0) {
+                    boundArrayCollection.push([x, y, width, height]);
+                }
             }
             annotation.boundsCollection = boundArrayCollection;
         }
@@ -3420,7 +3418,7 @@ export class AnnotationRenderer {
         } else if (pageRotation === 2){
             for (let i: number = 0; i < vertices.length; i ++) {
                 const point: AnnotPoint = { X: pageWidth - this.convertPointToPixel(vertices[parseInt(i.toString(), 10)]),
-                    Y: pageHeight - this.convertPointToPixel(vertices[i + 1]) };
+                    Y: this.convertPointToPixel(vertices[i + 1]) };
                 i = i + 1;
                 vertexPoints.push(point);
             }

@@ -38,13 +38,10 @@ export function getData(
             }
             const sheet: SheetModel = getSheet(context, sheetIdx);
             let indexes: number[] = getIndexesFromAddress(commonAddr || address);
-            /* eslint-disable */
-            const args: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell>, formulaCellRef?: string, sheetIndex?: number,
-                isFinite?: boolean } = { sheet: sheet, indexes: indexes, formulaCellRef: formulaCellRef, sheetIndex: idx, isFinite:
-                    (<any>context).scrollSettings && (<any>context).scrollSettings.isFinite,
-                    promise: new Promise((resolve: Function) => { resolve((() => { /** */ })()); })
+            const args: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell>, formulaCellRef?: string, sheetIndex?: number } = {
+                sheet: sheet, indexes: indexes, formulaCellRef: formulaCellRef, sheetIndex: idx,
+                promise: new Promise((resolve: Function) => { resolve((() => { /** */ })()); })
             };
-            /* eslint-enable */
             context.notify(updateSheetFromDataSource, args);
             return args.promise.then(() => {
                 let i: number;

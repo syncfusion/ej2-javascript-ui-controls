@@ -6,8 +6,8 @@ import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData, productData, filterData, ScrollingData } from '../util/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { CellModel, getModel, SheetModel, RowModel, BeforeCellUpdateArgs, getRangeIndexes, getCell, ImageModel } from '../../../src/workbook/index';
-import { getRowHeight } from '../../../src/index';
-import { EmitType, setCurrencyCode, L10n, createElement, Browser } from '@syncfusion/ej2-base';
+import { getRowHeight, DataSourceChangedEventArgs } from '../../../src/index';
+import { EmitType, setCurrencyCode, L10n, createElement } from '@syncfusion/ej2-base';
 
 describe('Spreadsheet base module ->', () => {
     let helper: SpreadsheetHelper;
@@ -2011,14 +2011,14 @@ describe('Spreadsheet base module ->', () => {
                 });
             });
         });
-        describe('SF-370011 ->', () => {
-            beforeEach((done: Function) => {
+        describe('SF-370011, SF-618130 ->', () => {
+            beforeAll((done: Function) => {
                 helper.initializeSpreadsheet({ sheets: [{ ranges: [{ dataSource: defaultData }] }] }, done);
             });
-            afterEach(() => {
+            afterAll(() => {
                 helper.invoke('destroy');
             });
-            it('Create new workbook not removing the filter range', (done: Function) => {
+            it('370011 -> Create new workbook not removing the filter range', (done: Function) => {
                 const spreadsheet: Spreadsheet = helper.getInstance();
                 helper.invoke('applyFilter');
                 expect(spreadsheet.sheets[0].rows.length).toBe(11);
@@ -2027,6 +2027,48 @@ describe('Spreadsheet base module ->', () => {
                 setTimeout((): void => {
                     expect(spreadsheet.sheets[0].rows.length).toBe(0);
                     expect(helper.invoke('getCell', [0, 0]).querySelector('.e-filter-icon')).toBeNull();
+                    done();
+                });
+            });
+            it('618130 -> The updateRange method not update the dataSource in the newly created workbook', (done: Function) => {
+                const spreadsheet: any = helper.getInstance();
+                expect(spreadsheet.sheets[0].rows.length).toBe(0);
+                const prevHandler: EmitType<DataSourceChangedEventArgs> = spreadsheet.dataSourceChanged;
+                spreadsheet.dataSourceChanged = (args: DataSourceChangedEventArgs): void => {
+                    expect(args.action).toBe('dataSourceChanged');
+                    expect(args.sheetIndex).toBe(0);
+                    expect(args.rangeIndex).toBe(0);
+                    expect(spreadsheet.sheets[0].ranges.length).toBe(1);
+                    expect(spreadsheet.sheets[0].rows.length).toBe(2);
+                    expect(spreadsheet.sheets[0].rows[0].cells[0].value).toBe('Value1');
+                    expect(spreadsheet.sheets[0].rows[0].cells[1].value).toBe('Value2');
+                    expect(spreadsheet.sheets[0].rows[1].cells[0].value).toBe('01');
+                    expect(spreadsheet.sheets[0].rows[1].cells[1].value).toBe('100');
+                    spreadsheet.dataSourceChanged = prevHandler;
+                    helper.invoke('updateRange', [{}, 2]);
+                    expect(spreadsheet.sheets[0].ranges.length).toBe(1);
+                    expect(JSON.stringify(spreadsheet.sheets[0].ranges[0].info)).toBe('{"loadedRange":[[0,1]],"count":1,"fldLen":2,"flds":["Value1","Value2"]}');
+                    done();
+                };
+                helper.invoke('updateRange', [{ dataSource: [{ 'Value1': '01', 'Value2': '100' }], showFieldAsHeader: true }]);
+            });
+            it('Adding template without address', (done: Function) => {
+                const spreadsheet: Spreadsheet = helper.getInstance();
+                const getTemplateEle: Function = (cell: CellModel): HTMLElement[] => {
+                    const ele: HTMLElement = spreadsheet.createElement('span', { className: 'e-template-text' });
+                    ele.textContent = cell.value;
+                    return [ele];
+                };
+                helper.invoke('updateRange', [{ template: getTemplateEle }]);
+                expect(spreadsheet.sheets[0].ranges.length).toBe(2);
+                expect(spreadsheet.sheets[0].ranges[1].startCell).toBe('A1');
+                expect(spreadsheet.sheets[0].ranges[1].address).toBe('A1');
+                expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Value1');
+                helper.invoke('resize');
+                setTimeout(() => {
+                    const cellTemplate: HTMLElement = helper.invoke('getCell', [0, 0]).querySelector('.e-template-text');
+                    expect(cellTemplate).not.toBeNull();
+                    expect(cellTemplate.textContent).toBe('Value1');
                     done();
                 });
             });
@@ -2272,24 +2314,30 @@ describe('Spreadsheet base module ->', () => {
                     ranges: [{ dataSource: defaultData }] }], selectedRange: 'A1' }
                 }
                 const spreadsheet: Spreadsheet = helper.getInstance();
-                spreadsheet.openFromJson({ file: json});
+                spreadsheet.openFromJson({ file: json });
                 setTimeout(() => {
                     expect(helper.invoke('getCell', [0, 0]).textContent).toBe('Item Name');
                     done();
                 });
             });
             it('EJ2-54085 - Need to fix the dynamic data binding issue and the updateRange method issue.->', (done: Function) => {
-                const spreadsheet: Spreadsheet = helper.getInstance();
-                spreadsheet.insertSheet([{ index: 1, name: 'Inserted Sheet', ranges: [{ dataSource: defaultData }] }]);
+                const spreadsheet: any = helper.getInstance();
+                spreadsheet.insertSheet([{ index: 1, name: 'Inserted Sheet' }]);
                 setTimeout(() => {
-                    helper.invoke('goTo', ['Inserted Sheet!A1']);
+                    expect(spreadsheet.sheets[1].rows.length).toBe(0);
+                    spreadsheet.updateRange({ dataSource: productData }, 1);
                     setTimeout(() => {
-                        expect(spreadsheet.sheets[1].rows[0].cells[0].value.toString()).toBe('Item Name');
-                        spreadsheet.updateRange({ dataSource: filterData, startCell: "A1"}, 2)
-                        spreadsheet.refresh();
+                        expect(spreadsheet.sheets[1].rows.length).toBe(78);
+                        expect(spreadsheet.sheets[1].rows[0].cells[0].value).toBe('ProductID');
+                        expect(spreadsheet.getCell(0, 0).textContent).toBe('Item Name');
+                        helper.invoke('goTo', ['Inserted Sheet!A1']);
                         setTimeout(() => {
-                            expect(spreadsheet.getCell(0,0).textContent).toBe('10248');
-                            done();
+                            expect(spreadsheet.getCell(0, 0).textContent).toBe('ProductID');
+                            spreadsheet.updateRange({ dataSource: filterData, startCell: 'A1', showFieldAsHeader: false }, 1);
+                            setTimeout(() => {
+                                expect(spreadsheet.sheets[1].rows[0].cells[0].value).toBe(10248);
+                                done();
+                            });
                         });
                     });
                 });

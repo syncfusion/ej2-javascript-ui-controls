@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 26.2.12 (2024-09-03)
+
+### Grid
+
+#### Bug fixes
+
+- `#FB60593` - The issue where setting `args.cancel` to true in the `rowDeselecting` event caused a script error when selection persistence was enabled without a checkbox column has been resolved.
+- `#FB60504` - The issue of the grid ignoring the stacked header during printing has been resolved.
+- `#I620165` - Focus issue when `enableColumnVirtualization` is enabled with freeze columns has been resolved.
+- `#FB60430` - The problem with the Shimmer effect behaviour during Pagination has been resolved.
+- `#I621511` - Resolved the script error that occurs when opening the column chooser in adaptive mode.
+- `#I624131` - The issue where the column `autoFit` property was ignored, even with `resizeSettings` mode set to normal when applying other column width property values as auto, has been resolved.
+- `#I621704` - The issue with tab navigation not working properly with the toolbar search has been resolved.
+- `#I621707` - The problem with the layout when using a custom toolbar in `Adaptive UI` has been resolved.
+- `#FB60195`, `#FB60319` - The issue where the hierarchy grid export was not working correctly when passing columns in the export properties has been resolved.
+
 ## 26.2.11 (2024-08-27)
 
 ### Grid
@@ -16,6 +32,7 @@
 - `#I621020` - Frozen grid with `columnVirtualization` not properly rendered issue has been resolved.
 - `#I617987` - Double request issue when `pageSize` higher than `totalRecordCount` is resolved.
 - `#I616111` - The issue with the foreign column using a remote data manager, where values were only retrieved when the column was displayed, has been resolved.
+- `#I617475` - When enabling AutoFit for certain columns, the aggregate row becomes misaligned issue has been resolved.
 
 ## 26.2.10 (2024-08-20)
 

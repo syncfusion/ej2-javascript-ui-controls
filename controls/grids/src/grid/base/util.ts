@@ -1152,7 +1152,7 @@ export function getPrintGridModel(gObj: IGrid, hierarchyPrintMode: HierarchyGrid
     }
     for (const key of Print.printGridProp) {
         if (key === 'columns') {
-            printGridModel[`${key}`] = getActualPropFromColl(gObj.getColumns());
+            printGridModel[`${key}`] = getActualPropFromColl(gObj[`${key}`]);
         } else if (key === 'allowPaging') {
             printGridModel[`${key}`] = gObj.printMode === 'CurrentPage';
         } else {

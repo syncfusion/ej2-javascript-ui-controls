@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.2.12 (2024-09-03)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#I615229` - Now,the connections are getting blocked while setting arguments cancel as "true".
+
 ## 26.2.11 (2024-08-27)
 
 ### Diagram
@@ -9,6 +17,10 @@
 #### Bug Fixes
 
 - `#I619234` - Now,Connector routing is proper while setting the segment direction as "Left".
+- `#I589528` - Now, Diagram scrolling is smooth while scrolling with Track Pad in Mac.
+- `#I616888` - Now, Highlighters for Connector Element Draw with user handle update properly.
+- `#I616041` - Now,exception will not occur for self-loop in layouts.
+- `#I615229` - ConnectionChange event fired while using connector draw function.
 
 ## 26.2.10 (2024-08-20)
 

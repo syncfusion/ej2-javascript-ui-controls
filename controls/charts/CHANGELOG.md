@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.2.12 (2024-09-03)
+
+### Chart
+
+#### Bug Fixes
+
+- `#I624097` - Now, the pareto chart will render properly when specifying the axis name in the pareto series.
+
 ## 26.2.11 (2024-08-27)
 
 ### Chart

@@ -460,6 +460,10 @@ export class FocusStrategy {
             }
             return;
         }
+        if (focusFirstHeaderCell && parentsUntil(this.active.getTable(), 'e-gridheader')
+            && e.target && (e.target as HTMLElement).id === this.parent.element.id + '_searchbar') {
+            (this.parent as Grid).searchModule.headerFocus = true;
+        }
         e.preventDefault();
         this.focus(e);
     }
@@ -889,8 +893,12 @@ export class FocusStrategy {
                         if (focusElement) {
                             const cellPosition: ClientRect = focusElement.getBoundingClientRect();
                             const gridPosition: ClientRect = this.parent.element.getBoundingClientRect();
+                            let freezeColWidth: number = 0;
+                            if (this.parent.getVisibleFrozenLeftCount() && this.parent.enableColumnVirtualization) {
+                                freezeColWidth = this.parent.leftrightColumnWidth('left');
+                            }
                             if ((cellPosition.top >= 0 && cellPosition.left >= 0 &&
-                                cellPosition.right <= Math.min(gridPosition.right, window.innerWidth ||
+                                (cellPosition.right - freezeColWidth) <= Math.min(gridPosition.right, window.innerWidth ||
                                     document.documentElement.clientWidth) &&
                                 cellPosition.bottom <= Math.min(gridPosition.bottom, window.innerHeight ||
                                     document.documentElement.clientHeight)) || isGroup) {

@@ -53,7 +53,6 @@ describe('Hyperlink ->', () => {
         });
         it('Hyperlink applied through data range', (done: Function) => {
             helper.invoke('updateRange', [{ dataSource: [{ Link: 'https://www.syncfusion.com' }], startCell: 'A13' }]);
-            spreadsheet.dataBind();
             helper.invoke('selectRange', ['A14:A14']);
             setTimeout(() => {
                 const cell: CellModel = spreadsheet.sheets[0].rows[13].cells[0];

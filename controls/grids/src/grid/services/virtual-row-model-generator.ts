@@ -244,8 +244,16 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         const calWidth: number = Browser.isDevice ? 2 * cWidth : cWidth / 2;
         const left: number = sLeft + cWidth + (sLeft === 0 ? calWidth : 0);
         let frzLeftWidth: number = 0;
+        const diffWidth: number = sLeft - calWidth;
         if (this.parent.isFrozenGrid()) {
             frzLeftWidth = this.parent.leftrightColumnWidth('left');
+            if (diffWidth > 0) {
+                for (let i: number = 0; i < this.parent.getVisibleFrozenLeftCount(); i++) {
+                    if (diffWidth <= this.cOffsets[parseInt(i.toString(), 10)]) {
+                        frzLeftWidth = frzLeftWidth - this.cOffsets[parseInt(i.toString(), 10)];
+                    }
+                }
+            }
             if (this.parent.getFrozenMode() === literals.leftRight) {
                 const rightCol: number =  this.parent.getVisibleFrozenRightCount();
                 keys.splice((keys.length - 1) -  rightCol, rightCol);
@@ -253,7 +261,7 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         }
         keys.some((offset: string) => {
             const iOffset: number = Number(offset); const offsetVal: number = this.cOffsets[`${offset}`];
-            const border: boolean = ((sLeft - calWidth) + frzLeftWidth) <= offsetVal && (left + calWidth) >= offsetVal;
+            const border: boolean = (diffWidth + frzLeftWidth) <= offsetVal && (left + calWidth) >= offsetVal;
             if (border) {
                 indexes.push(iOffset);
             }

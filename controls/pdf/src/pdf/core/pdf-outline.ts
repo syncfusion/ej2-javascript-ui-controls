@@ -80,7 +80,7 @@ export class PdfBookmarkBase {
      * ```
      */
     get isExpanded(): boolean {
-        if (this._dictionary.has('Count')) {
+        if (this._dictionary && this._dictionary.has('Count')) {
             return (this._dictionary.get('Count') >= 0);
         } else {
             return this._isExpanded;
@@ -106,7 +106,7 @@ export class PdfBookmarkBase {
      */
     set isExpanded(value: boolean) {
         this._isExpanded = value;
-        if (this.count > 0) {
+        if (this.count > 0 && this._dictionary) {
             this._dictionary.update('Count', value ? this._bookMarkList.length : (-this._bookMarkList.length));
         }
     }
@@ -205,63 +205,66 @@ export class PdfBookmarkBase {
      */
     add(title: string, index: number): PdfBookmark
     add(title: string, index?: number): PdfBookmark {
-        const dictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
-        dictionary.update('Parent', this._reference);
-        const reference: _PdfReference = this._crossReference._getNextReference();
-        this._crossReference._cacheMap.set(reference, dictionary);
-        const bookmark: PdfBookmark = new PdfBookmark(dictionary, this._crossReference);
-        bookmark._reference = reference;
-        bookmark.title = title;
-        if (typeof index === 'undefined') {
-            if (this.count === 0) {
-                this._dictionary.update('First', reference);
-                this._dictionary.update('Last', reference);
-            } else {
-                const last: PdfBookmark = this.at(this.count - 1);
-                this._dictionary.update('Last', reference);
-                if (last && last._reference) {
-                    dictionary.update('Prev', last._reference);
-                    last._dictionary.update('Next', reference);
-                }
-            }
-            this._bookMarkList.push(bookmark);
-        } else {
-            if (index < 0 || index > this.count) {
-                throw new Error('Index out of range');
-            }
-            if (this.count === 0) {
-                this._dictionary.update('First', reference);
-                this._dictionary.update('Last', reference);
-                this._bookMarkList.push(bookmark);
-            } else if (index === this.count) {
-                const last: PdfBookmark = this.at(this.count - 1);
-                this._dictionary.update('Last', reference);
-                if (last && last._reference) {
-                    dictionary.update('Prev', last._reference);
-                    last._dictionary.update('Next', reference);
+        let bookmark: PdfBookmark;
+        if (this._dictionary) {
+            const dictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
+            dictionary.update('Parent', this._reference);
+            const reference: _PdfReference = this._crossReference._getNextReference();
+            this._crossReference._cacheMap.set(reference, dictionary);
+            bookmark = new PdfBookmark(dictionary, this._crossReference);
+            bookmark._reference = reference;
+            bookmark.title = title;
+            if (typeof index === 'undefined') {
+                if (this.count === 0) {
+                    this._dictionary.update('First', reference);
+                    this._dictionary.update('Last', reference);
+                } else {
+                    const last: PdfBookmark = this.at(this.count - 1);
+                    this._dictionary.update('Last', reference);
+                    if (last && last._reference) {
+                        dictionary.update('Prev', last._reference);
+                        last._dictionary.update('Next', reference);
+                    }
                 }
                 this._bookMarkList.push(bookmark);
-            } else if (index === 0) {
-                const first: PdfBookmark = this.at(0);
-                this._dictionary.update('First', reference);
-                if (first && first._reference) {
-                    dictionary.update('Next', first._reference);
-                    first._dictionary.update('Prev', reference);
-                }
-                this._updateBookmarkList(index, bookmark);
             } else {
-                const next: PdfBookmark = this.at(index);
-                const prev: PdfBookmark = this.at(index - 1);
-                if (prev && prev._reference && next && next._reference) {
-                    dictionary.update('Prev', prev._reference);
-                    prev._dictionary.update('Next', reference);
-                    next._dictionary.update('Prev', reference);
-                    dictionary.update('Next', next._reference);
+                if (index < 0 || index > this.count) {
+                    throw new Error('Index out of range');
                 }
-                this._updateBookmarkList(index, bookmark);
+                if (this.count === 0) {
+                    this._dictionary.update('First', reference);
+                    this._dictionary.update('Last', reference);
+                    this._bookMarkList.push(bookmark);
+                } else if (index === this.count) {
+                    const last: PdfBookmark = this.at(this.count - 1);
+                    this._dictionary.update('Last', reference);
+                    if (last && last._reference) {
+                        dictionary.update('Prev', last._reference);
+                        last._dictionary.update('Next', reference);
+                    }
+                    this._bookMarkList.push(bookmark);
+                } else if (index === 0) {
+                    const first: PdfBookmark = this.at(0);
+                    this._dictionary.update('First', reference);
+                    if (first && first._reference) {
+                        dictionary.update('Next', first._reference);
+                        first._dictionary.update('Prev', reference);
+                    }
+                    this._updateBookmarkList(index, bookmark);
+                } else {
+                    const next: PdfBookmark = this.at(index);
+                    const prev: PdfBookmark = this.at(index - 1);
+                    if (prev && prev._reference && next && next._reference) {
+                        dictionary.update('Prev', prev._reference);
+                        prev._dictionary.update('Next', reference);
+                        next._dictionary.update('Prev', reference);
+                        dictionary.update('Next', next._reference);
+                    }
+                    this._updateBookmarkList(index, bookmark);
+                }
             }
+            this._updateCount();
         }
-        this._updateCount();
         return bookmark;
     }
     /**
@@ -326,13 +329,13 @@ export class PdfBookmarkBase {
                 } else {
                     if (value === 0) {
                         const next: PdfBookmark = this.at(value + 1);
-                        if (next && next._reference) {
+                        if (this._dictionary && next && next._reference) {
                             this._removePrevious(next._dictionary);
                             this._dictionary.update('First', next._reference);
                         }
                     } else if (value === this.count - 1) {
                         const prev: PdfBookmark = this.at(value - 1);
-                        if (prev && prev._reference) {
+                        if (this._dictionary && prev && prev._reference) {
                             this._removeNext(prev._dictionary);
                             this._dictionary.update('Last', prev._reference);
                         }
@@ -345,7 +348,9 @@ export class PdfBookmarkBase {
                         }
                     }
                     this._updateBookmarkList(value);
-                    this._updateCount();
+                    if (this._dictionary) {
+                        this._updateCount();
+                    }
                 }
             }
         }
@@ -375,31 +380,31 @@ export class PdfBookmarkBase {
         this._bookMarkList = [];
     }
     _removeFirst(dictionary: _PdfDictionary): void {
-        if (dictionary.has('First')) {
+        if (dictionary && dictionary.has('First')) {
             delete dictionary._map.First;
             dictionary._updated = true;
         }
     }
     _removeLast(dictionary: _PdfDictionary): void {
-        if (dictionary.has('Last')) {
+        if (dictionary && dictionary.has('Last')) {
             delete dictionary._map.Last;
             dictionary._updated = true;
         }
     }
     _removeNext(dictionary: _PdfDictionary): void {
-        if (dictionary.has('Next')) {
+        if (dictionary && dictionary.has('Next')) {
             delete dictionary._map.Next;
             dictionary._updated = true;
         }
     }
     _removePrevious(dictionary: _PdfDictionary): void {
-        if (dictionary.has('Prev')) {
+        if (dictionary && dictionary.has('Prev')) {
             delete dictionary._map.Prev;
             dictionary._updated = true;
         }
     }
     _removeCount(dictionary: _PdfDictionary): void {
-        if (dictionary.has('Count')) {
+        if (dictionary && dictionary.has('Count')) {
             delete dictionary._map.Count;
             dictionary._updated = true;
         }
@@ -485,7 +490,7 @@ export class PdfBookmark extends PdfBookmarkBase {
      */
     constructor(dictionary: _PdfDictionary, crossReference: _PdfCrossReference) {
         super(dictionary, crossReference);
-        if (!this._dictionary.has('Dest') && this._dictionary.has('A')) {
+        if (this._dictionary && !this._dictionary.has('Dest') && this._dictionary.has('A')) {
             const actionDictionary: _PdfDictionary = this._dictionary.get('A');
             if (actionDictionary && actionDictionary.has('D')) {
                 const destinationArray: any[] = actionDictionary.getRaw('D'); // eslint-disable-line
@@ -591,7 +596,7 @@ export class PdfBookmark extends PdfBookmarkBase {
      * ```
      */
     set namedDestination(value: PdfNamedDestination) {
-        if (this._namedDestination !== value) {
+        if (this._namedDestination !== value && this._dictionary) {
             this._namedDestination = value;
             const dictionary: _PdfDictionary = new _PdfDictionary(this._crossReference);
             dictionary.update('D', value.title);
@@ -621,7 +626,7 @@ export class PdfBookmark extends PdfBookmarkBase {
      */
     get title(): string {
         if (this._title === null || typeof this._title === 'undefined') {
-            if (this._dictionary.has('Title')) {
+            if (this._dictionary && this._dictionary.has('Title')) {
                 this._title = this._dictionary.get('Title');
             } else {
                 this._title = '';
@@ -649,7 +654,9 @@ export class PdfBookmark extends PdfBookmarkBase {
      */
     set title(value: string) {
         this._title = value;
-        this._dictionary.update('Title', value);
+        if (this._dictionary) {
+            this._dictionary.update('Title', value);
+        }
     }
     /**
      * Gets the bookmark color.
@@ -671,7 +678,7 @@ export class PdfBookmark extends PdfBookmarkBase {
      */
     get color(): number[] {
         if (this._color === null || typeof this._color === 'undefined') {
-            if (this._dictionary.has('C')) {
+            if (this._dictionary && this._dictionary.has('C')) {
                 this._color = _parseColor(this._dictionary.getArray('C'));
             }
         }
@@ -697,9 +704,11 @@ export class PdfBookmark extends PdfBookmarkBase {
      */
     set color(value: number[]) {
         this._color = value;
-        this._dictionary.update('C', [Number.parseFloat((value[0] / 255).toFixed(7)),
-            Number.parseFloat((value[1] / 255).toFixed(7)),
-            Number.parseFloat((value[2] / 255).toFixed(7))]);
+        if (this._dictionary) {
+            this._dictionary.update('C', [Number.parseFloat((value[0] / 255).toFixed(7)),
+                Number.parseFloat((value[1] / 255).toFixed(7)),
+                Number.parseFloat((value[2] / 255).toFixed(7))]);
+        }
     }
     /**
      * Gets the text style.
@@ -749,7 +758,7 @@ export class PdfBookmark extends PdfBookmarkBase {
     }
     get _next(): PdfBookmark {
         let nextBookmark: PdfBookmark;
-        if (this._dictionary.has('Next')) {
+        if (this._dictionary && this._dictionary.has('Next')) {
             const reference: _PdfReference = this._dictionary._get('Next');
             if (reference) {
                 const dictionary: _PdfDictionary = this._crossReference._fetch(reference);
@@ -763,16 +772,16 @@ export class PdfBookmark extends PdfBookmarkBase {
     }
     _updateTextStyle(value: PdfTextStyle): void {
         if (value === PdfTextStyle.regular) {
-            if (this._dictionary.has('F')) {
+            if (this._dictionary && this._dictionary.has('F')) {
                 delete this._dictionary._map.F;
             }
-        } else {
+        } else if (this._dictionary) {
             this._dictionary.update('F', value);
         }
     }
     _obtainTextStyle(): PdfTextStyle{
         let style: PdfTextStyle = PdfTextStyle.regular;
-        if (this._dictionary.has('F')) {
+        if (this._dictionary && this._dictionary.has('F')) {
             const flag: number = this._dictionary.get('F');
             let flagValue: number = 0;
             if (typeof flag !== 'undefined' && flag !== null) {
@@ -792,13 +801,15 @@ export class PdfBookmark extends PdfBookmarkBase {
         let namedDestination: PdfNamedDestination;
         if (destinationCollection) {
             const dictionary: _PdfDictionary = this._dictionary;
-            if (dictionary.has('A')) {
-                const action: _PdfDictionary = dictionary.get('A');
-                if (action.has('D')) {
-                    destination = action.get('D');
+            if (dictionary) {
+                if (dictionary.has('A')) {
+                    const action: _PdfDictionary = dictionary.get('A');
+                    if (action && action.has('D')) {
+                        destination = action.get('D');
+                    }
+                } else if (dictionary.has('Dest')) {
+                    destination = dictionary.get('Dest');
                 }
-            } else if (dictionary.has('Dest')) {
-                destination = dictionary.get('Dest');
             }
             if (destination) {
                 let value: string;
@@ -977,7 +988,7 @@ export class PdfNamedDestination {
      * ```
      */
     set title(value: string) {
-        if (value !== this._title) {
+        if (value !== this._title && this._dictionary) {
             this._title = value;
             this._dictionary.update('Title', value);
             this._dictionary._updated = true;
@@ -1009,8 +1020,21 @@ export class _PdfNamedDestinationCollection {
                 } else if (destination.has('Kids')) {
                     const destinationArray: any[] = destination.getArray('Kids'); // eslint-disable-line
                     for (let i: number = 0; i < destinationArray.length; i++) {
-                        const destinationElement: _PdfDictionary = destinationArray[Number.parseInt(i.toString(), 10)];
-                        this._addCollection(destinationElement);
+                        this._findDestination(destinationArray[Number.parseInt(i.toString(), 10)]);
+                    }
+                }
+            }
+        }
+    }
+    private _findDestination(destination: _PdfDictionary): void {
+        if (destination) {
+            if (destination.has('Names')) {
+                this._addCollection(destination);
+            } else if (destination.has('Kids')) {
+                const kids: any = destination.getArray('Kids'); // eslint-disable-line
+                if (kids && Array.isArray(kids) && kids.length > 0) {
+                    for (let i: number = 0; i < kids.length; i++) {
+                        this._findDestination(kids[Number.parseInt(i.toString(), 10)]);
                     }
                 }
             }

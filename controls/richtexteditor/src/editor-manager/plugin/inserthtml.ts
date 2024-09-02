@@ -447,6 +447,12 @@ export class InsertHtml {
                         currentNode.nextSibling.nodeName === 'BR') {
                         detach(currentNode.nextSibling);
                     }
+                    if (currentNode.parentElement.nodeName === 'LI' && currentNode.parentElement.textContent === '') {
+                        this.removeListfromPaste(range);
+                        range.insertNode(node);
+                        this.contentsDeleted = true;
+                        return;
+                    }
                 } else if ((currentNode.nodeName === '#text' || currentNode.nodeName === 'BR') && !isNOU(currentNode.parentElement) &&
                 (currentNode.parentElement.nodeName === 'LI' || currentNode.parentElement.closest('LI') || (blockNode === editNode && currentNode.parentElement === blockNode )) &&
                 currentNode.parentElement.textContent.trim().length > 0) {
@@ -456,13 +462,7 @@ export class InsertHtml {
                         detach(currentNode.nextSibling);
                     }
                     if (!range.collapsed) {
-                        range.deleteContents();
-                        const value: Node = range.startContainer;
-                        if (!isNOU(value) && value.nodeName === 'LI' && !isNOU(value.parentElement) && (value.parentElement.nodeName === 'OL' || value.parentElement.nodeName === 'UL') && value.textContent.trim() === '') {
-                            (value.parentElement as HTMLElement).querySelectorAll('li').forEach((item: HTMLLIElement) => {
-                                item.remove();
-                            });
-                        }
+                        this.removeListfromPaste(range);
                     }
                     range.insertNode(node);
                     this.contentsDeleted = true;
@@ -610,6 +610,17 @@ export class InsertHtml {
                     }
                 }
             }
+        }
+    }
+    private static removeListfromPaste (range: Range): void {
+        range.deleteContents();
+        const value: Node = range.startContainer;
+        if (!isNOU(value) && value.nodeName === 'LI' && !isNOU(value.parentElement) && (value.parentElement.nodeName === 'OL' || value.parentElement.nodeName === 'UL') && value.textContent.trim() === '') {
+            (value.parentElement as HTMLElement).querySelectorAll('li').forEach((item: HTMLLIElement) => {
+                if (item.textContent.trim() === '') {
+                    item.remove();
+                }
+            });
         }
     }
 }

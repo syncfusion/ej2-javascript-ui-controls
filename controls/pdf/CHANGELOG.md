@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 26.2.11 (2024-08-27)
+## 26.2.12 (2024-09-03)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved an issue with parsing destinations from PDF bookmarks.
+- Resolved the font style parsing issue from PDF free text annotation.
+
+## 26.2.10 (2024-08-20)
 
 ### PDF Parser
 

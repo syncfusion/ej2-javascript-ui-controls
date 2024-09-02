@@ -281,7 +281,7 @@ describe('EJ2-899326 => Script error occurs on selecting records in Adaptive UI 
                 enableAdaptiveUI: true,
                 height: '100%',
                 width: 600,
-                toolbar: ['Add',{template:'<span>Test</span>'}],
+                toolbar: [ 'Add', { id: 'test', template: '<span id="test">Test</span>'} ],
                 pageSettings: { pageSize: 12, pageSizes: true },
                 columns: [
                     { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right', validationRules: { required: true, number: true }, width: 120 },

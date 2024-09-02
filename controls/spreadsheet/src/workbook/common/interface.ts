@@ -594,7 +594,8 @@ export interface checkCellValid {
 }
 /** @hidden */
 export interface ExtendedWorkbook extends Workbook {
-    viewport: { topIndex: number, bottomIndex: number, leftIndex: number, rightIndex: number };
+    viewport?: { topIndex: number, bottomIndex: number, leftIndex: number, rightIndex: number };
+    scrollSettings?: { isFinite: boolean, enableVirtualization: boolean };
 }
 /** @hidden */
 export interface ApplyCFArgs {

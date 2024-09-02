@@ -4930,4 +4930,51 @@ describe('RTE CR issues ', () => {
             }, 400);
         });
     });
+    describe('903810 - Ordered list gets removed when list item is copied and pasted into the same list in the Rich Text Editor', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = {
+            preventDefault: () => { },
+            type: "keydown",
+            stopPropagation: () => { },
+            ctrlKey: false,
+            shiftKey: false,
+            action: null,
+            which: 64,
+            key: ""
+          };
+        let innerHTML: string = `<ol><li id="li1"><br></li><li id="li2">hello</li></ol>`;
+        let copied: string = `\n\n\x3C!--StartFragment--><ul style="margin-bottom: 0px; color: rgb(51, 51, 51); font-family: Roboto, &quot;Segoe UI&quot;, GeezaPro, &quot;DejaVu Serif&quot;, &quot;sans-serif&quot;, -apple-system, BlinkMacSystemFont; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><li id="\\&quot;li2\\&quot;" style="margin-bottom: 10px;">hello</li></ul>\x3C!--EndFragment-->\n\n`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                value: innerHTML,
+                pasteCleanupSettings: {
+                    prompt: false
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+        it('select all last two contents of list and press delete ', (done: DoneFn) => {
+            rteObj.dataBind();
+            keyBoardEvent.clipboardData = {
+                getData: () => {
+                    return copied;
+                },
+                items: []
+            };
+            setCursorPoint(document.querySelector('#li1'), 0);
+            rteObj.onPaste(keyBoardEvent);
+            setTimeout(() => {
+                expect((rteObj.inputElement.firstChild as HTMLElement).innerHTML===`<li id="\\&quot;li2\\&quot;" style="">hello</li><li id="li2">hello</li>`).toBe(true);
+                done();
+            }, 200);
+        });
+    });
 });

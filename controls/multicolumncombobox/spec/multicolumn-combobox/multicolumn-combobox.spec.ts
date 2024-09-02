@@ -9,6 +9,10 @@ let languageData: { [key: string]: Object }[] = [
     { id: 'list6', text: 'JAVASCRIPT' }, { id: 'list7', text: 'SQL' }, { id: 'list8', text: 'C#' }
 ];
 
+let filterData: { [key: string]: Object }[] = [
+    { id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }, { id: 'id3', text: 'PERL' },
+];
+
 describe('MultiColumnComboBox control', () => {
     beforeAll(() => {
         const isDef: any = (o: any) => o !== undefined && o !== null;
@@ -742,6 +746,82 @@ describe('MultiColumnComboBox control', () => {
             multiColObj.trigger('filtering', { text: 'JAVA' });
             expect(filtering).toBe(true);
             expect(text).toBe('JAVA');
+        });
+        it('Filtering Event with starstwith operator and dynamic query update data', (done) => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: languageData,
+                fields: { text: 'text', value: 'id' },
+                allowFiltering: true,
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }],
+                filtering: (args: FilteringEventArgs) => {
+                    let query = new Query().select(['id', 'text']).search(args.text, ['id', 'text'], 'startswith', true);
+                    args.updateData(languageData, query);
+                }
+            });
+            multiColObj.appendTo(element);
+            element.value = 'i';
+            element.dispatchEvent(event);
+            setTimeout(() => {
+                expect((multiColObj as any).gridObj.dataSource.length).toBe(3);
+                done();
+            }, 1200);
+        });
+        it('Filtering Event with endswith operator and dynamic query update data', (done) => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: languageData,
+                fields: { text: 'text', value: 'id' },
+                allowFiltering: true,
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }],
+                filtering: (args: FilteringEventArgs) => {
+                    let query = new Query().select(['id', 'text']).search(args.text, ['id', 'text'], 'startswith', true);
+                    args.updateData(languageData, query);
+                }
+            });
+            multiColObj.appendTo(element);
+            element.value = 'l';
+            element.dispatchEvent(event);
+            setTimeout(() => {
+                expect((multiColObj as any).gridObj.dataSource.length).toBe(3);
+                done();
+            }, 1200);
+        });
+        it('Filtering Event with contains operator and dynamic query update data', (done) => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: languageData,
+                fields: { text: 'text', value: 'id' },
+                allowFiltering: true,
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }],
+                filtering: (args: FilteringEventArgs) => {
+                    let query = new Query().select(['id', 'text']).search(args.text, ['id', 'text'], 'startswith', true);
+                    args.updateData(languageData, query);
+                }
+            });
+            multiColObj.appendTo(element);
+            element.value = 'a';
+            element.dispatchEvent(event);
+            setTimeout(() => {
+                expect((multiColObj as any).gridObj.dataSource.length).toBe(2);
+                done();
+            }, 1200);
+        });
+        it('Filtering Event with null query update data', (done) => {
+            multiColObj = new MultiColumnComboBox({
+                dataSource: languageData,
+                fields: { text: 'text', value: 'id' },
+                allowFiltering: true,
+                columns: [{ field: 'text', header: 'Language' }, { field: 'id', header: 'ID' }],
+                filtering: (args: FilteringEventArgs) => {
+                    args.updateData(filterData, null);
+                }
+            });
+            multiColObj.appendTo(element);
+            expect((multiColObj as any).gridObj.dataSource.length).toBe(9);
+            element.value = 'c';
+            element.dispatchEvent(event);
+            setTimeout(() => {
+                expect((multiColObj as any).gridObj.dataSource.length).toBe(3);
+                done();
+            }, 1200);
         });
         it(' no Records testing', (done) => {
             multiColObj = new MultiColumnComboBox({

@@ -17,6 +17,7 @@ import { Edit } from '../../src/treegrid/actions/edit';
 import { Freeze } from '../../src/treegrid/actions/freeze-column';
 import { Logger } from '../../src/treegrid/actions/logger';
 import { Print } from '../../src/treegrid/actions/print';
+import { ITreeData } from '../../src';
 
 /**
  * Grid base spec
@@ -3646,6 +3647,46 @@ describe('check actionFailure', () => {
         }
     });
 
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});
+
+describe('HasChildRecords property value is not updated properly ', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    let SampelData2: Object[] = [
+        {
+            taskID: 1,
+            taskName: 'Planning',
+            startDate: new Date('02/03/2017'),
+            endDate: new Date('02/07/2017'),
+            progress: 100,
+            duration: 5,
+            priority: 'Normal',
+            approved: false,
+            subtasks: [
+                { taskID: 2, taskName: 'Plan timeline', startDate: new Date('02/03/2017'), endDate: new Date('02/07/2017'), duration: 5, progress: 100, priority: 'Normal', approved: false, subtasks:[] },
+                { taskID: 3, taskName: 'Plan budget', startDate: new Date('02/03/2017'), endDate: new Date('02/07/2017'), duration: 5, progress: 100, approved: true },
+                { taskID: 4, taskName: 'Allocate resources', startDate: new Date('02/03/2017'), endDate: new Date('02/07/2017'), duration: 5, progress: 100, priority: 'Critical', approved: false },
+                { taskID: 5, taskName: 'Planning complete', startDate: new Date('02/07/2017'), endDate: new Date('02/07/2017'), duration: 0, progress: 0, priority: 'Low', approved: true }
+            ]
+        }];
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: SampelData2,
+                childMapping: 'subtasks',
+                treeColumnIndex: 1,
+                columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress'],
+            },
+            done
+        );
+    });
+    it('check currentview data', () => {
+        expect((gridObj.flatData[1] as ITreeData).hasChildRecords).toBe(false);
+        expect((gridObj.getCurrentViewRecords()[1] as ITreeData).hasChildRecords).toBe(false);
+    });
     afterAll(() => {
         destroy(gridObj);
     });

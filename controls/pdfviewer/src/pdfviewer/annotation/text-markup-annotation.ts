@@ -1573,7 +1573,8 @@ export class TextMarkupAnnotation {
                             }
                         }
                         pageAnnotationObject.annotations[parseInt(z.toString(), 10)].bounds =
-                         JSON.stringify(this.getBoundsForSave(pageAnnotationObject.annotations[parseInt(z.toString(), 10)].bounds, i));
+                         JSON.stringify(this.getBoundsForSave(pageAnnotationObject.annotations[parseInt(z.toString(), 10)].bounds,
+                         pageAnnotationObject.annotations[parseInt(z.toString(), 10)].pageNumber));
                         const colorString: string = pageAnnotationObject.annotations[parseInt(z.toString(), 10)].color;
                         pageAnnotationObject.annotations[parseInt(z.toString(), 10)].color = JSON.stringify(this.getRgbCode(colorString));
                         pageAnnotationObject.annotations[parseInt(z.toString(), 10)].rect =

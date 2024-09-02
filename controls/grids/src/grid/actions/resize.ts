@@ -106,11 +106,16 @@ export class Resize implements IAction {
         if (newarray.length > 0) {
             this.autoFitColumns(newarray);
         }
+        const contentTable: HTMLElement = this.parent.getContentTable() as HTMLElement;
         if (this.parent.allowResizing && isMaxWidthCount && (this.parent.resizeSettings.mode === 'Auto' ||
             (this.parent.resizeSettings.mode === 'Normal' && !this.parent.autoFit && newarray.length === 0))) {
-            this.widthService.setWidthToTable(isMaxWidthCount !== cols.length);
+            this.widthService.setWidthToTable(contentTable.style.width.indexOf('px') === -1);
         } else if (this.parent.autoFit && this.parent.resizeSettings.mode === 'Auto') {
-            this.widthService.setWidthToTable()
+            this.widthService.setWidthToTable();
+        }
+        if (contentTable.style.width.indexOf('px') !== -1
+            && contentTable.getBoundingClientRect().width < contentTable.parentElement.clientWidth) {
+            addClass([this.parent.getHeaderTable(), contentTable], ['e-tableborder']);
         }
     }
 

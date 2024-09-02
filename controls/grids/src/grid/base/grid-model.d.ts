@@ -1861,14 +1861,14 @@ export interface GridModel extends ComponentModel{
     cellEdit?: EmitType<CellEditArgs>;
 
     /**
-     * Triggers when cell is saved.
+     * Triggers when the cell is being saved.
      *
      * @event cellSave
      */
     cellSave?: EmitType<CellSaveArgs>;
 
     /**
-     * Triggers when cell is saved.
+     * Triggers after the cell is saved.
      *
      * @event cellSaved
      */

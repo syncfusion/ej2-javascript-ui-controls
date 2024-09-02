@@ -2528,7 +2528,7 @@ export class Drawing {
             update = true;
             updateConnector = true;
         }
-        if (node.fontSize !== undefined  && actualObject.fontSize !== node.fontSize) {
+        if (node.fontSize !== undefined) {
             if ((actualObject.shapeAnnotationType === 'FreeText' || actualObject.shapeAnnotationType === 'SignatureText') && actualObject.wrapper && actualObject.wrapper.children && actualObject.wrapper.children.length) {
                 const children: any[] = actualObject.wrapper.children;
                 children[1].style.fontSize = node.fontSize;
@@ -2552,7 +2552,7 @@ export class Drawing {
             if (this.pdfViewer.enableToolbar && this.pdfViewer.toolbarModule) {
                 this.pdfViewer.toolbarModule.annotationToolbarModule.updateFontSizeInIcon(node.fontSize);
             }
-            else if (this.pdfViewer.annotationModule){
+            else if (this.pdfViewer.annotationModule && actualObject.fontSize !== node.fontSize){
                 this.pdfViewer.annotationModule.handleFontSizeUpdate(node.fontSize);
             }
             update = true;

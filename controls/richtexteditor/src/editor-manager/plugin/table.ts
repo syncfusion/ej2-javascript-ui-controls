@@ -549,7 +549,7 @@ export class TableCommand {
             detach(selectedCells[i as number]);
         }
         for (let i: number = 0; i < this.curTable.rows.length ; i++) {
-            if (this.curTable.rows[i as number].innerHTML === '') {
+            if (this.curTable.rows[i as number].innerHTML.trim() === '') {
                 detach(this.curTable.rows[i as number]);
             }
         }

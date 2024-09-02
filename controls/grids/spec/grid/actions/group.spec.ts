@@ -2209,6 +2209,35 @@ describe('EJ2-881066-Refreshing aggregateModule throws script error with Groupin
     });
 });
 
+describe('EJ2-904971-Issue with Initial Grouping and Sorting in the Grid  => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: filterData,
+                groupSettings: { columns:['OrderID','CustomerID'] },
+                sortSettings: { columns: [{ field: "OrderID", direction: 'Descending' }] },
+                columns: [{ field: 'OrderID', headerText: 'Order ID' },
+                { field: 'CustomerID', headerText: 'CustomerID' },
+                { field: 'EmployeeID', headerText: 'Employee ID' },
+                { field: 'Freight', headerText: 'Freight' },
+                { field: 'ShipCity', headerText: 'Ship City' }],
+                allowSorting: true,
+                allowPaging: true,
+                allowGrouping: true,
+            }, done);
+    });
+    it('Checking Sort direction of initial sorting of Grouped column', () => {
+        expect(gridObj.sortSettings.columns[1].field).toBe('OrderID');
+        expect(gridObj.sortSettings.columns[1].direction).toBe('Descending');
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
 // used for code coverage
 describe('Code Coverage => ', () => {
     let gridObj: Grid;

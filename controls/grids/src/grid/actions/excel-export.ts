@@ -631,9 +631,14 @@ export class ExcelExport {
                     (<{ actionFailure?: Function }>childGridObj).actionFailure =
                         helper.failureHandler(this.gridPool, childGridObj, this.globalResolve);
                     (<{ childGridLevel?: number }>childGridObj).childGridLevel = (<{ childGridLevel?: number }>gObj).childGridLevel + 1;
-                    const args: ExportDetailDataBoundEventArgs = { childGrid: childGridObj, row, exportProperties: excelExportProperties };
+                    const childExportProperties: ExcelExportProperties = extend(excelExportProperties, {
+                        columns: null,
+                        dataSource: null,
+                        query: null
+                    });
+                    const args: ExportDetailDataBoundEventArgs = { childGrid: childGridObj, row, exportProperties: childExportProperties };
                     this.parent.trigger(events.exportDetailDataBound, args);
-                    (<Grid>childGridObj).beforeDataBound = this.childGridCell(excelRow, childGridObj, excelExportProperties, row);
+                    (<Grid>childGridObj).beforeDataBound = this.childGridCell(excelRow, childGridObj, childExportProperties, row);
                     childGridObj.appendTo(element);
                 } else {
                     const args: ExportDetailTemplateEventArgs = { parentRow: row, row: excelRow, value: {}, action: 'excelexport', gridInstance: gObj };

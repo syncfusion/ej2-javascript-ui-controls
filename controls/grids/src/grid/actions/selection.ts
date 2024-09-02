@@ -3091,21 +3091,27 @@ export class Selection implements IAction {
     }
 
     private getCheckAllStatus(ele?: HTMLElement): CheckState {
-        const classes: DOMTokenList = ele ? ele.nextElementSibling.classList :
-            this.getCheckAllBox().nextElementSibling.classList;
-        let status: CheckState;
-        if (classes.contains('e-check')) {
-            status = 'Check';
-        } else if (classes.contains('e-uncheck')) {
-            status = 'Uncheck';
-        } else if (classes.contains('e-stop')) {
-            status = 'Intermediate';
+        let classes: DOMTokenList | undefined;
+        if (!isNullOrUndefined(ele)) {
+            classes = ele.nextElementSibling.classList;
         } else {
-            status = 'None';
+            if (!isNullOrUndefined(this.getCheckAllBox())) {
+                classes = this.getCheckAllBox().nextElementSibling.classList;
+            }
         }
+        let status: CheckState = 'None';
+        if (classes instanceof DOMTokenList) {
+            if (classes.contains('e-check')) {
+                status = 'Check';
+            } else if (classes.contains('e-uncheck')) {
+                status = 'Uncheck';
+            } else if (classes.contains('e-stop')) {
+                status = 'Intermediate';
+            }
+        } 
         return status;
     }
-
+    
     private checkSelect(checkBox: HTMLInputElement): void {
         const target: HTMLElement = closest(this.checkedTarget, '.' + literals.rowCell) as HTMLElement;
         const gObj: IGrid = this.parent;

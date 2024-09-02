@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 26.2.12 (2024-09-03)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I623355` - Now, merging cells across two or more rows in a table that are copied and pasted from the Excel sheet will work properly.
+
+- `#I623837` - Now, copying a single item within an ordered list and pasting it back into the same list item works properly in the Rich Text Editor.
+
 ## 26.2.11 (2024-08-27)
 
 ### RichTextEditor

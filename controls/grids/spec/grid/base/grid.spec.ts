@@ -4573,7 +4573,7 @@ describe('EJ2-899559 - Column jumping issue on column resizing with minWidth and
     });
     it('Ensure 1st Column Width ', () => {
         const cols: HTMLCollection = gridObj.getHeaderTable().querySelector('colgroup').children;
-        expect((cols[0] as HTMLElement).style.width).toBe('50px');
+        expect((cols[0] as HTMLElement).style.width).toBe('auto');
     });
     afterAll(() => {
         destroy(gridObj);

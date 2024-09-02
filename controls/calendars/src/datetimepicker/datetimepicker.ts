@@ -1045,8 +1045,11 @@ export class DateTimePicker extends DatePicker {
                 if (!Browser.isDevice || (Browser.isDevice && !this.fullScreenMode)) {
                     this.popupObject.refreshPosition(this.inputElement);
                 }
-                if (Browser.isDevice && this.fullScreenMode){
-                    this.dateTimeWrapper.style.left = '0px';
+                if (Browser.isDevice) {
+                    this.modelWrapper.style.zIndex = (this.popupObject.zIndex - 1).toString();
+                    if (this.fullScreenMode) {
+                        this.dateTimeWrapper.style.left = '0px';
+                    }
                 }
 
             }

@@ -412,7 +412,9 @@ export class FormDesigner {
                 borderColor: drawingObject.borderColor, thickness: drawingObject.thickness, options: drawingObject.options,
                 pageNumber: drawingObject.pageNumber, isChecked: drawingObject.isChecked, isSelected: drawingObject.isSelected, customData: drawingObject.customData
             };
-            this.pdfViewerBase.updateDocumentEditedProperty(true);
+            if (!this.pdfViewer.isFormFieldsLoaded) {
+                this.pdfViewerBase.updateDocumentEditedProperty(true);
+            }
             this.pdfViewer.fireFormFieldAddEvent('formFieldAdd', field, this.pdfViewerBase.activeElements.activePageID);
         } else {
             const point: PointModel = cornersPointsBeforeRotation(element).topLeft;
@@ -6020,11 +6022,21 @@ export class FormDesigner {
             designerName.innerHTML = selectedItem.name;
         }
         if (index > -1) {
+            let oldValue: any; let newValue: any;
+            oldValue = selectedItem.options.length > 1 ? selectedItem.options.slice(0, selectedItem.options.length - 1) : '';
+            newValue = selectedItem.options[selectedItem.options.length - 1];
+            if ((formFieldsData[parseInt(index.toString(), 10)].FormField.formFieldAnnotationType === 'DropdownList' || formFieldsData[parseInt(index.toString(), 10)].FormField.formFieldAnnotationType === 'ListBox') && (formFieldsData[parseInt(index.toString(), 10)].FormField.name === selectedItem.name) && formFieldsData[parseInt(index.toString(), 10)].FormField.option.length > 0) {
+                this.updateFormFieldPropertiesChanges('formFieldPropertiesChange', selectedItem, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, oldValue, newValue, true, formFieldsData[parseInt(index.toString(), 10)].FormField.name);
+            }
+            if (this.formFieldName && (selectedItem.name !== formFieldsData[parseInt(index.toString(), 10)].FormField.name)) {
+                oldValue = formFieldsData[parseInt(index.toString(), 10)].FormField.name;
+                newValue = selectedItem.name;
+            }
             if (formFieldsData[parseInt(index.toString(), 10)].FormField.name !== selectedItem.name) {
                 this.updateFormFieldPropertiesChanges('formFieldPropertiesChange', selectedItem, false, false, false,
-                                                      false, false, false, false, false, false,
-                                                      false, false, false, false, false, false, false, null, null,
-                                                      true, formFieldsData[parseInt(index.toString(), 10)].FormField.name);
+                    false, false, false, false, false, false,
+                    false, false, false, false, false, false, false, oldValue, newValue,
+                    true, formFieldsData[parseInt(index.toString(), 10)].FormField.name);
             }
             formFieldsData[parseInt(index.toString(), 10)].FormField.name = selectedItem.name;
             this.pdfViewerBase.formFieldCollection[parseInt(index.toString(), 10)].FormField.name = selectedItem.name;

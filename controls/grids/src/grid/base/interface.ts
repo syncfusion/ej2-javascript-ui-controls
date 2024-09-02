@@ -3094,3 +3094,15 @@ export interface VirtualSelectionInfo {
     direction?: string;
     event?: KeyboardEventArgs;
 }
+
+export interface ColumnTemplateArgs {
+    /** Defines the current row data.
+     *
+     * @isGenericType true
+     */
+    data?: Object;
+    /** Defines the column of the current cell. */
+    column?: Column;
+    /** Defines the row index. */
+    index?: string;
+}

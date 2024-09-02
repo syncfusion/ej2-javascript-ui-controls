@@ -1,4 +1,4 @@
-import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { addClass, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IGrid, IAction, NotifyArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { isActionPrevent } from '../base/util';
@@ -10,7 +10,8 @@ import { SearchSettingsModel } from '../base/grid-model';
 export class Search implements IAction {
 
     //Internal variables
-
+    /** @hidden */
+    public headerFocus: boolean = false;
     //Module declarations
     private parent: IGrid;
     private refreshSearch: boolean;
@@ -66,6 +67,7 @@ export class Search implements IAction {
             return;
         }
         if (searchString !== gObj.searchSettings.key) {
+            this.headerFocus = false;
             // Check searchString is number and parseFloat to remove trailing zeros
             if (searchString !== '' && !this.hasNonNumericCharacters(searchString)) {
                 if (searchString === '.') {
@@ -79,6 +81,8 @@ export class Search implements IAction {
             gObj.dataBind();
         } else if (this.refreshSearch) {
             gObj.refresh();
+        } else {
+            this.headerFocus = false;
         }
     }
 
@@ -160,6 +164,11 @@ export class Search implements IAction {
      * @hidden
      */
     public onActionComplete(e: NotifyArgs): void {
+        if (this.refreshSearch && e.requestType === 'refresh' && this.headerFocus) {
+            this.headerFocus = false;
+            this.parent.focusModule.focus();
+            addClass([this.parent.focusModule.currentInfo.element], ['e-focused']);
+        }
         this.refreshSearch = e.requestType !== 'searching';
     }
 

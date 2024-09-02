@@ -4442,7 +4442,7 @@ export class PdfViewerBase {
         return (event.target as any).className !== 'e-pv-formfield-input' &&
             (event.target as any).className !== 'e-pv-formfield-textarea' &&
             (event.target as any).className !== 'e-pv-properties-name-edit-input e-input e-lib e-textbox e-control' &&
-            (event.target as any).className !== 'e-pv-properties-value-input e-input e-lib e-textbox e-control';
+            (event.target as any).className !== 'e-pv-properties-value-input e-input e-lib e-textbox e-control' && (event.target as any).id !== this.pdfViewer.element.id + '_search_input' && (event.target as any).className !== 'e-input-group e-pv-search-input e-input-focus';
     }
 
     private DeleteKeyPressed(event: KeyboardEvent): void {
@@ -10149,7 +10149,7 @@ export class PdfViewerBase {
             this.isFormFieldMouseDown = false;
             this.isAnnotationMouseMove = false;
             this.isFormFieldMouseMove = false;
-            if (!isNullOrUndefined(obj))
+            if (!isNullOrUndefined(obj) && (obj as any).propName !== 'annotations')
             {
                 this.eventArgs.source = obj;
             }

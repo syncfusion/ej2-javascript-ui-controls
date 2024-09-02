@@ -1035,9 +1035,7 @@ export class WorkbookFormula {
                 !range.info.loadedRange.length))) {
                 this.parent.notify(
                     updateSheetFromDataSource, { sheet: sheet, autoDetectFormat: true, loadFromStartCell: true,
-                        updateDependentCellsCallback: getDependentCellsCheckFn(sheet), loadComplete: loadCompleteHandler,
-                        isFinite: (<{ scrollSettings?: { isFinite: boolean } }>this.parent).scrollSettings &&
-                        (<{ scrollSettings?: { isFinite: boolean } }>this.parent).scrollSettings.isFinite });
+                        updateDependentCellsCallback: getDependentCellsCheckFn(sheet), loadComplete: loadCompleteHandler });
             } else {
                 loadCompleteHandler();
             }

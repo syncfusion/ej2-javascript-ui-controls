@@ -2447,7 +2447,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public cellEdit: EmitType<CellEditArgs>;
 
     /**
-     * Triggers when cell is saved.
+     * Triggers when the cell is being saved.
      *
      * @event cellSave
      */
@@ -2455,7 +2455,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public cellSave: EmitType<CellSaveArgs>;
 
     /**
-     * Triggers when cell is saved.
+     * Triggers after the cell is saved.
      *
      * @event cellSaved
      */
@@ -3328,6 +3328,18 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (content || header) {
             const rowCountElement: Element = gridContent;
             let rowCount: number = Math.ceil(rowCountElement.getBoundingClientRect().height / this.getRowHeight());
+            if (this.allowPaging && this.pageSettings.pageSize !== this.currentViewData.length &&
+                this.pagerModule.pagerObj.totalPages !== this.pageSettings.currentPage) {
+                for (let i: number = 0; i < this.pageSettings.pageSize - this.currentViewData.length; i++) {
+                    const row: Element = this.createMaskRow(maskColgroup, columns);
+                    const altRow: Element = row.cloneNode(true) as Element;
+                    altRow.classList.add('e-altrow');
+                    for (let i: number = 0; i < rowCount; i++) {
+                        const altNumber: number = 1;
+                        maskTBody.appendChild((i + altNumber) % 2 === 0 ? altRow.cloneNode(true) : row.cloneNode(true));
+                    }
+                }
+            }
             if (tbody.querySelector('.e-emptyrow') || !tbody.childNodes.length || (content && this.childGrid)) {
                 const row: Element = this.createMaskRow(maskColgroup, columns);
                 const altRow: Element = row.cloneNode(true) as Element;
@@ -6865,6 +6877,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let j: number;
         if (this.allowGrouping) {
             for (let i: number = 0, len: number = gCols.length; i < len; i++) {
+                flag = false;
                 j = 0;
                 for (let sLen: number = sCols.length; j < sLen; j++) {
                     if (sCols[parseInt(j.toString(), 10)].field === gCols[parseInt(i.toString(), 10)]) {

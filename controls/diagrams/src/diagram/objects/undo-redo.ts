@@ -68,6 +68,18 @@ export class UndoRedo {
      * @private
      */
     public addHistoryEntry(entry: HistoryEntry, diagram: Diagram): void {
+        // Bug: 903791-remove StartGroup & EndGroup entry when no actual changes wrapped between them.
+        if (entry.type === 'EndGroup' && diagram.historyManager.currentEntry.type === 'StartGroup') {
+            if (diagram.historyManager.currentEntry.previous) {
+                diagram.historyManager.currentEntry.previous.next = undefined;
+            }
+            diagram.historyManager.currentEntry = diagram.historyManager.currentEntry.previous;
+            // when cancelled change startGroup is only entry in history manager
+            if (!diagram.historyManager.currentEntry) {
+                diagram.historyManager.canUndo = false;
+            }
+            return;
+        }
         let entryObject: HistoryEntry = null;
         let nextEntry: HistoryEntry = null;
         if (diagram.historyManager.canLog) {

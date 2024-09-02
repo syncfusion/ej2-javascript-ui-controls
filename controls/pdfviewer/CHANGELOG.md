@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 26.2.12 (2024-09-03)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- `#I621133` - The `IsDocumentEdited` API does not return true for documents with form fields.
+- `#I620047` - Now, the text markup annotation rotation is correctly rendered after rotating the PDF pages.
+- `#I625999` - Now, the free text annotation font size is updating properly.
+- `#I620349` - Now, the `FormFieldPropertiesChange` event is triggered when adding or deleting the dropdown options.
+- `#I622415` - Now, the able to copy text from the input box of the search dialog.
+- `#I626450` - Now, no more console errors occur when focusing on the PDF Viewer.
+- `#I626966` - The invalid behavior of font alignment and font color tools in the `annotationToolbarItems` has been resolved now.
+- `#I626108` - The polygon annotation is now preserved properly when adding and rotating the pages.
+
 ## 26.2.11 (2024-08-27)
 
 ### PDF Viewer

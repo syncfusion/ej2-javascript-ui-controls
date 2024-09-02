@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 26.2.11 (2024-08-27)
+## 26.2.12 (2024-09-03)
+
+### MultiColumn ComboBox
+
+#### Bug fixes
+
+- `#I618908`, `#I613836` - Now the issue with custom filtering, dynamic data is not filtered correctly with or without query parameters has now been resolved.
+
+## 26.2.9 (2024-08-13)
 
 ### MultiColumn ComboBox
 

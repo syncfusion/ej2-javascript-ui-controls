@@ -624,7 +624,16 @@ export class DataManipulation {
             }
             if ((!isNullOrUndefined(currentData[this.parent.childMapping]) && !isCountRequired(this.parent)) ||
             ((currentData[this.parent.hasChildMapping]) && isCountRequired(this.parent))) {
-                currentData.hasChildRecords = true;
+                if (!isNullOrUndefined(currentData[this.parent.childMapping])) {
+                    if (currentData[this.parent.childMapping].length > 0) {
+                        currentData.hasChildRecords = true;
+                    } else {
+                        currentData.hasChildRecords = false;
+                    }
+                }
+                else {
+                    currentData.hasChildRecords = true;
+                }
                 if (this.parent.enableCollapseAll || !isNullOrUndefined(this.parent.dataStateChange)
             && isNullOrUndefined(currentData[this.parent.childMapping])) {
                     currentData.expanded = false;

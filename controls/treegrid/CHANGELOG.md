@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 26.2.12 (2024-09-03)
+
+### Tree Grid
+
+#### Bug Fixes
+
+- `#F60489` - Fixed the issue where the `hasChildRecords` property value was not being updated correctly.
+- `#F60854` - Fixed an issue where an exception was thrown when clicking on a row while using the `filterTemplate`.
+
 ## 26.2.11 (2024-08-27)
 
 ### Tree Grid

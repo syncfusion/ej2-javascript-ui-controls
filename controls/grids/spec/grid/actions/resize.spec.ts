@@ -1479,5 +1479,52 @@ describe('Resize module', () => {
         });
     });
 
-
+    describe('EJ2-904603 - column autoFit property not considered even resizeSettings mode as normal when applying other column width property value as auto', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowResizing: true,
+                    allowSorting: true,
+                    height: 400,
+                    width: 900,
+                    allowFiltering: true,
+                    filterSettings: { type: 'Menu' },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true },
+                    columns: [
+                      {
+                        field: 'OrderID',
+                        headerText: 'Order IDfhgfhgf',
+                        minWidth: 100,
+                        width: 'auto',
+                        textAlign: 'Right',
+                        isPrimaryKey: true,
+                        validationRules: { required: true, number: true },
+                        autoFit: true,
+                      },
+                      {
+                        field: 'CustomerID',
+                        headerText: 'Customer ID',
+                        minWidth: 100,
+                        width: 'auto',
+                        maxWidth: 200,
+                        textAlign: 'Right',
+                        isPrimaryKey: true,
+                        validationRules: { required: true, number: true },
+                      },
+                    ],
+                }, done);
+        });
+    
+        it('check maxWidth col width', () => {
+            expect((gridObj.getContentTable() as HTMLElement).querySelectorAll('col')[1].style.width).toBe('auto');
+        });
+    
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+    
 });

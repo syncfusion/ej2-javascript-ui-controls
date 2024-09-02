@@ -1,6 +1,6 @@
 import { DataManager, Query, Deferred, ReturnOption, QueryOptions } from '@syncfusion/ej2-data';
 import { Workbook, getCell, CellModel, RowModel, SheetModel, setCell, isFilterHidden } from '../base/index';
-import { getRangeIndexes, checkIsFormula, updateSheetFromDataSource, dataSourceChanged } from '../common/index';
+import { getRangeIndexes, checkIsFormula, updateSheetFromDataSource, dataSourceChanged, ExtendedWorkbook } from '../common/index';
 import { ExtendedSheet, ExtendedRange, getCellIndexes, dataChanged, getCellAddress, isInRange } from '../common/index';
 import { triggerDataChange, UsedRangeModel, getAutoDetectFormatParser, updateView } from '../index';
 import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -44,8 +44,7 @@ export class DataBind {
      * @param {number} args.rangeSettingCount - Specify the rangeSettingCount.
      * @param {string} args.formulaCellRef - Specify the formulaCellRef.
      * @param {number} args.sheetIndex - Specify the sheetIndex.
-     * @param {boolean} args.dataSourceChange - Specify the dataSourceChange.
-     * @param {boolean} args.isFinite - Specify the isFinite.
+     * @param {boolean} args.loadFullData - Specify whether to load full data or not.
      * @param {boolean} args.resolveAfterFullDataLoaded - Specify the resolveAfterFullDataLoaded.
      * @param {Function} args.loadComplete - Specify the callback function that will be invoked once all the data are updated.
      * @param {boolean} args.loadFromStartCell - Specify the whether to load the data from the range startCell address.
@@ -56,7 +55,7 @@ export class DataBind {
      */
     private updateSheetFromDataSourceHandler(
         args: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>, rangeSettingCount?: number[], formulaCellRef?: string,
-            sheetIndex?: number, dataSourceChange?: boolean, isFinite?: boolean, resolveAfterFullDataLoaded?: boolean,
+            sheetIndex?: number, loadFullData?: boolean, resolveAfterFullDataLoaded?: boolean,
             loadComplete?: Function, loadFromStartCell?: boolean, autoDetectFormat?: boolean,
             updateDependentCellsCallback?: Function }): void {
         let cell: CellModel; let flds: string[]; let sCellIdx: number[];
@@ -115,9 +114,11 @@ export class DataBind {
                     if (range.fieldsOrder) {
                         fieldsOrder = [].slice.call(range.fieldsOrder);
                     }
-                    const query: Query = (range.query ? range.query : new Query()).clone();
-                    dataManager.executeQuery(query.range(sRange, eRange >= count ? eRange : eRange + 1)
-                        .requiresCount()).then((e: ReturnOption) => {
+                    let query: Query = (range.query ? range.query : new Query()).clone();
+                    if (!args.loadFullData) {
+                        query = query.range(sRange, eRange >= count ? eRange : eRange + 1);
+                    }
+                    dataManager.executeQuery(query.requiresCount()).then((e: ReturnOption) => {
                         if (!this.parent || this.parent.isDestroyed) { return; }
                         result = (e.result && e.result.result ? e.result.result : e.result) as Object[];
                         sCellIdx = getRangeIndexes(range.startCell);
@@ -185,8 +186,11 @@ export class DataBind {
                             totalRows = args.sheet.usedRange.rowIndex;
                         }
                         const totalCols: number = sColIdx + flds.length - 1 < 0 ? args.sheet.usedRange.colIndex : sColIdx + flds.length - 1;
+                        if (args.loadFullData) {
+                            eRange = totalRows;
+                        }
                         const usedRange: UsedRangeModel = { rowIndex: totalRows, colIndex: totalCols };
-                        if (args.isFinite) {
+                        if ((<ExtendedWorkbook>this.parent).scrollSettings && (<ExtendedWorkbook>this.parent).scrollSettings.isFinite) {
                             usedRange.rowIndex = totalRows < args.sheet.rowCount ? totalRows : args.sheet.rowCount - 1;
                             usedRange.colIndex = totalCols < args.sheet.colCount ? totalCols : args.sheet.colCount - 1;
                         }
@@ -218,11 +222,11 @@ export class DataBind {
                                 dataLoading = true;
                                 //if (remoteUrl) {
                                 const unloadedArgs: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>,
-                                    rangeSettingCount?: number[], isFinite?: boolean, resolveAfterFullDataLoaded?: boolean,
+                                    rangeSettingCount?: number[], resolveAfterFullDataLoaded?: boolean,
                                     loadComplete?: Function, autoDetectFormat?: boolean } = {
                                     sheet: args.sheet, indexes: [0, 0, totalRows, totalCols],
                                     promise: new Promise((resolve: Function) => { resolve((() => { /** */ })()); }),
-                                    rangeSettingCount: args.rangeSettingCount, isFinite: args.isFinite, loadComplete: args.loadComplete,
+                                    rangeSettingCount: args.rangeSettingCount, loadComplete: args.loadComplete,
                                     autoDetectFormat: args.autoDetectFormat, resolveAfterFullDataLoaded: args.resolveAfterFullDataLoaded
                                 };
                                 this.updateSheetFromDataSourceHandler(unloadedArgs);
@@ -397,19 +401,16 @@ export class DataBind {
                 });
                 range.info = null;
             }
-            interface Viewport { topIndex: number; bottomIndex: number; leftIndex: number; rightIndex: number; }
-            const viewport: Viewport = (this.parent as unknown as { viewport: Viewport }).viewport;
-            const refreshRange: number[] = [viewport.topIndex, viewport.leftIndex, viewport.bottomIndex, viewport.rightIndex];
-            const eventArgs: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>, dataSourceChange?: boolean } = {
-                sheet: sheet as ExtendedSheet, indexes: refreshRange, dataSourceChange: true, promise:
-                    new Promise((resolve: Function) => { resolve((() => { /** */ })()); })
+            const evtArgs: { sheet: ExtendedSheet, indexes: number[], loadFullData: boolean, promise: Promise<CellModel> } = {
+                sheet: <ExtendedSheet>sheet, indexes: [0, 0, sheet.rowCount - 1, sheet.colCount - 1], loadFullData: true,
+                promise: new Promise((resolve: Function) => { resolve((() => { /** */ })()); })
             };
-            this.updateSheetFromDataSourceHandler(eventArgs);
-            eventArgs.promise.then(() => {
+            this.updateSheetFromDataSourceHandler(evtArgs);
+            evtArgs.promise.then(() => {
                 this.parent.trigger(
                     'dataSourceChanged', { data: args.changedData, action: 'dataSourceChanged', rangeIndex: args.rangeIdx,
                         sheetIndex: args.sheetIdx });
-                this.parent.notify(updateView, { indexes: refreshRange, checkWrap: true, checkCF: true });
+                this.parent.notify(updateView, { sheetIndex: args.sheetIdx, checkWrap: true, checkCF: true });
             });
         }
     }

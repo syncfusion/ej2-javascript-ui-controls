@@ -170,9 +170,9 @@ export class Dependency {
                 const lastIndex: number = el.lastIndexOf('-');
                 const lastPart: string = el.substring(lastIndex + 1);
                 let lengthToSlice: number;
-                if (el.includes('days')) {
+                if (el.includes(this.parent.localeObj.getConstant('days'))) {
                     lengthToSlice = lastPart.includes('.') ? 11 : 9;
-                } else if (el.includes('day')) {
+                } else if (el.includes(this.parent.localeObj.getConstant('day'))) {
                     lengthToSlice = lastPart.includes('.') ? 10 : 8;
                 } else {
                     lengthToSlice = 2;

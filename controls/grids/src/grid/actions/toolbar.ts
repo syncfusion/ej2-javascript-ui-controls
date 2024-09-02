@@ -307,10 +307,9 @@ export class Toolbar {
             const items: string[] = [id + '_edit', id + '_delete'];
             const selectedRecords: number[] = this.parent.getSelectedRowIndexes();
             const excludingItems: string[] = [id + '_responsiveback', id + '_update', id + '_cancel'];
-            let index: number = 0;
-            const toolbarChildren: HTMLCollection = this.toolbar.element.children[0].children;
             for (const item of this.toolbar.items) {
-                const toolbarEle: Element = (item.template as string) && (item.template as string).length ? toolbarChildren[parseInt(index.toString(), 10)] : this.toolbar.element.querySelector('#' + item.id);
+                const toolbarEle: Element = (item.template as string) && (item.template as string).length ?
+                parentsUntil(this.toolbar.element.querySelector('#' + item.id), 'e-template').children[0] : this.toolbar.element.querySelector('#' + item.id);
                 if (toolbarEle) {
                     if (items.indexOf(item.id) > -1) {
                         if (selectedRecords.length) {
@@ -326,7 +325,6 @@ export class Toolbar {
                         }
                     }
                 }
-                index++;
             }
             if (this.searchElement) {
                 const right: HTMLElement = parentsUntil(this.searchElement, 'e-toolbar-right') as HTMLElement;
@@ -413,14 +411,13 @@ export class Toolbar {
                 items.push(this.getItemObject('responsiveSort'));
             }
         }
-        if (this.parent.enableAdaptiveUI && this.parent.toolbar && this.parent.toolbar.some(item =>
-            (typeof item === 'object' && item.text === 'Search') || item === 'Search')) {
-            items.push(this.getItemObject('responsiveBack'));
-        }
         for (const item of toolbarItems) {
             if (this.parent.enableAdaptiveUI && ['Print', 'ColumnChooser',
                 'PdfExport', 'ExcelExport', 'CsvExport'].indexOf(item as string) !== -1) {
                 continue;
+            }
+            if (this.parent.enableAdaptiveUI && ((typeof item === 'object' && item.text === 'Search') || item === 'Search')) {
+                items.push(this.getItemObject('responsiveBack'));
             }
             switch (typeof item) {
             case 'number':
