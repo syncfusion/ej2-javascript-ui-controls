@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 26.2.13 (2024-09-05)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I621958` - Now, when pressing the Backspace key on indented text, the indentation is decreased by one level in the Rich Text Editor.
+
+- `#I615533` - Now, applying bold and then using the @ character to open the mention popup is fixed.
+
 ## 26.2.12 (2024-09-03)
 
 ### RichTextEditor

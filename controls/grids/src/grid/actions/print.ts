@@ -131,6 +131,10 @@ export class Print {
         this.parent.log('exporting_begin', this.getModuleName());
         printGrid.registeredTemplate = this.parent.registeredTemplate;
         printGrid.isVue = this.parent.isVue;
+        if (this.parent.isVue) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (printGrid as any).vueInstance = (this.parent as any).vueInstance;
+        }
         printGrid.appendTo(element as HTMLElement);
         if (!gObj.isVue3) {
             printGrid.trigger = gObj.trigger;

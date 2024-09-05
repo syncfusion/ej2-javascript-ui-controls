@@ -1449,18 +1449,17 @@
 
           & .e-toolbar-right:not(.e-responsive-right) {
               & .e-search-wrapper:not(.e-responsive-right) {
-                  width: 40px;
+                min-width: 40px;
               }
           }
 
           & .e-toolbar-right {
             & .e-search-wrapper {
-              width: 100%;
               @include grid-padding-left-right($grid-responsive-search-padding-left, $grid-responsive-search-padding-right);
-
               & .e-search-icon {
                 font-size: $grid-res-toolbar-search-icon-font-size;
                 margin-top: 0;
+                padding: $grid-res-toolbar-search-wrapper-icon-padding;
               }
 
               & .e-input-group {
@@ -1484,6 +1483,9 @@
                   padding-left: $grid-responsive-search-left-padding;
                 }
               }
+            }
+            & .e-search-wrapper:has(.e-input-group) {
+              width: 100%;
             }
           }
 

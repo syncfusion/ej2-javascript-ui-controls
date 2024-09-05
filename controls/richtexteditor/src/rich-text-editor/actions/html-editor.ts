@@ -528,6 +528,10 @@ export class HtmlEditor {
             } else {
                 this.oldRangeElement = (this.rangeElement.previousElementSibling as HTMLElement);
             }
+            const findBlockElement: Node[] = this.parent.formatter.editorManager.domNode.blockNodes();
+            if (!isNOU(findBlockElement[0]) && currentRange.collapsed && currentRange.startOffset === 0 && currentRange.endOffset === 0 && (findBlockElement[0] as HTMLElement).style.marginLeft !== '') {
+                (findBlockElement[0] as HTMLElement).style.marginLeft = (parseInt((findBlockElement[0] as HTMLElement).style.marginLeft, 10) <= 20) ? '' : (parseInt((findBlockElement[0] as HTMLElement).style.marginLeft, 10) - 20 + 'px');
+            }
             if (isNOU(this.oldRangeElement)) {
                 return;
             } else {

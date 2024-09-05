@@ -90,7 +90,13 @@ export class FocusStrategy {
             this.active.matrix.current = firstHeaderCellIndex;
             this.currentInfo.element = e.target as HTMLElement;
             this.currentInfo.elementToFocus = e.target as HTMLElement;
-            addClass([this.currentInfo.element], ['e-focused', 'e-focus']);
+            if (this.currentInfo.element.querySelector('.e-checkselectall')) {
+                this.removeFocus();
+                this.addFocus(this.getContent().getFocusInfo(), e);
+            }
+            else {
+                addClass([this.currentInfo.element], ['e-focused', 'e-focus']);
+            }
         }
         this.firstHeaderCellClick = false;
         if (e.target && (<HTMLElement>e.target).classList.contains('e-detailcell')) {
@@ -208,6 +214,9 @@ export class FocusStrategy {
     }
 
     protected onKeyPress(e: KeyboardEventArgs): void {
+        if (this.parent.editSettings.mode === 'Batch') {
+            this.content.target = null;
+        }
         if (this.parent.allowPaging) {
             const pagerElement: Element = this.parent.pagerModule.pagerObj.element;
             const focusablePagerElements: Element[] = this.parent.pagerModule.pagerObj.getFocusablePagerElements(pagerElement, []);
@@ -1415,7 +1424,8 @@ export class ContentFocus implements IFocus {
          * if no child found then select the cell itself.
          * if Grid is in editable state, check for editable control inside child.
          */
-        return child.length ? isTemplate && child.length > 1 ? this.target ? this.target : element : child[0] : element;
+        return child.length ? isTemplate && child.length > 1 && !(this.parent.editSettings.mode === 'Batch'
+            && this.parent.isEdit && this.target) ? this.target ? this.target : element : child[0] : element;
     }
 
     public selector(row: Row<Column>, cell: Cell<Column>, isRowTemplate?: boolean): boolean {

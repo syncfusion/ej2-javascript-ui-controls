@@ -128,20 +128,31 @@ export class PdfPage {
      */
     get size(): number[] {
         if (typeof this._size === 'undefined') {
-            const mBox: number[] = this.mediaBox;
+            const mBox: number[] = _getInheritableProperty(this._pageDictionary, 'MediaBox', false, true, 'Parent', 'P');
+            const cBox: number[] = _getInheritableProperty(this._pageDictionary, 'CropBox', false, true, 'Parent', 'P');
             let width: number = 0;
             let height: number = 0;
-            if (mBox) {
+            const rotate: number = this._pageDictionary && this._pageDictionary.has('Rotate')
+                ? _getInheritableProperty(this._pageDictionary, 'Rotate', false, true, 'Parent')
+                : 0;
+            if (cBox && rotate !== null && typeof rotate !== 'undefined') {
+                width = cBox[2] - cBox[0];
+                height = cBox[3] - cBox[1];
+                const isValidCropBox: boolean = !(mBox && (mBox[2] - mBox[0]) < width);
+                if (!(((rotate === 0 || rotate === 180) && (width < height)) ||
+                    ((rotate === 90 || rotate === 270) && (width > height) || isValidCropBox)) && (rotate === 0 && mBox)) {
+                    width = mBox[2] - mBox[0];
+                    height = mBox[3] !== 0 ? mBox[3] - mBox[1] : mBox[1];
+                }
+            } else if (mBox) {
                 width = mBox[2] - mBox[0];
                 height = mBox[3] !== 0 ? mBox[3] - mBox[1] : mBox[1];
+            } else {
+                this._pageDictionary.update('MediaBox', [0, 0, 612, 792]);
+                width = 612;
+                height = 792;
             }
-            if (height < 0) {
-                height = -height;
-            }
-            if (width < 0) {
-                width = -width;
-            }
-            this._size = [width, height];
+            this._size = [Math.abs(width), Math.abs(height)];
         }
         return this._size;
     }

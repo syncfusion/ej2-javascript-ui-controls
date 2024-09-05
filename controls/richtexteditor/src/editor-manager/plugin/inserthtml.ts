@@ -255,7 +255,8 @@ export class InsertHtml {
                 if (isSingleNode) {
                     preNode.parentNode.replaceChild(fragment, preNode);
                 } else {
-                    const startContainerParent: Node = editNode === range.startContainer ? range.startContainer : range.startContainer.parentNode;
+                    const startContainerParent: Node = editNode === range.startContainer ? range.startContainer
+                        : range.startContainer.parentNode;
                     // Get the index of the start container among its siblings
                     const startIndex: number = Array.prototype.indexOf.call(startContainerParent.childNodes, (Browser.userAgent.indexOf('Firefox') !== -1 && editNode === range.startContainer) ? range.startContainer.firstChild : range.startContainer);
                     range.deleteContents();

@@ -927,7 +927,7 @@ export class ComboBox extends DropDownList {
                     this.onChangeEvent(e);
                 }
             }
-        } else if (this.allowCustom && this.isInteracted) {
+        } else if (this.allowCustom && this.isFocused) {
             this.isSelectCustom = true;
         }
     }

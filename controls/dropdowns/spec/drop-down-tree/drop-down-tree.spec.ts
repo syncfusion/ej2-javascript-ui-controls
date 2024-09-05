@@ -1337,7 +1337,7 @@ describe('DropdownTree', () => {
         let ele = ddtreeObj.element;
         ele.focus();
         ddtreeObj.showPopup();
-        expect(((ddtreeObj).element.parentElement as any).ariaLabel).toBe('Australia New South Wales');
+        expect(((ddtreeObj).element.parentElement as any).ariaLabel).toBe('Australia, New South Wales');
         ddtreeObj.value = ['7'];
         ddtreeObj.dataBind();
         expect((ddtreeObj as any).element.value).toBe("Brazil");
@@ -1354,7 +1354,7 @@ describe('DropdownTree', () => {
         let ele = ddtreeObj.element;
         ele.focus();
         ddtreeObj.showPopup();
-        expect(((ddtreeObj).element.parentElement as any).ariaLabel).toBe('Victoria Western Australia Ceará');
+        expect(((ddtreeObj).element.parentElement as any).ariaLabel).toBe('Victoria, Western Australia, Ceará');
         ddtreeObj.value = ['1'];
         ddtreeObj.dataBind();
         expect((ddtreeObj as any).element.value).toBe("Australia");

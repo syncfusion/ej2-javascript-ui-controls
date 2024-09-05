@@ -803,7 +803,7 @@ export class Selection implements IAction {
                                  if (this.isCancelDeSelect && (this.isRowClicked || this.checkSelectAllClicked || (this.isInteracted &&
                         !this.parent.isPersistSelection))) {
                                      if (this.parent.isPersistSelection) {
-                                         if (this.getCheckAllStatus(this.parent.element.querySelector('.e-checkselectall')) === 'Intermediate') {
+                                         if (this.getCheckAllStatus(this.parent.element.querySelector('.e-checkselectall')) === 'Intermediate' || this.parent.isPersistSelection) {
                                              for (let i: number = 0; i < this.selectedRecords.length; i++) {
                                                  this.updatePersistCollection(this.selectedRecords[parseInt(i.toString(), 10)], true);
                                              }

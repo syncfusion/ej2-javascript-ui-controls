@@ -966,7 +966,7 @@ export class Mention extends DropDownBase {
 
     private getLastLetter(text: string): string {
         if (isNullOrUndefined(text)) {return ''; }
-        const textValue: string = text.replace(/\u00A0/g, ' ');
+        const textValue: string = text.indexOf('\u200B') > -1 ? text.replace(/\u200B/g, '').replace(/\u00A0/g, ' ') : text.replace(/\u00A0/g, ' ');
         const words: string[] = textValue.split(/\s+/);
         const wordCnt: number = words.length - 1;
         return words[wordCnt as number].trim();

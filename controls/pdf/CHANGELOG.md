@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.2.13 (2024-09-05)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved the page size parsing issue in the PDF with the crop box.
+
 ## 26.2.12 (2024-09-03)
 
 ### PDF Parser

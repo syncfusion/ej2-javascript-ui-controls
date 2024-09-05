@@ -150,6 +150,7 @@ export class DropDownList extends DropDownBase implements IInput {
     protected selectedElementID: string;
     private preselectedIndex: number;
     private isTouched: boolean = false;
+    protected isFocused: boolean = false;
     private clearButton: HTMLElement;
 
     /**
@@ -845,6 +846,7 @@ export class DropDownList extends DropDownBase implements IInput {
             this.isActive = false;
             this.beforePopupOpen = false;
         }
+        this.isFocused = false;
     }
 
     protected focusOutAction(e?: MouseEvent | KeyboardEventArgs): void {
@@ -879,6 +881,7 @@ export class DropDownList extends DropDownBase implements IInput {
             this.trigger('focus', args);
         }
         this.updateIconState();
+        this.isFocused = true;
     }
 
     private resetValueHandler(e: Event): void {

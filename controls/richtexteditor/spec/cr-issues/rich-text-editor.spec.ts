@@ -4882,6 +4882,42 @@ describe('RTE CR issues ', () => {
             }, 100);
         });
     });
+    describe('902418 - Indendation does not get removed when the backspace action is performed.', () => {
+        let rteObj: RichTextEditor;
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, ctrlKey: true, key: 'backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+        let innerHTML: string = `<p style="margin-left: 20px;">Rich Text Editor</p>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Bold', 'CreateTable']
+                },
+                value: innerHTML
+            });
+        });
+        afterAll((done: DoneFn) => {
+            destroy(rteObj);
+            done();
+        });
+        it('Press the backspace on the indent applied text', (done: DoneFn) => {
+            const firstP = (rteObj as any).inputElement.querySelector('p');
+            setCursorPoint(firstP, 0);
+            keyBoardEvent.keyCode = 8;
+            keyBoardEvent.code = 'Backspace';
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect((rteObj as any).inputElement.innerHTML === '<p style="">Rich Text Editor</p>').toBe(true);
+            done();
+        });
+        it('Press the backspace on the indent applied', function (done) {
+            (rteObj as any).inputElement.innerHTML = '<p style="margin-left: 20px;"><strong>Rich Text Editor</strong></p>';
+            const firstP = (rteObj as any).inputElement.querySelector('p strong');
+            setCursorPoint(firstP, 0);
+            keyBoardEvent.keyCode = 8;
+            keyBoardEvent.code = 'Backspace';
+            rteObj.keyDown(keyBoardEvent);
+            expect((rteObj as any).inputElement.innerHTML === '<p style=""><strong>Rich Text Editor</strong></p>').toBe(true);
+            done();
+        });
+    });
     describe('900940 - Rich Text Editor not supported the pasted image.', () => {
         let rteObject: RichTextEditor;
         let innerHTML: string = `<img alt=\"Logo\" src=\"https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png\" class=\"e-rte-image e-imginline\" v:shapes=\"img1\" style=\" border: 0px; vertical-align: bottom; cursor: pointer; display: inline-block; float: none; margin: auto 5px; max-width: 100%; position: relative; padding: 1px; color: rgb(28, 27, 31); font-family: Roboto, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: 14px; font-style: normal; font-weight: 400; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; background-color: rgb(255, 255, 255); width: 300px;\">`;

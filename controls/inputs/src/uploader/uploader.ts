@@ -3163,6 +3163,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                     this.filesData[fileDataIndex as number].status === selectedFileData.status ) {
                     matchFiles[matchFilesIndex as number] = this.filesData[fileDataIndex as number];
                     ++matchFilesIndex;
+                    break;
                 }
             }
         }

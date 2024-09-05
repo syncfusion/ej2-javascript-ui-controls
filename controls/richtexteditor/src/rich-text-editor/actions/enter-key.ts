@@ -535,7 +535,7 @@ export class EnterKeyAction {
                 this.range.insertNode(brElm);
             }
         }
-        if (isEmptyBrInserted || (!isNOU(brElm.nextElementSibling) && brElm.nextElementSibling.tagName === 'BR') || (!isNOU(brElm.nextSibling) && brElm.nextSibling.textContent.length > 0)) {
+         if (isEmptyBrInserted || (!isNOU(brElm.nextElementSibling) && brElm.nextElementSibling.tagName === 'BR') || (!isNOU(brElm.nextSibling) && (brElm.nextSibling.textContent.length > 0 || (brElm.nextSibling.nodeName === '#text' && brElm.nextSibling.textContent.trim().length === 0 &&  !isNOU(brElm.nextSibling.nextSibling) && brElm.nextSibling.nextSibling.textContent.trim().length > 0)))) {
             this.parent.formatter.editorManager.nodeSelection.setCursorPoint(
                 this.parent.contentModule.getDocument(),
                 !isNOU( brElm.nextSibling ) && isFocusTextNode ? (brElm.nextSibling as Element) : brElm, 0);

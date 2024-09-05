@@ -381,37 +381,46 @@
     }
   }
 
+  input.e-input#{$css}:-moz-placeholder,
+  input.e-input#{$css}:-moz-placeholder,
+  textarea.e-input#{$css}:-moz-placeholder,
+  input.e-input#{$css}::-moz-placeholder,
+  textarea.e-input#{$css}::-moz-placeholder,
+  .e-input-group input.e-input:-moz-placeholder,
+  .e-input-group input.e-input:-moz-placeholder,
+  .e-input-group.e-control-wrapper input.e-input:-moz-placeholder,
+  .e-input-group input.e-input:-moz-placeholder,
+  .e-input-group.e-control-wrapper input.e-input:-moz-placeholder,
+  .e-input-group textarea.e-input:-moz-placeholder,
+  .e-input-group.e-control-wrapper textarea.e-input:-moz-placeholder,
+  .e-input-group input.e-input::-moz-placeholder,
+  .e-input-group.e-control-wrapper input.e-input::-moz-placeholder,
+  .e-input-group textarea.e-input::-moz-placeholder,
+  .e-input-group.e-control-wrapper textarea.e-input::-moz-placeholder {
+    color: $input-placeholder;
+  }
+
+  input.e-input#{$css}::-webkit-input-placeholder,
+  textarea.e-input#{$css}::-webkit-input-placeholder,
+  .e-input-group input.e-input::-webkit-input-placeholder,
+  .e-input-group textarea.e-input::-webkit-input-placeholder,
+  .e-input-group.e-control-wrapper input.e-input::-webkit-input-placeholder,
+  .e-input-group.e-control-wrapper textarea.e-input::-webkit-input-placeholder {
+    color: $input-placeholder;
+  }
+
+  input.e-input#{$css}:-ms-input-placeholder,
+  textarea.e-input#{$css}:-ms-input-placeholder,
+  .e-input-group input.e-input:-ms-input-placeholder,
+  .e-input-group.e-control-wrapper input.e-input:-ms-input-placeholder,
+  .e-input-group.e-control-wrapper textarea.e-input:-ms-input-placeholder,
+  .e-input-group textarea.e-input:-ms-input-placeholder {
+    color: $input-placeholder;
+  }
+
   .e-float-input:not(.e-error):not(.e-input-focus):not(.e-disabled) input:not(:focus):not(:valid) ~ label.e-float-text:not(.e-label-top),
   .e-float-input:not(.e-error):not(.e-input-focus) textarea:not(:focus):not(:valid) ~ label.e-float-text:not(.e-label-top),
   .e-float-input.e-control-wrapper:not(.e-error):not(.e-input-focus):not(.e-disabled) input:not(:focus):not(:valid) ~ label.e-float-text:not(.e-label-top),
-  input.e-input#{$css}:-moz-placeholder,
-  .e-input-group input.e-input:-moz-placeholder,
-  .e-input-group input.e-input:-moz-placeholder,
-  .e-input-group.e-control-wrapper input.e-input:-moz-placeholder,
-  input.e-input#{$css}:-moz-placeholder,
-  .e-input-group input.e-input:-moz-placeholder,
-  .e-input-group.e-control-wrapper input.e-input:-moz-placeholder,
-  textarea.e-input#{$css}:-moz-placeholder,
-  .e-input-group textarea.e-input:-moz-placeholder,
-  .e-input-group.e-control-wrapper textarea.e-input:-moz-placeholder,
-  input.e-input#{$css}::-moz-placeholder,
-  .e-input-group input.e-input::-moz-placeholder,
-  .e-input-group.e-control-wrapper input.e-input::-moz-placeholder,
-  textarea.e-input#{$css}::-moz-placeholder,
-  .e-input-group textarea.e-input::-moz-placeholder,
-  .e-input-group.e-control-wrapper textarea.e-input::-moz-placeholder,
-  input.e-input#{$css}:-ms-input-placeholder,
-  .e-input-group input.e-input:-ms-input-placeholder,
-  .e-input-group.e-control-wrapper input.e-input:-ms-input-placeholder,
-  textarea.e-input#{$css}:-ms-input-placeholder,
-  .e-input-group.e-control-wrapper textarea.e-input:-ms-input-placeholder,
-  .e-input-group textarea.e-input:-ms-input-placeholder,
-  input.e-input#{$css}::-webkit-input-placeholder,
-  .e-input-group.e-control-wrapper input.e-input::-webkit-input-placeholder,
-  .e-input-group input.e-input::-webkit-input-placeholder,
-  textarea.e-input#{$css}::-webkit-input-placeholder,
-  .e-input-group textarea.e-input::-webkit-input-placeholder,
-  .e-input-group.e-control-wrapper textarea.e-input::-webkit-input-placeholder,
   .e-float-input:not(.e-input-focus):not(.e-disabled) textarea:not(:focus):not(:valid) ~ label.e-float-text:not(.e-label-top),
   .e-float-input:not(.e-input-focus) textarea:not(:focus):not(:valid) ~ label.e-float-text:not(.e-label-top),
   .e-float-input.e-control-wrapper:not(.e-input-focus):not(.e-disabled) textarea:not(:focus):not(:valid) ~ label.e-float-text:not(.e-label-top) {

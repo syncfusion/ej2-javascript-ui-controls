@@ -928,7 +928,8 @@ export class PdfExport {
                             txt = !isNullOrUndefined(txt) ? txt : '';
                         } else {
                             txt = (templateFn[getEnumValue(CellType, cell.cellType)](data, this.parent));
-                            txt = !isNullOrUndefined(txt[0]) ? (<Text>txt[0]).textContent : '';
+                            txt = this.parent.isVue3 && !isNullOrUndefined(txt[1]) ? (<Text>txt[1]).textContent
+                                : !isNullOrUndefined(txt[0]) ? (<Text>txt[0]).textContent : '';
                         }
                         isEmpty = false;
                         const args: AggregateQueryCellInfoEventArgs = {

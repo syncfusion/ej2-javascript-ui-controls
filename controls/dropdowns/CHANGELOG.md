@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 26.2.13 (2024-09-05)
+
+### ComboBox
+
+#### Bug Fixes
+
+- `#FB60719` - The issue where the "Change Event Was Not Triggered When Removing Bound Value Using the Backspace Key" has been resolved.
+
+### DropDownTree
+
+#### Bug Fixes
+
+- `#I622674` - The issue where, when multi selection is enabled, selected items were just appended into one string for the aria-label in the Dropdown Tree has been resolved.
+
 ## 26.2.11 (2024-08-27)
 
 ### MultiSelect

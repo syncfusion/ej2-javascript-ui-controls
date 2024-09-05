@@ -2247,7 +2247,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.currentText = this.text;
         this.currentValue = this.value;
         if (!isNOU(this.value) && this.value.length > 0 && !isNOU(this.currentText)) {
-            this.inputWrapper.setAttribute('aria-label', this.currentText.split(',').join(' '));
+            this.inputWrapper.setAttribute('aria-label', this.currentText.replace(/,/g, ', '));
         }
         if (this.isInitialized) {
             this.triggerChangeEvent();
@@ -3150,7 +3150,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.currentText = this.text;
         this.currentValue = this.value;
         if (!isNOU(this.value) && this.value.length > 0 && !isNOU(this.currentText)) {
-            this.inputWrapper.setAttribute('aria-label', this.currentText.split(',').join(' '));
+            this.inputWrapper.setAttribute('aria-label', this.currentText.replace(/,/g, ', '));
         }
         else {
             this.inputWrapper.setAttribute('aria-label', this.getModuleName());

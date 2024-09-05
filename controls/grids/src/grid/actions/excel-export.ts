@@ -993,7 +993,10 @@ export class ExcelExport {
             return !isNullOrUndefined(txt) ? (txt) : '';
         }
         else {
-            txt = (templateFn[getEnumValue(CellType, cell.cellType)](data));
+            txt = (templateFn[getEnumValue(CellType, cell.cellType)](data, this.parent));
+            if (this.parent.isVue3 && !isNullOrUndefined(txt[1])) {
+                return (<Text>txt[1]).textContent;
+            }
         }
         return !isNullOrUndefined(txt[0]) ? (<Text>txt[0]).textContent : '';
     }

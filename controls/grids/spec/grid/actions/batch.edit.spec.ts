@@ -26,6 +26,7 @@ import { DefaultEditCell } from '../../../src/grid/renderer/default-edit-cell';
 import { CommandColumn } from '../../../src/grid/actions/command-column';
 import { Aggregate } from '../../../src/grid/actions/aggregate';
 import { RowDD } from '../../../src/grid/actions/row-reorder';
+import { NumericTextBox } from '@syncfusion/ej2-inputs';
 
 Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, Aggregate, RowDD, Toolbar, DetailRow, CommandColumn);
 
@@ -5170,4 +5171,72 @@ describe('EJ2-890614: Column’s Default Value property only allows String value
         destroy(gridObj);
         gridObj = null;
     });  
+});
+
+describe('EJ2-904682: Batch edit through keyboard tab navigation not working for numeric textbox column template column =>', () => {
+    let gridObj: Grid;
+    let elements: HTMLElement[];
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+                allowPaging: true,
+                pageSettings: { pageCount: 5 },
+                allowSorting: true,
+                allowFiltering: true,
+                filterSettings: { type: 'Excel' },
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                queryCellInfo: function (args) {
+                    if (args.column.field == 'Freight') {
+                        var numeric = new NumericTextBox({
+                            value: 10
+                        });
+                        numeric.appendTo(args.cell.querySelector('input'))
+                    }
+                },
+                columns: [
+                    {
+                        field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right',
+                        validationRules: { required: true, number: true }, width: 120
+                    },
+                    {
+                        field: 'CustomerID', headerText: 'Customer ID',
+                        validationRules: { required: true, minLength: 5 }, width: 140
+                    },
+                    {
+                        field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit',
+                        width: 120, format: 'C2', validationRules: { required: true, min: 0, number: true }, template: '<input type="text" id=${OrderID}></input>'
+                    },
+                    {
+                        field: 'OrderDate', headerText: 'Order Date', editType: 'datepickeredit', format: 'yMd',
+                        width: 170
+                    },
+                    {
+                        field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150,
+                        edit: { params: { popupHeight: '300px' } }
+                    }
+                ],
+            }, done);
+    });
+
+    it('Click CustomerID column', function () {
+        elements = gridObj.getContentTable().querySelector('tr').querySelectorAll('td') as unknown as HTMLElement[];
+        elements[1].click();
+    });
+
+    it('Check document active element 1', function () {
+        expect(document.activeElement).toBe(elements[1]);
+        let e: object = { target: elements[1], action: 'tab', preventDefault: new Function() };
+        (gridObj.focusModule as any).onKeyPress(e);
+    });
+
+    it('Check document active element 2', function () {
+        expect(document.activeElement).toBe(elements[2].querySelector('input'));
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
 });

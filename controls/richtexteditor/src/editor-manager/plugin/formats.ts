@@ -119,7 +119,7 @@ export class Formats {
                             (startParent as HTMLElement) : startParent.parentElement); //Revert from blockquotes while pressing enter key
                     } else {
                         const nodeCutter: NodeCutter = new NodeCutter();
-                        const newElem: Node = nodeCutter.SplitNode(
+                        nodeCutter.SplitNode(
                             range, (startParent.parentElement as HTMLElement), false).cloneNode(true);
                         this.paraFocus(startParent.parentElement === this.parent.editableElement ?
                             (startParent as HTMLElement) : startParent.parentElement);

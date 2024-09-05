@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
-## 26.2.12 (2024-09-03)
+## 26.2.13 (2024-09-05)
+
+### Uploader
+
+- `#I619977` - Fixed an issue where the ActionComplete event did not return file data properly.
+
+## 26.2.11 (2024-08-27)
 
 ### Uploader
 

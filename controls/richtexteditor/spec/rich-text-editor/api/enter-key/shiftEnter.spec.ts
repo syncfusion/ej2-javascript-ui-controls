@@ -204,3 +204,35 @@ describe('890906 - Clicking shift and Enter after inserting link causes the page
         done();
     });
 });
+describe('Shift Enter and Backspace behavior', () => {
+    let rteObj: RichTextEditor;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            height: '200px',
+            value: '<p>Hello worl</p>'
+        });
+        done();
+    });
+
+   it('should handle Shift+Enter and Backspace correctly', (done) => {
+        rteObj.dataBind();
+        rteObj.focusIn();
+        var paragraph = rteObj.inputElement.childNodes[0];
+        paragraph.textContent += ' d This is appended text.';
+        const nodetext: any = rteObj.inputElement.childNodes[0].childNodes[0];
+        const specificPosition = 10;
+        const sel: void = new NodeSelection().setCursorPoint(document, nodetext, specificPosition);
+        keyboardEventArgs.shiftKey = true;
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        setTimeout(() => {
+            const brElm = paragraph.childNodes[1] as HTMLElement;
+            paragraph.insertBefore(document.createTextNode(''), brElm.nextSibling);
+            expect(rteObj.inputElement.innerHTML).toBe('<p>Hello worl<br> d This is appended text.</p>');
+            done(); 
+        }, 100);
+       
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});

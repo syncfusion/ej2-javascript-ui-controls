@@ -494,11 +494,8 @@ export class Scroll implements IAction {
      */
     public setLastRowCell(): void {
         const table: Element = this.parent.getContentTable();
+        removeClass(table.querySelectorAll('td'), 'e-lastrowcell');
         if (table.querySelector('tr:nth-last-child(2)')) {
-            removeClass(table.querySelector('tr:nth-last-child(2)').querySelectorAll('td'), 'e-lastrowcell');
-            if (this.parent.isSpan) {
-                removeClass(table.querySelectorAll('.e-row-span-lastrowcell'), 'e-lastrowcell');
-            }
             if (this.parent.editSettings.showAddNewRow && this.parent.editSettings.newRowPosition === 'Bottom') {
                 addClass(table.querySelector('tr:nth-last-child(2)').querySelectorAll('td'), 'e-lastrowcell');
             }
