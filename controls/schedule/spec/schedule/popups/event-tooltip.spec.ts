@@ -441,6 +441,41 @@ describe('Schedule event tooltip module', () => {
         });
     });
 
+    describe('ES-904015 - Wrong end time shown in the tooltip if start and end time are the same ', () => {
+        let schObj: Schedule;
+        const eventData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Paris',
+            StartTime: new Date(2024, 8, 4),
+            EndTime: new Date(2024, 8, 4)
+        }];
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = {
+                height: '500px', selectedDate: new Date(2024, 8, 4), currentView: 'Day',
+                eventSettings: { enableTooltip: true }
+            };
+            schObj = util.createSchedule(schOptions, eventData, done);
+            util.disableTooltipAnimation((schObj.eventTooltip as any).tooltipObj);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking tooltip end time when start and end time is same', () => {
+            const target: HTMLElement = schObj.element.querySelector('.e-appointment');
+            expect(target.querySelector('.e-subject').innerHTML).toBe('Paris');
+            expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
+            util.triggerMouseEvent(target, 'mouseover');
+            const tooltipEle: HTMLElement = document.querySelector('.e-schedule-event-tooltip') as HTMLElement;
+            expect(isVisible(tooltipEle)).toBe(true);
+            expect(tooltipEle.querySelector('.e-subject').innerHTML).toBe('Paris');
+            expect(tooltipEle.querySelector('.e-location').innerHTML).toBe('');
+            expect(tooltipEle.querySelector('.e-details').innerHTML).toBe('September 4, 2024');
+            expect(tooltipEle.querySelector('.e-all-day').innerHTML).toBe('12:00 AM - 12:00 AM');
+            util.triggerMouseEvent(target, 'mouseleave');
+            expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         const average: number = inMB(profile.averageChange);

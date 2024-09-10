@@ -6,7 +6,6 @@ import { projectData1, multiResources, multiTaskbarData } from '../base/data-sou
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 Gantt.Inject(Selection, Toolbar, DayMarkers, Edit, Filter, Reorder, Resize, ColumnMenu, Sort, RowDD, ContextMenu);
 
-
 describe('Gantt expand collapse support', () => {
     describe('Gantt expand collapse', () => {
         let ganttObj: Gantt;
@@ -304,6 +303,79 @@ describe('Gantt expand collapse support', () => {
                 done();
             }
             ganttObj.collapseAll();
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+    });
+    describe('Gantt tasks collapse', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(
+                {
+                    dataSource: multiTaskbarData,
+        resources: multiResources,
+        viewType: 'ResourceView',
+        enableMultiTaskbar: true,
+        collapseAllParentTasks: true,
+        showOverAllocation: true,
+        taskType: 'FixedWork',
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            endDate: 'EndDate',
+            duration: 'Duration',
+            dependency: 'Predecessor',
+            progress: 'Progress',
+            resourceInfo: 'resources',
+            work: 'work',
+            child: 'subtasks'
+        },
+        resourceFields: {
+            id: 'resourceId',
+            name: 'resourceName',
+            unit: 'resourceUnit',
+            group: 'resourceGroup'
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        columns: [
+            { field: 'TaskID', visible: false },
+            { field: 'TaskName', headerText: 'Name', width: 250 },
+            { field: 'work', headerText: 'Work' },
+            { field: 'Progress' },
+            { field: 'resourceGroup', headerText: 'Group' },
+            { field: 'StartDate' },
+            { field: 'Duration' },
+        ],
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        labelSettings: {
+            taskLabel: 'TaskName'
+        },
+        splitterSettings: {
+            columnIndex: 2
+        },
+        allowResizing: true,
+        allowSelection: true,
+        highlightWeekends: true,
+        allowTaskbarOverlap: false,
+        treeColumnIndex: 1,
+        height: '450px',
+        projectStartDate: new Date('03/24/2024'),
+        projectEndDate: new Date('05/18/2024')
+                }, done);
+        });
+        it('initial load with collapseallparenttasks', () => {
+            if(ganttObj.getRowByID(4))
+            expect(ganttObj.getRowByID(4).style.height).toBe('108px');
         });
         afterAll(() => {
             if (ganttObj) {

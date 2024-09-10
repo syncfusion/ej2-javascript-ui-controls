@@ -5,7 +5,7 @@ import { PdfFont } from './../../../graphics/fonts/pdf-font';
 import { PdfGrid } from '../pdf-grid';
 import { PdfStringFormat } from './../../../graphics/fonts/pdf-string-format';
 import { SizeF, RectangleF, PointF } from './../../../drawing/pdf-drawing';
-import { PdfBorders } from '../styles/pdf-borders';
+import { PdfBorders, PdfPaddings } from '../styles/pdf-borders';
 import { PdfLayoutType, PdfLayoutBreakType } from './../../../graphics/figures/enum';
 import { PdfLayoutResult, PdfLayoutParams, PdfLayoutFormat, ElementLayouter } from './../../../graphics/figures/base/element-layouter';
 import { PdfGraphics } from './../../../graphics/pdf-graphics';
@@ -952,8 +952,12 @@ export class PdfGridLayouter extends ElementLayouter {
                                     let cell : PdfGridCell = row.cells.getCell(c);
                                     let cellWidth : number = 0;
                                     let totalwidth : number = 0;
+                                    let childGridCell: PdfGridCell;
                                     if (cell.value instanceof PdfGrid)
                                     {
+                                        if (!childGridCell) {
+                                            childGridCell = cell;
+                                        }
                                         for(let i : number =0 ; i < cell.value.columns.count; i++)
                                         {
                                             totalwidth += cell.value.columns.getColumn(i).columnWidth;
@@ -968,13 +972,15 @@ export class PdfGridLayouter extends ElementLayouter {
                                     }
                                     else
                                         cellWidth = Math.max(totalwidth, row.grid.columns.getColumn(c).width);
-                                    if (!this.Grid.style._isDefaultPadding) {
-                                        let bottomPadding: number = this.Grid.style.cellPadding.top + this.Grid.style.cellPadding.bottom;
-                                        bottomPadding += cell.style.borders.top.width + cell.style.borders.bottom.width;
-                                        if ((height + bottomPadding) < pageGraphics.clientSize.height) {
-                                            height += bottomPadding;
-                                            this.currentBounds.y += bottomPadding;
-                                        }
+                                    let bottomPadding: number;
+                                    if (childGridCell && childGridCell.style && childGridCell.style.cellPadding) {
+                                        bottomPadding = childGridCell.style.cellPadding.bottom;
+                                    } else {
+                                        bottomPadding = this.Grid.style.cellPadding.bottom;
+                                    }
+                                    if (typeof bottomPadding === 'number' && (height + bottomPadding) < pageGraphics.clientSize.height) {
+                                        height += bottomPadding;
+                                        this.currentBounds.y += bottomPadding;
                                     }
                                     cell.drawCellBorders(pageGraphics, new RectangleF(location, new SizeF(cellWidth, height)));
                                     const rowWidth: number = this.Grid.rows.getRow(this.Grid.rows.count - 1).width;
@@ -985,7 +991,6 @@ export class PdfGridLayouter extends ElementLayouter {
                                     c += (cell.columnSpan - 1);
                                 }
                             }
-
                             // So, nested grid drawing is completed for the current row. Update page.
                             // Otherwise, the next nested grid of the parent will draw borders from start.
                             startPage = this.currentPage;

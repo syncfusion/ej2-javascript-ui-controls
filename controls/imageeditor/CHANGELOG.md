@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 26.2.14 (2024-09-10)
+
+### Image Editor
+
+#### Bug Fixes
+
+- `#I629675` - The issue with "On initial load the ImageEditor component's image cannot fit within the canvas while using the toolbar template" has been resolved.
+
 ## 26.2.9 (2024-08-13)
 
 ### Image Editor

@@ -673,20 +673,16 @@ export class PdfStandardFont extends PdfFont {
         return dictionary;
     }
     _getCharacterWidthInternal(charCode: string): number {
-        let width: number = 0;
-        let code: number = 0;
-        code = charCode.charCodeAt(0);
-        if (this._metrics._name === '0' ||
-            this._metrics._name === '1' ||
-            this._metrics._name === '2' ||
-            this._metrics._name === '3' ||
-            this._metrics._name === '4') {
+        let code: number = charCode.charCodeAt(0);
+        if (this._metrics._name === 'Helvetica' ||
+            this._metrics._name === 'Courier' ||
+            this._metrics._name === 'TimesRoman' ||
+            this._metrics._name === 'Symbol' ||
+            this._metrics._name === 'ZapfDingbats') {
             code = code - 32;
         }
         code = (code >= 0 && code !== 128) ? code : 0;
-        const widthTable: _WidthTable = this._metrics._widthTable;
-        width = widthTable._itemAt(code);
-        return width;
+        return this._metrics._widthTable._itemAt(code);
     }
 }
 /**
@@ -1112,20 +1108,9 @@ export class PdfTrueTypeFont extends PdfFont {
         }
     }
     _getCharacterWidthInternal(charCode: string): number {
-        let width: number = 0;
-        let code: number = 0;
-        code = charCode.charCodeAt(0);
-        if (this._metrics._name === '0' ||
-            this._metrics._name === '1' ||
-            this._metrics._name === '2' ||
-            this._metrics._name === '3' ||
-            this._metrics._name === '4') {
-            code = code - 32;
-        }
+        let code: number = charCode.charCodeAt(0);
         code = (code >= 0 && code !== 128) ? code : 0;
-        const widthTable: _WidthTable = this._metrics._widthTable;
-        width = widthTable._itemAt(code);
-        return width;
+        return this._metrics._widthTable._itemAt(code);
     }
 }
 export class _PdfStandardFontMetricsFactory {
@@ -1335,28 +1320,33 @@ export class _PdfStandardFontMetricsFactory {
     static _getMetrics(fontFamily: PdfFontFamily, fontStyle: PdfFontStyle, size: number): _PdfFontMetrics {
         let metrics: _PdfFontMetrics = null;
         switch (fontFamily) {
-        case PdfFontFamily.helvetica:
-            metrics = this._getHelveticaMetrics(fontStyle, size);
-            break;
         case PdfFontFamily.courier:
             metrics = this._getCourierMetrics(fontStyle, size);
+            metrics._name = 'Courier';
             break;
         case PdfFontFamily.timesRoman:
             metrics = this._getTimesMetrics(fontStyle, size);
+            metrics._name = 'TimesRoman';
             break;
         case PdfFontFamily.symbol:
             metrics = this._getSymbolMetrics(size);
+            metrics._name = 'Symbol';
             break;
         case PdfFontFamily.zapfDingbats:
             metrics = this._getZapfDingbatsMetrics(size);
+            metrics._name = 'ZapfDingbats';
+            break;
+        case PdfFontFamily.helvetica:
+            metrics = this._getHelveticaMetrics(fontStyle, size);
+            metrics._name = 'Helvetica';
             break;
         default:
             metrics = this._getHelveticaMetrics(fontStyle, size);
+            metrics._name = 'Helvetica';
             break;
         }
-        metrics._name = fontFamily.toString();
-        metrics._subScriptSizeFactor = this._subSuperScriptFactor;
         metrics._superscriptSizeFactor = this._subSuperScriptFactor;
+        metrics._subScriptSizeFactor = this._subSuperScriptFactor;
         return metrics;
     }
     static _getHelveticaMetrics(fontStyle: PdfFontStyle, size: number): _PdfFontMetrics {

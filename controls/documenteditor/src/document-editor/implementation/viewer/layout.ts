@@ -1860,6 +1860,9 @@ export class Layout {
 
     private layoutParagraph(paragraph: ParagraphWidget, lineIndex: number, isUpdatedList?: boolean): BlockWidget {
         if (this.isFieldCode && !this.checkParaHasField(paragraph)) {
+            if (paragraph.childWidgets.length === 0) {
+                this.addLineWidget(paragraph);
+            }
             paragraph.isFieldCodeBlock = true;
             return paragraph;
         }
@@ -1870,7 +1873,7 @@ export class Layout {
             this.layoutListItems(paragraph, isUpdatedList);
             isListLayout = false;
         }
-        if (paragraph.isEmpty()) {
+        if (paragraph.isEmpty() && !this.checkIsFieldParagraph(paragraph)) {
             this.layoutEmptyLineWidget(paragraph, true);
         } else {
             let line: LineWidget = lineIndex < paragraph.childWidgets.length ?
@@ -1915,6 +1918,21 @@ export class Layout {
         // this.updateLinearIndex(paragraph);
         paragraph.isFieldCodeBlock = false;
         return paragraph;
+    }
+    private checkIsFieldParagraph(paragraph: ParagraphWidget): boolean {
+        if (isNullOrUndefined(paragraph.childWidgets) || paragraph.childWidgets.length === 0) {
+            return false;
+        }
+        for (let i: number = 0; i < paragraph.childWidgets.length; i++) {
+            const line: LineWidget = paragraph.childWidgets[i] as LineWidget;
+            for (let j: number = 0; j < line.children.length; j++) {
+                const element: ElementBox = line.children[j];
+                if (element instanceof FieldElementBox && element.hasFieldEnd) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     private clearLineMeasures(): void {
         this.maxBaseline = 0;
@@ -7916,7 +7934,11 @@ export class Layout {
                 if (!isInitialLayout && (viewer.clientArea.bottom < cellWidget.y + cellWidget.height + cellWidget.margin.bottom
                     || rowSpanWidgetEndIndex >= currentRowWidgetIndex + 1) && (rowCollection.length === 1
                         || rowCollection.length >= 1 && rowWidget === rowCollection[rowCollection.length - 1])) {
+                    let footHeight: number = this.footHeight;
+                    this.footHeight = !isNullOrUndefined(rowWidget.bodyWidget.page.footnoteWidget)
+                        ? rowWidget.bodyWidget.page.footnoteWidget.height : 0;
                     this.splitSpannedCellWidget(cellWidget, tableCollection, rowCollection, viewer);
+                    this.footHeight = footHeight;
                 }
                 let spanEndRowWidget: TableRowWidget = rowWidget;
                 if (rowSpanWidgetEndIndex > 0) {
@@ -10312,6 +10334,7 @@ export class Layout {
             this.viewer.owner.editorModule.updateRenderedListItems(block);
         }
         if (!this.isRelayoutFootnote && block.bodyWidget.page.footnoteWidget) {
+            this.islayoutFootnote = true;
             this.layoutfootNote(block.bodyWidget.page.footnoteWidget);
         }
         // }

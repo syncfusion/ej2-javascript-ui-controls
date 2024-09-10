@@ -429,6 +429,9 @@ export class EditorHistory {
                 this.documentHelper.contentControlCollection = [];
                 this.owner.editorModule.layoutWholeDocument();
             } else if (selection.owner.isShiftingEnabled) {
+                if (!isNullOrUndefined(selection.editRegionHighlighters)) {
+                    selection.editRegionHighlighters.clear();
+                }
                 this.documentHelper.layout.shiftLayoutedItems(false);
                 if (this.owner.enableHeaderAndFooter) {
                     this.owner.editorModule.updateHeaderFooterWidget();

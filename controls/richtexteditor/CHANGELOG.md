@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 26.2.14 (2024-09-10)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#I623837` - Now, copying a single item within an ordered list and pasting it back into the same list item works properly in the Rich Text Editor.
+
+- `#I627444` - Now, applying bold and then using the Ctrl + a to select the mention issue is fixed.
+
 ## 26.2.13 (2024-09-05)
 
 ### RichTextEditor

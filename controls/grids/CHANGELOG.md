@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 26.2.14 (2024-09-10)
+
+### Grid
+
+#### Bug fixes
+
+- `#FB60596` - The issue with an extra border appearing on the last record during row drag-and-drop in the grid has been resolved.
+- `#FB60521` - The issue with the search button being a different size from the other buttons has been resolved.
+- `#I611432` - Additional request sent issue when checkbox column with field has been resolved.
+- `#FB60567` - Cookies could not be sent with the request headers when using `customAdaptor` that extends the `UrlAdaptor` is resolved.
+- `#F193989` - Resolved the issue where `Vue3` is not correctly printing and exporting custom templates.
+- `#I626077` - Resolved the issue where Batch edit through keyboard tab navigation is not working properly for numeric textbox template column.
+- `#I902432` - Accessibility issue with the `checkbox` when focusing on the `checkbox header` initially has been resolved.
+- `#FB60740` - Issue with initial grouping and sorting in the grid has been resolved.
+
 ## 26.2.12 (2024-09-03)
 
 ### Grid

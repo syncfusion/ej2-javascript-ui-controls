@@ -2099,3 +2099,123 @@ describe('width service code coverage', () => {
         actionComplete = null;
     });
 });
+
+
+describe('EJ2-907977 - Focus is lost when enableColumnVirtualization is enabled with Freeze columns - coverage 1 => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: virtualData.slice(0, 500),
+                enableVirtualization: true,
+                enableColumnVirtualization: true,
+                height: 400,
+                width: 800,
+                pageSettings: { pageSize: 50 },
+                columns: [
+                    { field: 'FIELD1', headerText: 'FIELD1', width: 100 },
+                    { field: 'FIELD2', headerText: 'FIELD2', width: 120 },
+                    { field: 'FIELD3', headerText: 'FIELD3', width: 120 },
+                    { field: 'FIELD4', headerText: 'FIELD4', width: 120 },
+                    { field: 'FIELD5', headerText: 'FIELD5', width: 120 },
+                    { field: 'FIELD6', width: 120, textAlign: 'Right', freeze: 'Right' },
+                    { field: 'FIELD7', width: 120, textAlign: 'Right', freeze: 'Right' },
+                    { field: 'FIELD8', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD9', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD10', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD11', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD12', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD13', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD14', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD15', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD16', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD17', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD18', width: 150, textAlign: 'Right' },
+                    { field: 'FIELD19', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD20', width: 150, textAlign: 'Right' },
+                    { field: 'FIELD21', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD22', width: 300, textAlign: 'Right' },
+                    { field: 'FIELD23', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD24', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD25', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD26', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD27', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD28', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD29', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD30', width: 130, textAlign: 'Right' }
+                ]
+            }, done);
+    });
+    it('focus on the cell element - 1', () => {
+        (gridObj.getRows()[2].querySelectorAll('.e-rowcell')[2] as HTMLElement).click();
+    });
+    it('scroll move to right - 1', (done: Function) => {
+        gridObj.getContent().firstElementChild.scrollLeft = 1200;
+        setTimeout(done, 200);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
+
+
+describe('EJ2-907977 - Focus is lost when enableColumnVirtualization is enabled with Freeze columns -  coverage 2 => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: virtualData.slice(0, 200),
+                enableVirtualization: true,
+                enableColumnVirtualization: true,
+                height: 400,
+                width: 800,
+                frozenColumns: 2,
+                pageSettings: { pageSize: 50 },
+                columns: [
+                    { field: 'FIELD1', headerText: 'FIELD1', width: 100 },
+                    { field: 'FIELD2', headerText: 'FIELD2', width: 120 },
+                    { field: 'FIELD3', headerText: 'FIELD3', width: 120 },
+                    { field: 'FIELD4', headerText: 'FIELD4', width: 120 },
+                    { field: 'FIELD5', headerText: 'FIELD5', width: 120 },
+                    { field: 'FIELD6', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD7', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD8', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD9', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD10', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD11', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD12', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD13', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD14', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD15', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD16', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD17', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD18', width: 150, textAlign: 'Right' },
+                    { field: 'FIELD19', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD20', width: 150, textAlign: 'Right' },
+                    { field: 'FIELD21', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD22', width: 300, textAlign: 'Right' },
+                    { field: 'FIELD23', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD24', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD25', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD26', width: 120, textAlign: 'Right' },
+                    { field: 'FIELD27', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD28', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD29', width: 130, textAlign: 'Right' },
+                    { field: 'FIELD30', width: 130, textAlign: 'Right' }
+                ]
+            }, done);
+    });
+    it('focus on the cell element - 2', () => {
+        (gridObj.getRows()[2].querySelectorAll('.e-rowcell')[2] as HTMLElement).click();
+    });
+    it('scroll move to right - 2', (done: Function) => {
+        gridObj.getContent().firstElementChild.scrollLeft = 1200;
+        setTimeout(done, 200);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});

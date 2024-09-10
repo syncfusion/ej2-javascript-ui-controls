@@ -1,4 +1,4 @@
-import { ListView, ItemCreatedArgs, classNames, Fields, UISelectedItem } from './list-view';
+import { ListView, ItemCreatedArgs, classNames, Fields, UISelectedItem, SelectEventArgs } from './list-view';
 import { EventHandler, append, isNullOrUndefined, detach, compile, formatUnit, select } from '@syncfusion/ej2-base';
 import { ListBase } from '../common/list-base';
 import { DataManager } from '@syncfusion/ej2-data';
@@ -81,7 +81,7 @@ export class Virtualization {
         this.listViewInstance.contentContainer.appendChild(this.listViewInstance.ulElement);
         this.listItemHeight = this.listViewInstance.ulElement.firstElementChild.getBoundingClientRect().height;
         this.expectedDomItemCount = this.ValidateItemCount(10000);
-        this.domItemCount = this.ValidateItemCount(Object.keys(this.listViewInstance.curViewDS).length);
+        this.updateDOMItemCount();
         const lastIndex: number = isRendered && !isNullOrUndefined(this.uiLastIndex) ? this.uiLastIndex : this.domItemCount - 1;
         this.uiFirstIndex = firstIndex;
         this.uiLastIndex = lastIndex;
@@ -144,6 +144,10 @@ export class Virtualization {
             itemCount = dataSourceLength;
         }
         return itemCount;
+    }
+
+    public updateDOMItemCount(): void {
+        this.domItemCount = this.ValidateItemCount(Object.keys(this.listViewInstance.curViewDS).length);
     }
 
     private uiIndicesInitialization(): void {
@@ -488,11 +492,24 @@ export class Virtualization {
                     };
                 }
                 if (this.listViewInstance.showCheckBox) {
-                    eventArgs.isChecked = isChecked;
-                    this.listViewInstance.trigger('select', eventArgs);
+                    this.listViewInstance.trigger('select', eventArgs, (observedArgs: SelectEventArgs) => {
+                        if (observedArgs.cancel) {
+                            if (!isChecked) {
+                                eventArgs.isChecked = isChecked;
+                                this.uiIndices.activeIndices.push(resutJSON.index as number);
+                            } else {
+                                eventArgs.isChecked = !isChecked;
+                                this.uiIndices.activeIndices.splice(this.uiIndices.activeIndices.indexOf(resutJSON.index as number), 1);
+                            }
+                        }
+                    });
                 } else if (!isSelected) {
                     this.listViewInstance.removeSelect();
-                    this.listViewInstance.trigger('select', eventArgs);
+                    this.listViewInstance.trigger('select', eventArgs, (observedArgs: SelectEventArgs) => {
+                        if (observedArgs.cancel) {
+                            this.activeIndex = undefined;
+                        }
+                    });
                 }
             }
         } else if (isNullOrUndefined(obj) && !this.listViewInstance.showCheckBox) {

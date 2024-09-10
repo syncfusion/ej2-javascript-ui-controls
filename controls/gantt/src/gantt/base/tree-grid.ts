@@ -341,7 +341,7 @@ export class GanttTreeGrid {
             setValue('doubleClickTarget', null, this.parent.treeGrid.editModule);
         }
         this.parent.trigger('actionBegin', args);
-        if (args.requestType !== 'virtualscroll' && args.type !== 'edit' && args.requestType !== 'beginEdit') {
+        if (args.requestType !== 'virtualscroll' && args.type !== 'edit' && args.requestType !== 'beginEdit' && !args.cancel) {
             if (!isNullOrUndefined(this.parent.loadingIndicator) && this.parent.loadingIndicator.indicatorType === 'Shimmer') {
                 this.parent.showMaskRow();
             } else {

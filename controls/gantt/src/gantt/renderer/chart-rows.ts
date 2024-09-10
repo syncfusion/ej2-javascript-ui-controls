@@ -1576,6 +1576,10 @@ export class ChartRows extends DateProcessor {
                     collapsedResourceRecord.push(tempTemplateData);
                 }
                 const tRow: Node = this.getGanttChartRow(i, tempTemplateData);
+                if (tempTemplateData.hasChildRecords && (!tempTemplateData.expanded) && this.parent.enableMultiTaskbar
+                    && !this.parent.allowTaskbarOverlap) {
+                    this.updateDragDropRecords(tempTemplateData, tRow);
+                }
                 dupChartBody.appendChild(tRow);
                 if (this.parent.enableImmutableMode) {
                     this.refreshedTr.push(dupChartBody.querySelectorAll('tr')[i as number]);

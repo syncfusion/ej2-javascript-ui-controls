@@ -6,6 +6,7 @@ import { WAbstractList } from '../list/abstract-list';
 import { WListLevel } from '../list/list-level';
 import { WListFormat } from '../../implementation/format/list-format';
 import { DocumentHelper } from '../viewer';
+import { HelperMethods } from '../editor/editor-helper';
 /**
  * The Bullets and Numbering dialog is used to apply list format for a paragraph style.
  */
@@ -353,6 +354,8 @@ export class BulletsAndNumberingDialog {
             this.abstractList.abstractListId = 0;
         }
         this.listFormat.list.abstractListId = this.abstractList.abstractListId;
+        const nsid: number = HelperMethods.generateUniqueId(this.documentHelper.lists);
+        this.listFormat.nsid = this.listFormat.list.nsid = this.abstractList.nsid = nsid;
         const listLevel: WListLevel = new WListLevel(this.abstractList);
         listLevel.listLevelPattern = !isNullOrUndefined(this.listLevelPattern) ? this.listLevelPattern : 'Bullet';
         listLevel.numberFormat = this.isBullet ? this.symbol : this.numberFormat;

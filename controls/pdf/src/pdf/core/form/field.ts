@@ -2805,8 +2805,8 @@ export class PdfTextBoxField extends PdfField {
         this._dictionary.update('FT', _PdfName.get('Tx'));
         this._dictionary.update('T', name);
         this._fieldFlags |= _FieldFlag.doNotSpellCheck;
-        this._initializeFont(this._defaultFont);
         this._createItem(bounds);
+        this._initializeFont(this._defaultFont);
     }
     _createItem(bounds: {x: number, y: number, width: number, height: number}): void {
         const widget: PdfWidgetAnnotation = new PdfWidgetAnnotation();
@@ -3004,7 +3004,8 @@ export class PdfTextBoxField extends PdfField {
                             }
                         }
                         parameter.bounds[2] = width;
-                        this._drawTextBox(g, parameter, text, font, new PdfStringFormat(PdfTextAlignment.center), multiline, scroll);
+                        const stringFormat: PdfStringFormat = new PdfStringFormat(PdfTextAlignment.center, PdfVerticalAlignment.middle);
+                        this._drawTextBox(g, parameter, text, font, stringFormat, multiline, scroll);
                         parameter.bounds[0] = parameter.bounds[0] + width;
                         if (parameter.borderWidth) {
                             g.drawLine(parameter.borderPen,
@@ -3034,7 +3035,7 @@ export class PdfTextBoxField extends PdfField {
                 g._sw._beginMarkupSequence('Tx');
                 g._initializeCoordinates();
             }
-            let rectangle: number[] = parameter.bounds;
+            let rectangle: number[] = [parameter.bounds[0], parameter.bounds[1], parameter.bounds[2], parameter.bounds[3]];
             if (parameter.borderStyle === PdfBorderStyle.beveled || parameter.borderStyle === PdfBorderStyle.inset) {
                 rectangle[0] = rectangle[0] + 4 * parameter.borderWidth;
                 rectangle[2] = rectangle[2] - 8 * parameter.borderWidth;

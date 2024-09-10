@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 26.2.14 (2024-09-10)
+
+### PDF Parser
+
+#### Bug Fixes
+
+- Resolved the font style parsing issue from PDF free text annotation.
+- Resolved the appearance preservation issues when adding a text box field with the insert spaces option.
+
 ## 26.2.13 (2024-09-05)
 
 ### PDF Parser

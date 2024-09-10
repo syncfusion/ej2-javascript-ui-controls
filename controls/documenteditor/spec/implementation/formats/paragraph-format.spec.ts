@@ -17,39 +17,39 @@ describe('Paragraph Validation Testing', () => {
         WListFormat.clear();
     });
     it('Copy format setting  Testing', () => {
-console.log('Copy format setting  Testing');
+        console.log('Copy format setting  Testing');
         let para: WListFormat = new WListFormat();
         para.listLevelNumber = 20;
         expect('').toBe('');
     });
     it('Copy format Testing', () => {
-console.log('Copy format Testing');
+        console.log('Copy format Testing');
         let para: WParagraphFormat = new WParagraphFormat();
         let para1: WParagraphFormat = new WParagraphFormat();
         para.copyFormat(para1);
         expect('').toBe('');
     });
     it('Copy format undefined Testing', () => {
-console.log('Copy format undefined Testing');
+        console.log('Copy format undefined Testing');
         let para: WParagraphFormat = new WParagraphFormat();
         para.copyFormat(undefined);
         expect('').toBe('');
     });
     it('Clone format Testing', () => {
-console.log('Clone format Testing');
+        console.log('Clone format Testing');
         let para: WParagraphFormat = new WParagraphFormat();
         para.cloneFormat();
         expect('').toBe('');
     });
     it('destroy Testing', () => {
-console.log('destroy Testing');
+        console.log('destroy Testing');
         let para: WParagraphFormat = new WParagraphFormat();
         para.destroy();
         para.cloneFormat();
         expect(() => { para.destroy() }).not.toThrowError();
     });
     it('Clear Format validation', () => {
-console.log('Clear Format validation');
+        console.log('Clear Format validation');
         let format: WParagraphFormat = new WParagraphFormat();
         format.leftIndent = 10;
         format.rightIndent = 12;
@@ -63,14 +63,14 @@ console.log('Clear Format validation');
         expect(format.listFormat.listId).toBe(-1);
     });
     it('Text alignment right valdiation', () => {
-console.log('Text alignment right valdiation');
+        console.log('Text alignment right valdiation');
         let format: WParagraphFormat = new WParagraphFormat();
         format.textAlignment = 'Right';
         format.bidi = true;
         expect(format.textAlignment).toBe("Left");
     });
     it('style property default value', () => {
-console.log('style property default value');
+        console.log('style property default value');
         expect((WParagraphFormat as any).getPropertyDefaultValue('styleName')).toBe('Normal');
     });
 });
@@ -164,5 +164,65 @@ describe('Checking AutoSpacing value is appending or not', () => {
     });
 });
 
-
-
+describe('Assign the paragraph formatting', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Assign the paragraph formatting', function () {
+        console.log('Assign the paragraph formatting');
+        let sourceFormat = new WParagraphFormat();
+        let destFormat = new WParagraphFormat();
+        destFormat.leftIndent = 36;
+        destFormat.rightIndent = 36;
+        destFormat.firstLineIndent = 36;
+        destFormat.beforeSpacing = 36;
+        destFormat.afterSpacing = 36;
+        destFormat.spaceBeforeAuto = true;
+        destFormat.spaceAfterAuto = true;
+        destFormat.lineSpacing = 1.15;
+        destFormat.lineSpacingType = 'AtLeast';
+        destFormat.textAlignment = 'Center';
+        destFormat.outlineLevel = 'Level1';
+        destFormat.bidi = true;
+        destFormat.contextualSpacing = true;
+        destFormat.keepWithNext = true;
+        destFormat.keepLinesTogether = true;
+        destFormat.widowControl = true;
+        sourceFormat.assignFormat(destFormat);
+        expect(sourceFormat.leftIndent).toBe(36);
+        expect(sourceFormat.rightIndent).toBe(36);
+        expect(sourceFormat.firstLineIndent).toBe(36);
+        expect(sourceFormat.beforeSpacing).toBe(36);
+        expect(sourceFormat.afterSpacing).toBe(36);
+        expect(sourceFormat.spaceBeforeAuto).toBe(true);
+        expect(sourceFormat.spaceAfterAuto).toBe(true);
+        expect(sourceFormat.lineSpacing).toBe(1.15);
+        expect(sourceFormat.lineSpacingType).toBe('AtLeast');
+        expect(sourceFormat.textAlignment).toBe('Center');
+        expect(sourceFormat.outlineLevel).toBe('Level1');
+        expect(sourceFormat.bidi).toBe(true);
+        expect(sourceFormat.contextualSpacing).toBe(true);
+        expect(sourceFormat.keepWithNext).toBe(true);
+        expect(sourceFormat.keepLinesTogether).toBe(true);
+        expect(sourceFormat.widowControl).toBe(true);
+    });
+});

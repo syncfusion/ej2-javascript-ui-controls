@@ -2,7 +2,17 @@
 
 ## [Unreleased]
 
-## 26.2.13 (2024-09-05)
+## 26.2.14 (2024-09-10)
+
+### ListView
+
+#### Bug Fixes
+
+- `#F194017` -  The console issue while navigating within the nested ListView component has been resolved.
+
+- `#I620913` -  The issue with the ListView component's select event cancellation argument not functioning has been resolved.
+
+## 26.2.11 (2024-08-27)
 
 ### ListView
 

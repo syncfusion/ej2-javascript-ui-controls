@@ -2746,32 +2746,20 @@ export class Selection implements IAction {
         if (!gobj.enableVirtualization && this.chkField
             && ((gobj.isPersistSelection && Object.keys(this.selectedRowState).length === 0) ||
                 !gobj.isPersistSelection)) {
-            const data: Data = this.parent.getDataModule();
-            const query: Query = new Query().where(this.chkField, 'equal', true);
-            if (!query.params) {
-                query.params = this.parent.query.params;
-            }
-            const dataManager: Promise<Object> = data.getData({} as NotifyArgs, query);
-            // eslint-disable-next-line @typescript-eslint/no-this-alias
-            const proxy: Selection = this;
-            this.parent.showSpinner();
-            dataManager.then((e: ReturnType) => {
-                proxy.dataSuccess(e.result);
-                proxy.refreshPersistSelection();
-                proxy.parent.hideSpinner();
-            });
+            this.dataSuccess((!isNullOrUndefined(this.parent.dataSource) && (<{result: object[]}>this.parent.dataSource).result) ||
+                this.parent.getDataModule().isRemote() ? this.parent.getCurrentViewRecords() :
+                this.parent.renderModule.data.dataManager.dataSource.json);
         }
     }
 
     private dataSuccess(res: Object[]): void {
-        const data: Object[] = (this.parent.getDataModule().isRemote() && !isNullOrUndefined(res['result'])) ? res['result'] : res;
-        for (let i: number = 0; i < data.length; i++) {
-            const pkValue: string = this.getPkValue(this.primaryKey, data[parseInt(i.toString(), 10)]);
-            if (isNullOrUndefined(this.selectedRowState[`${pkValue}`]) && data[parseInt(i.toString(), 10)][this.chkField]) {
-                this.selectedRowState[`${pkValue}`] = data[parseInt(i.toString(), 10)][this.chkField];
+        for (let i: number = 0; i < res.length; i++) {
+            const pkValue: string = this.getPkValue(this.primaryKey, res[parseInt(i.toString(), 10)]);
+            if (isNullOrUndefined(this.selectedRowState[`${pkValue}`]) && res[parseInt(i.toString(), 10)][this.chkField]) {
+                this.selectedRowState[`${pkValue}`] = res[parseInt(i.toString(), 10)][this.chkField];
+                this.persistSelectedData.push(res[parseInt(i.toString(), 10)][this.chkField]);
             }
         }
-        this.persistSelectedData = data;
     }
 
     private setRowSelection(state: boolean): void {

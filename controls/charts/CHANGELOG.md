@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 26.2.13 (2024-09-05)
+## 26.2.14 (2024-09-10)
+
+### Chart
+
+#### Bug Fixes
+
+- `#F194171` - Now, the first and last points are rendered properly in the bar chart when using the category axis.
+
+## 26.2.12 (2024-09-03)
 
 ### Chart
 

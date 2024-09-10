@@ -253,23 +253,18 @@ export class SfdtExport {
                     section = this.document[sectionsProperty[this.keywordIndex]][this.document[sectionsProperty[this.keywordIndex]].length - 1];
                 }
                 while (nextBlock) {
-                    if (nextBlock.containerWidget.index !== lastBlock.containerWidget.index) {
-                        let section: any = this.createSection(nextBlock.containerWidget as BlockContainer);
+                    const isDifferentSection = nextBlock.containerWidget instanceof BodyWidget && lastBlock.containerWidget instanceof BodyWidget && nextBlock.containerWidget.sectionIndex !== lastBlock.containerWidget.sectionIndex;
+                    if (isDifferentSection) {
+                        section = this.createSection(nextBlock.containerWidget as BlockContainer);
                         this.document[sectionsProperty[this.keywordIndex]].push(section);
                         let paragraph: any = this.createParagraph(nextBlock as ParagraphWidget);
                         section[blocksProperty[this.keywordIndex]].push(paragraph);
                         lastBlock = nextBlock;
-                        nextBlock = this.writeParagraph(lastBlock as ParagraphWidget,  paragraph, section[blocksProperty[this.keywordIndex]], line.indexInOwner, startOffset);
-                    }
-                    if (lastBlock.nextSplitWidget && nextBlock.containerWidget.index !== lastBlock.containerWidget.index) {
+                        nextBlock = this.writeParagraph(lastBlock as ParagraphWidget, paragraph, section[blocksProperty[this.keywordIndex]], line.indexInOwner, startOffset);
                         continue;
                     }
-                    let blockIndex = isNullOrUndefined(nextBlock) ? 0 : nextBlock.containerWidget.index === lastBlock.containerWidget.index ?lastBlock.containerWidget.index : nextBlock.containerWidget.index;
-                    if (this.owner.editor.isPaste || this.owner.editor.isInsertingTOC) {
-                        blockIndex = 0;
-                    }
                     lastBlock = nextBlock;
-                    nextBlock = this.writeBlock(nextBlock, 0,  this.document[sectionsProperty[this.keywordIndex]][blockIndex][blocksProperty[this.keywordIndex]]);
+                    nextBlock = this.writeBlock(nextBlock, 0, section[blocksProperty[this.keywordIndex]]);
                     if (this.isPartialExport && isNullOrUndefined(nextBlock)) {
                         nextBlock = this.getNextBlock(nextBlock, lastBlock);
                         section = this.document[sectionsProperty[this.keywordIndex]][this.document[sectionsProperty[this.keywordIndex]].length - 1];
@@ -301,23 +296,18 @@ export class SfdtExport {
                     section = this.document[sectionsProperty[this.keywordIndex]][this.document[sectionsProperty[this.keywordIndex]].length - 1];
                 }
                 while (nextBlock) {
-                    if (nextBlock.containerWidget.index !== lastBlock.containerWidget.index) {
-                        let section: any = this.createSection(nextBlock.containerWidget as BlockContainer);
+                    const isDifferentSection = nextBlock.containerWidget instanceof BodyWidget && lastBlock.containerWidget instanceof BodyWidget && nextBlock.containerWidget.sectionIndex !== lastBlock.containerWidget.sectionIndex;
+                    if (isDifferentSection) {
+                        section = this.createSection(nextBlock.containerWidget as BlockContainer);
                         this.document[sectionsProperty[this.keywordIndex]].push(section);
                         let paragraph: any = this.createParagraph(nextBlock as ParagraphWidget);
                         section[blocksProperty[this.keywordIndex]].push(paragraph);
                         lastBlock = nextBlock;
-                        nextBlock = this.writeParagraph(lastBlock as ParagraphWidget,  paragraph, section[blocksProperty[this.keywordIndex]], line.indexInOwner, startOffset);
-                    }
-                    if (lastBlock.nextSplitWidget && nextBlock.containerWidget.index !== lastBlock.containerWidget.index) {
+                        nextBlock = this.writeParagraph(lastBlock as ParagraphWidget, paragraph, section[blocksProperty[this.keywordIndex]], line.indexInOwner, startOffset);
                         continue;
                     }
-                    let blockIndex = isNullOrUndefined(nextBlock) ? 0 : nextBlock.containerWidget.index === lastBlock.containerWidget.index ?lastBlock.containerWidget.index : nextBlock.containerWidget.index;
-                    if (this.owner.editor.isPaste || this.owner.editor.isInsertingTOC) {
-                        blockIndex = 0;
-                    }
                     lastBlock = nextBlock;
-                    nextBlock = this.writeBlock(nextBlock, 0,  this.document[sectionsProperty[this.keywordIndex]][blockIndex][blocksProperty[this.keywordIndex]]);
+                    nextBlock = this.writeBlock(nextBlock, 0, section[blocksProperty[this.keywordIndex]]);
                     if (this.isPartialExport) {
                         nextBlock = this.getNextBlock(nextBlock, lastBlock);
                         section = this.document[sectionsProperty[this.keywordIndex]][this.document[sectionsProperty[this.keywordIndex]].length - 1];
@@ -565,7 +555,7 @@ export class SfdtExport {
             return undefined;
         }
         if (widget instanceof ParagraphWidget) {
-            if (widget.hasOwnProperty('contentControlProperties') && widget.contentControlProperties.type !== 'BuildingBlockGallery') {
+            if (widget.hasOwnProperty('contentControlProperties') && widget.contentControlProperties && widget.contentControlProperties.type !== 'BuildingBlockGallery') {
                 let block: any = this.blockContentControl(widget);
                 this.blockContent = false;
                 if (!isNullOrUndefined(block) && (this.isBlockClosed || !this.nestedBlockContent)) {
@@ -581,7 +571,7 @@ export class SfdtExport {
             }
         } else {
             let tableWidget: TableWidget = widget as TableWidget;
-            if (tableWidget.hasOwnProperty('contentControlProperties') && tableWidget.contentControlProperties.type !== 'BuildingBlockGallery') {
+            if (tableWidget.hasOwnProperty('contentControlProperties') && tableWidget.contentControlProperties && tableWidget.contentControlProperties.type !== 'BuildingBlockGallery') {
                 let block: any = this.tableContentControl(tableWidget);
                 if (!isNullOrUndefined(block) && this.isBlockClosed) {
                     blocks.push(block);
@@ -806,7 +796,7 @@ export class SfdtExport {
         }
         next = paragraphWidget.nextRenderedWidget as BlockWidget;
         if (this.documentHelper.owner.layoutType !== 'Continuous' && isNullOrUndefined(next) && paragraphWidget.containerWidget instanceof BodyWidget &&
-            !isNullOrUndefined((paragraphWidget.containerWidget as BodyWidget).page.nextPage) &&
+            !isNullOrUndefined((paragraphWidget.containerWidget as BodyWidget).page) && !isNullOrUndefined((paragraphWidget.containerWidget as BodyWidget).page.nextPage) &&
             !isNullOrUndefined((paragraphWidget.containerWidget as BodyWidget).page.nextPage.bodyWidgets)) {
             next = (paragraphWidget.containerWidget as BodyWidget).page.nextPage.bodyWidgets[0].childWidgets[0] as BlockWidget;
         }
@@ -1563,10 +1553,10 @@ export class SfdtExport {
         }
         if (this.startContent && ((this.contentType === 'Inline'))) {
             if (this.multipleLineContent) {
-                this.inlineContentControl(element, lineWidget.children[i + 1], inlines);
+                this.inlineContentControl(element, element.nextNode, inlines);
                 this.contentInline = [];
             } else {
-                let contentinline: any = this.inlineContentControl(element, lineWidget.children[i + 1]);
+                let contentinline: any = this.inlineContentControl(element, element.nextNode);
                 if (!isNullOrUndefined(contentinline)) {
                     if (this.nestedContent && this.multipleLineContent) {
                         let inline: any = {};

@@ -1005,8 +1005,9 @@ export class Toolbar {
             if (!isNullOrUndefined(this.documentEditor)) {
                 this.enableDisableFormField(!this.documentEditor.enableHeaderAndFooter && enable && !this.documentEditor.isReadOnlyMode);
             }
+            const isPlainContetnControl: boolean = this.documentEditor.selectionModule.isPlainContentControl();
             if (this.documentEditor.selectionModule.isinFootnote || this.documentEditor.selectionModule.isinEndnote
-                || this.documentEditor.enableHeaderAndFooter) {
+                || this.documentEditor.enableHeaderAndFooter || isPlainContetnControl) {
                 if (this.containsItem(id + ENDNOTE_ID)) {
                     this.toolbar.enableItems(document.getElementById(id + ENDNOTE_ID).parentElement, false);
                 }
@@ -1015,6 +1016,29 @@ export class Toolbar {
                 }
                 if (this.containsItem(id + BREAK_ID)) {
                     this.toolbar.enableItems(document.getElementById(id + BREAK_ID).parentElement, false);
+                }
+                if (isPlainContetnControl) {
+                    if (this.containsItem(id + INSERT_TABLE_ID)) {
+                        this.toolbar.enableItems(document.getElementById(id + INSERT_TABLE_ID).parentElement, false);
+                    }
+                    if (this.containsItem(id + INSERT_IMAGE_ID)) {
+                        this.toolbar.enableItems(document.getElementById(id + INSERT_IMAGE_ID).parentElement, false);
+                    }
+                    if (this.containsItem(id + COMMENT_ID)) {
+                        this.toolbar.enableItems(document.getElementById(id + COMMENT_ID).parentElement, false);
+                    }
+                    if (this.containsItem(id + BOOKMARK_ID)) {
+                        this.toolbar.enableItems(document.getElementById(id + BOOKMARK_ID).parentElement, false);
+                    }
+                    if (this.containsItem(id + INSERT_LINK_ID)) {
+                        this.toolbar.enableItems(document.getElementById(id + INSERT_LINK_ID).parentElement, false);
+                    }
+                    if (this.containsItem(id + FORM_FIELDS_ID)) {
+                        this.toolbar.enableItems(document.getElementById(id + FORM_FIELDS_ID).parentElement, false);
+                    }
+                    if (this.containsItem(id + CONTENT_CONTROL_ID)) {
+                        this.toolbar.enableItems(document.getElementById(id + CONTENT_CONTROL_ID).parentElement, false);
+                    }
                 }
             }
             if (!isProtectedContent || this.container.showPropertiesPane) {

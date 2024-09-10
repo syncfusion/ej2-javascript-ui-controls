@@ -2458,7 +2458,15 @@ export class Renderer {
                 };
 
                 elementBox.element.onerror = (): void => {
-                    elementBox.element.src = fallbackImage;
+                    let srcImage: string = fallbackImage;
+                    let imageString: string = this.documentHelper.getImageString(elementBox);
+                    if (imageString && (HelperMethods.startsWith(imageString, 'http://') || HelperMethods.startsWith(imageString, 'https://'))) {
+                        let imageStrings: string[] = this.viewer.documentHelper.images.get(parseInt(elementBox.imageString));
+                        if (imageStrings && imageStrings.length > 1) {
+                            srcImage = imageStrings[1];
+                        }
+                    }
+                    elementBox.element.src = srcImage;
                 };
 
                 if (!elementBox.isCrop) {
@@ -2479,11 +2487,19 @@ export class Renderer {
                         height); //dh
                 }
             } catch (e) {
-
-                elementBox.imageString = fallbackImage;
-
-                this.documentHelper.addBase64StringInCollection(elementBox);
-                elementBox.element.src = this.documentHelper.getImageString(elementBox);
+                let imageString: string = this.documentHelper.getImageString(elementBox);
+                if (imageString && (HelperMethods.startsWith(imageString, 'http://') || HelperMethods.startsWith(imageString, 'https://'))) {
+                    let imageStrings: string[] = this.viewer.documentHelper.images.get(parseInt(elementBox.imageString));
+                    if (imageStrings && imageStrings.length > 1) {
+                        elementBox.element.src = imageStrings[1];
+                    } else {
+                        elementBox.element.src = fallbackImage;
+                    }
+                } else {
+                    elementBox.imageString = fallbackImage;
+                    this.documentHelper.addBase64StringInCollection(elementBox);
+                    elementBox.element.src = this.documentHelper.getImageString(elementBox);
+                }
                 this.pageContext.drawImage(elementBox.element, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
             }
         }

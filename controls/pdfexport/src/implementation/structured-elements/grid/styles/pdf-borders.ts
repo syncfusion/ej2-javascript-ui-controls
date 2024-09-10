@@ -222,10 +222,8 @@ export class PdfPaddings {
     public constructor(left : number, right : number, top : number, bottom : number)
     public constructor(left ?: number, right ?: number, top ?: number, bottom ?: number) {
         if (typeof left === 'undefined') {
-            //5.76 and 0 are taken from ms-word default table margins.
-            this.leftPad = this.rightPad = 5.76;
             //0.5 is set for top and bottom by default.
-            this.bottomPad = this.topPad = 0.5;
+            this.bottomPad = this.topPad = this.leftPad = this.rightPad = 0.5;
         } else {
             this.leftPad = left;
             this.rightPad = right;

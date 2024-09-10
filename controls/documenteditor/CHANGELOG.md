@@ -2,7 +2,22 @@
 
 ## [Unreleased]
 
-## 26.2.13 (2024-09-05)
+## 26.2.14 (2024-09-10)
+
+### DocumentEditor
+
+#### Bug Fixes
+
+- `#I626531` - Resolved the alignment issue column (spacing and width) in the page setup dialog box.
+- `#I620813` - Resolved the script error issue when exporting the attached document.
+- `#I618994` - Resolved the script error issue when copy pasting content for the given document.
+- `#I620006` - Resolved the content overlapping issue when copy pasting external text.
+- `#I625188`, `#I627428` - Resolved the multi column content copying issue.
+- `#I624334` - Resolved the error when using text only option.
+- `#I623974` - Resolved the line spacing issue after selecting text only in paste options.
+- `#I618565` - Resolved the Issue appears while editing the track change document.
+
+## 26.2.11 (2024-08-27)
 
 ### DocumentEditor
 

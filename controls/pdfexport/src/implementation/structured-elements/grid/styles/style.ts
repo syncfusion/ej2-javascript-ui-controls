@@ -120,10 +120,6 @@ export class PdfGridStyle extends PdfGridStyleBase {
      * @private
      */
     private gridCellSpacing : number;
-    /**
-     * @private
-     */
-    _isDefaultPadding : boolean = false;
     //constructor
     /**
      * Initialize a new instance for `PdfGridStyle` class.
@@ -177,7 +173,6 @@ export class PdfGridStyle extends PdfGridStyleBase {
     public get cellPadding() : PdfPaddings {
         if (typeof this.gridCellPadding === 'undefined') {
             this.gridCellPadding = new PdfPaddings();
-            this._isDefaultPadding = true;
         }
         return this.gridCellPadding;
     }
@@ -188,7 +183,6 @@ export class PdfGridStyle extends PdfGridStyleBase {
         } else {
             this.gridCellPadding = value;
         }
-        this._isDefaultPadding = false;
     }
     /**
      * Gets or sets the `border overlap style` of the 'PdfGrid'.

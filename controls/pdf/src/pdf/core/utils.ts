@@ -2310,28 +2310,23 @@ export function _mapAnnotationIntent(intentString: string): PdfAnnotationIntent 
  * @returns {string} String value.
  */
 export function _reverseMapPdfFontStyle(style: PdfFontStyle): string {
-    let value: string = '';
-    switch (style) {
-    case PdfFontStyle.regular:
-        value = 'Regular';
-        break;
-    case PdfFontStyle.bold:
-        value = 'Bold';
-        break;
-    case PdfFontStyle.italic:
-        value = 'Italic';
-        break;
-    case PdfFontStyle.underline:
-        value = 'Underline';
-        break;
-    case PdfFontStyle.strikeout:
-        value = 'Strikeout';
-        break;
-    default:
-        value = 'Regular';
-        break;
+    const value: string[] = [];
+    if ((style & PdfFontStyle.bold) > 0) {
+        value.push('Bold');
     }
-    return value;
+    if ((style & PdfFontStyle.italic) > 0) {
+        value.push('Italic');
+    }
+    if ((style & PdfFontStyle.underline) > 0) {
+        value.push('Underline');
+    }
+    if ((style & PdfFontStyle.strikeout) > 0) {
+        value.push('Strikeout');
+    }
+    if (value.length === 0) {
+        return 'Regular';
+    }
+    return value.join(', ');
 }
 /**
  * Get special character.

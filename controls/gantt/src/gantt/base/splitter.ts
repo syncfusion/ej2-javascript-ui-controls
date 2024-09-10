@@ -187,8 +187,7 @@ export class Splitter {
      * @private
      */
     public updateSplitterPosition(): void {
-        this.splitterObject.separatorSize = this.parent.splitterSettings.separatorSize >= 4 ?
-            this.parent.splitterSettings.separatorSize : 4;
+        this.splitterObject.separatorSize = this.parent.splitterSettings.separatorSize;
         const splitterPosition: string = this.calculateSplitterPosition(this.parent.splitterSettings);
         this.splitterObject.paneSettings[0].min = this.getSpliterPositionInPercentage(this.parent.splitterSettings.minimum);
         this.splitterObject.dataBind();

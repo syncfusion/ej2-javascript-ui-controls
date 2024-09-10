@@ -477,16 +477,31 @@ export class Crud {
         const updateSeriesEvents: Record<string, any>[] = (eventData instanceof Array) ? eventData : [eventData];
         const args: ActionEventArgs = {
             requestType: action === 'EditSeries' ? 'eventChange' : 'eventRemove', cancel: false,
-            addedRecords: [], changedRecords: updateSeriesEvents, deletedRecords: []
+            addedRecords: [], changedRecords: [], deletedRecords: []
         };
         args.data = seriesData;
+        if (action === 'EditSeries') {
+            args.changedRecords = updateSeriesEvents;
+        } else {
+            args.deletedRecords = updateSeriesEvents;
+        }
+        if (action === 'EditSeries' && !this.parent.uiStateValues.isIgnoreOccurrence) {
+            const seriesEvents: Record<string, any>[] = seriesData instanceof Array ? seriesData : [seriesData];
+            for (let a: number = 0, count: number = args.changedRecords.length; a < count; a++) {
+                const parentEvent: Record<string, any> = seriesEvents[parseInt(a.toString(), 10)];
+                const eventCollections: { [key: string]: Record<string, any>[] } = this.parent.eventBase.getEventCollections(parentEvent);
+                const deletedEvents: Record<string, any>[] = eventCollections.follow.concat(eventCollections.occurrence);
+                args.deletedRecords = args.deletedRecords.concat(deletedEvents);
+            }
+        }
         this.parent.trigger(events.actionBegin, args, (seriesArgs: ActionEventArgs) => {
             if (!seriesArgs.cancel) {
                 const fields: EventFieldsMapping = this.parent.eventFields;
                 const editParams: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
                 const seriesEvents: Record<string, any>[] = seriesData instanceof Array ? seriesData : [seriesData];
-                for (let a: number = 0, count: number = seriesArgs.changedRecords.length; a < count; a++) {
-                    const childEvent: Record<string, any> = seriesArgs.changedRecords[parseInt(a.toString(), 10)];
+                const records: Record<string, any>[] = action === 'EditSeries' ? seriesArgs.changedRecords : seriesArgs.deletedRecords;
+                for (let a: number = 0, count: number = records.length; a < count; a++) {
+                    const childEvent: Record<string, any> = records[parseInt(a.toString(), 10)];
                     const parentEvent: Record<string, any> = seriesEvents[parseInt(a.toString(), 10)];
                     const eventCollections: { [key: string]: Record<string, any>[] } = this.parent.eventBase.getEventCollections(parentEvent);
                     const deletedEvents: Record<string, any>[] = eventCollections.follow.concat(eventCollections.occurrence);
@@ -515,7 +530,7 @@ export class Crud {
                     }
                 }
                 const promise: Promise<any> = this.parent.dataModule.dataManager.saveChanges(editParams, fields.id, this.getTable(), this.getQuery()) as Promise<any>;
-                const cloneEvent: Record<string, any> = extend({}, seriesArgs.changedRecords[seriesArgs.changedRecords.length - 1], null, true) as Record<string, any>;
+                const cloneEvent: Record<string, any> = extend({}, records[records.length - 1], null, true) as Record<string, any>;
                 this.parent.eventBase.selectWorkCellByTime(action === 'EditSeries' ? [this.parent.eventBase.processTimezone(cloneEvent)] : [cloneEvent]);
                 const crudArgs: CrudArgs = {
                     requestType: action === 'EditSeries' ? 'eventChanged' : 'eventRemoved',

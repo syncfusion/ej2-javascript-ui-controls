@@ -697,6 +697,9 @@ export class StyleDialog {
             let name: string;
             if (!isNullOrUndefined(style)) {
                 this.documentHelper.owner.editorHistoryModule.initializeHistory('ModifyStyle');
+                if (this.styleType.value === 'Paragraph' || this.styleType.value === 'Linked Style') {
+                    this.updateList();
+                }
                 if (this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo && this.documentHelper.owner.editorHistoryModule.currentBaseHistoryInfo.action === 'ModifyStyle') {
                     let listId: number = style instanceof WParagraphStyle ? (style as WParagraphStyle).paragraphFormat.listFormat.listId : -1;
                     let styleObject = this.documentHelper.owner.getStyleObject(style, listId);
@@ -709,10 +712,8 @@ export class StyleDialog {
 
                 if (this.styleType.value === 'Paragraph' || this.styleType.value === 'Linked Style') {
                     this.style.next = this.documentHelper.styles.findByName(this.documentHelper.owner.stylesDialogModule.getStyleName(this.styleParagraph.value as string)) as WStyle;
-                    (this.style as WParagraphStyle).characterFormat.mergeFormat(this.characterFormat);
-                    (this.style as WParagraphStyle).paragraphFormat.mergeFormat(this.paragraphFormat, true);
-                    this.updateList();
-
+                    (this.style as WParagraphStyle).characterFormat.assignFormat(this.characterFormat);
+                    (this.style as WParagraphStyle).paragraphFormat.assignFormat(this.paragraphFormat, true);
                     this.style.link = (this.styleType.value === 'Linked Style') ? this.createLinkStyle(styleName, this.isEdit) : undefined;
                 }
 

@@ -409,6 +409,146 @@ describe('UI virtualization', () => {
             })
         });
     });
+    describe('For nested group list', () => {
+        let listObj: any;
+        let ele: HTMLElement = createElement('div', { id: 'ListView' });
+        let nestedGroupData: any = [
+            {
+                name: 'Margaret',
+                icon: 'M',
+                imgUrl: '',
+                id: 10
+            },
+            {
+                name: 'Janet',
+                icon: 'J',
+                imgUrl: '',
+                id: 12
+            },
+            {
+                name: 'Andrew',
+                icon: 'A',
+                imgUrl: '',
+                id: 14
+            },
+            {
+                name: 'Nolan',
+                icon: 'N',
+                imgUrl: '',
+                id: 16
+            },
+            {
+                name: 'Nolan',
+                icon: 'N',
+                imgUrl: '',
+                id: 33
+            },
+            {
+                name: 'Andrew',
+                icon: 'A',
+                imgUrl: '',
+                id: 49
+            },
+            {
+                name: 'Laura',
+                icon: 'L',
+                imgUrl: '',
+                id: 61
+            },
+            {
+                name: 'Janet',
+                icon: 'J',
+                imgUrl: '',
+                id: 76
+            },
+            {
+                name: 'Margaret',
+                icon: 'M',
+                imgUrl: '',
+                id: 78,
+        
+            },
+            {
+                name: 'Robert',
+                icon: 'R',
+                imgUrl: '',
+                id: 82
+            },
+            {
+                name: 'Michael',
+                icon: 'M',
+                imgUrl: '',
+                id: 103
+            },
+            {
+                name: 'Nolan',
+                icon: 'N',
+                imgUrl: '',
+                id: 111,
+                child: [
+                    {
+                        name: 'Michael',
+                        icon: 'M',
+                        imgUrl: '',
+                        id: 105,
+        
+                    },
+                    {
+                        name: 'Robert',
+                        icon: 'R',
+                        imgUrl: '',
+                        id: 106,
+        
+                    },
+                    {
+                        name: 'Nancy',
+                        icon: 'N',
+                        imgUrl: '',
+                        id: 107,
+        
+                    },
+                    {
+                        name: 'Michael',
+                        icon: 'M',
+                        imgUrl: '',
+                        id: 108,
+        
+                    },
+                    {
+                        name: 'Nancy',
+                        icon: 'N',
+                        imgUrl: '',
+                        id: 109,
+        
+                    },
+                    {
+                        name: 'Laura',
+                        icon: 'L',
+                        imgUrl: '',
+                        id: 110,
+        
+                    },
+                ],
+            }
+        ];
+        let data: { [key: string]: Object }[] = nestedGroupData;
+        beforeAll(() => {
+            document.body.appendChild(ele);
+            listObj = new ListView({
+                dataSource: data, height: '100%', enableVirtualization: true, showIcon: true, headerTitle: 'Folders', showHeader: true, fields: { groupBy: 'icon',text: 'name' },
+            });
+            listObj.appendTo(ele);
+        });
+        it('Test Dom Item count', () => {
+            simulateScrollEvent(document.documentElement, 2600);
+            listObj.liCollection[13].click();
+            expect(listObj.curViewDS.length).toBe(listObj.virtualizationModule.domItemCount);
+        });
+        afterAll(() => {
+            listObj.destroy();
+            ele.remove();
+        })
+    });
     describe('UI virtualization for group list', () => {
         let listObj: any;
         let ele: HTMLElement = createElement('div', { id: 'ListView' });

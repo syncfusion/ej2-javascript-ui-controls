@@ -421,7 +421,7 @@ export class BaseHistoryInfo {
             //const previousNode: ElementBox = contentControl.previousNode;
             this.markerData.push(markerData);
             contentcontrol.reference.line.children.splice(contentControlInfo.endIndex, 0, contentcontrol.reference);
-
+            this.owner.editorModule.updatePropertiesToBlock(contentcontrol, true);
             this.editorHistory.recordChanges(this);
             this.viewer.updateScrollBars();
             this.owner.editorModule.fireContentChange();

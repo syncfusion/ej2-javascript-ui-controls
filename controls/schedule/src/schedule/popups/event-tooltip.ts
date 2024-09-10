@@ -87,7 +87,8 @@ export class EventTooltip {
             const fields: EventFieldsMapping = this.parent.eventFields;
             const eventStart: Date = new Date('' + record[fields.startTime]);
             let eventEnd: Date = new Date('' + record[fields.endTime]) as Date;
-            eventEnd = (eventEnd.getHours() === 0 && eventEnd.getMinutes() === 0) ? new Date(eventEnd.setMilliseconds(-1000)) : eventEnd;
+            eventEnd = ((eventEnd.getTime() - eventStart.getTime() !== 0) && eventEnd.getHours() === 0 && eventEnd.getMinutes() === 0) ?
+                new Date(eventEnd.setMilliseconds(-1000)) : eventEnd;
             const startDate: Date = util.resetTime(new Date('' + eventStart));
             const endDate: Date = util.resetTime(new Date('' + eventEnd));
             const tooltipSubject: string = (record[fields.subject] || this.parent.eventSettings.fields.subject.default

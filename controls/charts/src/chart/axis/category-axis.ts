@@ -73,7 +73,7 @@ export class Category extends NiceInterval {
     public applyRangePadding(axis: Axis, size: Size): void {
         let isColumn: boolean;
         axis.series.forEach((element: Series) => {
-            if (!isColumn) { isColumn = element.type.indexOf('Column') > -1 && !(axis.zoomFactor < 1 || axis.zoomPosition > 0) && isNullOrUndefined(axis.minimum) && isNullOrUndefined(axis.maximum); }
+            if (!isColumn) { isColumn = (element.type.indexOf('Column') > -1 || element.type.indexOf('Bar') > -1) && !(axis.zoomFactor < 1 || axis.zoomPosition > 0) && isNullOrUndefined(axis.minimum) && isNullOrUndefined(axis.maximum); }
         });
         const ticks: number = ((axis.labelPlacement === 'BetweenTicks' || isColumn) && !this.chart.stockChart && this.chart.chartAreaType !== 'PolarRadar') ? 0.5 : 0;
         if (ticks > 0) {

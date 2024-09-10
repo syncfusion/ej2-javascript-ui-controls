@@ -63,7 +63,7 @@ export class Revision {
         this.owner = documentHelper;
     }
 
-    private handleAcceptReject(isFromAccept: boolean): void {
+    private handleAcceptReject(isFromAccept: boolean, reLayoutTable?: boolean): void {
         this.owner.selectionModule.selectRevision(this);
         const selection: Selection = this.owner.selectionModule;
         let startPos: TextPosition = selection.start;
@@ -143,6 +143,10 @@ export class Revision {
         if (blockInfo.paragraph.isInHeaderFooter) {
             this.owner.editorModule.updateHeaderFooterWidget();
         }
+        if (reLayoutTable && this.owner.selectionModule.start.paragraph.isInsideTable) {
+            const table: TableWidget = (this.owner.selectionModule.start.paragraph.containerWidget as TableCellWidget).ownerTable;
+            this.owner.documentHelper.layout.reLayoutTable(table);
+        }
     }
     private handleGroupAcceptReject(isAccept?: boolean): void {
         if (this.owner.trackChangesPane.tableRevisions.containsKey(this)) {
@@ -180,7 +184,7 @@ export class Revision {
                 && this.owner.trackChangesPane.tableRevisions.containsKey(this)) {
                 this.handleGroupAcceptReject(true);
             } else {
-                this.handleAcceptReject(true);
+                this.handleAcceptReject(true, true);
             }
         }
     }
@@ -198,7 +202,7 @@ export class Revision {
                 && this.owner.trackChangesPane.tableRevisions.containsKey(this)) {
                 this.handleGroupAcceptReject(false);
             } else {
-                this.handleAcceptReject(false);
+                this.handleAcceptReject(false, true);
             }
         }
     }
@@ -477,7 +481,11 @@ export class Revision {
         let paraWidget: ParagraphWidget = element.line.paragraph;
         this.owner.editorModule.unLinkFieldCharacter(element);
         let elementIndex: number = element.line.children.indexOf(element);
+        let previousNode: ElementBox = element.previousNode;
         element.line.children.splice(elementIndex, 1);
+        if (!isNullOrUndefined(previousNode)) {
+            this.owner.editorModule.combineElementRevisionToPrevNxt(previousNode);
+        }
         let paraFloatingElementIndex: number = element.line.paragraph.floatingElements.indexOf(element as ShapeBase);
         element.line.paragraph.floatingElements.splice(paraFloatingElementIndex, 1);
         let blockFloatingElementIndex: number = element.line.paragraph.bodyWidget.floatingElements.indexOf(element as ShapeBase);

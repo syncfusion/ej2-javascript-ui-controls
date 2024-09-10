@@ -1841,43 +1841,40 @@ export class DocumentHelper {
         }
     };
 
-    public async getBase64(base64String: string, width:number,height:number) : Promise<string> {
-        return new Promise(
-            (resolve: Function, reject: Function) => {
-                let imageString='';
-                let drawImage: HTMLImageElement = new Image();
-                drawImage.onload = (): void => {
-
-                    let displayPixelRatio: number = Math.max(1, window.devicePixelRatio || 1);
-                    let draw: HTMLCanvasElement = document.createElement('canvas');
-                    draw.width = width * displayPixelRatio;
-                    draw.height = height * displayPixelRatio;
-                    let context = draw.getContext('2d');
-                    context.scale(displayPixelRatio, displayPixelRatio);
-                    context.drawImage(drawImage, 0, 0, width, height);
-                    imageString = draw.toDataURL('image/png', 1);
-                    resolve(imageString);
-
-                };
-                if(base64String && (HelperMethods.startsWith(base64String, 'http://') || HelperMethods.startsWith(base64String, 'https://'))){
-                    fetch(base64String)
-                    .then(response => response.blob())
-                    .then(blob => {
+    public async getBase64(base64String: string, width: number, height: number): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            const drawImage: HTMLImageElement = new Image();
+            drawImage.onload = (): void => {
+                const displayPixelRatio: number = Math.max(1, window.devicePixelRatio || 1);
+                const draw: HTMLCanvasElement = document.createElement('canvas');
+                draw.width = width * displayPixelRatio;
+                draw.height = height * displayPixelRatio;
+                const context = draw.getContext('2d');
+                context.scale(displayPixelRatio, displayPixelRatio);
+                context.drawImage(drawImage, 0, 0, width, height);
+                const imageString = draw.toDataURL('image/png', 1);
+                resolve(imageString);
+            };
+            drawImage.onerror = (): void => {
+                reject();
+            };
+            if (base64String && (HelperMethods.startsWith(base64String, 'http://') || HelperMethods.startsWith(base64String, 'https://'))) {
+                fetch(base64String).then((response: Response) => {
+                    return response.blob();
+                }).then((blob: Blob) => {
                     return new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => resolve(reader.result);
+                        const reader: FileReader = new FileReader();
+                        reader.onloadend = () => { return resolve(reader.result); };
                         reader.onerror = reject;
                         reader.readAsDataURL(blob);
                     });
-                    })
-                    .then(dataUrl => {
-                    // The dataUrl will be a base64-encoded string
+                }).then((dataUrl: any) => {
                     drawImage.src = dataUrl as string;
-                    // console.log(base64String);
-                    })
-                }
+                }).catch(() => {
+                    reject();
+                });
             }
-        );
+        });
     }
 
     /**
@@ -2599,6 +2596,9 @@ export class DocumentHelper {
                             this.owner.editor.removeContentControl();
                         }
                     }
+                }
+                if (contentControl) {
+                    this.selection.selectPlaceHolderText(contentControl);
                 }
             }
             if (!isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selectionModule.start)

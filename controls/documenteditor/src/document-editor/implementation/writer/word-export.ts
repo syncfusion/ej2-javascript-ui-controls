@@ -4340,7 +4340,7 @@ export class WordExport {
             writer.writeEndElement();
         }
         //Serialize 'cantSplit' element 
-        if (!HelperMethods.parseBoolValue(rowFormat[allowBreakAcrossPagesProperty[this.keywordIndex]])) {
+        if (!isNullOrUndefined(rowFormat[allowBreakAcrossPagesProperty[this.keywordIndex]]) && !HelperMethods.parseBoolValue(rowFormat[allowBreakAcrossPagesProperty[this.keywordIndex]])) {
             writer.writeStartElement(undefined, 'cantSplit', this.wNamespace);
             writer.writeEndElement();
         }

@@ -10887,14 +10887,7 @@ export class PdfFreeTextAnnotation extends PdfComment {
     set textMarkUpColor(value: number[]) {
         if (typeof value !== 'undefined' && value.length === 3) {
             this._textMarkUpColor = value;
-            const ds: string = 'font:' +
-                this.font._metrics._postScriptName +
-                ' ' +
-                this.font._size +
-                'pt;style:' + _reverseMapPdfFontStyle(this.font._style) +
-                ';color:' +
-                this._colorToHex(value);
-            this._dictionary.update('DS', ds);
+            this._updateStyle(this.font, value, this.textAlignment);
         }
     }
     /**
@@ -11107,6 +11100,71 @@ export class PdfFreeTextAnnotation extends PdfComment {
         annot._isLoaded = true;
         annot._initialize(page, dictionary);
         return annot;
+    }
+    _updateStyle(font: PdfFont, color: number[], alignment: PdfTextAlignment): void {
+        const ds: string = 'font:' +
+            font._metrics._name +
+            ' ' +
+            font.size +
+            'pt;style:' + _reverseMapPdfFontStyle(font.style) +
+            ';color:' +
+            this._colorToHex(color);
+        this._dictionary.update('DS', ds);
+        const body: string = '<?xml version="1.0"?><body xmlns="http://www.w3.org/1999/xhtml" style="font:'
+            + font._metrics._name + ' ' + font.size + 'pt;font-weight:'
+            + (font.isBold ? 'bold' : 'normal') + ';color:' + this._colorToHex(color) + '"><p dir="ltr">';
+        let textAlignment: string;
+        let alignmentText: string;
+        if (alignment !== null && typeof alignment !== 'undefined') {
+            switch (alignment) {
+            case PdfTextAlignment.left:
+                alignmentText = 'left';
+                break;
+            case PdfTextAlignment.center:
+                alignmentText = 'center';
+                break;
+            case PdfTextAlignment.right:
+                alignmentText = 'right';
+                break;
+            case PdfTextAlignment.justify:
+                alignmentText = 'justify';
+                break;
+            }
+            if (alignmentText) {
+                textAlignment = 'text-align:' + alignmentText + ';';
+            }
+        }
+        let decorationText: string = '';
+        let textDecoration: string;
+        const italic: string = 'font-style:italic';
+        const bold: string = 'font-style:bold';
+        if (font.isUnderline) {
+            decorationText = font.isStrikeout ? 'text-decoration:word line-through' : 'text-decoration:word';
+            if (font.isItalic) {
+                decorationText += ';' + italic;
+            } else if (font.isBold) {
+                decorationText += ';' + bold;
+            }
+        } else if (font.isStrikeout) {
+            decorationText = 'text-decoration:line-through';
+            if (font.isItalic) {
+                decorationText += ';' + italic;
+            } else if (font.isBold) {
+                decorationText += ';' + bold;
+            }
+        } else {
+            if (font.isItalic) {
+                decorationText += italic;
+            } else if (font.isBold) {
+                decorationText += bold;
+            }
+        }
+        if (decorationText !== '') {
+            textDecoration = '<span style = "' + textAlignment + decorationText + '">' + (this.text ? this._getXmlFormattedString(this.text) : '') + '</span>';
+        } else {
+            textDecoration = '<span style = "' + textAlignment + '">' + (this.text ? this._getXmlFormattedString(this.text) : '') + '</span>';
+        }
+        this._dictionary.update('RC', body + textDecoration + '</p></body>');
     }
     _setPaddings(paddings: _PdfPaddings): void {
         this._paddings = paddings;
@@ -11742,17 +11800,8 @@ export class PdfFreeTextAnnotation extends PdfComment {
         } else {
             this._dictionary.update('IT', _PdfName.get(this._obtainAnnotationIntent(this._annotationIntent)));
         }
-        const ds: string = 'font:' +
-                this.font._metrics._postScriptName +
-                ' ' +
-                this.font._size +
-                'pt;style:' + _reverseMapPdfFontStyle(this.font._style) +
-                ';color:' +
-                this._colorToHex(this.textMarkUpColor);
-        this._dictionary.update('DS', ds);
+        this._updateStyle(this.font, this.textMarkUpColor, this._textAlignment);
         this._dictionary.update('DA', this._getBorderColorString(this.borderColor ? this._borderColor : [0, 0, 0]));
-        const body: string = '<?xml version="1.0"?><body xmlns="http://www.w3.org/1999/xhtml"><p dir="ltr">';
-        this._dictionary.update('RC', body + (this.text ? this._getXmlFormattedString(this.text) : '') + '</p></body>');
         if (this._calloutLines && this._calloutLines.length >= 2) {
             const pageHeight: number = this._page.size[1];
             const lines: Array<number> = [];

@@ -839,9 +839,10 @@ export class UrlAdaptor extends Adaptor {
      *
      * @param  {DataManager} dm
      * @param  {Request} request
+     * @param  {Fetch} settings?
      * @returns void
      */
-    public beforeSend(dm: DataManager, request: Request): void {
+    public beforeSend(dm: DataManager, request: Request, settings?: Fetch): void {
         // need to extend this method
     }
 

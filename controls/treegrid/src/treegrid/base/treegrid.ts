@@ -2136,9 +2136,9 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
         if (this.treeColumnIndex >= this.columns.length) {
             failureCases.push('TreeColumnIndex value should not exceed the total column count.');
         }
-        if (this.enableVirtualization && (!/[0-9]$/.test(this.columnModel.filter((col: any) => col.width).toString())
-            && !/[px]$/.test(this.columnModel.filter((col: any) => col.width).toString()))
-            || (/[0-9]$/.test(this.height.toString()) && /[px]$/.test(this.height.toString()))) {
+        if (this.enableVirtualization &&
+            (this.columnModel.some((col: any) => /%$/.test(col.width)) ||
+                /%$/.test(this.height.toString()))) {
             failureCases.push('column width and height should be in pixels');
         }
         if ((this.childMapping !== 'Children') && !isNullOrUndefined(this.idMapping)) {

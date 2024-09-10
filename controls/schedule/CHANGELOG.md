@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 26.2.14 (2024-09-10)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I621521` - An issue where the tooltip shows the wrong end time value when the start and end of the appointment are the same has been fixed.
+- `#FB60391` - Deleted recurrence appointment added into the `changedRecords` instead of `deletedRecords` and upon clicking `YES` in the series edit confirmation alert to delete the individual occurrences the deleted records not included in the `deletedRecords` in the `actionBegin` event has been fixed.
+
+## 26.2.12 (2024-09-03)
+
+### Schedule
+
+#### Bug fixes
+
+- `#I617009` - An issue where the drag clone position not updated based on mouse cursor position in the vertical views has been fixed.
+
 ## 26.2.10 (2024-08-20)
 
 ### Schedule
@@ -9,7 +26,6 @@
 #### Bug fixes
 
 - `#I607401` - An issue where the events are not aligned in correct position when Scheduler height changed dynamically has been fixed.
-- `#I617009` - An issue where the drag clone position not updated based on mouse cursor position in the vertical views has been fixed.
 
 ## 26.2.4 (2024-07-24)
 

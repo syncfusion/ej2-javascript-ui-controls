@@ -32,6 +32,10 @@ export class CommentReviewPane {
     /**
      * @private
      */
+    public postReply: boolean = false;
+    /**
+     * @private
+     */
     public selectedTab: number = 0;
 
     public get previousSelectedComment(): CommentElementBox {
@@ -362,7 +366,9 @@ export class CommentReviewPane {
 
     public addReply(comment: CommentElementBox, newComment: boolean, selectComment: boolean): void {
         this.isNewComment = newComment;
+        this.postReply = true;
         this.commentPane.insertReply(comment);
+        this.postReply = false;
         if (!newComment) {
             const commentView: CommentView = this.commentPane.comments.get(comment);
             commentView.cancelEditing();
@@ -1312,10 +1318,12 @@ export class CommentView {
     }
 
     public editComment(): void {
-        const eventArgs: CommentActionEventArgs = { author: this.comment.author, cancel: false, type: 'Edit', mentions: this.comment.mentions };
-        this.owner.trigger(beforeCommentActionEvent, eventArgs);
-        if (eventArgs.cancel && eventArgs.type === 'Edit') {
-            return;
+        if (!isNullOrUndefined(this.commentPane.parentPane) && !this.commentPane.parentPane.postReply) {
+            const eventArgs: CommentActionEventArgs = { author: this.comment.author, cancel: false, type: 'Edit', mentions: this.comment.mentions };
+            this.owner.trigger(beforeCommentActionEvent, eventArgs);
+            if (eventArgs.cancel && eventArgs.type === 'Edit') {
+                return;
+            }
         }
         this.commentPane.currentEditingComment = this;
         this.commentPane.isInsertingReply = false;

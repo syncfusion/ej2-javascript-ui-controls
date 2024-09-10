@@ -5269,6 +5269,9 @@ export class FieldElementBox extends ElementBox {
                 }
             } else {
                 field.removedIds = this.removedIds.slice();
+                if (!isNullOrUndefined(this.fieldEnd) && !isNullOrUndefined(this.fieldEnd.paragraph) && !(this.fieldEnd.paragraph.containerWidget instanceof TableCellWidget)) {
+                    field.hasFieldEnd = this.hasFieldEnd;
+                }
             }
         }
         field.fieldCodeType = this.fieldCodeType;

@@ -284,14 +284,26 @@ export class TocProperties {
         this.cancelBtn.appendTo(cancelbuttoncontentStyleElement);
     }
 
+    private enableDisableInsertButton(enable: boolean): void {
+        if(this.prevContext === 'Text') {
+            this.updateBtn.disabled = enable;
+        } else {
+            this.updateBtn.disabled = false;
+        }
+    }
+
     public showTocPane(isShow: boolean, previousContextType?: ContextType): void {
         if (!isShow && this.element.style.display === 'none' || (isShow && this.element.style.display === 'block')) {
+            if(this.updateBtn) {
+                this.enableDisableInsertButton(false);
+            }
             return;
         }
         this.element.style.display = isShow ? 'block' : 'none';
         this.updateBtn.content = this.documentEditor.selectionModule.contextType === 'TableOfContents' ? this.localObj.getConstant('Update') : this.localObj.getConstant('Insert');
         this.updateBtn.element.setAttribute('aria-label', this.updateBtn.content);
         this.prevContext = this.documentEditor.selectionModule.contextType;
+        this.enableDisableInsertButton(this.documentEditor.selectionModule.isPlainContentControl());
         this.documentEditor.resize();
         if (isShow) {
             this.updateBtn.element.focus();

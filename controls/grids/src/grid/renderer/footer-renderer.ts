@@ -7,6 +7,7 @@ import { AggregateRowModel, AggregateColumnModel } from '../models/models';
 import { Row } from '../models/row';
 import { ContentRender } from './content-renderer';
 import { RowRenderer } from './row-renderer';
+import { HeaderRender } from './header-renderer';
 import { ServiceLocator } from '../services/service-locator';
 import { SummaryModelGenerator } from '../services/summary-model-generator';
 import { calculateAggregate, iterateExtend, addRemoveEventListener, applyStickyLeftRightPosition } from '../base/util';
@@ -120,7 +121,8 @@ export class FooterRenderer extends ContentRender implements IRenderer {
 
     public refreshCol(): void {
         // frozen table
-        const mheaderCol: Node = this.parent.element.querySelector('.' + literals.gridHeader).querySelector(literals.colGroup).cloneNode(true);
+        const mheaderCol: Node = this.parent.enableColumnVirtualization ? (<HeaderRender>this.parent.headerModule).getColGroup() :
+            this.parent.element.querySelector('.' + literals.gridHeader).querySelector(literals.colGroup).cloneNode(true);
         this.getTable().replaceChild(mheaderCol, this.getColGroup());
         this.setColGroup(<Element>mheaderCol);
     }

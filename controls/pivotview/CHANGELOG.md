@@ -2,7 +2,23 @@
 
 ## [Unreleased]
 
-## 26.2.13 (2024-09-05)
+## 26.2.14 (2024-09-10)
+
+### PivotTable
+
+#### Bug fixes
+
+- The width of pivot table column headers will now be updated properly when the pivot table width is specified in 'px'.
+
+## 26.2.12 (2024-09-03)
+
+### PivotTable
+
+#### Bug fixes
+
+- Pivot table column widths will now be updated properly when resizing the browser.
+
+## 26.2.11 (2024-08-27)
 
 ### PivotTable
 

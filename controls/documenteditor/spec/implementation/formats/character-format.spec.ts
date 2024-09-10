@@ -172,3 +172,77 @@ describe('Check the characterFormat for arbic format apply', () => {
         expect(container.selection.characterFormat.fontFamilyBidi).toBe('Arial');
     });
 });
+
+describe('Assign the character formatting', () => {
+    let container: DocumentEditor;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        container = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableSfdtExport: true });
+        (container.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (container.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (container.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (container.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        container.appendTo('#container');
+    });
+    afterAll((done): void => {
+        container.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        container = undefined;
+        document.body.innerHTML = '';
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Assign the character formatting', function () {
+        console.log('Assign the character formatting');
+        let sourceFormat = new WCharacterFormat();
+        let destFormat = new WCharacterFormat();
+        destFormat.fontFamily = 'Arial';
+        destFormat.fontSize = 15;
+        destFormat.bidi = true;
+        destFormat.fontColor = '#b71c1c';
+        destFormat.bold = true;
+        destFormat.scaling = 1.5;
+        destFormat.italic = true;
+        destFormat.underline = 'Single';
+        destFormat.strikethrough = 'SingleStrike';
+        destFormat.highlightColor = 'DarkBlue';
+        destFormat.baselineAlignment = 'Subscript';
+        destFormat.characterSpacing = 1;
+        destFormat.bdo = 'RTL';
+        destFormat.complexScript = true;
+        destFormat.allCaps = true;
+        destFormat.localeIdAscii = 15;
+        destFormat.localeIdBidi = 15;
+        destFormat.localeIdFarEast = 15;
+        destFormat.fontFamilyBidi = 'Arial';
+        destFormat.fontFamilyAscii = 'Arial';
+        destFormat.fontFamilyFarEast = 'Arial';
+        destFormat.fontFamilyNonFarEast = 'Arial';
+        sourceFormat.assignFormat(destFormat);
+        expect(sourceFormat.fontFamily).toBe('Arial');
+        expect(sourceFormat.fontSize).toBe(15);
+        expect(sourceFormat.bidi).toBe(true);
+        expect(sourceFormat.fontColor).toBe('#b71c1c');
+        expect(sourceFormat.bold).toBe(true);
+        expect(sourceFormat.italic).toBe(true);
+        expect(sourceFormat.scaling).toBe(1.5);
+        expect(sourceFormat.underline).toBe('Single');
+        expect(sourceFormat.strikethrough).toBe('SingleStrike');
+        expect(sourceFormat.highlightColor).toBe('DarkBlue');
+        expect(sourceFormat.baselineAlignment).toBe('Subscript');
+        expect(sourceFormat.characterSpacing).toBe(1);
+        expect(sourceFormat.bdo).toBe('RTL');
+        expect(sourceFormat.complexScript).toBe(true);
+        expect(sourceFormat.allCaps).toBe(true);
+        expect(sourceFormat.localeIdAscii).toBe(15);
+        expect(sourceFormat.localeIdBidi).toBe(15);
+        expect(sourceFormat.fontFamilyBidi).toBe('Arial');
+        expect(sourceFormat.fontFamilyAscii).toBe('Arial');
+        expect(sourceFormat.fontFamilyFarEast).toBe('Arial');
+        expect(sourceFormat.fontFamilyNonFarEast).toBe('Arial');
+    });
+});

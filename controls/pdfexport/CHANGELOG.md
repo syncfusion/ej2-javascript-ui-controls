@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 26.2.13 (2024-09-05)
+## 26.2.14 (2024-09-10)
+
+### Pdf Export
+
+#### Bug Fixes
+
+- Resolved the issue with preserving default padding in the pagination of the nested grid.
+
+## 26.2.11 (2024-08-27)
 
 ### Pdf Export
 

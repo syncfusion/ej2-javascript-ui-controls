@@ -1689,8 +1689,7 @@ export class Render {
             this.parent.resizedValue = (this.parent.showGroupingBar && this.parent.resizedValue < 250) ? 250 : this.parent.resizedValue;
         }
         this.resColWidth = !isNullOrUndefined(this.parent.resizedValue) ? this.parent.resizedValue : this.resColWidth;
-        const offsetWidth: number = this.parent.grid ? this.parent.getGridWidthAsNumber() : this.parent.element.offsetWidth ?
-            this.parent.element.offsetWidth : this.parent.element.getBoundingClientRect().width;
+        const offsetWidth: number = this.calculateGridWidth() as number;
         let parWidth: number = isNaN(this.parent.width as number) ? (this.parent.width.toString().indexOf('%') > -1 ?
             ((parseFloat(this.parent.width.toString()) / 100) * offsetWidth) : offsetWidth) :
             Number(this.parent.width);
@@ -1744,6 +1743,8 @@ export class Render {
                 parWidth = eleWidth;
             } else if (this.parent.width.toString().indexOf('%') > -1) {
                 parWidth = ((parseFloat(this.parent.width.toString()) / 100) * eleWidth);
+            } else if (this.parent.width.toString().indexOf('px') > -1) {
+                parWidth = this.parent.width.toString().split('px')[0];
             }
         } else {
             parWidth = this.gridSettings.width;

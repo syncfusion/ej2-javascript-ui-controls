@@ -3154,6 +3154,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Decimal Tab': 'Decimal Tab',
         'Bar Tab': 'Bar Tab',
         'Move Table Column': 'Move Table Column',
+        'Default Content Control Text': 'Click here or tap to insert text',
+        'Default Date Picker': 'Click or tap enter the date',
+        'Rich text Controls': 'Rich text controls cannot be applied here.',
+        'Plain text Controls': 'Plain text controls cannot be applied here.'
     };
     /* eslint-enable */
     // Public Implementation Starts

@@ -535,7 +535,7 @@ export class ColumnsDialog {
     private widthChange = (args: NumericChangeEventArgs): void => {
         if (args.isInteracted === true) {
             const val: DOMTokenList = ((args.event.target) as HTMLElement).parentElement.classList;
-            val.replace(val.item(4), 'Width');
+            val.replace('width1', 'Width');
             this.checkAndApplyColumnFormatWidth(args.value);
 
         }
@@ -543,7 +543,7 @@ export class ColumnsDialog {
     private spaceChange = (args: NumericChangeEventArgs): void => {
         if (args.isInteracted === true) {
             const val: DOMTokenList = ((args.event.target) as HTMLElement).parentElement.classList;
-            val.replace(val.item(4), 'Space');
+            val.replace('space1', 'Space');
             this.checkAndApplyColumnFormatSpace(args.value);
 
         }

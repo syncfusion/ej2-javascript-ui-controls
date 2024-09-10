@@ -96,14 +96,15 @@ describe('Gantt splitter support', () => {
                         child: 'Children'
                     },
                     splitterSettings: {
-                        columnIndex: 4
+                        columnIndex: 4,
+                        separatorSize: 2
                     },
                     projectStartDate: new Date('10/15/2017'),
                     projectEndDate: new Date('12/30/2017'),
                 }, done);
         });
         it('Column index position', () => {
-            expect(ganttObj.splitterModule.splitterObject['properties']['separatorSize']).toBe(4);
+            expect(ganttObj.splitterModule.splitterObject['properties']['separatorSize']).toBe(2);
         });
         afterAll(() => {
             if (ganttObj) {

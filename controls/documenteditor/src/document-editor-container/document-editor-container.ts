@@ -1384,7 +1384,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         }
         this.previousContext = this.documentEditor.selectionModule.contextType;
         if (this.toolbarModule && this.toolbarModule.toolbar) {
-            this.toolbarModule.enableDisableInsertComment(!this.documentEditor.enableHeaderAndFooter && this.enableComment && !this.documentEditor.isReadOnlyMode && !this.documentEditor.selectionModule.isinFootnote && !this.documentEditor.selectionModule.isinEndnote);
+            this.toolbarModule.enableDisableInsertComment(!this.documentEditor.enableHeaderAndFooter && this.enableComment && !this.documentEditor.isReadOnlyMode && !this.documentEditor.selectionModule.isinFootnote && !this.documentEditor.selectionModule.isinEndnote &&
+                !this.documentEditor.selectionModule.isPlainContentControl());
         }
     }
     /**

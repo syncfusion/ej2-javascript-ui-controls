@@ -3956,3 +3956,104 @@ describe('ListView onListScroll method', () => {
         ele.remove();
     });
 });
+
+describe('ListView select event cancellation test cases', () => {
+    let ele: HTMLElement;
+    let listObj: ListView;
+
+    beforeEach(() => {
+        ele = document.createElement('div');
+        ele.id = 'listView';
+        document.body.appendChild(ele);
+    })
+
+    it('default items interaction', () => {
+        listObj = new ListView({
+            dataSource: dataSource,
+            select: (args: SelectEventArgs) => {
+                if (args.text == "text1") {
+                    args.cancel = true; 
+                }
+            }
+        });
+        listObj.appendTo('#listView');
+        let listItem = ele.getElementsByClassName('e-list-item');
+        (listItem[0] as HTMLElement).click();
+        setTimeout(() => {  expect((listObj as any).liCollection[0].classList.contains('e-active')).toBe(false); }, 100);
+        (listItem[1] as HTMLElement).click();
+        setTimeout(() => {  expect((listObj as any).liCollection[1].classList.contains('e-active')).toBe(true); }, 100);
+    });
+
+    it('checkbox interaction', () => {
+        let eventArgs: any;
+        listObj = new ListView({
+            dataSource: dataSourceCheckbox, showCheckBox: true, fields: { isChecked: 'checked' },
+            select: (args: SelectEventArgs) => {
+                if (args.text == "BMW A5") {
+                    args.cancel = true; 
+                }
+                eventArgs = args;
+            }
+        });
+        listObj.appendTo('#listView');
+        ((listObj as any).liCollection[0].querySelector('.e-frame.e-icons') as HTMLElement).click();
+        expect(eventArgs.isChecked).toBe(false);
+        ((listObj as any).liCollection[1].querySelector('.e-frame.e-icons') as HTMLElement).click();
+        expect(eventArgs.isChecked).toBe(false);
+        expect((listObj as any).liCollection[1].classList.contains('e-active')).toBe(false);
+        expect((listObj as any).liCollection[1].classList.contains('e-focused')).toBe(false);
+        expect(((listObj as any).liCollection[1].querySelector('.e-frame.e-icons') as HTMLElement).parentElement.getAttribute('aria-checked')).toBe('false');
+        let listItem = ele.getElementsByClassName('e-list-item');
+        (listItem[1] as HTMLElement).click();
+        expect((listObj as any).liCollection[1].classList.contains('e-active')).toBe(false);
+        expect((listObj as any).liCollection[1].classList.contains('e-focused')).toBe(false);
+    });
+
+    it('nested listview interaction', () => {
+        listObj = new ListView({ dataSource: NestedData,
+            showHeader: true,
+            select: (args: SelectEventArgs) => {
+                if (args.text == "text2") {
+                    args.cancel = true; 
+                }
+            }
+         });
+        listObj.appendTo('#listView');
+        let listItem = ele.getElementsByClassName('e-list-item');
+        (listItem[0] as HTMLElement).click();
+        expect((listObj as any).liCollection[0].querySelector('.e-list-text').innerHTML).toBe('subText1');
+        listObj.back();
+        (listItem[1] as HTMLElement).click();
+        expect((listObj as any).liCollection[1].classList.contains('e-active')).toBe(false);
+        (listItem[2] as HTMLElement).click();
+        expect((listObj as any).liCollection[2].classList.contains('e-active')).toBe(true);
+
+    });
+
+    it('nested listview checkbox interaction using space key', () => {
+        listObj = new ListView({ dataSource: NestedData, showCheckBox: true, 
+            showHeader: true,
+            select: (args: SelectEventArgs) => {
+                if (args.text == "text1") {
+                    args.cancel = true; 
+                }
+            }
+         });
+        listObj.appendTo('#listView');
+        (listObj as any).liCollection[0].classList.add('e-focused');
+        let keyEventArgs: any = {
+            preventDefault: (): void => { },
+            keyCode: 32
+        };
+        (listObj as any).keyActionHandler(keyEventArgs);
+        expect((listObj as any).liCollection[0].classList.contains('e-active')).toBe(false);
+        expect(((listObj as any).liCollection[0].querySelector('.e-frame.e-icons') as HTMLElement).parentElement.getAttribute('aria-checked')).toBe('false');
+        (listObj as any).keyActionHandler(keyEventArgs);
+        expect((listObj as any).liCollection[0].classList.contains('e-active')).toBe(false);
+        expect(((listObj as any).liCollection[0].querySelector('.e-frame.e-icons') as HTMLElement).parentElement.getAttribute('aria-checked')).toBe('false');
+    });
+
+    afterEach(() => {
+        ele.remove();
+    });
+});

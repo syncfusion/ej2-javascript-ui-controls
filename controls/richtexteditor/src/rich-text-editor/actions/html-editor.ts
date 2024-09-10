@@ -45,6 +45,7 @@ export class HtmlEditor {
     private saveSelection: NodeSelection;
     public xhtmlValidation: XhtmlValidation;
     private clickTimeout: number;
+    private isCopyAll: boolean;
 
     public constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
@@ -53,6 +54,7 @@ export class HtmlEditor {
         this.xhtmlValidation = new XhtmlValidation(parent);
         this.addEventListener();
         this.isDestroyed = false;
+        this.isCopyAll = false;
     }
     /**
      * Destroys the Markdown.
@@ -69,6 +71,7 @@ export class HtmlEditor {
             this.clickTimeout = null;
         }
         this.removeEventListener();
+        this.isCopyAll = null;
         this.locator = null;
         this.contentRenderer = null;
         this.renderFactory = null;
@@ -240,6 +243,9 @@ export class HtmlEditor {
             mentionStartNode.textContent.charCodeAt(0) === 8203 &&
             !isNOU(mentionStartNode.previousSibling) && (mentionStartNode.previousSibling as HTMLElement).contentEditable === 'false';
         }
+        if (this.isCopyAll) {
+            return;
+        }
         let pointer: number;
         let isRootParent: boolean = false;
         if (restrictKeys.indexOf(args.keyCode) < 0 && !args.shiftKey && !args.ctrlKey && !args.altKey && !isEmptyNode && !isMention) {
@@ -340,6 +346,12 @@ export class HtmlEditor {
     }
 
     private onKeyDown(e: NotifyArgs): void {
+        if ((e.args as KeyboardEventArgs).ctrlKey && (e.args as KeyboardEventArgs).keyCode === 65) {
+            this.isCopyAll = true;
+        }
+        else {
+            this.isCopyAll = false;
+        }
         let currentRange: Range;
         const args: KeyboardEvent = e.args as KeyboardEvent;
         if (this.parent.inputElement.querySelectorAll('.e-cell-select').length > 1 && (args.keyCode === 8 || args.keyCode === 32 || args.keyCode === 13)) {

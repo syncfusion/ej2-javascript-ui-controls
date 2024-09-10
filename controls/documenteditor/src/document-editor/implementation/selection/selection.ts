@@ -6664,8 +6664,9 @@ export class Selection {
         let top: number = 0;
         let width: number = 0;
         let isRtlText: boolean = false;
+        let startElement: ElementBox = endElement;
         if (widget.paragraphFormat.bidi && endLine.children.indexOf(endElement) > 0) {
-            endElement = endLine.children[0];
+            startElement = endLine.children[0];
         }
         for (let i: number = startIndex; i < widget.childWidgets.length; i++) {
             const line: LineWidget = widget.childWidgets[i] as LineWidget;
@@ -6683,7 +6684,7 @@ export class Selection {
                 let right: number = 0;
                 // highlighting approach for normal and rtl text.
                 if (isRtlText || widget.bidi) {
-                    const elementBoxCollection: ElementBox[] = this.getElementsBackward(line, endElement, endElement, widget.bidi);
+                    const elementBoxCollection: ElementBox[] = this.getElementsBackward(line, startElement, endElement, widget.bidi);
                     for (let i: number = 0; i < elementBoxCollection.length; i++) {
                         const element: ElementBox = elementBoxCollection[i];
                         let elementIsRTL: boolean = false;
@@ -9237,7 +9238,8 @@ export class Selection {
         } else {
             this.owner.editorModule.keywordIndex = 0;
         }
-        let widgets = this.owner.editorModule.getBlocks(content, true);
+        let widgets: BodyWidget[] = [];
+        this.owner.editorModule.getBlocks(content, true, widgets,[],[], true);
         let selection: Selection = this.documentHelper.selection;
         // Check the sfdt has table alone 
         if (selection.start.paragraph.isInsideTable && selection.end.paragraph.isInsideTable) {
@@ -10986,6 +10988,10 @@ export class Selection {
                 let inlineElement: ElementBox = lineWidget.children[i];
                 if (inlineElement.line === lineWidget) {
                     elements.push(inlineElement);
+                    if (inlineElement === endElement) {
+                        elementIndex = -1;
+                        break;
+                    }
                 } else {
                     elementIndex = -1;
                     break;
@@ -11314,6 +11320,26 @@ export class Selection {
                 return;
             }
         }
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public selectPlaceHolderText(contentControl: ContentControl): void {
+        if (contentControl.contentControlProperties && contentControl.contentControlProperties.hasPlaceHolderText && (contentControl.contentControlProperties.type === 'RichText' || contentControl.contentControlProperties.type === 'Text')) {
+            this.selectContentControlInternal(contentControl);
+        }
+    }
+    /**
+     * @private
+     * @returns {void}
+     */
+    public isPlainContentControl(): boolean {
+        let contentControl: ContentControl = this.owner.editorModule.getContentControl();
+        if (contentControl && contentControl.contentControlProperties && contentControl.contentControlProperties.type === 'Text') {
+            return true;
+        }
+        return false;
     }
     /**
      * @private

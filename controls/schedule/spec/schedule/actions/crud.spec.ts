@@ -10,7 +10,6 @@ import * as cls from '../../../src/schedule/base/css-constant';
 import { defaultData, stringData, cloneDataSource, resourceData } from '../base/datasource.spec';
 import * as util from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
-import { triggerMouseEvent } from '../util.spec';
 
 /**
  * Schedule CRUD module
@@ -44,6 +43,14 @@ describe('Schedule CRUD', () => {
         });
         afterAll(() => {
             util.destroy(schObj);
+        });
+
+        it('addEvent method return checking', () => {
+            const actionBeginFunction: () => void = jasmine.createSpy('actionBegin');
+            schObj.actionBegin = actionBeginFunction;
+            schObj.addEvent([]);
+            expect(actionBeginFunction).toHaveBeenCalledTimes(0);
+            expect(schObj.eventsData.length).toEqual(0);
         });
 
         it('Before add checking', () => {
@@ -228,6 +235,14 @@ describe('Schedule CRUD', () => {
         });
         afterAll(() => {
             util.destroy(schObj);
+        });
+
+        it('Checking saveEvent method return', () => {
+            const actionBeginFunction: () => void = jasmine.createSpy('actionBegin');
+            schObj.actionBegin = actionBeginFunction;
+            schObj.saveEvent([]);
+            expect(actionBeginFunction).toHaveBeenCalledTimes(0);
+            expect(schObj.eventsData.length).toEqual(3);
         });
 
         it('Before save checking', () => {
@@ -463,6 +478,14 @@ describe('Schedule CRUD', () => {
             util.destroy(schObj);
         });
 
+        it('Checking deleteEvent method return', () => {
+            const actionBeginFunction: () => void = jasmine.createSpy('actionBegin');
+            schObj.actionBegin = actionBeginFunction;
+            schObj.deleteEvent([]);
+            expect(actionBeginFunction).toHaveBeenCalledTimes(0);
+            expect(schObj.eventsData.length).toEqual(5);
+        });
+
         it('Before delete checking', () => {
             expect(schObj.eventsData.length).toEqual(5);
         });
@@ -596,6 +619,48 @@ describe('Schedule CRUD', () => {
                 done();
             };
             schObj.deleteEvent(10, 'DeleteSeries');
+        });
+
+        it('Add recurrence appointments using addEvent method', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(2);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(5);
+                done();
+            };
+            const data: Record<string, any>[] = [{
+                Id: 1,
+                Subject: 'Recurrence event',
+                StartTime: new Date(2017, 9, 16, 10, 0),
+                EndTime: new Date(2017, 9, 16, 11, 0),
+                RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5',
+                RecurrenceException: '20171018T110000Z'
+            }, {
+                Id: 2,
+                Subject: 'Edited occurrence',
+                StartTime: new Date(2017, 9, 18, 11, 0),
+                EndTime: new Date(2017, 9, 18, 12, 0),
+                RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5',
+                RecurrenceID: 1
+            }];
+            schObj.eventSettings.dataSource = data;
+        });
+
+        it('test delete occurrence action from an edited occurrence', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(1);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(4);
+                done();
+            };
+            const eventElementList: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(eventElementList.length).toEqual(5);
+            util.triggerMouseEvent(eventElementList[2] as HTMLElement, 'click');
+            util.triggerMouseEvent(eventElementList[2] as HTMLElement, 'dblclick');
+            let quickDialog: Element = document.querySelector('.e-dialog.e-quick-dialog');
+            (quickDialog.querySelector('.e-quick-dialog-occurrence-event') as HTMLButtonElement).click();
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            (dialogElement.querySelector('.' + cls.DELETE_EVENT_CLASS) as HTMLButtonElement).click();
+            quickDialog = document.querySelector('.e-dialog.e-quick-dialog');
+            (quickDialog.querySelector('.e-quick-dialog-delete') as HTMLButtonElement).click();
         });
     });
 
@@ -1957,6 +2022,261 @@ describe('Schedule CRUD', () => {
             };
             expect(schObj.eventsData.length).toEqual(0);
             schObj.addEvent(data[0]);
+        });
+    });
+
+    describe('ES-902399 - actionBegin event args testing', () => {
+        let schObj: Schedule;
+        const deleteSeriesData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Scrum meeting',
+            StartTime: new Date(2024, 7, 26, 10, 0),
+            EndTime: new Date(2024, 7, 26, 11, 0),
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5'
+        }];
+        const eventData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Scrum meeting',
+            StartTime: new Date(2024, 7, 26, 10, 0),
+            EndTime: new Date(2024, 7, 26, 11, 0),
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=5',
+            RecurrenceException: '20240828T100000Z'
+        }, {
+            Id: 2,
+            Subject: 'Scrum meeting - rescheduled',
+            StartTime: new Date(2024, 7, 28, 11, 0),
+            EndTime: new Date(2024, 7, 28, 12, 0),
+            RecurrenceID: 1
+        }];
+        const followingEditData: Record<string, any>[] = [{
+            Id: 1,
+            Subject: 'Support Meeting',
+            StartTime: new Date(2024, 7, 26, 12, 0),
+            EndTime: new Date(2024, 7, 26, 13, 0),
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;UNTIL=20240828T120000Z;',
+            RecurrenceException: '20240828T120000Z'
+        }, {
+            Id: 2,
+            Subject: 'Support Meeting - rescheduled',
+            StartTime: new Date(2024, 7, 28, 13, 0),
+            EndTime: new Date(2024, 7, 28, 14, 0),
+            RecurrenceID: 1
+        }, {
+            Id: 3,
+            Subject: 'Support Meeting - following rescheduled',
+            StartTime: new Date(2024, 7, 29, 13, 0),
+            EndTime: new Date(2024, 7, 29, 14, 0),
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;UNTIL=20240830T120000Z;',
+            FollowingID: 1
+        }];
+        beforeAll((done: DoneFn) => {
+            const schOptions: ScheduleModel = { height: '500px', selectedDate: new Date(2024, 7, 28) };
+            schObj = util.createSchedule(schOptions, deleteSeriesData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Checking eventRemove arguments upon DeleteSeries', (done: DoneFn) => {
+            schObj.actionBegin = (args: ActionEventArgs) => {
+                expect(args.requestType).toEqual('eventRemove');
+                expect(args.data.length).toEqual(1);
+                expect(args.deletedRecords.length).toEqual(1);
+                expect(args.changedRecords.length).toEqual(0);
+                expect(args.addedRecords.length).toEqual(0);
+                expect(args.deletedRecords[0].Id).toEqual(1);
+                expect(args.deletedRecords[0].Subject).toEqual('Scrum meeting');
+                expect(args.deletedRecords[0].RecurrenceRule).toEqual('FREQ=DAILY;INTERVAL=1;COUNT=5');
+            };
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(0);
+                done();
+            };
+            const eventElementList: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(eventElementList.length).toEqual(5);
+            util.triggerMouseEvent(eventElementList[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(eventElementList[0] as HTMLElement, 'dblclick');
+            let quickDialog: Element = document.querySelector('.e-dialog.e-quick-dialog');
+            (quickDialog.querySelector('.e-quick-dialog-series-event') as HTMLButtonElement).click();
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            (dialogElement.querySelector('.' + cls.DELETE_EVENT_CLASS) as HTMLButtonElement).click();
+            quickDialog = document.querySelector('.e-dialog.e-quick-dialog');
+            (quickDialog.querySelector('.e-quick-dialog-delete') as HTMLButtonElement).click();
+        });
+
+        it('Binding data to Schedule to check recurrence series edit from edited recurrence event - "yes" click', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(2);
+                done();
+            }
+            schObj.eventSettings = { dataSource: extend([], eventData, null, true) as Record<string, any>[] };
+            schObj.dataBind();
+        });
+
+        it('Checking eventChange arguments upon EditSeries from edited appointment clicking "yes" on alert dialog', (done: DoneFn) => {
+            schObj.actionBegin = (args: ActionEventArgs) => {
+                expect(args.requestType).toEqual('eventChange');
+                expect((args.data as Record<string, any>).Id).toEqual(1);
+                expect((args.data as Record<string, any>).Subject).toEqual('Scrum meeting');
+                expect((args.data as Record<string, any>).RecurrenceRule).toEqual('FREQ=DAILY;INTERVAL=1;COUNT=5');
+                expect(args.addedRecords.length).toEqual(0);
+                expect(args.changedRecords.length).toEqual(1);
+                expect(args.deletedRecords.length).toEqual(1);
+                expect(args.deletedRecords[0].Id).toEqual(2);
+                expect(args.deletedRecords[0].Subject).toEqual('Scrum meeting - rescheduled');
+                expect(args.deletedRecords[0].RecurrenceID).toEqual(1);
+                expect(args.changedRecords[0].Id).toEqual(1);
+                expect(args.changedRecords[0].Subject).toEqual('Scrum meeting restored');
+                expect(args.changedRecords[0].RecurrenceRule).toEqual('FREQ=DAILY;INTERVAL=1;COUNT=5;');
+                expect(args.changedRecords[0].RecurrenceException).toEqual('20240828T100000Z');
+            };
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(1);
+                done();
+            };
+            const eventElementList: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(eventElementList.length).toEqual(5);
+            util.triggerMouseEvent(eventElementList[2] as HTMLElement, 'click');
+            util.triggerMouseEvent(eventElementList[2] as HTMLElement, 'dblclick');
+            let quickDialog: Element = document.querySelector('.e-dialog.e-quick-dialog');
+            (quickDialog.querySelector('.e-quick-dialog-series-event') as HTMLButtonElement).click();
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const subjectInput: HTMLInputElement = dialogElement.querySelector('.e-subject.e-field');
+            subjectInput.value = 'Scrum meeting restored';
+            (dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLButtonElement).click();
+            quickDialog = document.querySelector('.e-dialog.e-quick-dialog');
+            (quickDialog.querySelector('.e-quick-alertok') as HTMLButtonElement).click();
+        });
+
+        it('Binding data to Schedule to check recurrence series edit from edited recurrence event - "no" click', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(2);
+                done();
+            }
+            schObj.eventSettings = { dataSource: extend([], eventData, null, true) as Record<string, any>[] };
+            schObj.dataBind();
+        });
+
+        it('Checking eventChange arguments upon EditSeries from edited appointment clicking "no" on alert dialog', (done: DoneFn) => {
+            schObj.actionBegin = (args: ActionEventArgs) => {
+                expect(args.requestType).toEqual('eventChange');
+                expect((args.data as Record<string, any>).Id).toEqual(1);
+                expect((args.data as Record<string, any>).Subject).toEqual('Scrum meeting');
+                expect((args.data as Record<string, any>).RecurrenceRule).toEqual('FREQ=DAILY;INTERVAL=1;COUNT=5');
+                expect(args.addedRecords.length).toEqual(0);
+                expect(args.changedRecords.length).toEqual(1);
+                expect(args.deletedRecords.length).toEqual(0);
+                expect(args.changedRecords[0].Id).toEqual(1);
+                expect(args.changedRecords[0].Subject).toEqual('Scrum meeting restored');
+                expect(args.changedRecords[0].RecurrenceRule).toEqual('FREQ=DAILY;INTERVAL=1;COUNT=5;');
+                expect(args.changedRecords[0].RecurrenceException).toEqual('20240828T100000Z');
+            };
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(2);
+                done();
+            };
+            const eventElementList: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(eventElementList.length).toEqual(5);
+            util.triggerMouseEvent(eventElementList[2] as HTMLElement, 'click');
+            util.triggerMouseEvent(eventElementList[2] as HTMLElement, 'dblclick');
+            let quickDialog: Element = document.querySelector('.e-dialog.e-quick-dialog');
+            (quickDialog.querySelector('.e-quick-dialog-series-event') as HTMLButtonElement).click();
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const subjectInput: HTMLInputElement = dialogElement.querySelector('.e-subject.e-field');
+            subjectInput.value = 'Scrum meeting restored';
+            (dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLButtonElement).click();
+            quickDialog = document.querySelector('.e-dialog.e-quick-dialog');
+            (quickDialog.querySelector('.e-quick-alertcancel') as HTMLButtonElement).click();
+        });
+
+        it('Binding data to Schedule to check recurrence series edit from following edited recurrence event - "yes" click', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(3);
+                done();
+            }
+            schObj.eventSettings = { dataSource: extend([], followingEditData, null, true) as Record<string, any>[], editFollowingEvents: true };
+            schObj.dataBind();
+        });
+
+        it('Checking eventChange arguments upon EditSeries from followinig edited appointment clicking "yes" on alert dialog', (done: DoneFn) => {
+            schObj.actionBegin = (args: ActionEventArgs) => {
+                expect(args.requestType).toEqual('eventChange');
+                expect((args.data as Record<string, any>).Id).toEqual(1);
+                expect((args.data as Record<string, any>).Subject).toEqual('Support Meeting');
+                expect((args.data as Record<string, any>).RecurrenceRule).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20240830T120000Z;');
+                expect((args.data as Record<string, any>).RecurrenceException).toEqual('20240828T120000Z');
+                expect(args.addedRecords.length).toEqual(0);
+                expect(args.changedRecords.length).toEqual(1);
+                expect(args.deletedRecords.length).toEqual(2);
+                expect(args.deletedRecords[1].Id).toEqual(2);
+                expect(args.deletedRecords[1].Subject).toEqual('Support Meeting - rescheduled');
+                expect(args.deletedRecords[1].RecurrenceID).toEqual(1);
+                expect(args.deletedRecords[0].Id).toEqual(3);
+                expect(args.deletedRecords[0].Subject).toEqual('Support Meeting - following rescheduled');
+                expect(args.deletedRecords[0].FollowingID).toEqual(1);
+                expect(args.changedRecords[0].Id).toEqual(1);
+                expect(args.changedRecords[0].Subject).toEqual('Support Meeting restored');
+                expect(args.changedRecords[0].RecurrenceRule).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20240830T120000Z;');
+                expect(args.changedRecords[0].RecurrenceException).toEqual('20240828T120000Z');
+            };
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(1);
+                done();
+            };
+            const eventElementList: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(eventElementList.length).toEqual(5);
+            util.triggerMouseEvent(eventElementList[4] as HTMLElement, 'click');
+            util.triggerMouseEvent(eventElementList[4] as HTMLElement, 'dblclick');
+            let quickDialog: Element = document.querySelector('.e-dialog.e-quick-dialog');
+            (quickDialog.querySelector('.e-quick-dialog-series-event') as HTMLButtonElement).click();
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const subjectInput: HTMLInputElement = dialogElement.querySelector('.e-subject.e-field');
+            subjectInput.value = 'Support Meeting restored';
+            (dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLButtonElement).click();
+            quickDialog = document.querySelector('.e-dialog.e-quick-dialog');
+            (quickDialog.querySelector('.e-quick-alertok') as HTMLButtonElement).click();
+        });
+
+        it('Binding data to Schedule to check recurrence series edit from following edited recurrence event - "no" click', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(3);
+                done();
+            }
+            schObj.eventSettings = { dataSource: extend([], followingEditData, null, true) as Record<string, any>[], editFollowingEvents: true };
+            schObj.dataBind();
+        });
+
+        it('Checking eventChange arguments upon EditSeries from followinig edited appointment clicking "no" on alert dialog', (done: DoneFn) => {
+            schObj.actionBegin = (args: ActionEventArgs) => {
+                expect(args.requestType).toEqual('eventChange');
+                expect((args.data as Record<string, any>).Id).toEqual(1);
+                expect((args.data as Record<string, any>).Subject).toEqual('Support Meeting');
+                expect((args.data as Record<string, any>).RecurrenceRule).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20240830T120000Z;');
+                expect((args.data as Record<string, any>).RecurrenceException).toEqual('20240828T120000Z');
+                expect(args.addedRecords.length).toEqual(0);
+                expect(args.changedRecords.length).toEqual(1);
+                expect(args.deletedRecords.length).toEqual(0);
+                expect(args.changedRecords[0].Id).toEqual(1);
+                expect(args.changedRecords[0].Subject).toEqual('Support Meeting restored');
+                expect(args.changedRecords[0].RecurrenceRule).toEqual('FREQ=DAILY;INTERVAL=1;UNTIL=20240830T120000Z;');
+                expect(args.changedRecords[0].RecurrenceException).toEqual('20240828T120000Z');
+            };
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(3);
+                done();
+            };
+            const eventElementList: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(eventElementList.length).toEqual(5);
+            util.triggerMouseEvent(eventElementList[4] as HTMLElement, 'click');
+            util.triggerMouseEvent(eventElementList[4] as HTMLElement, 'dblclick');
+            let quickDialog: Element = document.querySelector('.e-dialog.e-quick-dialog');
+            (quickDialog.querySelector('.e-quick-dialog-series-event') as HTMLButtonElement).click();
+            const dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            const subjectInput: HTMLInputElement = dialogElement.querySelector('.e-subject.e-field');
+            subjectInput.value = 'Support Meeting restored';
+            (dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLButtonElement).click();
+            quickDialog = document.querySelector('.e-dialog.e-quick-dialog');
+            (quickDialog.querySelector('.e-quick-alertcancel') as HTMLButtonElement).click();
         });
     });
 

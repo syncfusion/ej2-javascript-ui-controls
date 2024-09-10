@@ -890,6 +890,13 @@ export class FocusStrategy {
                     if (bool) {
                         this.content.matrix.current[0] = index;
                         this.content.matrix.current[1] = this.parent.getColumnIndexByUid(this.focusedColumnUid) || 0;
+                        const frzLeftCount: number = this.parent.getVisibleFrozenLeftCount();
+                        const frzRightCount: number = this.parent.getVisibleFrozenRightCount();
+                        if (this.parent.enableColumnVirtualization && !(frzLeftCount && frzRightCount) && this.parent.isFrozenGrid() &&
+                            e.args.virtualInfo.direction === 'right') {
+                            this.content.matrix.current[1] =  this.content.matrix.current[1] - (frzLeftCount + (
+                                frzRightCount ? frzRightCount + 1 : 0));
+                        }
                         const isGroup: boolean = this.parent.allowGrouping && this.parent.groupSettings.columns.length ? true : false;
                         if (isGroup) {
                             this.content.matrix.current[1] = this.prevIndexes.cellIndex;
@@ -902,14 +909,20 @@ export class FocusStrategy {
                         if (focusElement) {
                             const cellPosition: ClientRect = focusElement.getBoundingClientRect();
                             const gridPosition: ClientRect = this.parent.element.getBoundingClientRect();
-                            let freezeColWidth: number = 0;
-                            if (this.parent.getVisibleFrozenLeftCount() && this.parent.enableColumnVirtualization) {
-                                freezeColWidth = this.parent.leftrightColumnWidth('left');
+                            let freezeLeftColWidth: number = 0;
+                            let freezeRightColWidth: number = 0;
+                            if (this.parent.enableColumnVirtualization && !(frzLeftCount && frzRightCount) && this.parent.isFrozenGrid() &&
+                                e.args.virtualInfo.direction === 'right') {
+                                if (frzLeftCount) {
+                                    freezeLeftColWidth = this.parent.leftrightColumnWidth('left');
+                                } else {
+                                    freezeRightColWidth = this.parent.leftrightColumnWidth('right');
+                                }
                             }
                             if ((cellPosition.top >= 0 && cellPosition.left >= 0 &&
-                                (cellPosition.right - freezeColWidth) <= Math.min(gridPosition.right, window.innerWidth ||
-                                    document.documentElement.clientWidth) &&
-                                cellPosition.bottom <= Math.min(gridPosition.bottom, window.innerHeight ||
+                                (cellPosition.right - freezeLeftColWidth - freezeRightColWidth) <= (Math.min(
+                                    gridPosition.right, window.innerWidth || document.documentElement.clientWidth) + freezeRightColWidth)
+                                    && cellPosition.bottom <= Math.min(gridPosition.bottom, window.innerHeight ||
                                     document.documentElement.clientHeight)) || isGroup) {
                                 this.isVirtualScroll = true;
                                 this.focus(isGroup && this.virtualSelectionInfo.isPending ?

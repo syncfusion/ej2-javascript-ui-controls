@@ -1015,6 +1015,32 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
+    private handleCheckboxState(
+        li: Element, checkIcon: Element, checkboxElement: Element,
+        isCheckedBefore: boolean, isFocusedBefore: boolean, eventArgs: Object,
+        isSetCheckboxLI: boolean, textAreaFocus?: HTMLTextAreaElement | HTMLInputElement
+    ): void {
+        this.trigger('select', eventArgs, (observedArgs: SelectEventArgs) => {
+            if (observedArgs.cancel) {
+                if (isSetCheckboxLI ? isCheckedBefore : !isCheckedBefore) {
+                    checkIcon.classList.add(classNames.checked);
+                    li.classList.add(classNames.selected);
+                } else {
+                    checkIcon.classList.remove(classNames.checked);
+                    li.classList.remove(classNames.selected);
+                }
+                checkboxElement.setAttribute('aria-checked', isSetCheckboxLI ? (isCheckedBefore ? 'true' : 'false') : (isCheckedBefore ? 'false' : 'true'));
+                merge(eventArgs, { isChecked: checkIcon.classList.contains(classNames.checked) });
+                if (isFocusedBefore) {
+                    li.classList.remove(classNames.focused);
+                    if (textAreaFocus) {
+                        textAreaFocus.classList.remove('e-focused');
+                    }
+                }
+            }
+        });
+    }
+
     targetElement: Element;
     private clickHandler(e: MouseEvent): void {
         if (Array.isArray(this.dataSource) &&  this.dataSource.length === 0){
@@ -1053,7 +1079,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                         const eventArgs: Object = this.selectEventData(li, e);
                         const checkIcon: Element = li.querySelector('.' + classNames.checkboxIcon);
                         merge(eventArgs, { isChecked: checkIcon.classList.contains(classNames.checked) });
-                        this.trigger('select', eventArgs);
+                        const checkboxElement: Element = li.querySelector('.' + classNames.checkboxWrapper);
+                        const isCheckedBefore: boolean = checkIcon.classList.contains(classNames.checked);
+                        const isFocusedBefore: boolean = li.classList.contains(classNames.focused);
+                        this.handleCheckboxState(li, checkIcon, checkboxElement, isCheckedBefore, isFocusedBefore, eventArgs, false);
                     }
                 } else if (li.classList.contains(classNames.hasChild)) {
                     this.removeHover();
@@ -1266,7 +1295,13 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             }
             const eventArgs: object = this.selectEventData(li, e);
             merge(eventArgs, { isChecked: checkIcon ? checkIcon.classList.contains(classNames.checked) : false });
-            this.trigger('select', eventArgs);
+            if (!isNullOrUndefined(li)) {
+                const cbElement: Element = li.querySelector('.' + classNames.checkboxWrapper);
+                const checkboxIcon: Element =  li.querySelector('.' + classNames.checkboxIcon);
+                const isCheckedBefore: boolean = checkboxIcon.classList.contains(classNames.checked);
+                const isFocusedBefore: boolean = li.classList.contains(classNames.focused);
+                this.handleCheckboxState(li, checkboxIcon, cbElement, isCheckedBefore, isFocusedBefore, eventArgs, false);
+            }
             this.updateSelectedId();
         }
     }
@@ -1398,7 +1433,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             const checkboxElement: Element = li.querySelector('.' + classNames.checkboxWrapper);
             const checkIcon: Element = checkboxElement.querySelector('.' + classNames.checkboxIcon + '.' + classNames.icon);
             this.removeHover();
-            if (!checkIcon.classList.contains(classNames.checked)) {
+            const isCheckedBefore: boolean = checkIcon.classList.contains(classNames.checked);
+            const isFocusedBefore: boolean = li.classList.contains(classNames.focused);
+            if (!isCheckedBefore) {
                 checkIcon.classList.add(classNames.checked);
                 li.classList.add(classNames.selected);
             } else {
@@ -1412,7 +1449,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             if (this.enableVirtualization) {
                 this.virtualizationModule.setCheckboxLI(li, e);
             }
-            this.trigger('select', eventArgs);
+            this.handleCheckboxState(li, checkIcon, checkboxElement, isCheckedBefore, isFocusedBefore, eventArgs, true, textAreaFocus);
             this.setSelectedItemData(li);
             this.renderSubList(li);
         }
@@ -1483,6 +1520,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 if (!observedArgs.cancel) {
                     this.selectedLI = li;
                     this.renderSubList(li);
+                }
+                else {
+                    li.classList.remove(classNames.selected);
+                    this.selectedLI = li;
                 }
             });
         }
@@ -1711,6 +1752,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             let ele: Element = this.element.querySelector('[pid=\'' + uID + '\']');
             this.curDSLevel.push(uID);
             this.setViewDataSource(this.getSubDS());
+            if (this.enableVirtualization) {
+                this.virtualizationModule.updateDOMItemCount();
+            }
             if (!ele) {
                 const data: DataSource[] = this.curViewDS as DataSource[];
                 ele = ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length, null, this);
@@ -1826,6 +1870,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         if (pID === undefined || this.isInAnimation()) { return; }
         this.curDSLevel.pop();
         this.setViewDataSource(this.getSubDS());
+        if (this.enableVirtualization) {
+            this.virtualizationModule.updateDOMItemCount();
+        }
         let toUL: HTMLElement = <HTMLElement>this.element.querySelector('[data-uid=\'' + pID + '\']');
         const fromUL: HTMLElement = this.curUL;
         if (!toUL) {

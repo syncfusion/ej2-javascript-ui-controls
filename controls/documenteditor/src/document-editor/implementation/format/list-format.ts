@@ -188,23 +188,25 @@ export class WListFormat {
     public getValue(property: string): Object {
         return this.hasValue(property) ? this.getPropertyValue(property) : undefined;
     }
-    public mergeFormat(format: WListFormat): void {
-        if (isNullOrUndefined(this.getValue('listId'))) {
-            this.listId = format.getValue('listId') as number;
-        }
-        if (isNullOrUndefined(this.getValue('listLevelNumber'))) {
-            this.listLevelNumber = format.getValue('listLevelNumber') as number;
-        }
-        if (isNullOrUndefined(this.getValue('nsid'))) {
-            this.nsid = format.getValue('nsid') as number;
-        }
-        if (!isNullOrUndefined(format.list)) {
-            if (isNullOrUndefined(this.list)) {
-                this.list = new WList();
-            }
-            this.list.mergeList(format.list);
-        }
-    }
+    //This method logic is not correct for changing the style dialog. Instead of this created assign format method and used it..
+    // public mergeFormat(format: WListFormat): void {
+    //     if (isNullOrUndefined(this.getValue('listId'))) {
+    //         this.listId = format.getValue('listId') as number;
+    //     }
+    //     if (isNullOrUndefined(this.getValue('listLevelNumber'))) {
+    //         this.listLevelNumber = format.getValue('listLevelNumber') as number;
+    //     }
+    //     if (isNullOrUndefined(this.getValue('nsid'))) {
+    //         this.nsid = format.getValue('nsid') as number;
+    //     }
+    //     if (!isNullOrUndefined(format.list)) {
+    //         if (isNullOrUndefined(this.list)) {
+    //             this.list = new WList();
+    //         }
+    //         this.list.mergeList(format.list);
+    //     }
+    // }
+    
     public cloneListFormat(): WListFormat {
         const format: WListFormat = new WListFormat(undefined);
         format.list = this.list;

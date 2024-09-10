@@ -628,58 +628,115 @@ export class WParagraphFormat {
     public getValue(property: string): Object {
         return this.hasValue(property) ? this.getPropertyValue(property) : undefined;
     }
-    public mergeFormat(format: WParagraphFormat, isStyle?: boolean): void {
+    //This method logic is not correct for changing the style dialog. Instead of this created assign format method and used it..
+    // public mergeFormat(format: WParagraphFormat, isStyle?: boolean): void {
+    //     isStyle = isNullOrUndefined(isStyle) ? false : isStyle;
+    //     if (isNullOrUndefined(this.getValue('leftIndent'))) {
+    //         this.leftIndent = format.getValue('leftIndent') as number;
+    //     }
+    //     if (isNullOrUndefined(this.getValue('rightIndent'))) {
+    //         this.rightIndent = format.getValue('rightIndent') as number;
+    //     }
+    //     if (isNullOrUndefined(this.getValue('firstLineIndent'))) {
+    //         this.firstLineIndent = format.getValue('firstLineIndent') as number;
+    //     }
+    //     if (isNullOrUndefined(this.getValue('beforeSpacing'))) {
+    //         this.beforeSpacing = format.getValue('beforeSpacing') as number;
+    //     }
+    //     if (isNullOrUndefined(this.getValue('afterSpacing'))) {
+    //         this.afterSpacing = format.getValue('afterSpacing') as number;
+    //     }
+    //     if (isNullOrUndefined(this.getValue('spaceBeforeAuto'))) {
+    //         this.spaceBeforeAuto = format.getValue('spaceBeforeAuto') as boolean;
+    //     }
+    //     if (isNullOrUndefined(this.getValue('spaceAfterAuto'))) {
+    //         this.spaceAfterAuto = format.getValue('spaceAfterAuto') as boolean;
+    //     }
+    //     if (isNullOrUndefined(this.getValue('lineSpacing'))) {
+    //         this.lineSpacing = format.getValue('lineSpacing') as number;
+    //     }
+    //     if (isNullOrUndefined(this.getValue('lineSpacingType'))) {
+    //         this.lineSpacingType = format.getValue('lineSpacingType') as LineSpacingType;
+    //     }
+    //     if (isNullOrUndefined(this.getValue('textAlignment'))) {
+    //         this.textAlignment = format.getValue('textAlignment') as TextAlignment;
+    //     }
+    //     if (isNullOrUndefined(this.getValue('outlineLevel'))) {
+    //         this.outlineLevel = format.getValue('outlineLevel') as OutlineLevel;
+    //     }
+    //     if (!isStyle && isNullOrUndefined(this.getValue('bidi'))) {
+    //         this.bidi = format.getValue('bidi') as boolean;
+    //     }
+    //     if (isNullOrUndefined(this.getValue('contextualSpacing'))) {
+    //         this.contextualSpacing = format.getValue('contextualSpacing') as boolean;
+    //     }
+    //     if (isNullOrUndefined(this.getValue('keepWithNext'))) {
+    //         this.keepWithNext = format.getValue('keepWithNext') as boolean;
+    //     }
+    //     if (isNullOrUndefined(this.getValue('keepLinesTogether'))) {
+    //         this.keepLinesTogether = format.getValue('keepLinesTogether') as boolean;
+    //     }
+    //     if (isNullOrUndefined(this.getValue('widowControl'))) {
+    //         this.widowControl = format.getValue('widowControl') as boolean;
+    //     }
+    //     if (isNullOrUndefined(this.listFormat)) {
+            // this.listFormat.mergeFormat(format.listFormat);
+    //     }
+    // }
+    /**
+     * Assinging the value for style dialog
+     * @private
+     * @returns {void}
+     */
+    public assignFormat(format: WParagraphFormat, isStyle?: boolean): void {
         isStyle = isNullOrUndefined(isStyle) ? false : isStyle;
-        if (isNullOrUndefined(this.getValue('leftIndent')) && !isNullOrUndefined(format.getValue('leftIndent'))) {
+        if (format.hasValue('leftIndent')) {
             this.leftIndent = format.getValue('leftIndent') as number;
         }
-        if (isNullOrUndefined(this.getValue('rightIndent')) && !isNullOrUndefined(format.getValue('rightIndent'))) {
+        if (format.hasValue('rightIndent')) {
             this.rightIndent = format.getValue('rightIndent') as number;
         }
-        if (isNullOrUndefined(this.getValue('firstLineIndent')) && !isNullOrUndefined(format.getValue('firstLineIndent'))) {
+        if (format.hasValue('firstLineIndent')) {
             this.firstLineIndent = format.getValue('firstLineIndent') as number;
         }
-        if (isNullOrUndefined(this.getValue('beforeSpacing')) && !isNullOrUndefined(format.getValue('beforeSpacing'))) {
+        if (format.hasValue('beforeSpacing')) {
             this.beforeSpacing = format.getValue('beforeSpacing') as number;
         }
-        if (isNullOrUndefined(this.getValue('afterSpacing')) && !isNullOrUndefined(format.getValue('afterSpacing'))) {
+        if (format.hasValue('afterSpacing')) {
             this.afterSpacing = format.getValue('afterSpacing') as number;
         }
-        if (isNullOrUndefined(this.getValue('spaceBeforeAuto')) && !isNullOrUndefined(format.getValue('spaceBeforeAuto'))) {
+        if (format.hasValue('spaceBeforeAuto')) {
             this.spaceBeforeAuto = format.getValue('spaceBeforeAuto') as boolean;
         }
-        if (isNullOrUndefined(this.getValue('spaceAfterAuto')) && !isNullOrUndefined(format.getValue('spaceAfterAuto'))) {
+        if (format.hasValue('spaceAfterAuto')) {
             this.spaceAfterAuto = format.getValue('spaceAfterAuto') as boolean;
         }
-        if (isNullOrUndefined(this.getValue('lineSpacing')) && !isNullOrUndefined(format.getValue('lineSpacing'))) {
+        if (format.hasValue('lineSpacing')) {
             this.lineSpacing = format.getValue('lineSpacing') as number;
         }
-        if (isNullOrUndefined(this.getValue('lineSpacingType')) && !isNullOrUndefined(format.getValue('lineSpacingType'))) {
+        if (format.hasValue('lineSpacingType')) {
             this.lineSpacingType = format.getValue('lineSpacingType') as LineSpacingType;
         }
-        if (isNullOrUndefined(this.getValue('textAlignment')) && !isNullOrUndefined(format.getValue('textAlignment'))) {
+        if (format.hasValue('textAlignment')) {
             this.textAlignment = format.getValue('textAlignment') as TextAlignment;
         }
-        if (isNullOrUndefined(this.getValue('outlineLevel')) && !isNullOrUndefined(format.getValue('outlineLevel'))) {
+        if (format.hasValue('outlineLevel')) {
             this.outlineLevel = format.getValue('outlineLevel') as OutlineLevel;
         }
-        if (!isStyle && isNullOrUndefined(this.getValue('bidi')) && !isNullOrUndefined(format.getValue('bidi'))) {
+        if (!isStyle && format.hasValue('bidi')) {
             this.bidi = format.getValue('bidi') as boolean;
         }
-        if (isNullOrUndefined(this.getValue('contextualSpacing')) && !isNullOrUndefined(format.getValue('contextualSpacing'))) {
+        if (format.hasValue('contextualSpacing')) {
             this.contextualSpacing = format.getValue('contextualSpacing') as boolean;
         }
-        if (isNullOrUndefined(this.getValue('keepWithNext')) && !isNullOrUndefined(format.getValue('keepWithNext'))) {
+        if (format.hasValue('keepWithNext')) {
             this.keepWithNext = format.getValue('keepWithNext') as boolean;
         }
-        if (isNullOrUndefined(this.getValue('keepLinesTogether')) && !isNullOrUndefined(format.getValue('keepLinesTogether'))) {
+        if (format.hasValue('keepLinesTogether')) {
             this.keepLinesTogether = format.getValue('keepLinesTogether') as boolean;
         }
-        if (isNullOrUndefined(this.getValue('widowControl')) && !isNullOrUndefined(format.getValue('widowControl'))) {
+        if (format.hasValue('widowControl')) {
             this.widowControl = format.getValue('widowControl') as boolean;
-        }
-        if (isNullOrUndefined(this.listFormat)) {
-            this.listFormat.mergeFormat(format.listFormat);
         }
     }
 }

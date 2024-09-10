@@ -248,9 +248,10 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         if (this.parent.isFrozenGrid()) {
             frzLeftWidth = this.parent.leftrightColumnWidth('left');
             if (diffWidth > 0) {
-                for (let i: number = 0; i < this.parent.getVisibleFrozenLeftCount(); i++) {
+                for (let i: number = this.parent.getVisibleFrozenLeftCount() - 1; i >= 0; i--) {
                     if (diffWidth <= this.cOffsets[parseInt(i.toString(), 10)]) {
                         frzLeftWidth = frzLeftWidth - this.cOffsets[parseInt(i.toString(), 10)];
+                        break;
                     }
                 }
             }

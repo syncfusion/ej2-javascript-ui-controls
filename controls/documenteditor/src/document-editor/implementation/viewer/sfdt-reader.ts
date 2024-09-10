@@ -68,6 +68,11 @@ export class SfdtReader {
      * @private
      */
     public isPaste: boolean = false;
+
+    /**
+     * @private
+     */
+    public isContextBasedPaste: boolean = false;
     /**
      * @private
      */
@@ -1347,21 +1352,23 @@ export class SfdtReader {
                 }
                 image.width = HelperMethods.convertPointToPixel(inline[widthProperty[this.keywordIndex]]);
                 image.height = HelperMethods.convertPointToPixel(inline[heightProperty[this.keywordIndex]]);
-                let imgStr: string = this.documentHelper.getImageString(image);
-                if (!isNullOrUndefined(imgStr) && (HelperMethods.startsWith(imgStr, 'http://') || HelperMethods.startsWith(imgStr, 'https://'))) {
-                    // Generate fall back image for URL images.
-                    image.element.crossOrigin = 'Anonymous';
-                    this.viewer.documentHelper.getBase64(imgStr,image.width, image.height).then((imageUrlString: string) => {
-                        this.viewer.documentHelper.images.get(parseInt(image.imageString))[1] =imageUrlString;
-                    });
-                    const url = new URL(imgStr);
-                    if (url.search.length > 0) {
-                        imgStr += `&t=${new Date().getTime()}`;
-                    } else {
-                        imgStr += `?t=${new Date().getTime()}`;
+                if(!this.isContextBasedPaste) {
+                    let imgStr: string = this.documentHelper.getImageString(image);
+                    if (!isNullOrUndefined(imgStr) && (HelperMethods.startsWith(imgStr, 'http://') || HelperMethods.startsWith(imgStr, 'https://'))) {
+                        // Generate fall back image for URL images.
+                        image.element.crossOrigin = 'Anonymous';
+                        this.viewer.documentHelper.getBase64(imgStr,image.width, image.height).then((imageUrlString: string) => {
+                            this.viewer.documentHelper.images.get(parseInt(image.imageString))[1] =imageUrlString;
+                        });
+                        const url = new URL(imgStr);
+                        if (url.search.length > 0) {
+                            imgStr += `&t=${new Date().getTime()}`;
+                        } else {
+                            imgStr += `?t=${new Date().getTime()}`;
+                        }
                     }
-                }
-                image.element.src = imgStr;
+                    image.element.src = imgStr;
+                }       
                 image.top = inline[topProperty[this.keywordIndex]];
                 image.left = inline[leftProperty[this.keywordIndex]];
                 image.bottom = inline[bottomProperty[this.keywordIndex]];
@@ -1424,12 +1431,16 @@ export class SfdtReader {
                     let formFieldData: FormField;
                     formFieldData = this.parseFormFieldData(this.keywordIndex, inline, formFieldData);
                     fieldBegin.formFieldData = formFieldData;
-                    this.documentHelper.formFields.push(fieldBegin);
+                    if (!this.isContextBasedPaste) {
+                        this.documentHelper.formFields.push(fieldBegin);
+                    }
                 }
                 this.documentHelper.fieldStacks.push(fieldBegin);
                 this.checkAndApplyRevision(this.keywordIndex, inline, fieldBegin);
                 fieldBegin.line = lineWidget;
-                this.documentHelper.fields.push(fieldBegin);
+                if (!this.isContextBasedPaste) {
+                    this.documentHelper.fields.push(fieldBegin);
+                }
                 lineWidget.children.push(fieldBegin);
             } else if (inline.hasOwnProperty([fieldTypeProperty[this.keywordIndex]])) {
                 let field: FieldElementBox = undefined;
@@ -1477,7 +1488,9 @@ export class SfdtReader {
                     this.documentHelper.fieldStacks.splice(this.documentHelper.fieldStacks.length - 1, 1);
                     this.fieldSeparator = undefined;
                     this.documentHelper.isPageField = false;
-                    this.documentHelper.fieldCollection.push(field.fieldBegin);
+                    if(!this.isContextBasedPaste) {
+                        this.documentHelper.fieldCollection.push(field.fieldBegin);
+                    }
                     fieldCode = undefined;
                 }
                 field.line = lineWidget;
@@ -1513,7 +1526,7 @@ export class SfdtReader {
                 if (!this.isParseHeader || this.isPaste) {
                     if (inline[bookmarkTypeProperty[this.keywordIndex]] === 0) {
                         let isAdd: boolean = this.isPaste && !this.documentHelper.bookmarks.containsKey(bookmark.name);
-                        if (!this.isPaste || isAdd) {
+                        if (!this.isPaste || (isAdd && !this.isContextBasedPaste)) {
                             this.documentHelper.bookmarks.add(bookmark.name, bookmark);
                         } else if (!isAdd) {
                             lineWidget.children.splice(lineWidget.children.indexOf(bookmark), 1);
@@ -1522,7 +1535,7 @@ export class SfdtReader {
                         if (this.documentHelper.bookmarks.containsKey(bookmark.name)) {
                             let bookmarkStart: BookmarkElementBox = this.documentHelper.bookmarks.get(bookmark.name);
                             let isConsider: boolean = this.isPaste && isNullOrUndefined(bookmarkStart.reference);
-                            if (!this.isPaste || isConsider) {
+                            if (!this.isPaste || (isConsider && !this.isContextBasedPaste)) {
                                 bookmarkStart.reference = bookmark;
                                 bookmark.reference = bookmarkStart;
                                 this.documentHelper.endBookmarksUpdated.push(bookmark.name);

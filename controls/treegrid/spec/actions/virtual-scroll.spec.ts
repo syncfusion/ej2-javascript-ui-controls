@@ -2998,7 +2998,7 @@ describe("Virtual Scrolling without height", () => {
     );
   });
   it('actionFailure testing', () => {
-    expect(actionFailedFunction).toHaveBeenCalled();
+    expect(actionFailedFunction).not.toHaveBeenCalled();
   });
   afterAll(() => {
     destroy(gridObj);
@@ -3381,6 +3381,54 @@ describe("Row selection is incorrect when enableVirtualization is enabled", () =
     expect(gridObj.getRows()[1].hasAttribute('aria-selected')).toBeFalsy();
     gridObj.expandAll();
   });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
+
+describe("Virtual Scrolling with height", () => {
+  let gridObj: TreeGrid;
+  let actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: editVirtualData,
+        enableVirtualization: true,
+        treeColumnIndex: 1,
+        height: '100%',
+        childMapping: "Crew",
+        columns: [
+          {
+            field: "TaskID",
+            headerText: "Player Jersey",
+            isPrimaryKey: true,
+            width: 140,
+            textAlign: "Right",
+          },
+          { field: "FIELD1", headerText: "Player Name", width: 140 },
+          {
+            field: "FIELD2",
+            headerText: "Year",
+            width: 120,
+            textAlign: "Right",
+          },
+          {
+            field: "FIELD3",
+            headerText: "Stint",
+            width: 120,
+            textAlign: "Right",
+          },
+        ],
+        actionFailure: actionFailedFunction
+      },
+      done
+    );
+  });
+
+  it('actionFailure testing with height in percentage', () => {
+    expect(actionFailedFunction).toHaveBeenCalled();
+  });
+  
   afterAll(() => {
     destroy(gridObj);
   });
